@@ -12,11 +12,11 @@ import (
 // GetClient creates a kubernetes client using the config at $HOME/.kube/config
 func GetClient() *kubernetes.Clientset {
 	var kubeconfig *string
-	if home := homeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+	home, err := os.UserHomeDir()
+	if err != nil {
+		panic(err.Error())
 	}
+	kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
 	flag.Parse()
 
 	// use the current context in kubeconfig
@@ -31,11 +31,4 @@ func GetClient() *kubernetes.Clientset {
 		panic(err.Error())
 	}
 	return clientset
-}
-
-func homeDir() string {
-	if h := os.Getenv("HOME"); h != "" {
-		return h
-	}
-	return os.Getenv("USERPROFILE") // windows
 }
