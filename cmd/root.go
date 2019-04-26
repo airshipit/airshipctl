@@ -17,7 +17,6 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(NewVersionCommand())
 
 	// Compound commands
-	rootCmd.AddCommand(NewKubernetesCommand())
 	rootCmd.AddCommand(NewWorkflowCommand())
 
 	return rootCmd

@@ -11,7 +11,5 @@ func NewWorkflowCommand() *cobra.Command {
 		Aliases: []string{"workflows", "wf"},
 	}
 
-	workflowRootCmd.AddCommand(NewWorkflowVersionCommand())
-
 	return workflowRootCmd
 }
