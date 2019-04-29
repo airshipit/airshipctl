@@ -2,19 +2,21 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/spf13/cobra"
 )
 
-func NewRootCmd() *cobra.Command {
+// NewRootCmd creates the root `airshipadm` command. All other commands are
+// subcommands branching from this one
+func NewRootCmd(out io.Writer) *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:          "airshipadm",
-		Short:        "airshipadm is a unified entrypoint to various airship components",
+		Use:   "airshipadm",
+		Short: "airshipadm is a unified entrypoint to various airship components",
 	}
 
-
-	rootCmd.AddCommand(NewVersionCommand())
+	rootCmd.AddCommand(NewVersionCommand(out))
 
 	// Compound commands
 	rootCmd.AddCommand(NewWorkflowCommand())
@@ -23,8 +25,8 @@ func NewRootCmd() *cobra.Command {
 }
 
 // Execute runs the base airshipadm command
-func Execute() {
-	rootCmd := NewRootCmd()
+func Execute(out io.Writer) {
+	rootCmd := NewRootCmd(out)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

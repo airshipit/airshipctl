@@ -6,8 +6,8 @@ import (
 
 func NewWorkflowCommand() *cobra.Command {
 	workflowRootCmd := &cobra.Command{
-		Use:   "workflow",
-		Short: "access to workflows",
+		Use:     "workflow",
+		Short:   "access to workflows",
 		Aliases: []string{"workflows", "wf"},
 	}
 
