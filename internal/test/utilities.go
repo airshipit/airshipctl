@@ -55,7 +55,7 @@ func executeCmd(t *testing.T, command string) {
 	}
 	if !bytes.Equal(actual.Bytes(), golden) {
 		errFmt := "output does not match golden file: %s\nEXPECTED:\n%s\nGOT:\n%s"
-		t.Errorf(errFmt, goldenFilePath, string(golden), actual.String)
+		t.Errorf(errFmt, goldenFilePath, string(golden), actual.String())
 	}
 }
 
