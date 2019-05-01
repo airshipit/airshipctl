@@ -1,7 +1,6 @@
 package kubernetes
 
 import (
-	"flag"
 	"os"
 	"path/filepath"
 
@@ -9,21 +8,19 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// GetClient creates a kubernetes client using the config at $HOME/.kube/config
-func GetClient() *kubernetes.Clientset {
-	var kubeconfig *string
-	home, err := os.UserHomeDir()
-	if err != nil {
-		panic(err.Error())
+// NewForConfig creates a kubernetes client using the config at $HOME/.kube/config
+func NewForConfig(kubeconfigFilepath string) (kubernetes.Interface, error) {
+	if kubeconfigFilepath == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			panic(err.Error())
+		}
+		kubeconfigFilepath = filepath.Join(home, ".kube", "config")
+		// kubeconfigFilepath = flag.String("kubeconfig", fp, "(optional) absolute path to the kubeconfig file")
 	}
-	// TODO(howell): This was example code. The flag parsing needs to be
-	// moved to a command
-	fp := filepath.Join(home, ".kube", "config")
-	kubeconfig = flag.String("kubeconfig", fp, "(optional) absolute path to the kubeconfig file")
-	flag.Parse()
 
-	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	// use the current context in kubeconfigFilepath
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigFilepath)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -33,5 +30,5 @@ func GetClient() *kubernetes.Clientset {
 	if err != nil {
 		panic(err.Error())
 	}
-	return clientset
+	return clientset, nil
 }

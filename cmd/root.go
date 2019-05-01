@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/ian-howell/airshipadm/pkg/settings"
 	"github.com/spf13/cobra"
 )
 
@@ -20,6 +21,8 @@ func NewRootCmd(out io.Writer) *cobra.Command {
 
 	// Compound commands
 	rootCmd.AddCommand(NewWorkflowCommand())
+
+	rootCmd.PersistentFlags().StringVar(&settings.Settings.KubeConfigFilePath, "kubeconfig", "", "path to kubeconfig")
 
 	return rootCmd
 }
