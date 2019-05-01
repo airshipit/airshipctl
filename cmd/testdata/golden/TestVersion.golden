@@ -1,5 +1,0 @@
-airshipadm: v0.1.0
-golang    : go1.12
-kubernetes: v1.12.6
-helm      : TODO
-argo      : TODO

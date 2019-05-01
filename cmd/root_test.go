@@ -8,7 +8,7 @@ import (
 
 func TestRoot(t *testing.T) {
 	tests := []test.CmdTest{{
-		Name:    "arishipadm root",
+		Name:    "default",
 		Command: "",
 	}}
 	test.RunCmdTests(t, tests)

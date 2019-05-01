@@ -39,3 +39,9 @@ clean:
 .PHONY: docs
 docs:
 	@echo "TODO"
+
+.PHONY: update-golden
+update-golden: TESTFLAGS += -update -v
+update-golden: PKG = github.com/ian-howell/airshipadm/cmd
+update-golden:
+	@go test $(PKG) $(TESTFLAGS)
