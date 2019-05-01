@@ -16,7 +16,10 @@ func GetClient() *kubernetes.Clientset {
 	if err != nil {
 		panic(err.Error())
 	}
-	kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+	// TODO(howell): This was example code. The flag parsing needs to be
+	// moved to a command
+	fp := filepath.Join(home, ".kube", "config")
+	kubeconfig = flag.String("kubeconfig", fp, "(optional) absolute path to the kubeconfig file")
 	flag.Parse()
 
 	// use the current context in kubeconfig

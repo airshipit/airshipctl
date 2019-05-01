@@ -37,12 +37,14 @@ func executeCmd(t *testing.T, command string) {
 	args := strings.Fields(command)
 	rootCmd.SetArgs(args)
 
-	rootCmd.Execute()
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatalf(err.Error())
+	}
 
 	goldenFilePath := filepath.Join(goldenFileDir, filepath.FromSlash(t.Name())+".golden")
 	if *updateGolden {
 		t.Logf("updating golden file: %s", goldenFilePath)
-		if err := ioutil.WriteFile(goldenFilePath, actual.Bytes(), 0644); err != nil {
+		if err := ioutil.WriteFile(goldenFilePath, normalize(actual.Bytes()), 0644); err != nil {
 			t.Fatalf("failed to update golden file: %s", err)
 		}
 		return
