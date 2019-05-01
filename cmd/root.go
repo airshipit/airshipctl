@@ -16,6 +16,7 @@ func NewRootCmd(out io.Writer) *cobra.Command {
 		Use:   "airshipadm",
 		Short: "airshipadm is a unified entrypoint to various airship components",
 	}
+	rootCmd.SetOutput(out)
 
 	rootCmd.AddCommand(NewVersionCommand(out))
 
