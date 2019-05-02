@@ -16,7 +16,6 @@ func NewForConfig(kubeconfigFilepath string) (kubernetes.Interface, error) {
 			panic(err.Error())
 		}
 		kubeconfigFilepath = filepath.Join(home, ".kube", "config")
-		// kubeconfigFilepath = flag.String("kubeconfig", fp, "(optional) absolute path to the kubeconfig file")
 	}
 
 	// use the current context in kubeconfigFilepath
