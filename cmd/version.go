@@ -20,7 +20,7 @@ This includes the following tools, in order:
 `
 
 // NewVersionCommand prints out the versions of airshipadm and its underlying tools
-func NewVersionCommand(out io.Writer) *cobra.Command {
+func NewVersionCommand(out io.Writer, client *kube.Client) *cobra.Command {
 	versionCmd := &cobra.Command{
 		Use:   "version",
 		Short: "Show the version number of airshipadm and its underlying tools",
@@ -28,7 +28,7 @@ func NewVersionCommand(out io.Writer) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Fprintf(out, "%-10s: %s\n", "airshipadm", airshipadmVersion())
 			fmt.Fprintf(out, "%-10s: %s\n", "golang", runtime.Version())
-			fmt.Fprintf(out, "%-10s: %s\n", "kubernetes", kubeVersion(settings.KubeConfigFilePath))
+			fmt.Fprintf(out, "%-10s: %s\n", "kubernetes", kubeVersion(client))
 			fmt.Fprintf(out, "%-10s: %s\n", "helm", helmVersion())
 			fmt.Fprintf(out, "%-10s: %s\n", "argo", argoVersion())
 		},
@@ -41,17 +41,13 @@ func airshipadmVersion() string {
 	return "v0.1.0"
 }
 
-func kubeVersion(configPath string) string {
-	clientset, err := kube.NewForConfig(configPath)
+func kubeVersion(client *kube.Client) string {
+	version, err := client.Discovery().ServerVersion()
+	// TODO(howell): Remove this panic
 	if err != nil {
 		panic(err.Error())
 	}
-
-	v, err := clientset.Discovery().ServerVersion()
-	if err != nil {
-		panic(err.Error())
-	}
-	return v.String()
+	return version.String()
 }
 
 func helmVersion() string {

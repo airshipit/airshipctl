@@ -10,6 +10,8 @@ import (
 	"testing"
 
 	"github.com/ian-howell/airshipadm/cmd"
+	"github.com/ian-howell/airshipadm/pkg/kube"
+	"k8s.io/client-go/kubernetes/fake"
 )
 
 // UpdateGolden writes out the golden files with the latest values, rather than failing the test.
@@ -41,7 +43,8 @@ func RunCmdTests(t *testing.T, tests []CmdTest) {
 
 func executeCmd(t *testing.T, command string) []byte {
 	var actual bytes.Buffer
-	rootCmd := cmd.NewRootCmd(&actual)
+	client := &kube.Client{Interface: fake.NewSimpleClientset()}
+	rootCmd := cmd.NewRootCmd(&actual, client)
 
 	// TODO(howell): switch to shellwords (or similar)
 	args := strings.Fields(command)

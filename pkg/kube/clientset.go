@@ -1,4 +1,4 @@
-package kubernetes
+package kube
 
 import (
 	"os"
@@ -8,8 +8,13 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+// Client is a device which communicates with the Kubernetes API
+type Client struct {
+	kubernetes.Interface
+}
+
 // NewForConfig creates a kubernetes client using the config at $HOME/.kube/config
-func NewForConfig(kubeconfigFilepath string) (kubernetes.Interface, error) {
+func NewForConfig(kubeconfigFilepath string) (*Client, error) {
 	if kubeconfigFilepath == "" {
 		home, err := os.UserHomeDir()
 		if err != nil {
@@ -29,5 +34,5 @@ func NewForConfig(kubeconfigFilepath string) (kubernetes.Interface, error) {
 	if err != nil {
 		panic(err.Error())
 	}
-	return clientset, nil
+	return &Client{clientset}, nil
 }
