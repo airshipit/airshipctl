@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 
 	kube "github.com/ian-howell/airshipadm/pkg/kube"
-	"github.com/ian-howell/airshipadm/pkg/settings"
 )
 
 const versionLong = `Show the versions for the airshipadm tool and the supporting tools.
@@ -29,7 +28,7 @@ func NewVersionCommand(out io.Writer) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Fprintf(out, "%-10s: %s\n", "airshipadm", airshipadmVersion())
 			fmt.Fprintf(out, "%-10s: %s\n", "golang", runtime.Version())
-			fmt.Fprintf(out, "%-10s: %s\n", "kubernetes", kubeVersion(settings.Settings.KubeConfigFilePath))
+			fmt.Fprintf(out, "%-10s: %s\n", "kubernetes", kubeVersion(settings.KubeConfigFilePath))
 			fmt.Fprintf(out, "%-10s: %s\n", "helm", helmVersion())
 			fmt.Fprintf(out, "%-10s: %s\n", "argo", argoVersion())
 		},

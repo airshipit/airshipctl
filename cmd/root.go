@@ -5,9 +5,11 @@ import (
 	"io"
 	"os"
 
-	"github.com/ian-howell/airshipadm/pkg/settings"
+	"github.com/ian-howell/airshipadm/pkg/environment"
 	"github.com/spf13/cobra"
 )
+
+var settings environment.AirshipADMSettings
 
 // NewRootCmd creates the root `airshipadm` command. All other commands are
 // subcommands branching from this one
@@ -23,7 +25,7 @@ func NewRootCmd(out io.Writer) *cobra.Command {
 	// Compound commands
 	rootCmd.AddCommand(NewWorkflowCommand())
 
-	rootCmd.PersistentFlags().StringVar(&settings.Settings.KubeConfigFilePath, "kubeconfig", "", "path to kubeconfig")
+	rootCmd.PersistentFlags().StringVar(&settings.KubeConfigFilePath, "kubeconfig", "", "path to kubeconfig")
 
 	return rootCmd
 }

@@ -1,7 +1,4 @@
-package settings
-
-// Settings contains all of the configuration required by airshipadm
-var Settings = new(AirshipADMSettings)
+package environment
 
 // AirshipADMSettings is a container for all of the settings needed by airshipadm
 type AirshipADMSettings struct {
