@@ -7,6 +7,7 @@ import (
 
 	"github.com/ian-howell/airshipadm/pkg/environment"
 	"github.com/ian-howell/airshipadm/pkg/kube"
+	"github.com/ian-howell/airshipadm/pkg/log"
 	"github.com/spf13/cobra"
 )
 
@@ -23,10 +24,13 @@ func NewRootCmd(out io.Writer, client *kube.Client, args []string) *cobra.Comman
 
 	// Settings flags - This section should probably be moved to pkg/environment
 	rootCmd.PersistentFlags().StringVar(&settings.KubeConfigFilePath, "kubeconfig", "", "path to kubeconfig")
+	rootCmd.PersistentFlags().BoolVar(&settings.Debug, "debug", false, "enable verbose output")
 	// TODO(howell): Remove this panic
 	if err := rootCmd.PersistentFlags().Parse(args); err != nil {
 		panic(err.Error())
 	}
+
+	log.Init(&settings, out)
 
 	rootCmd.AddCommand(NewVersionCommand(out, client))
 

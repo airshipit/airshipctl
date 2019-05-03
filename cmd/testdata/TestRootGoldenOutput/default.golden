@@ -8,6 +8,7 @@ Available Commands:
   version     Show the version number of airshipadm and its underlying tools
 
 Flags:
+      --debug               enable verbose output
   -h, --help                help for airshipadm
       --kubeconfig string   path to kubeconfig
 

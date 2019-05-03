@@ -6,4 +6,7 @@ type AirshipADMSettings struct {
 	// This flag is only needed when airshipadm is being used
 	// out-of-cluster
 	KubeConfigFilePath string
+
+	// Debug is used for verbose output
+	Debug bool
 }
