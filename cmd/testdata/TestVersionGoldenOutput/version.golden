@@ -1,5 +1,2 @@
-airshipadm: v0.1.0
-golang    : go1.12
-kubernetes: v0.0.0-master+$Format:%h$
-helm      : TODO
-argo      : TODO
+client:            v0.1.0
+kubernetes server: v0.0.0-master+$Format:%h$
