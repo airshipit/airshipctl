@@ -44,10 +44,9 @@ func RunCmdTests(t *testing.T, tests []CmdTest) {
 func executeCmd(t *testing.T, command string) []byte {
 	var actual bytes.Buffer
 	client := &kube.Client{Interface: fake.NewSimpleClientset()}
-	rootCmd := cmd.NewRootCmd(&actual, client)
-
 	// TODO(howell): switch to shellwords (or similar)
 	args := strings.Fields(command)
+	rootCmd := cmd.NewRootCmd(&actual, client, args)
 	rootCmd.SetArgs(args)
 
 	if err := rootCmd.Execute(); err != nil {
