@@ -7,6 +7,8 @@ import (
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/ian-howell/airshipadm/pkg/util"
 )
 
 // Client is a device which communicates with the Kubernetes API
@@ -24,10 +26,14 @@ func NewForConfig(kubeconfigFilepath string) (*Client, error) {
 		kubeconfigFilepath = filepath.Join(home, ".kube", "config")
 	}
 
+	if err := util.IsReadable(kubeconfigFilepath); err != nil {
+		return nil, errors.New("could not open " + kubeconfigFilepath + ": " + err.Error())
+	}
+
 	// use the current context in kubeconfigFilepath
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigFilepath)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("could not build kubernetes config: " + err.Error())
 	}
 
 	// create the clientset

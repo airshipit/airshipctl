@@ -21,7 +21,7 @@ test: TESTFLAGS += -race -v
 test: unit-tests
 
 .PHONY: unit-tests
-unit-tests:
+unit-tests: build
 	@echo "Performing unit test step..."
 	@go test -run $(TESTS) $(PKG) $(TESTFLAGS)
 	@echo "All unit tests passed"
