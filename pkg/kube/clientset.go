@@ -1,6 +1,7 @@
 package kube
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 
@@ -18,7 +19,7 @@ func NewForConfig(kubeconfigFilepath string) (*Client, error) {
 	if kubeconfigFilepath == "" {
 		home, err := os.UserHomeDir()
 		if err != nil {
-			panic(err.Error())
+			return nil, errors.New("could not find kubernetes config file: " + err.Error())
 		}
 		kubeconfigFilepath = filepath.Join(home, ".kube", "config")
 	}
@@ -26,13 +27,13 @@ func NewForConfig(kubeconfigFilepath string) (*Client, error) {
 	// use the current context in kubeconfigFilepath
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigFilepath)
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
 
 	// create the clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
 	return &Client{clientset}, nil
 }

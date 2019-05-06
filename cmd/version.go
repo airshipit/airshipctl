@@ -23,10 +23,17 @@ func NewVersionCommand(out io.Writer, client *kube.Client) *cobra.Command {
 		Short: "Show the version number of airshipadm and its underlying tools",
 		Long:  versionLong,
 		Run: func(cmd *cobra.Command, args []string) {
+			clientV := clientVersion()
+			kubeV, err := kubeVersion(client)
+			if err != nil {
+				fmt.Fprintf(out, "Could not get kubernetes version")
+				return
+			}
+
 			w := tabwriter.NewWriter(out, 0, 0, 1, ' ', 0)
-			fmt.Fprintf(w, "%s:\t%s\n", "client", clientVersion())
-			fmt.Fprintf(w, "%s:\t%s\n", "kubernetes server", kubeVersion(client))
-			w.Flush()
+			defer w.Flush()
+			fmt.Fprintf(w, "%s:\t%s\n", "client", clientV)
+			fmt.Fprintf(w, "%s:\t%s\n", "kubernetes server", kubeV)
 		},
 	}
 	return versionCmd
@@ -37,11 +44,10 @@ func clientVersion() string {
 	return "v0.1.0"
 }
 
-func kubeVersion(client *kube.Client) string {
+func kubeVersion(client *kube.Client) (string, error) {
 	version, err := client.Discovery().ServerVersion()
-	// TODO(howell): Remove this panic
 	if err != nil {
-		panic(err.Error())
+		return "", err
 	}
-	return version.String()
+	return version.String(), nil
 }

@@ -30,7 +30,6 @@ type CmdTest struct {
 
 func RunCmdTests(t *testing.T, tests []CmdTest) {
 	t.Helper()
-
 	for _, test := range tests {
 		cmdOutput := executeCmd(t, test.Command)
 		if *shouldUpdateGolden {
@@ -46,7 +45,11 @@ func executeCmd(t *testing.T, command string) []byte {
 	client := &kube.Client{Interface: fake.NewSimpleClientset()}
 	// TODO(howell): switch to shellwords (or similar)
 	args := strings.Fields(command)
-	rootCmd := cmd.NewRootCmd(&actual, client, args)
+	rootCmd, err := cmd.NewRootCmd(&actual, client, args)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
 	rootCmd.SetArgs(args)
 
 	if err := rootCmd.Execute(); err != nil {

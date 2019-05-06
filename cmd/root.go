@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -15,7 +16,7 @@ var settings environment.AirshipADMSettings
 
 // NewRootCmd creates the root `airshipadm` command. All other commands are
 // subcommands branching from this one
-func NewRootCmd(out io.Writer, client *kube.Client, args []string) *cobra.Command {
+func NewRootCmd(out io.Writer, client *kube.Client, args []string) (*cobra.Command, error) {
 	rootCmd := &cobra.Command{
 		Use:   "airshipadm",
 		Short: "airshipadm is a unified entrypoint to various airship components",
@@ -25,9 +26,8 @@ func NewRootCmd(out io.Writer, client *kube.Client, args []string) *cobra.Comman
 	// Settings flags - This section should probably be moved to pkg/environment
 	rootCmd.PersistentFlags().StringVar(&settings.KubeConfigFilePath, "kubeconfig", "", "path to kubeconfig")
 	rootCmd.PersistentFlags().BoolVar(&settings.Debug, "debug", false, "enable verbose output")
-	// TODO(howell): Remove this panic
 	if err := rootCmd.PersistentFlags().Parse(args); err != nil {
-		panic(err.Error())
+		return nil, errors.New("could not parse flags: " + err.Error())
 	}
 
 	log.Init(&settings, out)
@@ -36,21 +36,21 @@ func NewRootCmd(out io.Writer, client *kube.Client, args []string) *cobra.Comman
 
 	// Compound commands
 	rootCmd.AddCommand(NewWorkflowCommand())
-
-	return rootCmd
+	return rootCmd, nil
 }
 
 // Execute runs the base airshipadm command
 func Execute(out io.Writer) {
-	// TODO(howell): Remove this panic
 	client, err := kube.NewForConfig(settings.KubeConfigFilePath)
-	if err != nil {
-		panic(err.Error())
-	}
+	osExitIfError(out, err)
+	rootCmd, err := NewRootCmd(out, client, os.Args[1:])
+	osExitIfError(out, err)
+	osExitIfError(out, rootCmd.Execute())
+}
 
-	rootCmd := NewRootCmd(out, client, os.Args[1:])
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+func osExitIfError(out io.Writer, err error) {
+	if err != nil {
+		fmt.Fprintln(out, err)
 		os.Exit(1)
 	}
 }
