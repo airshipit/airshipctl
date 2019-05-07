@@ -45,6 +45,9 @@ func clientVersion() string {
 }
 
 func kubeVersion(client *kube.Client) (string, error) {
+	if client == nil {
+		return "could not connect to a kubernetes cluster", nil
+	}
 	version, err := client.Discovery().ServerVersion()
 	if err != nil {
 		return "", err

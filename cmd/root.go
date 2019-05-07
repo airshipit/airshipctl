@@ -41,8 +41,9 @@ func NewRootCmd(out io.Writer, client *kube.Client, args []string) (*cobra.Comma
 
 // Execute runs the base airshipctl command
 func Execute(out io.Writer) {
-	client, err := kube.NewForConfig(settings.KubeConfigFilePath)
-	osExitIfError(out, err)
+	// TODO(howell): Fix this unused error
+	client, _ := kube.NewForConfig(settings.KubeConfigFilePath)
+
 	rootCmd, err := NewRootCmd(out, client, os.Args[1:])
 	osExitIfError(out, err)
 	osExitIfError(out, rootCmd.Execute())
