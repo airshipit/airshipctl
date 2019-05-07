@@ -4,13 +4,13 @@ import (
 	"io"
 	"log"
 
-	"github.com/ian-howell/airshipadm/pkg/environment"
+	"github.com/ian-howell/airshipctl/pkg/environment"
 )
 
 var debug = false
 
 // Init initializes settings related to logging
-func Init(settings *environment.AirshipADMSettings, out io.Writer) {
+func Init(settings *environment.AirshipCTLSettings, out io.Writer) {
 	debug = settings.Debug
 	log.SetOutput(out)
 }

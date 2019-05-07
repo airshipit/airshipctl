@@ -8,7 +8,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/ian-howell/airshipadm/pkg/util"
+	"github.com/ian-howell/airshipctl/pkg/util"
 )
 
 // Client is a device which communicates with the Kubernetes API

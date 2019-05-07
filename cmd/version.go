@@ -7,20 +7,20 @@ import (
 
 	"github.com/spf13/cobra"
 
-	kube "github.com/ian-howell/airshipadm/pkg/kube"
+	kube "github.com/ian-howell/airshipctl/pkg/kube"
 )
 
-const versionLong = `Show the versions for the airshipadm tool and its components.
+const versionLong = `Show the versions for the airshipctl tool and its components.
 This includes the following components, in order:
-  * airshipadm client
+  * airshipctl client
   * kubernetes cluster
 `
 
-// NewVersionCommand prints out the versions of airshipadm and its underlying tools
+// NewVersionCommand prints out the versions of airshipctl and its underlying tools
 func NewVersionCommand(out io.Writer, client *kube.Client) *cobra.Command {
 	versionCmd := &cobra.Command{
 		Use:   "version",
-		Short: "Show the version number of airshipadm and its underlying tools",
+		Short: "Show the version number of airshipctl and its underlying tools",
 		Long:  versionLong,
 		Run: func(cmd *cobra.Command, args []string) {
 			clientV := clientVersion()

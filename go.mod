@@ -1,4 +1,4 @@
-module github.com/ian-howell/airshipadm
+module github.com/ian-howell/airshipctl
 
 go 1.12
 

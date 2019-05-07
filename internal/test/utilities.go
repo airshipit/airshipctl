@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ian-howell/airshipadm/cmd"
-	"github.com/ian-howell/airshipadm/pkg/kube"
+	"github.com/ian-howell/airshipctl/cmd"
+	"github.com/ian-howell/airshipctl/pkg/kube"
 	"k8s.io/client-go/kubernetes/fake"
 )
 

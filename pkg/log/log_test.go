@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ian-howell/airshipadm/pkg/environment"
-	"github.com/ian-howell/airshipadm/pkg/log"
+	"github.com/ian-howell/airshipctl/pkg/environment"
+	"github.com/ian-howell/airshipctl/pkg/log"
 )
 
 const notEqualFmt = `Output does not match expected
@@ -14,7 +14,7 @@ GOT:      %v
 Expected: %v`
 
 func TestLoggingWithoutDebug(t *testing.T) {
-	settings := environment.AirshipADMSettings{
+	settings := environment.AirshipCTLSettings{
 		Debug: false,
 	}
 
@@ -55,7 +55,7 @@ func TestLoggingWithoutDebug(t *testing.T) {
 }
 
 func TestLoggingWithDebug(t *testing.T) {
-	settings := environment.AirshipADMSettings{
+	settings := environment.AirshipCTLSettings{
 		Debug: true,
 	}
 

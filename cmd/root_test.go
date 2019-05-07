@@ -3,7 +3,7 @@ package cmd_test
 import (
 	"testing"
 
-	"github.com/ian-howell/airshipadm/internal/test"
+	"github.com/ian-howell/airshipctl/internal/test"
 )
 
 func TestRoot(t *testing.T) {

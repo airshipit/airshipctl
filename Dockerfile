@@ -1,7 +1,7 @@
 FROM golang:1.12
 
-COPY . /go/airshipadm
+COPY . /go/airshipctl
 
-WORKDIR /go/airshipadm
+WORKDIR /go/airshipctl
 
-CMD go install && airshipadm version
+CMD go install && airshipctl version

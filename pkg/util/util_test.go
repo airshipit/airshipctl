@@ -5,11 +5,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ian-howell/airshipadm/pkg/util"
+	"github.com/ian-howell/airshipctl/pkg/util"
 )
 
 func TestIsReadable(t *testing.T) {
-	file, err := ioutil.TempFile(os.TempDir(), "airshipadm")
+	file, err := ioutil.TempFile(os.TempDir(), "airshipctl")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err.Error())
 	}

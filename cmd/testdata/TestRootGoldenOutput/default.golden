@@ -1,18 +1,18 @@
-airshipadm is a unified entrypoint to various airship components
+airshipctl is a unified entrypoint to various airship components
 
 Usage:
-  airshipadm [command]
+  airshipctl [command]
 
 Available Commands:
   help        Help about any command
-  version     Show the version number of airshipadm and its underlying tools
+  version     Show the version number of airshipctl and its underlying tools
 
 Flags:
       --debug               enable verbose output
-  -h, --help                help for airshipadm
+  -h, --help                help for airshipctl
       --kubeconfig string   path to kubeconfig
 
 Additional help topics:
-  airshipadm workflow access to workflows
+  airshipctl workflow access to workflows
 
-Use "airshipadm [command] --help" for more information about a command.
+Use "airshipctl [command] --help" for more information about a command.

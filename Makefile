@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 BINDIR         := bin
-EXECUTABLE_CLI := airshipadm
+EXECUTABLE_CLI := airshipctl
 
 SCRIPTS_DIR    := scripts
 
@@ -58,6 +58,6 @@ docs:
 
 .PHONY: update-golden
 update-golden: TESTFLAGS += -update -v
-update-golden: PKG = github.com/ian-howell/airshipadm/cmd
+update-golden: PKG = github.com/ian-howell/airshipctl/cmd
 update-golden:
 	@go test $(PKG) $(TESTFLAGS)

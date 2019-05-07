@@ -1,1 +1,1 @@
-# airshipadm
+# airshipctl

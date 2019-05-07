@@ -6,20 +6,20 @@ import (
 	"io"
 	"os"
 
-	"github.com/ian-howell/airshipadm/pkg/environment"
-	"github.com/ian-howell/airshipadm/pkg/kube"
-	"github.com/ian-howell/airshipadm/pkg/log"
+	"github.com/ian-howell/airshipctl/pkg/environment"
+	"github.com/ian-howell/airshipctl/pkg/kube"
+	"github.com/ian-howell/airshipctl/pkg/log"
 	"github.com/spf13/cobra"
 )
 
-var settings environment.AirshipADMSettings
+var settings environment.AirshipCTLSettings
 
-// NewRootCmd creates the root `airshipadm` command. All other commands are
+// NewRootCmd creates the root `airshipctl` command. All other commands are
 // subcommands branching from this one
 func NewRootCmd(out io.Writer, client *kube.Client, args []string) (*cobra.Command, error) {
 	rootCmd := &cobra.Command{
-		Use:   "airshipadm",
-		Short: "airshipadm is a unified entrypoint to various airship components",
+		Use:   "airshipctl",
+		Short: "airshipctl is a unified entrypoint to various airship components",
 	}
 	rootCmd.SetOutput(out)
 
@@ -39,7 +39,7 @@ func NewRootCmd(out io.Writer, client *kube.Client, args []string) (*cobra.Comma
 	return rootCmd, nil
 }
 
-// Execute runs the base airshipadm command
+// Execute runs the base airshipctl command
 func Execute(out io.Writer) {
 	client, err := kube.NewForConfig(settings.KubeConfigFilePath)
 	osExitIfError(out, err)
