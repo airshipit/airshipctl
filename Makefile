@@ -1,13 +1,22 @@
+SHELL := /bin/bash
+
 BINDIR         := bin
 EXECUTABLE_CLI := airshipadm
+
+SCRIPTS_DIR    := scripts
 
 # linting
 LINTER_CMD     := "github.com/golangci/golangci-lint/cmd/golangci-lint" run
 ADDTL_LINTERS  := goconst,gofmt,lll,unparam
 
 # go options
-PKG        := ./...
-TESTS      := .
+PKG          := ./...
+TESTS        := .
+
+# coverage
+COVER        := $(SCRIPTS_DIR)/coverage_test.sh
+COVER_FILE   := cover.out
+MIN_COVERAGE := 70
 
 
 .PHONY: build
@@ -19,12 +28,18 @@ test: build
 test: lint
 test: TESTFLAGS += -race -v
 test: unit-tests
+test: cover
 
 .PHONY: unit-tests
 unit-tests: build
 	@echo "Performing unit test step..."
-	@go test -run $(TESTS) $(PKG) $(TESTFLAGS)
+	@go test -run $(TESTS) $(PKG) $(TESTFLAGS) -coverprofile=$(COVER_FILE)
 	@echo "All unit tests passed"
+
+.PHONY: cover
+cover: unit-tests
+	@./$(COVER) $(COVER_FILE) $(MIN_COVERAGE)
+
 
 .PHONY: lint
 lint:
@@ -35,6 +50,7 @@ lint:
 .PHONY: clean
 clean:
 	@rm -fr $(BINDIR)
+	@rm -fr $(COVER_FILE)
 
 .PHONY: docs
 docs:
