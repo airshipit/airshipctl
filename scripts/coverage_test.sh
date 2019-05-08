@@ -16,4 +16,4 @@ if [ "$#" -ne 2 ]; then
   exit 1
 fi
 
-check_coverage $1 $2
+check_coverage "$1" "$2"
