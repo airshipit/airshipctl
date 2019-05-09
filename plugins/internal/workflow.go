@@ -1,11 +1,9 @@
-package cmd
+package main
 
 import (
 	"fmt"
 	"io"
 	"text/tabwriter"
-
-	"github.com/ian-howell/airshipctl/pkg/log"
 
 	"github.com/argoproj/argo/pkg/apis/workflow/v1alpha1"
 	"github.com/spf13/cobra"
@@ -15,11 +13,23 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-func NewWorkflowListCommand(out io.Writer) *cobra.Command {
+func NewCommand(out io.Writer, configPath string) *cobra.Command {
+	workflowRootCmd := &cobra.Command{
+		Use:     "workflow",
+		Short:   "access to workflows",
+		Aliases: []string{"workflows", "wf"},
+	}
 
-	config, err := clientcmd.BuildConfigFromFlags("", settings.KubeConfigFilePath)
+	workflowRootCmd.AddCommand(NewWorkflowListCommand(out, configPath))
+
+	return workflowRootCmd
+}
+
+func NewWorkflowListCommand(out io.Writer, configPath string) *cobra.Command {
+
+	config, err := clientcmd.BuildConfigFromFlags("", configPath)
 	if err != nil {
-		log.Fatal(err.Error())
+		panic(err.Error())
 	}
 
 	v1alpha1.AddToScheme(scheme.Scheme)
@@ -53,7 +63,7 @@ func NewWorkflowListCommand(out io.Writer) *cobra.Command {
 			w := tabwriter.NewWriter(out, 0, 0, 5, ' ', 0)
 			defer w.Flush()
 			fmt.Fprintf(w, "%s\t%s\n", "NAME", "PHASE")
-			for _, wf := range(wflist.Items) {
+			for _, wf := range wflist.Items {
 				fmt.Fprintf(w, "%s\t%s\n", wf.Name, wf.Status.Phase)
 			}
 		},

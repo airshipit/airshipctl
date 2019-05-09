@@ -5,6 +5,10 @@ EXECUTABLE_CLI := airshipctl
 
 SCRIPTS_DIR    := scripts
 
+PLUGIN_DIR     := plugins
+PLUGIN_SOURCES := $(wildcard $(PLUGIN_DIR)/*/*.go)
+PLUGIN_OBJECTS := $(PLUGIN_SOURCES:%.go=%.so)
+
 # linting
 LINTER_CMD     := "github.com/golangci/golangci-lint/cmd/golangci-lint" run
 ADDTL_LINTERS  := goconst,gofmt,lll,unparam
@@ -61,3 +65,9 @@ update-golden: TESTFLAGS += -update -v
 update-golden: PKG = github.com/ian-howell/airshipctl/cmd
 update-golden:
 	@go test $(PKG) $(TESTFLAGS)
+
+.PHONY: plugin
+plugin: $(PLUGIN_OBJECTS)
+
+%.so: %.go
+	@go build -buildmode=plugin -o $@ $<

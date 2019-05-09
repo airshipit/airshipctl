@@ -9,6 +9,8 @@ import (
 	"github.com/ian-howell/airshipctl/pkg/environment"
 	"github.com/ian-howell/airshipctl/pkg/kube"
 	"github.com/ian-howell/airshipctl/pkg/log"
+	"github.com/ian-howell/airshipctl/pkg/plugin"
+
 	"github.com/spf13/cobra"
 )
 
@@ -34,8 +36,11 @@ func NewRootCmd(out io.Writer, client *kube.Client, args []string) (*cobra.Comma
 
 	rootCmd.AddCommand(NewVersionCommand(out, client))
 
-	// Compound commands
-	rootCmd.AddCommand(NewWorkflowCommand(out))
+	workflowPlugin := "plugins/internal/workflow.so"
+	if _, err := os.Stat(workflowPlugin); err == nil {
+		rootCmd.AddCommand(plugin.CreateCommandFromPlugin(workflowPlugin, out, settings.KubeConfigFilePath))
+	}
+
 	return rootCmd, nil
 }
 
