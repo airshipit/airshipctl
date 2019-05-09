@@ -35,7 +35,7 @@ func NewRootCmd(out io.Writer, client *kube.Client, args []string) (*cobra.Comma
 	rootCmd.AddCommand(NewVersionCommand(out, client))
 
 	// Compound commands
-	rootCmd.AddCommand(NewWorkflowCommand())
+	rootCmd.AddCommand(NewWorkflowCommand(out))
 	return rootCmd, nil
 }
 
