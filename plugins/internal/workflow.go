@@ -13,46 +13,55 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-func NewCommand(out io.Writer, configPath string) *cobra.Command {
+//nolint:unused
+var kubeConfigFilePath string
+
+//nolint:deadcode,unused
+func NewCommand(out io.Writer, args []string) *cobra.Command {
 	workflowRootCmd := &cobra.Command{
 		Use:     "workflow",
 		Short:   "access to workflows",
 		Aliases: []string{"workflows", "wf"},
 	}
 
-	workflowRootCmd.AddCommand(NewWorkflowListCommand(out, configPath))
+	workflowRootCmd.PersistentFlags().StringVar(&kubeConfigFilePath, "kubeconfig", "", "path to kubeconfig")
+	workflowRootCmd.AddCommand(NewWorkflowListCommand(out, args))
 
 	return workflowRootCmd
 }
 
-func NewWorkflowListCommand(out io.Writer, configPath string) *cobra.Command {
+//nolint:unused
+func NewWorkflowListCommand(out io.Writer, args []string) *cobra.Command {
 
-	config, err := clientcmd.BuildConfigFromFlags("", configPath)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	v1alpha1.AddToScheme(scheme.Scheme)
-
-	crdConfig := *config
-	crdConfig.ContentConfig.GroupVersion = &v1alpha1.SchemeGroupVersion
-	crdConfig.APIPath = "/apis"
-	crdConfig.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
-	crdConfig.UserAgent = rest.DefaultKubernetesUserAgent()
-
-	exampleRestClient, err := rest.UnversionedRESTClientFor(&crdConfig)
-	if err != nil {
-		panic(err)
-	}
+	// TODO(howell): This is only used to appease the linter. It will be used later
+	_ = args
 
 	workflowRootCmd := &cobra.Command{
 		Use:     "list",
 		Short:   "list workflows",
 		Aliases: []string{"ls"},
 		Run: func(cmd *cobra.Command, args []string) {
-			wflist := v1alpha1.WorkflowList{}
+			if kubeConfigFilePath == "" {
+				kubeConfigFilePath = clientcmd.RecommendedHomeFile
+			}
+			config, err := clientcmd.BuildConfigFromFlags("", kubeConfigFilePath)
+			if err != nil {
+				panic(err.Error())
+			}
 
-			err := exampleRestClient.
+			crdConfig := *config
+			crdConfig.ContentConfig.GroupVersion = &v1alpha1.SchemeGroupVersion
+			crdConfig.APIPath = "/apis"
+			crdConfig.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
+			crdConfig.UserAgent = rest.DefaultKubernetesUserAgent()
+
+			exampleRestClient, err := rest.UnversionedRESTClientFor(&crdConfig)
+			if err != nil {
+				panic(err)
+			}
+
+			wflist := v1alpha1.WorkflowList{}
+			err = exampleRestClient.
 				Get().
 				Resource("workflows").
 				Do().

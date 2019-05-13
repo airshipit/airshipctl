@@ -1,2 +1,1 @@
-client:            v0.1.0
-kubernetes server: v0.0.0-master+$Format:%h$
+airshipctl: v0.1.0
