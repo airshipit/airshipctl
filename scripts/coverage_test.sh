@@ -8,6 +8,8 @@ check_coverage() {
   if (( "${coverage_int}" < "${MIN_COVERAGE}" )) ; then
     echo "Coverage is at ${coverage_float}, but the required coverage is ${MIN_COVERAGE}"
     exit 1
+  else
+    echo "Overall coverage: ${coverage_float} of statements"
   fi
 }
 
