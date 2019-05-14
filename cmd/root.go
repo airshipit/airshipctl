@@ -5,15 +5,19 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/ian-howell/airshipctl/pkg/environment"
 	"github.com/ian-howell/airshipctl/pkg/log"
 	"github.com/ian-howell/airshipctl/pkg/plugin"
+	"github.com/ian-howell/airshipctl/pkg/util"
 
 	"github.com/spf13/cobra"
 )
 
 var settings environment.AirshipCTLSettings
+
+const defaultPluginDir = "_plugins/bin"
 
 // NewRootCmd creates the root `airshipctl` command. All other commands are
 // subcommands branching from this one
@@ -29,13 +33,15 @@ func NewRootCmd(out io.Writer, args []string) (*cobra.Command, error) {
 
 	rootCmd.AddCommand(NewVersionCommand(out))
 
-	workflowPlugin := "plugins/internal/workflow.so"
-	if _, err := os.Stat(workflowPlugin); err == nil {
-		rootCmd.AddCommand(plugin.CreateCommandFromPlugin(workflowPlugin, out, args))
-	}
-
-	if err := rootCmd.PersistentFlags().Parse(args); err != nil {
-		return nil, errors.New("could not parse flags: " + err.Error())
+	if _, err := os.Stat(defaultPluginDir); err == nil {
+		pluginFiles, err := util.ReadDir(defaultPluginDir)
+		if err != nil {
+			return nil, errors.New("could not read plugins: " + err.Error())
+		}
+		for _, pluginFile := range pluginFiles {
+			pathToPlugin := filepath.Join(defaultPluginDir, pluginFile.Name())
+			rootCmd.AddCommand(plugin.CreateCommandFromPlugin(pathToPlugin, out, args))
+		}
 	}
 
 	log.Init(&settings, out)

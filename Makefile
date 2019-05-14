@@ -5,9 +5,10 @@ EXECUTABLE_CLI := airshipctl
 
 SCRIPTS_DIR    := scripts
 
-PLUGIN_DIR     := plugins
-PLUGIN_SOURCES := $(wildcard $(PLUGIN_DIR)/*/*.go)
-PLUGIN_OBJECTS := $(PLUGIN_SOURCES:%.go=%.so)
+PLUGIN_DIR     := _plugins
+PLUGIN_BIN := $(PLUGIN_DIR)/bin
+PLUGIN_INT := $(patsubst $(PLUGIN_DIR)/internal/%,$(PLUGIN_BIN)/%.so,$(wildcard $(PLUGIN_DIR)/internal/*))
+PLUGIN_EXT := $(wildcard $(PLUGIN_DIR)/external/*)
 
 # linting
 LINTER_CMD     := "github.com/golangci/golangci-lint/cmd/golangci-lint" run
@@ -56,6 +57,10 @@ clean:
 	@rm -fr $(BINDIR)
 	@rm -fr $(COVER_FILE)
 
+.PHONY: plugin-clean
+plugin-clean:
+	@rm -fr $(PLUGIN_BIN)
+
 .PHONY: docs
 docs:
 	@echo "TODO"
@@ -67,7 +72,8 @@ update-golden:
 	@go test $(PKG) $(TESTFLAGS)
 
 .PHONY: plugin
-plugin: $(PLUGIN_OBJECTS)
+plugin: $(PLUGIN_INT)
+	@for plugin in $(PLUGIN_EXT); do $(MAKE) -C $${plugin}; done
 
-%.so: %.go
-	@go build -buildmode=plugin -o $@ $<
+$(PLUGIN_BIN)/%.so: $(PLUGIN_DIR)/*/%/*.go
+	@go build -buildmode=plugin -o $@ $^
