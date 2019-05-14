@@ -21,7 +21,7 @@ const defaultPluginDir = "_plugins/bin"
 
 // NewRootCmd creates the root `airshipctl` command. All other commands are
 // subcommands branching from this one
-func NewRootCmd(out io.Writer, args []string) (*cobra.Command, error) {
+func NewRootCmd(out io.Writer, pluginDir string, args []string) (*cobra.Command, error) {
 	rootCmd := &cobra.Command{
 		Use:   "airshipctl",
 		Short: "airshipctl is a unified entrypoint to various airship components",
@@ -33,14 +33,19 @@ func NewRootCmd(out io.Writer, args []string) (*cobra.Command, error) {
 
 	rootCmd.AddCommand(NewVersionCommand(out))
 
-	if _, err := os.Stat(defaultPluginDir); err == nil {
-		pluginFiles, err := util.ReadDir(defaultPluginDir)
+	if _, err := os.Stat(pluginDir); err == nil {
+		pluginFiles, err := util.ReadDir(pluginDir)
 		if err != nil {
 			return nil, errors.New("could not read plugins: " + err.Error())
 		}
 		for _, pluginFile := range pluginFiles {
-			pathToPlugin := filepath.Join(defaultPluginDir, pluginFile.Name())
-			rootCmd.AddCommand(plugin.CreateCommandFromPlugin(pathToPlugin, out, args))
+			pathToPlugin := filepath.Join(pluginDir, pluginFile.Name())
+			newCommand, err := plugin.CreateCommandFromPlugin(pathToPlugin, out, args)
+			if err != nil {
+				log.Debugf("Could not load plugin from %s: %s\n", pathToPlugin, err.Error())
+			} else {
+				rootCmd.AddCommand(newCommand)
+			}
 		}
 	}
 
@@ -51,7 +56,7 @@ func NewRootCmd(out io.Writer, args []string) (*cobra.Command, error) {
 
 // Execute runs the base airshipctl command
 func Execute(out io.Writer) {
-	rootCmd, err := NewRootCmd(out, os.Args[1:])
+	rootCmd, err := NewRootCmd(out, defaultPluginDir, os.Args[1:])
 	osExitIfError(out, err)
 	osExitIfError(out, rootCmd.Execute())
 }
