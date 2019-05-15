@@ -5,10 +5,11 @@ EXECUTABLE_CLI := airshipctl
 
 SCRIPTS_DIR    := scripts
 
-PLUGIN_DIR     := _plugins
+PLUGIN_DIR := _plugins
 PLUGIN_BIN := $(PLUGIN_DIR)/bin
 PLUGIN_INT := $(patsubst $(PLUGIN_DIR)/internal/%,$(PLUGIN_BIN)/%.so,$(wildcard $(PLUGIN_DIR)/internal/*))
 PLUGIN_EXT := $(wildcard $(PLUGIN_DIR)/external/*)
+BINDATA    := "github.com/shuLhan/go-bindata/cmd/go-bindata"
 
 # linting
 LINTER_CMD     := "github.com/golangci/golangci-lint/cmd/golangci-lint" run
@@ -25,7 +26,7 @@ MIN_COVERAGE := 70
 
 
 .PHONY: build
-build:
+build: plugin
 	@go build -o $(BINDIR)/$(EXECUTABLE_CLI)
 
 .PHONY: test
@@ -74,6 +75,7 @@ update-golden:
 .PHONY: plugin
 plugin: $(PLUGIN_INT)
 	@for plugin in $(PLUGIN_EXT); do $(MAKE) -C $${plugin}; done
+	@go run $(BINDATA) $(PLUGIN_BIN)
 
 $(PLUGIN_BIN)/%.so: $(PLUGIN_DIR)/*/%/*.go
 	@go build -buildmode=plugin -o $@ $^

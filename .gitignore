@@ -1,3 +1,6 @@
+# Packed binaries from github.com/shuLhan/go-bindata
+bindata.go
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
