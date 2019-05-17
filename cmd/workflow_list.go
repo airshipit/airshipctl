@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"fmt"
@@ -13,7 +13,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-//nolint:unused
 func NewWorkflowListCommand(out io.Writer, args []string) *cobra.Command {
 
 	// TODO(howell): This is only used to appease the linter. It will be used later

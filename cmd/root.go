@@ -1,27 +1,21 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 
 	"github.com/ian-howell/airshipctl/pkg/environment"
 	"github.com/ian-howell/airshipctl/pkg/log"
-	"github.com/ian-howell/airshipctl/pkg/plugin"
-	"github.com/ian-howell/airshipctl/pkg/util"
 
 	"github.com/spf13/cobra"
 )
 
 var settings environment.AirshipCTLSettings
 
-const defaultPluginDir = "_plugins/bin"
-
 // NewRootCmd creates the root `airshipctl` command. All other commands are
 // subcommands branching from this one
-func NewRootCmd(out io.Writer, pluginDir string, args []string) (*cobra.Command, error) {
+func NewRootCmd(out io.Writer, args []string) (*cobra.Command, error) {
 	rootCmd := &cobra.Command{
 		Use:   "airshipctl",
 		Short: "airshipctl is a unified entrypoint to various airship components",
@@ -33,21 +27,7 @@ func NewRootCmd(out io.Writer, pluginDir string, args []string) (*cobra.Command,
 
 	rootCmd.AddCommand(NewVersionCommand(out))
 
-	if _, err := os.Stat(pluginDir); err == nil {
-		pluginFiles, err := util.ReadDir(pluginDir)
-		if err != nil {
-			return nil, errors.New("could not read plugins: " + err.Error())
-		}
-		for _, pluginFile := range pluginFiles {
-			pathToPlugin := filepath.Join(pluginDir, pluginFile.Name())
-			newCommand, err := plugin.CreateCommandFromPlugin(pathToPlugin, out, args)
-			if err != nil {
-				log.Debugf("Could not load plugin from %s: %s\n", pathToPlugin, err.Error())
-			} else {
-				rootCmd.AddCommand(newCommand)
-			}
-		}
-	}
+	loadPluginCommands(rootCmd, out, args)
 
 	log.Init(&settings, out)
 
@@ -56,14 +36,25 @@ func NewRootCmd(out io.Writer, pluginDir string, args []string) (*cobra.Command,
 
 // Execute runs the base airshipctl command
 func Execute(out io.Writer) {
-	rootCmd, err := NewRootCmd(out, defaultPluginDir, os.Args[1:])
-	osExitIfError(out, err)
-	osExitIfError(out, rootCmd.Execute())
-}
-
-func osExitIfError(out io.Writer, err error) {
+	rootCmd, err := NewRootCmd(out, os.Args[1:])
 	if err != nil {
 		fmt.Fprintln(out, err)
 		os.Exit(1)
+	}
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintln(out, err)
+		os.Exit(1)
+	}
+}
+
+// loadPluginCommands finds all of the plugins in the builtinPlugins and
+// externalPlugins datastructures, and loads them as subcommands to cmd
+func loadPluginCommands(cmd *cobra.Command, out io.Writer, args []string) {
+	for _, subcmd := range builtinPlugins {
+		cmd.AddCommand(subcmd(out, args))
+	}
+
+	for _, subcmd := range externalPlugins {
+		cmd.AddCommand(subcmd(out, args))
 	}
 }

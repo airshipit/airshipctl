@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"io"
@@ -6,11 +6,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-//nolint:unused
 var kubeConfigFilePath string
 
-//nolint:deadcode,unused
-func NewCommand(out io.Writer, args []string) *cobra.Command {
+func NewWorkflowCommand(out io.Writer, args []string) *cobra.Command {
 	workflowRootCmd := &cobra.Command{
 		Use:     "workflow",
 		Short:   "access to workflows",

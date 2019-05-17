@@ -7,8 +7,5 @@ import (
 )
 
 func main() {
-	if err := RestoreAssets("", "_plugins"); err != nil {
-		panic(err.Error())
-	}
 	cmd.Execute(os.Stdout)
 }

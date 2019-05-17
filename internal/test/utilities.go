@@ -42,7 +42,7 @@ func executeCmd(t *testing.T, command string) []byte {
 	var actual bytes.Buffer
 	// TODO(howell): switch to shellwords (or similar)
 	args := strings.Fields(command)
-	rootCmd, err := cmd.NewRootCmd(&actual, "testdata/_plugins/bin", args)
+	rootCmd, err := cmd.NewRootCmd(&actual, args)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
