@@ -5,20 +5,14 @@ import (
 	"io"
 	"text/tabwriter"
 
-	"github.com/argoproj/argo/pkg/apis/workflow/v1alpha1"
+	"github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1"
 	"github.com/spf13/cobra"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
-	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
 // NewWorkflowListCommand is a command for listing argo workflows
 func NewWorkflowListCommand(out io.Writer, args []string) *cobra.Command {
-
-	// TODO(howell): This is only used to appease the linter. It will be used later
-	_ = args
-
 	workflowRootCmd := &cobra.Command{
 		Use:     "list",
 		Short:   "list workflows",
@@ -32,23 +26,12 @@ func NewWorkflowListCommand(out io.Writer, args []string) *cobra.Command {
 				panic(err.Error())
 			}
 
-			crdConfig := *config
-			crdConfig.ContentConfig.GroupVersion = &v1alpha1.SchemeGroupVersion
-			crdConfig.APIPath = "/apis"
-			crdConfig.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
-			crdConfig.UserAgent = rest.DefaultKubernetesUserAgent()
-
-			exampleRestClient, err := rest.UnversionedRESTClientFor(&crdConfig)
+			clientSet, err := v1alpha1.NewForConfig(config)
 			if err != nil {
-				panic(err)
+				panic(err.Error())
 			}
 
-			wflist := v1alpha1.WorkflowList{}
-			err = exampleRestClient.
-				Get().
-				Resource("workflows").
-				Do().
-				Into(&wflist)
+			wflist, err := clientSet.Workflows("default").List(v1.ListOptions{})
 			if err != nil {
 				panic(err.Error())
 			}

@@ -6,7 +6,7 @@ Usage:
 Available Commands:
   help        Help about any command
   version     Show the version number of airshipctl
-  workflow    access to workflows
+  workflow    Access to argo workflows
 
 Flags:
       --debug   enable verbose output
