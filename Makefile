@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-GO_FLAGS       := -a -ldflags '-extldflags "-static"'
+GO_FLAGS       := -ldflags '-extldflags "-static"'
 
 BINDIR         := bin
 EXECUTABLE_CLI := airshipctl
