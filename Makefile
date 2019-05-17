@@ -9,7 +9,7 @@ SCRIPTS_DIR    := scripts
 
 # linting
 LINTER_CMD     := "github.com/golangci/golangci-lint/cmd/golangci-lint" run
-ADDTL_LINTERS  := goconst,gofmt,lll,unparam
+ADDTL_LINTERS  := goconst,gofmt,unparam
 
 # go options
 PKG          := ./...
