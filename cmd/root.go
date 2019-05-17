@@ -5,10 +5,10 @@ import (
 	"io"
 	"os"
 
+	"github.com/spf13/cobra"
+
 	"github.com/ian-howell/airshipctl/pkg/environment"
 	"github.com/ian-howell/airshipctl/pkg/log"
-
-	"github.com/spf13/cobra"
 )
 
 var settings environment.AirshipCTLSettings

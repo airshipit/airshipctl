@@ -4,7 +4,6 @@ Usage:
   airshipctl [command]
 
 Available Commands:
-  example     an example command
   help        Help about any command
   version     Show the version number of airshipctl
   workflow    access to workflows

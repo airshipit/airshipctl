@@ -21,11 +21,13 @@ const (
 	goldenFileSuffix = ".golden"
 )
 
+// CmdTest is a command to be run on the command line as a test
 type CmdTest struct {
 	Name    string
 	Command string
 }
 
+// RunCmdTests checks all of the tests actual output against their expected outputs
 func RunCmdTests(t *testing.T, tests []CmdTest) {
 	t.Helper()
 	for _, test := range tests {

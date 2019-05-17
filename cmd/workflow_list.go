@@ -13,6 +13,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+// NewWorkflowListCommand is a command for listing argo workflows
 func NewWorkflowListCommand(out io.Writer, args []string) *cobra.Command {
 
 	// TODO(howell): This is only used to appease the linter. It will be used later

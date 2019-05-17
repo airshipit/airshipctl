@@ -8,6 +8,7 @@ import (
 
 var kubeConfigFilePath string
 
+// NewWorkflowCommand creates a new command for working with argo workflows
 func NewWorkflowCommand(out io.Writer, args []string) *cobra.Command {
 	workflowRootCmd := &cobra.Command{
 		Use:     "workflow",

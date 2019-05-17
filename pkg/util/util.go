@@ -12,13 +12,3 @@ func IsReadable(path string) error {
 	}
 	return f.Close()
 }
-
-// ReadDir does the same thing as ioutil.ReadDir, but it doesn't sort the files.
-func ReadDir(dirname string) ([]os.FileInfo, error) {
-	f, err := os.Open(dirname)
-	if err != nil {
-		return []os.FileInfo{}, err
-	}
-	defer f.Close()
-	return f.Readdir(-1)
-}

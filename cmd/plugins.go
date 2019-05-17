@@ -3,8 +3,8 @@ package cmd
 import (
 	"io"
 
+	// "github.com/ian-howell/exampleplugin"
 	"github.com/spf13/cobra"
-	"github.com/ian-howell/exampleplugin"
 )
 
 // builtinPlugins are the plugins that are built and maintained by the
@@ -16,5 +16,5 @@ var builtinPlugins = []func(io.Writer, []string) *cobra.Command{
 // externalPlugins are external. The function to create a command should be
 // placed here
 var externalPlugins = []func(io.Writer, []string) *cobra.Command{
-	exampleplugin.NewExampleCommand, // This is an example and shouldn't be enabled in production builds
+	// exampleplugin.NewExampleCommand, // This is an example and shouldn't be enabled in production builds
 }
