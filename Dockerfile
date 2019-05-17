@@ -1,7 +1,5 @@
-FROM golang:1.12
+FROM alpine
 
-COPY . /go/airshipctl
+COPY /bin/airshipctl /bin/airshipctl
 
-WORKDIR /go/airshipctl
-
-CMD go install && airshipctl version
+CMD airshipctl help
