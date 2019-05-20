@@ -31,7 +31,7 @@ func NewWorkflowListCommand(out io.Writer, args []string) *cobra.Command {
 				panic(err.Error())
 			}
 
-			wflist, err := clientSet.Workflows("default").List(v1.ListOptions{})
+			wflist, err := clientSet.Workflows(namespace).List(v1.ListOptions{})
 			if err != nil {
 				panic(err.Error())
 			}
