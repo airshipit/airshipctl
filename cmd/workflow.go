@@ -21,6 +21,8 @@ func NewWorkflowCommand(out io.Writer, args []string) *cobra.Command {
 
 	workflowRootCmd.PersistentFlags().StringVar(&kubeConfigFilePath, "kubeconfig", "", "path to kubeconfig")
 	workflowRootCmd.PersistentFlags().StringVar(&namespace, "namespace", "default", "kubernetes namespace to use for the context of this command")
+
+	workflowRootCmd.AddCommand(NewWorkflowInitCommand(out, args))
 	workflowRootCmd.AddCommand(NewWorkflowListCommand(out, args))
 
 	return workflowRootCmd

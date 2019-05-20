@@ -13,7 +13,7 @@ import (
 
 // NewWorkflowListCommand is a command for listing argo workflows
 func NewWorkflowListCommand(out io.Writer, args []string) *cobra.Command {
-	workflowRootCmd := &cobra.Command{
+	workflowListCmd := &cobra.Command{
 		Use:     "list",
 		Short:   "list workflows",
 		Aliases: []string{"ls"},
@@ -44,5 +44,5 @@ func NewWorkflowListCommand(out io.Writer, args []string) *cobra.Command {
 		},
 	}
 
-	return workflowRootCmd
+	return workflowListCmd
 }
