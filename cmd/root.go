@@ -29,6 +29,8 @@ func NewRootCmd(out io.Writer, args []string) (*cobra.Command, error) {
 
 	loadPluginCommands(rootCmd, out, args)
 
+	rootCmd.PersistentFlags().Parse(args)
+
 	log.Init(&settings, out)
 
 	return rootCmd, nil
