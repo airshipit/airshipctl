@@ -9,7 +9,9 @@ Available Commands:
   workflow    Access to argo workflows
 
 Flags:
-      --debug   enable verbose output
-  -h, --help    help for airshipctl
+      --debug               enable verbose output
+  -h, --help                help for airshipctl
+      --kubeconfig string   path to kubeconfig
+      --namespace string    kubernetes namespace to use for the context of this command (default "default")
 
 Use "airshipctl [command] --help" for more information about a command.
