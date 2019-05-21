@@ -60,6 +60,6 @@ docs:
 
 .PHONY: update-golden
 update-golden: TESTFLAGS += -update -v
-update-golden: PKG = github.com/ian-howell/airshipctl/cmd
+update-golden: PKG = github.com/ian-howell/airshipctl/cmd/...
 update-golden:
 	@go test $(PKG) $(TESTFLAGS)
