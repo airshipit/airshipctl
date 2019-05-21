@@ -5,16 +5,15 @@ import (
 	"io"
 
 	"github.com/spf13/cobra"
+	v1beta2 "k8s.io/api/apps/v1beta2"
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apixv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apixv1beta1client "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
-	v1beta2 "k8s.io/api/apps/v1beta2"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/ian-howell/airshipctl/pkg/environment"
 )
@@ -30,37 +29,22 @@ var (
 type workflowInitCmd struct {
 	out        io.Writer
 	config     *rest.Config
-	kubeclient *kubernetes.Clientset
+	kubeclient kubernetes.Interface
 }
 
 // NewWorkflowInitCommand is a command for bootstrapping a kubernetes cluster with the necessary components for Argo workflows
 func NewWorkflowInitCommand(out io.Writer, settings *environment.AirshipCTLSettings, args []string) *cobra.Command {
 	workflowInit := &workflowInitCmd{
-		out: out,
+		out:        out,
+		config:     settings.KubeConfig,
+		kubeclient: settings.KubeClient,
 	}
 	workflowInitCommand := &cobra.Command{
 		Use:   "init [flags]",
 		Short: "bootstraps the kubernetes cluster with the Workflow CRDs and controller",
 		Run: func(cmd *cobra.Command, args []string) {
-			if settings.KubeConfigFilePath == "" {
-				settings.KubeConfigFilePath = clientcmd.RecommendedHomeFile
-			}
-			config, err := clientcmd.BuildConfigFromFlags("", settings.KubeConfigFilePath)
-			if err != nil {
-				fmt.Fprintf(out, "Could not create kubernetes config: %s\n", err.Error())
-				return
-			}
-			workflowInit.config = config
-
-			kubeclient, err := kubernetes.NewForConfig(config)
-			if err != nil {
-				fmt.Fprintf(out, "Could not create kubernetes clientset: %s\n", err.Error())
-				return
-			}
-			workflowInit.kubeclient = kubeclient
-
 			fmt.Fprintf(out, "Creating namespace \"%s\"\n", argoNamespace)
-			_, err = kubeclient.CoreV1().Namespaces().Create(&v1.Namespace{
+			_, err := workflowInit.kubeclient.CoreV1().Namespaces().Create(&v1.Namespace{
 				ObjectMeta: metav1.ObjectMeta{Name: "argo"},
 			})
 			if err != nil {
@@ -383,13 +367,13 @@ func (wfInit *workflowInitCmd) createArgoClusterRoleBinding() error {
 		ObjectMeta: metav1.ObjectMeta{Name: "argo-binding"},
 		RoleRef: rbacv1.RoleRef{
 			APIGroup: "rbac.authorization.k8s.io",
-			Kind: "ClusterRole",
-			Name: "argo-cluster-role",
+			Kind:     "ClusterRole",
+			Name:     "argo-cluster-role",
 		},
 		Subjects: []rbacv1.Subject{
 			{
-				Kind: "ServiceAccount",
-				Name: "argo",
+				Kind:      "ServiceAccount",
+				Name:      "argo",
 				Namespace: argoNamespace,
 			},
 		},
@@ -401,7 +385,7 @@ func (wfInit *workflowInitCmd) createArgoClusterRoleBinding() error {
 func (wfInit *workflowInitCmd) createArgoConfigMap() error {
 	_, err := wfInit.kubeclient.CoreV1().ConfigMaps(argoNamespace).Create(&v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "workflow-controller-configmap",
+			Name:      "workflow-controller-configmap",
 			Namespace: argoNamespace,
 		},
 	})
@@ -411,7 +395,7 @@ func (wfInit *workflowInitCmd) createArgoConfigMap() error {
 func (wfInit *workflowInitCmd) createArgoDeployment() error {
 	_, err := wfInit.kubeclient.AppsV1beta2().Deployments(argoNamespace).Create(&v1beta2.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "workflow-controller",
+			Name:      "workflow-controller",
 			Namespace: argoNamespace,
 		},
 		Spec: v1beta2.DeploymentSpec{
@@ -436,10 +420,10 @@ func (wfInit *workflowInitCmd) createArgoDeployment() error {
 								"--configmap",
 								"workflow-controller-configmap",
 								"--executor-image",
-								"argoproj/argoexec:v2.2.1",  // TODO(howell): Remove this hardcoded value
+								"argoproj/argoexec:v2.2.1", // TODO(howell): Remove this hardcoded value
 							},
-							Image: "argoproj/argoexec:v2.2.1",  // TODO(howell): Remove this hardcoded value
-							Name: "workflow-controller",
+							Image: "argoproj/argoexec:v2.2.1", // TODO(howell): Remove this hardcoded value
+							Name:  "workflow-controller",
 						},
 					},
 					ServiceAccountName: "argo",

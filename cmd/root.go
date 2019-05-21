@@ -11,18 +11,15 @@ import (
 	"github.com/ian-howell/airshipctl/pkg/log"
 )
 
-
 // NewRootCmd creates the root `airshipctl` command. All other commands are
 // subcommands branching from this one
-func NewRootCmd(out io.Writer, args []string) (*cobra.Command, error) {
+func NewRootCmd(out io.Writer, settings *environment.AirshipCTLSettings, args []string) (*cobra.Command, error) {
 	rootCmd := &cobra.Command{
 		Use:   "airshipctl",
 		Short: "airshipctl is a unified entrypoint to various airship components",
 	}
 	rootCmd.SetOutput(out)
 
-	// Settings flags - This section should probably be moved to pkg/environment
-	settings := &environment.AirshipCTLSettings{}
 	settings.InitFlags(rootCmd)
 
 	rootCmd.AddCommand(NewVersionCommand(out))
@@ -31,15 +28,15 @@ func NewRootCmd(out io.Writer, args []string) (*cobra.Command, error) {
 
 	rootCmd.PersistentFlags().Parse(args)
 
+	settings.InitDefaults()
 	log.Init(settings, out)
-
 
 	return rootCmd, nil
 }
 
 // Execute runs the base airshipctl command
 func Execute(out io.Writer) {
-	rootCmd, err := NewRootCmd(out, os.Args[1:])
+	rootCmd, err := NewRootCmd(out, &environment.AirshipCTLSettings{}, os.Args[1:])
 	if err != nil {
 		fmt.Fprintln(out, err)
 		os.Exit(1)

@@ -8,7 +8,6 @@ import (
 	"github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1"
 	"github.com/spf13/cobra"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/ian-howell/airshipctl/pkg/environment"
 )
@@ -20,15 +19,7 @@ func NewWorkflowListCommand(out io.Writer, settings *environment.AirshipCTLSetti
 		Short:   "list workflows",
 		Aliases: []string{"ls"},
 		Run: func(cmd *cobra.Command, args []string) {
-			if settings.KubeConfigFilePath == "" {
-				settings.KubeConfigFilePath = clientcmd.RecommendedHomeFile
-			}
-			config, err := clientcmd.BuildConfigFromFlags("", settings.KubeConfigFilePath)
-			if err != nil {
-				panic(err.Error())
-			}
-
-			clientSet, err := v1alpha1.NewForConfig(config)
+			clientSet, err := v1alpha1.NewForConfig(settings.KubeConfig)
 			if err != nil {
 				panic(err.Error())
 			}
