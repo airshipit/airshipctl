@@ -27,7 +27,7 @@ build:
 
 .PHONY: test
 test: build
-test: lint
+# test: lint
 test: TESTFLAGS += -race -v
 test: unit-tests
 test: cover
