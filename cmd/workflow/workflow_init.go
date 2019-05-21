@@ -15,6 +15,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/ian-howell/airshipctl/pkg/environment"
 )
 
 const (
@@ -32,7 +34,7 @@ type workflowInitCmd struct {
 }
 
 // NewWorkflowInitCommand is a command for bootstrapping a kubernetes cluster with the necessary components for Argo workflows
-func NewWorkflowInitCommand(out io.Writer, args []string) *cobra.Command {
+func NewWorkflowInitCommand(out io.Writer, settings *environment.AirshipCTLSettings, args []string) *cobra.Command {
 	workflowInit := &workflowInitCmd{
 		out: out,
 	}
@@ -40,10 +42,10 @@ func NewWorkflowInitCommand(out io.Writer, args []string) *cobra.Command {
 		Use:   "init [flags]",
 		Short: "bootstraps the kubernetes cluster with the Workflow CRDs and controller",
 		Run: func(cmd *cobra.Command, args []string) {
-			if kubeConfigFilePath == "" {
-				kubeConfigFilePath = clientcmd.RecommendedHomeFile
+			if settings.KubeConfigFilePath == "" {
+				settings.KubeConfigFilePath = clientcmd.RecommendedHomeFile
 			}
-			config, err := clientcmd.BuildConfigFromFlags("", kubeConfigFilePath)
+			config, err := clientcmd.BuildConfigFromFlags("", settings.KubeConfigFilePath)
 			if err != nil {
 				fmt.Fprintf(out, "Could not create kubernetes config: %s\n", err.Error())
 				return

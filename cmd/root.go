@@ -11,7 +11,6 @@ import (
 	"github.com/ian-howell/airshipctl/pkg/log"
 )
 
-var settings environment.AirshipCTLSettings
 
 // NewRootCmd creates the root `airshipctl` command. All other commands are
 // subcommands branching from this one
@@ -23,15 +22,17 @@ func NewRootCmd(out io.Writer, args []string) (*cobra.Command, error) {
 	rootCmd.SetOutput(out)
 
 	// Settings flags - This section should probably be moved to pkg/environment
-	rootCmd.PersistentFlags().BoolVar(&settings.Debug, "debug", false, "enable verbose output")
+	settings := &environment.AirshipCTLSettings{}
+	settings.InitFlags(rootCmd)
 
 	rootCmd.AddCommand(NewVersionCommand(out))
 
-	loadPluginCommands(rootCmd, out, args)
+	loadPluginCommands(rootCmd, out, settings, args)
 
 	rootCmd.PersistentFlags().Parse(args)
 
-	log.Init(&settings, out)
+	log.Init(settings, out)
+
 
 	return rootCmd, nil
 }
@@ -50,8 +51,8 @@ func Execute(out io.Writer) {
 }
 
 // loadPluginCommands loads all of the plugins as subcommands to cmd
-func loadPluginCommands(cmd *cobra.Command, out io.Writer, args []string) {
+func loadPluginCommands(cmd *cobra.Command, out io.Writer, settings *environment.AirshipCTLSettings, args []string) {
 	for _, subcmd := range pluginCommands {
-		cmd.AddCommand(subcmd(out, args))
+		cmd.AddCommand(subcmd(out, settings, args))
 	}
 }

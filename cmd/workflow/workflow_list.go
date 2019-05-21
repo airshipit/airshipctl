@@ -9,19 +9,21 @@ import (
 	"github.com/spf13/cobra"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/ian-howell/airshipctl/pkg/environment"
 )
 
 // NewWorkflowListCommand is a command for listing argo workflows
-func NewWorkflowListCommand(out io.Writer, args []string) *cobra.Command {
+func NewWorkflowListCommand(out io.Writer, settings *environment.AirshipCTLSettings, args []string) *cobra.Command {
 	workflowListCmd := &cobra.Command{
 		Use:     "list",
 		Short:   "list workflows",
 		Aliases: []string{"ls"},
 		Run: func(cmd *cobra.Command, args []string) {
-			if kubeConfigFilePath == "" {
-				kubeConfigFilePath = clientcmd.RecommendedHomeFile
+			if settings.KubeConfigFilePath == "" {
+				settings.KubeConfigFilePath = clientcmd.RecommendedHomeFile
 			}
-			config, err := clientcmd.BuildConfigFromFlags("", kubeConfigFilePath)
+			config, err := clientcmd.BuildConfigFromFlags("", settings.KubeConfigFilePath)
 			if err != nil {
 				panic(err.Error())
 			}
@@ -31,7 +33,7 @@ func NewWorkflowListCommand(out io.Writer, args []string) *cobra.Command {
 				panic(err.Error())
 			}
 
-			wflist, err := clientSet.Workflows(namespace).List(v1.ListOptions{})
+			wflist, err := clientSet.Workflows(settings.Namespace).List(v1.ListOptions{})
 			if err != nil {
 				panic(err.Error())
 			}
