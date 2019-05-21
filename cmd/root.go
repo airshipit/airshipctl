@@ -47,14 +47,9 @@ func Execute(out io.Writer) {
 	}
 }
 
-// loadPluginCommands finds all of the plugins in the builtinPlugins and
-// externalPlugins datastructures, and loads them as subcommands to cmd
+// loadPluginCommands loads all of the plugins as subcommands to cmd
 func loadPluginCommands(cmd *cobra.Command, out io.Writer, args []string) {
-	for _, subcmd := range builtinPlugins {
-		cmd.AddCommand(subcmd(out, args))
-	}
-
-	for _, subcmd := range externalPlugins {
+	for _, subcmd := range pluginCommands {
 		cmd.AddCommand(subcmd(out, args))
 	}
 }
