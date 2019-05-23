@@ -3,11 +3,11 @@ package workflow
 import (
 	"fmt"
 	"io"
-	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/ian-howell/airshipctl/pkg/util"
 	"github.com/ian-howell/airshipctl/pkg/environment"
 	wfenv "github.com/ian-howell/airshipctl/pkg/workflow/environment"
 )
@@ -29,7 +29,7 @@ func NewWorkflowListCommand(out io.Writer, rootSettings *environment.AirshipCTLS
 			if err != nil {
 				panic(err.Error())
 			}
-			w := tabwriter.NewWriter(out, 0, 0, 5, ' ', 0)
+			w := util.NewTabWriter(out)
 			defer w.Flush()
 			fmt.Fprintf(w, "%s\t%s\n", "NAME", "PHASE")
 			for _, wf := range wflist.Items {
