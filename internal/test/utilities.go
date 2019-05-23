@@ -6,12 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
-
-	"github.com/ian-howell/airshipctl/cmd"
-	"github.com/ian-howell/airshipctl/pkg/environment"
-	"k8s.io/client-go/kubernetes/fake"
 )
 
 // UpdateGolden writes out the golden files with the latest values, rather than failing the test.
@@ -26,41 +21,7 @@ const (
 // CmdTest is a command to be run on the command line as a test
 type CmdTest struct {
 	Name    string
-	Command string
-}
-
-// RunCmdTests checks all of the tests actual output against their expected outputs
-func RunCmdTests(t *testing.T, tests []CmdTest) {
-	t.Helper()
-	for _, test := range tests {
-		cmdOutput := executeCmd(t, test.Command)
-		if *shouldUpdateGolden {
-			updateGolden(t, test, cmdOutput)
-		} else {
-			assertEqualGolden(t, test, cmdOutput)
-		}
-	}
-}
-
-func executeCmd(t *testing.T, command string) []byte {
-	var actual bytes.Buffer
-	settings := &environment.AirshipCTLSettings{
-		KubeClient: fake.NewSimpleClientset(),
-	}
-	// TODO(howell): switch to shellwords (or similar)
-	args := strings.Fields(command)
-	rootCmd, err := cmd.NewRootCmd(&actual, settings, args)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-
-	rootCmd.SetArgs(args)
-
-	if err := rootCmd.Execute(); err != nil {
-		t.Fatalf(err.Error())
-	}
-
-	return actual.Bytes()
+	CmdLine string
 }
 
 func updateGolden(t *testing.T, test CmdTest, actual []byte) {

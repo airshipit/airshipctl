@@ -13,9 +13,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 
-	"github.com/ian-howell/airshipctl/pkg/environment"
+	"github.com/ian-howell/airshipctl/pkg/workflow/environment"
 )
 
 const (
@@ -28,16 +27,16 @@ var (
 
 type workflowInitCmd struct {
 	out        io.Writer
-	config     *rest.Config
 	kubeclient kubernetes.Interface
+	crdclient  apixv1beta1client.ApiextensionsV1beta1Interface
 }
 
 // NewWorkflowInitCommand is a command for bootstrapping a kubernetes cluster with the necessary components for Argo workflows
-func NewWorkflowInitCommand(out io.Writer, settings *environment.AirshipCTLSettings, args []string) *cobra.Command {
+func NewWorkflowInitCommand(out io.Writer, settings *environment.Settings) *cobra.Command {
 	workflowInit := &workflowInitCmd{
 		out:        out,
-		config:     settings.KubeConfig,
 		kubeclient: settings.KubeClient,
+		crdclient:  settings.CRDClient,
 	}
 	workflowInitCommand := &cobra.Command{
 		Use:   "init [flags]",
@@ -160,11 +159,7 @@ func (wfInit *workflowInitCmd) createCustomObjects(manifestPath string) {
 }
 
 func (wfInit *workflowInitCmd) registerDefaultWorkflow() error {
-	apixClient, err := apixv1beta1client.NewForConfig(wfInit.config)
-	if err != nil {
-		return fmt.Errorf("Could not create CRD client: %s", err.Error())
-	}
-
+	apixClient := wfInit.crdclient
 	crds := apixClient.CustomResourceDefinitions()
 	workflowCRD := &apixv1beta1.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
@@ -185,7 +180,7 @@ func (wfInit *workflowInitCmd) registerDefaultWorkflow() error {
 			Scope: apixv1beta1.NamespaceScoped,
 		},
 	}
-	_, err = crds.Create(workflowCRD)
+	_, err := crds.Create(workflowCRD)
 	return err
 }
 
