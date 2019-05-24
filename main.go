@@ -6,23 +6,19 @@ import (
 
 	"github.com/ian-howell/airshipctl/cmd"
 	"github.com/ian-howell/airshipctl/cmd/workflow"
-
-	"github.com/ian-howell/airshipctl/pkg/environment"
 	"github.com/ian-howell/airshipctl/pkg/log"
 )
 
 func main() {
-	rootCmd, err := cmd.NewRootCmd(os.Stdout)
+	rootCmd, settings, err := cmd.NewRootCmd(os.Stdout)
 	if err != nil {
 		fmt.Fprintln(os.Stdout, err)
 		os.Exit(1)
 	}
 
-	settings := &environment.AirshipCTLSettings{}
-	settings.InitFlags(rootCmd)
-
 	rootCmd.AddCommand(workflow.NewWorkflowCommand(os.Stdout, settings))
 
+	// Flags may not be parsed until all subcommands have been added
 	rootCmd.PersistentFlags().Parse(os.Args[1:])
 
 	settings.Init()

@@ -9,7 +9,6 @@ import (
 
 	"github.com/ian-howell/airshipctl/cmd"
 	"github.com/ian-howell/airshipctl/cmd/workflow"
-	"github.com/ian-howell/airshipctl/pkg/environment"
 	"github.com/ian-howell/airshipctl/pkg/workflow/apis/workflow/v1alpha1"
 	argofake "github.com/ian-howell/airshipctl/pkg/workflow/clientset/versioned/fake"
 	wfenv "github.com/ian-howell/airshipctl/pkg/workflow/environment"
@@ -18,12 +17,10 @@ import (
 
 func TestWorkflowList(t *testing.T) {
 	actual := &bytes.Buffer{}
-	rootCmd, err := cmd.NewRootCmd(actual)
+	rootCmd, settings, err := cmd.NewRootCmd(actual)
 	if err != nil {
 		t.Fatalf("Could not create root command: %s", err.Error())
 	}
-	settings := &environment.AirshipCTLSettings{}
-	settings.InitFlags(rootCmd)
 	workflowRoot := workflow.NewWorkflowCommand(actual, settings)
 	workflowRoot.AddCommand(workflow.NewWorkflowListCommand(actual, settings))
 	argoClient := argofake.NewSimpleClientset()
