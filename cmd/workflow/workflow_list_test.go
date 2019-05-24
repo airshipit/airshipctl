@@ -5,38 +5,54 @@ import (
 	"os"
 	"testing"
 
-	argofake "github.com/ian-howell/airshipctl/pkg/workflow/clientset/versioned/fake"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/ian-howell/airshipctl/cmd"
 	"github.com/ian-howell/airshipctl/cmd/workflow"
-	"github.com/ian-howell/airshipctl/test"
 	"github.com/ian-howell/airshipctl/pkg/environment"
+	"github.com/ian-howell/airshipctl/pkg/workflow/apis/workflow/v1alpha1"
+	argofake "github.com/ian-howell/airshipctl/pkg/workflow/clientset/versioned/fake"
 	wfenv "github.com/ian-howell/airshipctl/pkg/workflow/environment"
+	"github.com/ian-howell/airshipctl/test"
 )
 
 func TestWorkflowList(t *testing.T) {
-	tests := []test.CmdTest{
-		{
-			Name:    "workflow-list",
-			CmdLine: "workflow list",
-		},
+	actual := &bytes.Buffer{}
+	rootCmd, err := cmd.NewRootCmd(actual)
+	if err != nil {
+		t.Fatalf("Could not create root command: %s", err.Error())
 	}
-	for _, tt := range tests {
-		actual := &bytes.Buffer{}
-		rootCmd, err := cmd.NewRootCmd(actual)
-		if err != nil {
-			t.Fatalf("Could not create root command: %s", err.Error())
-		}
-		settings := &environment.AirshipCTLSettings{}
-		settings.InitFlags(rootCmd)
-		workflowRoot := workflow.NewWorkflowCommand(actual, settings)
-		workflowRoot.AddCommand(workflow.NewWorkflowListCommand(actual, settings))
-		settings.PluginSettings[workflow.PluginSettingsID] = &wfenv.Settings{
-			ArgoClient: argofake.NewSimpleClientset(),
-		}
+	settings := &environment.AirshipCTLSettings{}
+	settings.InitFlags(rootCmd)
+	workflowRoot := workflow.NewWorkflowCommand(actual, settings)
+	workflowRoot.AddCommand(workflow.NewWorkflowListCommand(actual, settings))
+	argoClient := argofake.NewSimpleClientset()
+	settings.PluginSettings[workflow.PluginSettingsID] = &wfenv.Settings{
+		ArgoClient: argoClient,
+	}
+	rootCmd.AddCommand(workflowRoot)
+	rootCmd.PersistentFlags().Parse(os.Args[1:])
 
-		rootCmd.AddCommand(workflowRoot)
-		rootCmd.PersistentFlags().Parse(os.Args[1:])
-		test.RunTest(t, tt, rootCmd, actual)
+	var tt test.CmdTest
+	tt = test.CmdTest{
+		Name:    "workflow-list-empty",
+		CmdLine: "workflow list",
 	}
+
+	test.RunTest(t, tt, rootCmd, actual)
+
+	argoClient.ArgoprojV1alpha1().Workflows("default").Create(&v1alpha1.Workflow{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "fake-wf",
+		},
+		Status: v1alpha1.WorkflowStatus{
+			Phase: "completed",
+		},
+	})
+
+	tt = test.CmdTest{
+		Name:    "workflow-list-nonempty",
+		CmdLine: "workflow list",
+	}
+	test.RunTest(t, tt, rootCmd, actual)
 }
