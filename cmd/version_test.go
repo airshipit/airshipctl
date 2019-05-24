@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/ian-howell/airshipctl/cmd"
-	"github.com/ian-howell/airshipctl/internal/test"
+	"github.com/ian-howell/airshipctl/test"
 )
 
 func TestVersion(t *testing.T) {

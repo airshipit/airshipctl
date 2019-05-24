@@ -24,7 +24,7 @@ func NewWorkflowListCommand(out io.Writer, rootSettings *environment.AirshipCTLS
 				fmt.Fprintf(out, "settings for %s were not registered\n", PluginSettingsID)
 				return
 			}
-			clientSet := wfSettings.ArgoClient
+			clientSet := wfSettings.ArgoClient.ArgoprojV1alpha1()
 			wflist, err := clientSet.Workflows(wfSettings.Namespace).List(v1.ListOptions{})
 			if err != nil {
 				panic(err.Error())

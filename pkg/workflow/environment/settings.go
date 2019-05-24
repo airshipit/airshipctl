@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
-	argo "github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1"
+	argo "github.com/ian-howell/airshipctl/pkg/workflow/clientset/versioned"
 
 	apixv1beta1 "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 )
@@ -23,7 +23,7 @@ type Settings struct {
 	KubeClient kubernetes.Interface
 
 	// ArgoClient is an instrument for interacting with Argo workflows
-	ArgoClient argo.ArgoprojV1alpha1Interface
+	ArgoClient argo.Interface
 
 	CRDClient apixv1beta1.ApiextensionsV1beta1Interface
 }

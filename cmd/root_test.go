@@ -7,7 +7,7 @@ import (
 
 	"github.com/ian-howell/airshipctl/cmd"
 	"github.com/ian-howell/airshipctl/pkg/environment"
-	"github.com/ian-howell/airshipctl/internal/test"
+	"github.com/ian-howell/airshipctl/test"
 )
 
 func TestRoot(t *testing.T) {
