@@ -6,7 +6,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+
+	"github.com/spf13/cobra"
 )
 
 // UpdateGolden writes out the golden files with the latest values, rather than failing the test.
@@ -22,6 +25,19 @@ const (
 type CmdTest struct {
 	Name    string
 	CmdLine string
+}
+
+func RunTest(t *testing.T, test CmdTest, cmd *cobra.Command, actual *bytes.Buffer) {
+	args := strings.Fields(test.CmdLine)
+	cmd.SetArgs(args)
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("Unexpected error: %s", err.Error())
+	}
+	if *shouldUpdateGolden {
+		updateGolden(t, test, actual.Bytes())
+	} else {
+		assertEqualGolden(t, test, actual.Bytes())
+	}
 }
 
 func updateGolden(t *testing.T, test CmdTest, actual []byte) {
