@@ -35,7 +35,7 @@ test: cover
 .PHONY: unit-tests
 unit-tests: build
 	@echo "Performing unit test step..."
-	@go test -run $(TESTS) $(PKG) $(TESTFLAGS) -coverprofile=$(COVER_FILE)
+	@go test -run $(TESTS) $(PKG) $(TESTFLAGS) -coverprofile=$(COVER_FILE) -coverpkg $(PKG)
 	@echo "All unit tests passed"
 
 .PHONY: cover
