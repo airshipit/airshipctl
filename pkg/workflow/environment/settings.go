@@ -25,6 +25,7 @@ type Settings struct {
 	// ArgoClient is an instrument for interacting with Argo workflows
 	ArgoClient argo.Interface
 
+	// CRDClient is an instrument for interacting with CRDs
 	CRDClient apixv1beta1.ApiextensionsV1beta1Interface
 }
 
@@ -53,6 +54,11 @@ func (s *Settings) Init() error {
 	}
 
 	s.ArgoClient, err = argo.NewForConfig(kubeConfig)
+	if err != nil {
+		return err
+	}
+
+	s.CRDClient, err = apixv1beta1.NewForConfig(kubeConfig)
 	if err != nil {
 		return err
 	}
