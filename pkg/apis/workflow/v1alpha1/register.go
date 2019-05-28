@@ -1,25 +1,17 @@
 package v1alpha1
 
 import (
+	"github.com/ian-howell/airshipctl/pkg/apis/workflow"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// Workflow constants
-const (
-	Kind      string = "Workflow"
-	Group     string = "argoproj.io"
-	Singular  string = "workflow"
-	Plural    string = "workflows"
-	ShortName string = "wf"
-	FullName  string = Plural + "." + Group
-)
-
 var (
 	// SchemeGroupVersion is group version used to register these objects
-	SchemeGroupVersion     = schema.GroupVersion{Group: Group, Version: "v1alpha1"}
-	SchemaGroupVersionKind = schema.GroupVersionKind{Group: Group, Version: "v1alpha1", Kind: Kind}
+	SchemeGroupVersion     = schema.GroupVersion{Group: workflow.Group, Version: "v1alpha1"}
+	SchemaGroupVersionKind = schema.GroupVersionKind{Group: workflow.Group, Version: "v1alpha1", Kind: workflow.Kind}
 )
 
 // Resource takes an unqualified resource and returns a Group-qualified GroupResource.

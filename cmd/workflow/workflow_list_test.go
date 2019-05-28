@@ -9,8 +9,8 @@ import (
 
 	"github.com/ian-howell/airshipctl/cmd"
 	"github.com/ian-howell/airshipctl/cmd/workflow"
-	"github.com/ian-howell/airshipctl/pkg/workflow/apis/workflow/v1alpha1"
-	argofake "github.com/ian-howell/airshipctl/pkg/workflow/clientset/versioned/fake"
+	"github.com/ian-howell/airshipctl/pkg/apis/workflow/v1alpha1"
+	argofake "github.com/ian-howell/airshipctl/pkg/client/clientset/versioned/fake"
 	wfenv "github.com/ian-howell/airshipctl/pkg/workflow/environment"
 	"github.com/ian-howell/airshipctl/test"
 )

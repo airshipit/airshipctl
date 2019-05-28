@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
-	argo "github.com/ian-howell/airshipctl/pkg/workflow/clientset/versioned"
+	argo "github.com/ian-howell/airshipctl/pkg/client/clientset/versioned"
 
 	apixv1beta1 "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 )

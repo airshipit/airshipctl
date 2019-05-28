@@ -3,8 +3,6 @@ module github.com/ian-howell/airshipctl
 go 1.12
 
 require (
-	github.com/emicklei/go-restful v2.9.3+incompatible // indirect
-	github.com/go-openapi/spec v0.19.0
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/golang/protobuf v1.3.1 // indirect
 	github.com/google/gofuzz v1.0.0 // indirect
@@ -24,5 +22,5 @@ require (
 	k8s.io/apiextensions-apiserver v0.0.0-20190515024537-2fd0e9006049
 	k8s.io/apimachinery v0.0.0-20190515023456-b74e4c97951f
 	k8s.io/client-go v0.0.0-20190515023709-78e94f51a042
-	k8s.io/kube-openapi v0.0.0-20190228160746-b3a7cee44a30
+	k8s.io/code-generator v0.0.0-20190511023357-639c964206c2
 )
