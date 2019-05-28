@@ -14,8 +14,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
-	wfenv "github.com/ian-howell/airshipctl/pkg/workflow/environment"
 	"github.com/ian-howell/airshipctl/pkg/environment"
+	wfenv "github.com/ian-howell/airshipctl/pkg/workflow/environment"
 )
 
 const (
@@ -48,7 +48,7 @@ func NewWorkflowInitCommand(out io.Writer, rootSettings *environment.AirshipCTLS
 			workflowInit := &workflowInitCmd{
 				out:        out,
 				kubeclient: wfSettings.KubeClient,
-				crdclient:  wfSettings.CRDClient,
+				crdclient:  wfSettings.CRDClient.ApiextensionsV1beta1(),
 			}
 
 			fmt.Fprintf(out, "Creating namespace \"%s\"\n", argoNamespace)

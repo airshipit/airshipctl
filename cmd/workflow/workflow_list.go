@@ -7,8 +7,8 @@ import (
 	"github.com/spf13/cobra"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/ian-howell/airshipctl/pkg/util"
 	"github.com/ian-howell/airshipctl/pkg/environment"
+	"github.com/ian-howell/airshipctl/pkg/util"
 	wfenv "github.com/ian-howell/airshipctl/pkg/workflow/environment"
 )
 

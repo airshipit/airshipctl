@@ -9,4 +9,3 @@ const (
 	ShortName string = "wf"
 	FullName  string = Plural + "." + Group
 )
-

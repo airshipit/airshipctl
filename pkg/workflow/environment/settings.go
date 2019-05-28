@@ -2,11 +2,11 @@ package environment
 
 import (
 	"github.com/spf13/cobra"
+	apixv1beta1 "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
-	argo "github.com/ian-howell/airshipctl/pkg/client/clientset/versioned"
 
-	apixv1beta1 "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	argo "github.com/ian-howell/airshipctl/pkg/client/clientset/versioned"
 )
 
 // Settings is a container for all of the settings needed by workflows
@@ -26,7 +26,7 @@ type Settings struct {
 	ArgoClient argo.Interface
 
 	// CRDClient is an instrument for interacting with CRDs
-	CRDClient apixv1beta1.ApiextensionsV1beta1Interface
+	CRDClient apixv1beta1.Interface
 }
 
 // InitFlags adds the default settings flags to cmd
