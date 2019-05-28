@@ -14,7 +14,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/ian-howell/airshipctl/pkg/workflow/environment"
+	wfenv "github.com/ian-howell/airshipctl/pkg/workflow/environment"
+	"github.com/ian-howell/airshipctl/pkg/environment"
 )
 
 const (
@@ -32,16 +33,24 @@ type workflowInitCmd struct {
 }
 
 // NewWorkflowInitCommand is a command for bootstrapping a kubernetes cluster with the necessary components for Argo workflows
-func NewWorkflowInitCommand(out io.Writer, settings *environment.Settings) *cobra.Command {
-	workflowInit := &workflowInitCmd{
-		out:        out,
-		kubeclient: settings.KubeClient,
-		crdclient:  settings.CRDClient,
-	}
+func NewWorkflowInitCommand(out io.Writer, rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+
 	workflowInitCommand := &cobra.Command{
 		Use:   "init [flags]",
 		Short: "bootstraps the kubernetes cluster with the Workflow CRDs and controller",
 		Run: func(cmd *cobra.Command, args []string) {
+			wfSettings, ok := rootSettings.PluginSettings[PluginSettingsID].(*wfenv.Settings)
+			if !ok {
+				fmt.Fprintf(out, "settings for %s were not registered\n", PluginSettingsID)
+				return
+			}
+
+			workflowInit := &workflowInitCmd{
+				out:        out,
+				kubeclient: wfSettings.KubeClient,
+				crdclient:  wfSettings.CRDClient,
+			}
+
 			fmt.Fprintf(out, "Creating namespace \"%s\"\n", argoNamespace)
 			_, err := workflowInit.kubeclient.CoreV1().Namespaces().Create(&v1.Namespace{
 				ObjectMeta: metav1.ObjectMeta{Name: "argo"},

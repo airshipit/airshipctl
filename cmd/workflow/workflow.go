@@ -22,9 +22,10 @@ func NewWorkflowCommand(out io.Writer, rootSettings *environment.AirshipCTLSetti
 
 	wfSettings := &wfenv.Settings{}
 	wfSettings.InitFlags(workflowRootCmd)
-	workflowRootCmd.AddCommand(NewWorkflowInitCommand(out, wfSettings))
-	workflowRootCmd.AddCommand(NewWorkflowListCommand(out, rootSettings))
 	rootSettings.Register(PluginSettingsID, wfSettings)
+
+	workflowRootCmd.AddCommand(NewWorkflowInitCommand(out, rootSettings))
+	workflowRootCmd.AddCommand(NewWorkflowListCommand(out, rootSettings))
 
 	return workflowRootCmd
 }
