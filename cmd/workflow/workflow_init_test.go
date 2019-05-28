@@ -41,4 +41,11 @@ func TestWorkflowInit(t *testing.T) {
 	}
 
 	test.RunTest(t, tt, rootCmd, actual)
+
+	tt = test.CmdTest{
+		Name:    "workflow-init-already-initialized",
+		CmdLine: "workflow init",
+	}
+
+	test.RunTest(t, tt, rootCmd, actual)
 }
