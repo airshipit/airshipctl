@@ -1,7 +1,6 @@
 package cmd_test
 
 import (
-	"os"
 	"testing"
 
 	"github.com/ian-howell/airshipctl/cmd"
@@ -9,7 +8,7 @@ import (
 )
 
 func TestRoot(t *testing.T) {
-	cmdTests := []*test.CmdTest {
+	cmdTests := []*test.CmdTest{
 		&test.CmdTest{
 			Name:    "default",
 			CmdLine: "",
@@ -19,7 +18,6 @@ func TestRoot(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not create root command: %s", err.Error())
 	}
-	rootCmd.PersistentFlags().Parse(os.Args[1:])
 	for _, tt := range cmdTests {
 		test.RunTest(t, tt, rootCmd)
 	}

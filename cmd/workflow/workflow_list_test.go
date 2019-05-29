@@ -1,7 +1,6 @@
 package workflow_test
 
 import (
-	"os"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,7 +22,6 @@ func TestWorkflowList(t *testing.T) {
 	workflowRoot := workflow.NewWorkflowCommand(settings)
 	workflowRoot.AddCommand(workflow.NewWorkflowListCommand(settings))
 	rootCmd.AddCommand(workflowRoot)
-	rootCmd.PersistentFlags().Parse(os.Args[1:])
 
 	cmdTests := []WorkflowCmdTest{
 		{

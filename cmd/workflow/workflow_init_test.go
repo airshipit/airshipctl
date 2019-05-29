@@ -1,7 +1,6 @@
 package workflow_test
 
 import (
-	"os"
 	"testing"
 
 	apixv1beta1fake "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/fake"
@@ -22,7 +21,6 @@ func TestWorkflowInit(t *testing.T) {
 	workflowRoot := workflow.NewWorkflowCommand(settings)
 	workflowRoot.AddCommand(workflow.NewWorkflowInitCommand(settings))
 	rootCmd.AddCommand(workflowRoot)
-	rootCmd.PersistentFlags().Parse(os.Args[1:])
 
 	argoClient := argofake.NewSimpleClientset()
 	crdClient := apixv1beta1fake.NewSimpleClientset()
