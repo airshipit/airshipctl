@@ -1,14 +1,4 @@
 Creating namespace "argo"
-Registering Workflow CRD
-Creating argo ServiceAccount
-Creating argo admin ClusterRole
-Creating argo edit ClusterRole
-Creating argo view ClusterRole
-Creating argo ClusterRole
-Creating argo ClusterRoleBinding
-Creating argo ConfigMap
-Creating argo Deployment
-Creating namespace "argo"
 Namespace "argo" already exists
 Registering Workflow CRD
 Workflow CRD already registered

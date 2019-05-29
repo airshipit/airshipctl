@@ -1,8 +1,6 @@
 package workflow
 
 import (
-	"io"
-
 	"github.com/spf13/cobra"
 
 	"github.com/ian-howell/airshipctl/pkg/environment"
@@ -13,7 +11,7 @@ import (
 const PluginSettingsID = "argo"
 
 // NewWorkflowCommand creates a new command for working with argo workflows
-func NewWorkflowCommand(out io.Writer, rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewWorkflowCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	workflowRootCmd := &cobra.Command{
 		Use:     "workflow",
 		Short:   "Access to argo workflows",
@@ -24,8 +22,8 @@ func NewWorkflowCommand(out io.Writer, rootSettings *environment.AirshipCTLSetti
 	wfSettings.InitFlags(workflowRootCmd)
 	rootSettings.Register(PluginSettingsID, wfSettings)
 
-	workflowRootCmd.AddCommand(NewWorkflowInitCommand(out, rootSettings))
-	workflowRootCmd.AddCommand(NewWorkflowListCommand(out, rootSettings))
+	workflowRootCmd.AddCommand(NewWorkflowInitCommand(rootSettings))
+	workflowRootCmd.AddCommand(NewWorkflowListCommand(rootSettings))
 
 	return workflowRootCmd
 }

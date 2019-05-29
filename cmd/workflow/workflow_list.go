@@ -2,7 +2,6 @@ package workflow
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/spf13/cobra"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,12 +12,13 @@ import (
 )
 
 // NewWorkflowListCommand is a command for listing argo workflows
-func NewWorkflowListCommand(out io.Writer, rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewWorkflowListCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	workflowListCmd := &cobra.Command{
 		Use:     "list",
 		Short:   "list workflows",
 		Aliases: []string{"ls"},
 		Run: func(cmd *cobra.Command, args []string) {
+			out := cmd.OutOrStdout()
 			wfSettings, ok := rootSettings.PluginSettings[PluginSettingsID].(*wfenv.Settings)
 			if !ok {
 				fmt.Fprintf(out, "settings for %s were not registered\n", PluginSettingsID)

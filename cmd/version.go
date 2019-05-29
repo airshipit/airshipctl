@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/spf13/cobra"
 
@@ -10,11 +9,12 @@ import (
 )
 
 // NewVersionCommand prints out the versions of airshipctl and its underlying tools
-func NewVersionCommand(out io.Writer) *cobra.Command {
+func NewVersionCommand() *cobra.Command {
 	versionCmd := &cobra.Command{
 		Use:   "version",
 		Short: "Show the version number of airshipctl",
 		Run: func(cmd *cobra.Command, args []string) {
+			out := cmd.OutOrStdout()
 			clientV := clientVersion()
 			w := util.NewTabWriter(out)
 			defer w.Flush()

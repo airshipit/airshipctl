@@ -1,7 +1,6 @@
 package cmd_test
 
 import (
-	"bytes"
 	"os"
 	"testing"
 
@@ -10,15 +9,18 @@ import (
 )
 
 func TestRoot(t *testing.T) {
-	tt := test.CmdTest{
-		Name:    "default",
-		CmdLine: "",
+	cmdTests := []*test.CmdTest {
+		&test.CmdTest{
+			Name:    "default",
+			CmdLine: "",
+		},
 	}
-	actual := &bytes.Buffer{}
-	rootCmd, _, err := cmd.NewRootCmd(actual)
+	rootCmd, _, err := cmd.NewRootCmd(nil)
 	if err != nil {
 		t.Fatalf("Could not create root command: %s", err.Error())
 	}
 	rootCmd.PersistentFlags().Parse(os.Args[1:])
-	test.RunTest(t, tt, rootCmd, actual)
+	for _, tt := range cmdTests {
+		test.RunTest(t, tt, rootCmd)
+	}
 }

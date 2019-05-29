@@ -1,11 +1,11 @@
 package workflow_test
 
 import (
-	"bytes"
 	"os"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/ian-howell/airshipctl/cmd"
 	"github.com/ian-howell/airshipctl/cmd/workflow"
@@ -16,40 +16,46 @@ import (
 )
 
 func TestWorkflowList(t *testing.T) {
-	actual := &bytes.Buffer{}
-	rootCmd, settings, err := cmd.NewRootCmd(actual)
+	rootCmd, settings, err := cmd.NewRootCmd(nil)
 	if err != nil {
 		t.Fatalf("Could not create root command: %s", err.Error())
 	}
-	workflowRoot := workflow.NewWorkflowCommand(actual, settings)
-	workflowRoot.AddCommand(workflow.NewWorkflowListCommand(actual, settings))
-	argoClient := argofake.NewSimpleClientset()
-	settings.PluginSettings[workflow.PluginSettingsID] = &wfenv.Settings{
-		ArgoClient: argoClient,
-	}
+	workflowRoot := workflow.NewWorkflowCommand(settings)
+	workflowRoot.AddCommand(workflow.NewWorkflowListCommand(settings))
 	rootCmd.AddCommand(workflowRoot)
 	rootCmd.PersistentFlags().Parse(os.Args[1:])
 
-	var tt test.CmdTest
-	tt = test.CmdTest{
-		Name:    "workflow-list-empty",
-		CmdLine: "workflow list",
+	cmdTests := []WorkflowCmdTest{
+		{
+			CmdTest: &test.CmdTest{
+				Name:    "workflow-list-empty",
+				CmdLine: "workflow list",
+				Objs:    []runtime.Object{},
+			},
+		},
+		{
+			CmdTest: &test.CmdTest{
+				Name:    "workflow-list-nonempty",
+				CmdLine: "workflow list",
+				Objs:    []runtime.Object{},
+			},
+			ArgoObjs: []runtime.Object{
+				&v1alpha1.Workflow{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "fake-wf",
+					},
+					Status: v1alpha1.WorkflowStatus{
+						Phase: "completed",
+					},
+				},
+			},
+		},
 	}
 
-	test.RunTest(t, tt, rootCmd, actual)
-
-	argoClient.ArgoprojV1alpha1().Workflows("default").Create(&v1alpha1.Workflow{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "fake-wf",
-		},
-		Status: v1alpha1.WorkflowStatus{
-			Phase: "completed",
-		},
-	})
-
-	tt = test.CmdTest{
-		Name:    "workflow-list-nonempty",
-		CmdLine: "workflow list",
+	for _, tt := range cmdTests {
+		settings.PluginSettings[workflow.PluginSettingsID] = &wfenv.Settings{
+			ArgoClient: argofake.NewSimpleClientset(tt.ArgoObjs...),
+		}
+		test.RunTest(t, tt.CmdTest, rootCmd)
 	}
-	test.RunTest(t, tt, rootCmd, actual)
 }

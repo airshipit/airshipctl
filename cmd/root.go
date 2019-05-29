@@ -18,7 +18,7 @@ func NewRootCmd(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings,
 		Short: "airshipctl is a unified entrypoint to various airship components",
 	}
 	rootCmd.SetOutput(out)
-	rootCmd.AddCommand(NewVersionCommand(out))
+	rootCmd.AddCommand(NewVersionCommand())
 
 	settings := &environment.AirshipCTLSettings{}
 	settings.InitFlags(rootCmd)
@@ -29,7 +29,7 @@ func NewRootCmd(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings,
 // AddDefaultAirshipCTLCommands is a convenience function for adding all of the
 // default commands to airshipctl
 func AddDefaultAirshipCTLCommands(cmd *cobra.Command, settings *environment.AirshipCTLSettings) *cobra.Command {
-	cmd.AddCommand(workflow.NewWorkflowCommand(cmd.OutOrStdout(), settings))
+	cmd.AddCommand(workflow.NewWorkflowCommand(settings))
 	cmd.AddCommand(bootstrap.NewBootstrapCommand(cmd.OutOrStdout(), settings))
 	return cmd
 }

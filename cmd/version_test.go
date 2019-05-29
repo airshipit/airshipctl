@@ -1,7 +1,6 @@
 package cmd_test
 
 import (
-	"bytes"
 	"testing"
 
 	"github.com/ian-howell/airshipctl/cmd"
@@ -9,15 +8,18 @@ import (
 )
 
 func TestVersion(t *testing.T) {
-	tt := test.CmdTest{
-		Name:    "version",
-		CmdLine: "version",
+	cmdTests := []*test.CmdTest {
+		&test.CmdTest{
+			Name:    "version",
+			CmdLine: "version",
+		},
 	}
-	actual := &bytes.Buffer{}
-	rootCmd, _, err := cmd.NewRootCmd(actual)
+	rootCmd, _, err := cmd.NewRootCmd(nil)
 	if err != nil {
 		t.Fatalf("Could not create root command: %s", err.Error())
 	}
-	rootCmd.AddCommand(cmd.NewVersionCommand(actual))
-	test.RunTest(t, tt, rootCmd, actual)
+	rootCmd.AddCommand(cmd.NewVersionCommand())
+	for _, tt := range cmdTests {
+		test.RunTest(t, tt, rootCmd)
+	}
 }

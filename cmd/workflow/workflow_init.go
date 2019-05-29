@@ -33,12 +33,13 @@ type workflowInitCmd struct {
 }
 
 // NewWorkflowInitCommand is a command for bootstrapping a kubernetes cluster with the necessary components for Argo workflows
-func NewWorkflowInitCommand(out io.Writer, rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewWorkflowInitCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 
 	workflowInitCommand := &cobra.Command{
 		Use:   "init [flags]",
 		Short: "bootstraps the kubernetes cluster with the Workflow CRDs and controller",
 		Run: func(cmd *cobra.Command, args []string) {
+			out := cmd.OutOrStdout()
 			wfSettings, ok := rootSettings.PluginSettings[PluginSettingsID].(*wfenv.Settings)
 			if !ok {
 				fmt.Fprintf(out, "settings for %s were not registered\n", PluginSettingsID)

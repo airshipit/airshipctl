@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // UpdateGolden writes out the golden files with the latest values, rather than failing the test.
@@ -25,9 +26,15 @@ const (
 type CmdTest struct {
 	Name    string
 	CmdLine string
+	Objs    []runtime.Object
 }
 
-func RunTest(t *testing.T, test CmdTest, cmd *cobra.Command, actual *bytes.Buffer) {
+// RunTest either asserts that a specific command's output matches the expected
+// output from its golden file, or generates golden files if the -update flag
+// is passed
+func RunTest(t *testing.T, test *CmdTest, cmd *cobra.Command) {
+	actual := &bytes.Buffer{}
+	cmd.SetOutput(actual)
 	args := strings.Fields(test.CmdLine)
 	cmd.SetArgs(args)
 	if err := cmd.Execute(); err != nil {
@@ -40,7 +47,7 @@ func RunTest(t *testing.T, test CmdTest, cmd *cobra.Command, actual *bytes.Buffe
 	}
 }
 
-func updateGolden(t *testing.T, test CmdTest, actual []byte) {
+func updateGolden(t *testing.T, test *CmdTest, actual []byte) {
 	goldenDir := filepath.Join(testdataDir, t.Name()+goldenDirSuffix)
 	if err := os.MkdirAll(goldenDir, 0775); err != nil {
 		t.Fatalf("failed to create golden directory %s: %s", goldenDir, err)
@@ -53,7 +60,7 @@ func updateGolden(t *testing.T, test CmdTest, actual []byte) {
 	}
 }
 
-func assertEqualGolden(t *testing.T, test CmdTest, actual []byte) {
+func assertEqualGolden(t *testing.T, test *CmdTest, actual []byte) {
 	goldenDir := filepath.Join(testdataDir, t.Name()+goldenDirSuffix)
 	goldenFilePath := filepath.Join(goldenDir, test.Name+goldenFileSuffix)
 	golden, err := ioutil.ReadFile(goldenFilePath)

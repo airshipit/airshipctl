@@ -1,7 +1,6 @@
 package workflow_test
 
 import (
-	"bytes"
 	"os"
 	"testing"
 
@@ -16,13 +15,15 @@ import (
 )
 
 func TestWorkflowInit(t *testing.T) {
-	actual := &bytes.Buffer{}
-	rootCmd, settings, err := cmd.NewRootCmd(actual)
+	rootCmd, settings, err := cmd.NewRootCmd(nil)
 	if err != nil {
 		t.Fatalf("Could not create root command: %s", err.Error())
 	}
-	workflowRoot := workflow.NewWorkflowCommand(actual, settings)
-	workflowRoot.AddCommand(workflow.NewWorkflowInitCommand(actual, settings))
+	workflowRoot := workflow.NewWorkflowCommand(settings)
+	workflowRoot.AddCommand(workflow.NewWorkflowInitCommand(settings))
+	rootCmd.AddCommand(workflowRoot)
+	rootCmd.PersistentFlags().Parse(os.Args[1:])
+
 	argoClient := argofake.NewSimpleClientset()
 	crdClient := apixv1beta1fake.NewSimpleClientset()
 	kubeClient := kubefake.NewSimpleClientset()
@@ -31,21 +32,19 @@ func TestWorkflowInit(t *testing.T) {
 		CRDClient:  crdClient,
 		KubeClient: kubeClient,
 	}
-	rootCmd.AddCommand(workflowRoot)
-	rootCmd.PersistentFlags().Parse(os.Args[1:])
 
-	var tt test.CmdTest
-	tt = test.CmdTest{
+	var tt *test.CmdTest
+	tt = &test.CmdTest{
 		Name:    "workflow-init",
 		CmdLine: "workflow init",
 	}
 
-	test.RunTest(t, tt, rootCmd, actual)
+	test.RunTest(t, tt, rootCmd)
 
-	tt = test.CmdTest{
+	tt = &test.CmdTest{
 		Name:    "workflow-init-already-initialized",
 		CmdLine: "workflow init",
 	}
 
-	test.RunTest(t, tt, rootCmd, actual)
+	test.RunTest(t, tt, rootCmd)
 }
