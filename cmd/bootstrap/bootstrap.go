@@ -2,7 +2,6 @@ package bootstrap
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/spf13/cobra"
 
@@ -13,11 +12,12 @@ import (
 const PluginSettingsID = "bootstrap"
 
 // NewBootstrapCommand creates a new command for bootstrapping airshipctl
-func NewBootstrapCommand(out io.Writer, rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewBootstrapCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	bootstrapRootCmd := &cobra.Command{
 		Use:   "bootstrap",
 		Short: "bootstraps airshipctl",
 		Run: func(cmd *cobra.Command, args []string) {
+			out := cmd.OutOrStdout()
 			fmt.Fprintf(out, "Under construction\n")
 		},
 	}

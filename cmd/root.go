@@ -39,6 +39,6 @@ func NewRootCmd(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings,
 // default commands to airshipctl
 func AddDefaultAirshipCTLCommands(cmd *cobra.Command, settings *environment.AirshipCTLSettings) *cobra.Command {
 	cmd.AddCommand(workflow.NewWorkflowCommand(settings))
-	cmd.AddCommand(bootstrap.NewBootstrapCommand(cmd.OutOrStdout(), settings))
+	cmd.AddCommand(bootstrap.NewBootstrapCommand(settings))
 	return cmd
 }
