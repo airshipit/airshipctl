@@ -1,7 +1,7 @@
-Creating namespace "argo"
-Namespace "argo" already exists
+Creating namespace argo
+namespace argo already exists
 Registering Workflow CRD
-Workflow CRD already registered
+Workflow CRD already exists
 Creating argo ServiceAccount
 argo ServiceAccount already exists
 Creating argo admin ClusterRole
