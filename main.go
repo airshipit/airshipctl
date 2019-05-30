@@ -17,11 +17,6 @@ func main() {
 
 	cmd.AddDefaultAirshipCTLCommands(rootCmd, settings)
 
-	// Flags may not be parsed until all subcommands have been added
-	rootCmd.PersistentFlags().Parse(os.Args[1:])
-
-	settings.Init()
-
 	log.Init(settings, os.Stdout)
 
 	if err := rootCmd.Execute(); err != nil {

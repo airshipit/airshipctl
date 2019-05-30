@@ -52,7 +52,8 @@ func TestWorkflowList(t *testing.T) {
 
 	for _, tt := range cmdTests {
 		settings.PluginSettings[workflow.PluginSettingsID] = &wfenv.Settings{
-			ArgoClient: argofake.NewSimpleClientset(tt.ArgoObjs...),
+			Initialized: true,
+			ArgoClient:  argofake.NewSimpleClientset(tt.ArgoObjs...),
 		}
 		test.RunTest(t, tt.CmdTest, rootCmd)
 	}

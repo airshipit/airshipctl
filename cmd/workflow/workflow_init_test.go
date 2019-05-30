@@ -61,9 +61,10 @@ func TestWorkflowInit(t *testing.T) {
 
 	for _, tt := range cmdTests {
 		settings.PluginSettings[workflow.PluginSettingsID] = &wfenv.Settings{
-			KubeClient: kubefake.NewSimpleClientset(tt.CmdTest.Objs...),
-			ArgoClient: argofake.NewSimpleClientset(tt.ArgoObjs...),
-			CRDClient:  apixv1beta1fake.NewSimpleClientset(tt.CRDObjs...),
+			Initialized: true,
+			KubeClient:  kubefake.NewSimpleClientset(tt.CmdTest.Objs...),
+			ArgoClient:  argofake.NewSimpleClientset(tt.ArgoObjs...),
+			CRDClient:   apixv1beta1fake.NewSimpleClientset(tt.CRDObjs...),
 		}
 		test.RunTest(t, tt.CmdTest, rootCmd)
 	}

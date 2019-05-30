@@ -27,6 +27,9 @@ type Settings struct {
 
 	// CRDClient is an instrument for interacting with CRDs
 	CRDClient apixv1beta1.Interface
+
+	// Initialized denotes whether the settings have been initialized or not. It is useful for unit-testing
+	Initialized bool
 }
 
 // InitFlags adds the default settings flags to cmd
@@ -38,6 +41,10 @@ func (s *Settings) InitFlags(cmd *cobra.Command) {
 
 // Init assigns default values
 func (s *Settings) Init() error {
+	if s.Initialized {
+		return nil
+	}
+
 	if s.KubeConfigFilePath == "" {
 		s.KubeConfigFilePath = clientcmd.RecommendedHomeFile
 	}
@@ -62,5 +69,7 @@ func (s *Settings) Init() error {
 	if err != nil {
 		return err
 	}
+
+	s.Initialized = true
 	return nil
 }
