@@ -24,7 +24,7 @@ func (a *AirshipCTLSettings) InitFlags(cmd *cobra.Command) {
 
 func (a *AirshipCTLSettings) Register(pluginName string, pluginSettings PluginSettings) {
 	if a.PluginSettings == nil {
-		a.PluginSettings = make(map[string]PluginSettings, 0)
+		a.PluginSettings = map[string]PluginSettings{}
 	}
 	a.PluginSettings[pluginName] = pluginSettings
 }

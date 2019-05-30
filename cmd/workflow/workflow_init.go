@@ -66,7 +66,10 @@ func NewWorkflowInitCommand(rootSettings *environment.AirshipCTLSettings) *cobra
 			}
 
 			if manifestPath == "" {
-				workflowInit.createDefaultObjects()
+				if err := workflowInit.createDefaultObjects(); err != nil {
+					fmt.Fprintf(out, "Could not create default objects: %s\n", err.Error())
+					return
+				}
 			} else {
 				workflowInit.createCustomObjects(manifestPath)
 			}

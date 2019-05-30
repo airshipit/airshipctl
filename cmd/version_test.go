@@ -8,8 +8,8 @@ import (
 )
 
 func TestVersion(t *testing.T) {
-	cmdTests := []*test.CmdTest {
-		&test.CmdTest{
+	cmdTests := []*test.CmdTest{
+		{
 			Name:    "version",
 			CmdLine: "version",
 		},

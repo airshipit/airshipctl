@@ -9,7 +9,7 @@ import (
 
 func TestRoot(t *testing.T) {
 	cmdTests := []*test.CmdTest{
-		&test.CmdTest{
+		{
 			Name:    "default",
 			CmdLine: "",
 		},
