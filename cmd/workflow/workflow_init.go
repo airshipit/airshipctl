@@ -6,8 +6,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/ian-howell/airshipctl/pkg/environment"
+	"github.com/ian-howell/airshipctl/pkg/workflow"
 	wfenv "github.com/ian-howell/airshipctl/pkg/workflow/environment"
-	"github.com/ian-howell/airshipctl/pkg/workflow/initialize"
 )
 
 var (
@@ -28,7 +28,7 @@ func NewWorkflowInitCommand(rootSettings *environment.AirshipCTLSettings) *cobra
 				return
 			}
 
-			if err := initialize.Initialize(out, wfSettings, manifestPath); err != nil {
+			if err := workflow.Initialize(out, wfSettings, manifestPath); err != nil {
 				fmt.Fprintf(out, "error while initializing argo: %s\n", err.Error())
 				return
 			}

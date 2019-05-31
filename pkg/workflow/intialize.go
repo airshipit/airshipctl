@@ -1,4 +1,4 @@
-package initialize
+package workflow
 
 import (
 	"fmt"
