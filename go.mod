@@ -3,6 +3,8 @@ module github.com/ian-howell/airshipctl
 go 1.12
 
 require (
+	github.com/argoproj/pkg v0.0.0-20190409001913-7e3ef65c8d44
+	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/go-critic/go-critic v0.0.0-20181204210945-ee9bf5809ead // indirect
 	github.com/go-toolsmith/pkgload v0.0.0-20181120203407-5122569a890b // indirect
 	github.com/gogo/protobuf v1.2.1 // indirect

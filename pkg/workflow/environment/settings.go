@@ -14,6 +14,9 @@ type Settings struct {
 	// Namespace is the kubernetes namespace to be used during the context of this action
 	Namespace string
 
+	// AllNamespaces denotes whether or not to use all namespaces. It will override the Namespace string
+	AllNamespaces bool
+
 	// KubeConfigFilePath is the path to the kubernetes configuration file.
 	// This flag is only needed when airshipctl is being used
 	// out-of-cluster
@@ -37,6 +40,7 @@ func (s *Settings) InitFlags(cmd *cobra.Command) {
 	flags := cmd.PersistentFlags()
 	flags.StringVar(&s.KubeConfigFilePath, "kubeconfig", "", "path to kubeconfig")
 	flags.StringVar(&s.Namespace, "namespace", "default", "kubernetes namespace to use for the context of this command")
+	flags.BoolVar(&s.AllNamespaces, "all-namespaces", false, "use all kubernetes namespaces for the context of this command")
 }
 
 // Init assigns default values

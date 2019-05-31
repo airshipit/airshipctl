@@ -1,2 +1,2 @@
-NAME      PHASE
-fake-wf   completed
+NAME      STATUS      AGE   DURATION   PRIORITY
+fake-wf   completed   5m    3m         0

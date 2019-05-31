@@ -2,6 +2,7 @@ package workflow_test
 
 import (
 	"testing"
+	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -10,6 +11,7 @@ import (
 	"github.com/ian-howell/airshipctl/cmd/workflow"
 	"github.com/ian-howell/airshipctl/pkg/apis/workflow/v1alpha1"
 	argofake "github.com/ian-howell/airshipctl/pkg/client/clientset/versioned/fake"
+	"github.com/ian-howell/airshipctl/pkg/util"
 	wfenv "github.com/ian-howell/airshipctl/pkg/workflow/environment"
 	"github.com/ian-howell/airshipctl/test"
 )
@@ -41,9 +43,18 @@ func TestWorkflowList(t *testing.T) {
 				&v1alpha1.Workflow{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "fake-wf",
+						CreationTimestamp: metav1.Time{
+							Time: util.Clock().Add(5 * time.Minute),
+						},
 					},
 					Status: v1alpha1.WorkflowStatus{
 						Phase: "completed",
+						StartedAt: metav1.Time{
+							Time: util.Clock().Add(5 * time.Minute),
+						},
+						FinishedAt: metav1.Time{
+							Time: util.Clock().Add(8 * time.Minute),
+						},
 					},
 				},
 			},
