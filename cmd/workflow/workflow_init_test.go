@@ -25,7 +25,6 @@ func TestWorkflowInit(t *testing.T) {
 		t.Fatalf("Could not create root command: %s", err.Error())
 	}
 	workflowRoot := workflow.NewWorkflowCommand(settings)
-	workflowRoot.AddCommand(workflow.NewWorkflowInitCommand(settings))
 	rootCmd.AddCommand(workflowRoot)
 
 	cmdTests := []WorkflowCmdTest{
