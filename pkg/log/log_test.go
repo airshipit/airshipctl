@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ian-howell/airshipctl/pkg/environment"
 	"github.com/ian-howell/airshipctl/pkg/log"
 )
 
@@ -13,77 +12,120 @@ const notEqualFmt = `Output does not match expected
 GOT:      %v
 Expected: %v`
 
-func TestLoggingWithoutDebug(t *testing.T) {
-	settings := environment.AirshipCTLSettings{
-		Debug: false,
+func TestLoggingPrint(t *testing.T) {
+	tests := []struct {
+		Name     string
+		Message  string
+		Vals     []interface{}
+		Debug    bool
+		Expected string
+	}{
+		{
+			Name:     "Print, debug set to false",
+			Message:  "Print test - debug false",
+			Debug:    false,
+			Expected: "Print test - debug false",
+		},
+		{
+			Name:     "Print, debug set to true",
+			Message:  "Print test - debug true",
+			Debug:    true,
+			Expected: "Print test - debug true",
+		},
+		{
+			Name:     "Printf, debug set to false",
+			Message:  "%s - %s",
+			Vals:     []interface{}{"Printf test", "debug false"},
+			Debug:    false,
+			Expected: "Printf test - debug false",
+		},
+		{
+			Name:     "Printf, debug set to true",
+			Message:  "%s - %s",
+			Vals:     []interface{}{"Printf test", "debug true"},
+			Debug:    true,
+			Expected: "Printf test - debug true",
+		},
 	}
 
-	output := new(bytes.Buffer)
+	for _, test := range tests {
+		output := new(bytes.Buffer)
+		log.Init(test.Debug, output)
 
-	log.Init(&settings, output)
-
-	log.Print("Print test - debug false")
-	expected := "Print test - debug false"
-	outputFields := strings.Fields(output.String())
-	if len(outputFields) < 3 {
-		t.Fatalf("Expected log message to have the following format: YYYY/MM/DD HH:MM:SS Message")
-	}
-	outputMessage := strings.Join(outputFields[2:], " ")
-	if outputMessage != expected {
-		t.Errorf(notEqualFmt, outputMessage, expected)
-	}
-
-	output.Reset()
-
-	log.Printf("%s - %s", "Printf test", "debug false")
-	expected = "Printf test - debug false"
-	outputFields = strings.Fields(output.String())
-	if len(outputFields) < 3 {
-		t.Fatalf("Expected log message to have the following format: YYYY/MM/DD HH:MM:SS Message")
-	}
-	outputMessage = strings.Join(outputFields[2:], " ")
-	if outputMessage != expected {
-		t.Errorf(notEqualFmt, outputMessage, expected)
-	}
-
-	output.Reset()
-	log.Debug("Debug test - debug false")
-	log.Debugf("%s - %s", "Debugf test", "debug false")
-	if len(output.Bytes()) > 0 {
-		t.Errorf("Unexpected output: %s", output)
+		if len(test.Vals) == 0 {
+			log.Print(test.Message)
+		} else {
+			log.Printf(test.Message, test.Vals...)
+		}
+		outputFields := strings.Fields(output.String())
+		if len(outputFields) < 3 {
+			t.Fatalf("Expected log message to have the following format: YYYY/MM/DD HH:MM:SS Message")
+		}
+		actual := strings.Join(outputFields[2:], " ")
+		if actual != test.Expected {
+			t.Errorf(notEqualFmt, actual, test.Expected)
+		}
 	}
 }
 
-func TestLoggingWithDebug(t *testing.T) {
-	settings := environment.AirshipCTLSettings{
-		Debug: true,
+func TestLoggingDebug(t *testing.T) {
+	tests := []struct {
+		Name     string
+		Message  string
+		Vals     []interface{}
+		Debug    bool
+		Expected string
+	}{
+		{
+			Name:     "Debug, debug set to false",
+			Message:  "Debug test - debug false",
+			Debug:    false,
+			Expected: "",
+		},
+		{
+			Name:     "Debug, debug set to true",
+			Message:  "Debug test - debug true",
+			Debug:    true,
+			Expected: "Debug test - debug true",
+		},
+		{
+			Name:     "Debugf, debug set to false",
+			Message:  "%s - %s",
+			Vals:     []interface{}{"Debugf test", "debug false"},
+			Debug:    false,
+			Expected: "",
+		},
+		{
+			Name:     "Debugf, debug set to true",
+			Message:  "%s - %s",
+			Vals:     []interface{}{"Debugf test", "debug true"},
+			Debug:    true,
+			Expected: "Debugf test - debug true",
+		},
 	}
 
-	output := new(bytes.Buffer)
+	for _, test := range tests {
+		t.Logf("%+v", test)
+		output := new(bytes.Buffer)
+		log.Init(test.Debug, output)
 
-	log.Init(&settings, output)
-
-	log.Debug("Debug test - debug true")
-	expected := "Debug test - debug true"
-	outputFields := strings.Fields(output.String())
-	if len(outputFields) < 3 {
-		t.Fatalf("Expected log message to have the following format: YYYY/MM/DD HH:MM:SS Message")
-	}
-	outputMessage := strings.Join(outputFields[2:], " ")
-	if outputMessage != expected {
-		t.Errorf(notEqualFmt, outputMessage, expected)
-	}
-
-	output.Reset()
-
-	log.Debugf("%s - %s", "Debugf test", "debug true")
-	expected = "Debugf test - debug true"
-	outputFields = strings.Fields(output.String())
-	if len(outputFields) < 3 {
-		t.Fatalf("Expected log message to have the following format: YYYY/MM/DD HH:MM:SS Message")
-	}
-	outputMessage = strings.Join(outputFields[2:], " ")
-	if outputMessage != expected {
-		t.Errorf(notEqualFmt, outputMessage, expected)
+		if len(test.Vals) == 0 {
+			log.Debug(test.Message)
+		} else {
+			log.Debugf(test.Message, test.Vals...)
+		}
+		var actual string
+		if test.Debug {
+			outputFields := strings.Fields(output.String())
+			if len(outputFields) < 3 {
+				t.Fatalf("Expected log message to have the following format: YYYY/MM/DD HH:MM:SS Message")
+			}
+			actual = strings.Join(outputFields[2:], " ")
+		} else {
+			actual = output.String()
+		}
+		if actual != test.Expected {
+			t.Errorf(notEqualFmt, actual, test.Expected)
+		}
 	}
 }
