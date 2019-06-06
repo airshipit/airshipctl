@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/ian-howell/airshipctl/cmd"
-	"github.com/ian-howell/airshipctl/pkg/log"
 )
 
 func main() {
@@ -16,8 +15,6 @@ func main() {
 	}
 
 	cmd.AddDefaultAirshipCTLCommands(rootCmd, settings)
-
-	log.Init(settings, os.Stdout)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stdout, err)

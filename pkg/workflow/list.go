@@ -12,14 +12,14 @@ import (
 )
 
 // ListWorkflows returns a list of Workflows
-func ListWorkflows(settings *environment.Settings) ([]v1alpha1.Workflow, error) {
-	var clientSet v1alpha1client.WorkflowInterface
+func ListWorkflows(clientset *Clientset, settings *environment.Settings) ([]v1alpha1.Workflow, error) {
+	var wfClient v1alpha1client.WorkflowInterface
 	if settings.AllNamespaces {
-		clientSet = settings.ArgoClient.ArgoprojV1alpha1().Workflows(apiv1.NamespaceAll)
+		wfClient = clientset.Argo.ArgoprojV1alpha1().Workflows(apiv1.NamespaceAll)
 	} else {
-		clientSet = settings.ArgoClient.ArgoprojV1alpha1().Workflows(settings.Namespace)
+		wfClient = clientset.Argo.ArgoprojV1alpha1().Workflows(settings.Namespace)
 	}
-	wflist, err := clientSet.List(v1.ListOptions{})
+	wflist, err := wfClient.List(v1.ListOptions{})
 	if err != nil {
 		return []v1alpha1.Workflow{}, err
 	}

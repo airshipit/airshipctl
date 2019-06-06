@@ -3,15 +3,13 @@ package log
 import (
 	"io"
 	"log"
-
-	"github.com/ian-howell/airshipctl/pkg/environment"
 )
 
 var debug = false
 
 // Init initializes settings related to logging
-func Init(settings *environment.AirshipCTLSettings, out io.Writer) {
-	debug = settings.Debug
+func Init(debugFlag bool, out io.Writer) {
+	debug = debugFlag
 	log.SetOutput(out)
 }
 

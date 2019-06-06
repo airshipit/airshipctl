@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"io"
 
 	"github.com/spf13/cobra"
@@ -9,6 +8,7 @@ import (
 	"github.com/ian-howell/airshipctl/cmd/bootstrap"
 	"github.com/ian-howell/airshipctl/cmd/workflow"
 	"github.com/ian-howell/airshipctl/pkg/environment"
+	"github.com/ian-howell/airshipctl/pkg/log"
 )
 
 // NewRootCmd creates the root `airshipctl` command. All other commands are
@@ -20,11 +20,8 @@ func NewRootCmd(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings,
 		Short:         "airshipctl is a unified entrypoint to various airship components",
 		SilenceErrors: true,
 		SilenceUsage:  true,
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			if err := settings.Init(); err != nil {
-				return fmt.Errorf("error while initializing settings: %s", err)
-			}
-			return nil
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			log.Init(settings.Debug, cmd.OutOrStderr())
 		},
 	}
 	rootCmd.SetOutput(out)

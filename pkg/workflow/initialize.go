@@ -2,7 +2,6 @@ package workflow
 
 import (
 	"fmt"
-	"io"
 
 	v1beta2 "k8s.io/api/apps/v1beta2"
 	"k8s.io/api/core/v1"
@@ -13,6 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
+	"github.com/ian-howell/airshipctl/pkg/log"
 	"github.com/ian-howell/airshipctl/pkg/workflow/environment"
 )
 
@@ -22,16 +22,13 @@ const (
 
 // Initialize creates the argo namespace and all of the required kubernetes
 // objects for argo to function
-func Initialize(out io.Writer, settings *environment.Settings, manifestPath string) error {
-	kubeClient := settings.KubeClient
-	crdClient := settings.CRDClient
-
-	if err := createNamespace(out, kubeClient); err != nil {
+func Initialize(clientset *Clientset, settings *environment.Settings, manifestPath string) error {
+	if err := createNamespace(clientset.Kube); err != nil {
 		return err
 	}
 
 	if manifestPath == "" {
-		if err := createDefaultObjects(out, kubeClient, crdClient); err != nil {
+		if err := createDefaultObjects(clientset.Kube, clientset.CRD); err != nil {
 			return fmt.Errorf("could not create default objects: %s", err.Error())
 		}
 	} else {
@@ -43,55 +40,55 @@ func Initialize(out io.Writer, settings *environment.Settings, manifestPath stri
 	return nil
 }
 
-func createNamespace(out io.Writer, kubeClient kubernetes.Interface) error {
-	fmt.Fprintf(out, "Creating namespace %s\n", argoNamespace)
+func createNamespace(kubeClient kubernetes.Interface) error {
+	log.Debugf("Creating namespace %s", argoNamespace)
 	_, err := kubeClient.CoreV1().Namespaces().Create(&v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "argo"}})
-	return handleCreateError(out, fmt.Sprintf("namespace %s", argoNamespace), err)
+	return handleCreateError(fmt.Sprintf("namespace %s", argoNamespace), err)
 }
 
-func createDefaultObjects(out io.Writer, kubeClient kubernetes.Interface, crdClient apixv1beta1client.Interface) error {
-	fmt.Fprintf(out, "Registering Workflow CRD\n")
-	if err := handleCreateError(out, "Workflow CRD", registerDefaultWorkflow(crdClient)); err != nil {
+func createDefaultObjects(kubeClient kubernetes.Interface, crdClient apixv1beta1client.Interface) error {
+	log.Debugf("Registering Workflow CRD")
+	if err := handleCreateError("Workflow CRD", registerDefaultWorkflow(crdClient)); err != nil {
 		return err
 	}
 
-	fmt.Fprintf(out, "Creating argo ServiceAccount\n")
-	if err := handleCreateError(out, "argo ServiceAccount", createArgoServiceAccount(kubeClient)); err != nil {
+	log.Debugf("Creating argo ServiceAccount")
+	if err := handleCreateError("argo ServiceAccount", createArgoServiceAccount(kubeClient)); err != nil {
 		return err
 	}
 
-	fmt.Fprintf(out, "Creating argo admin ClusterRole\n")
-	if err := handleCreateError(out, "argo admin ClusterRole", createArgoAdminClusterRole(kubeClient)); err != nil {
+	log.Debugf("Creating argo admin ClusterRole")
+	if err := handleCreateError("argo admin ClusterRole", createArgoAdminClusterRole(kubeClient)); err != nil {
 		return err
 	}
 
-	fmt.Fprintf(out, "Creating argo edit ClusterRole\n")
-	if err := handleCreateError(out, "argo edit ClusterRole", createArgoEditClusterRole(kubeClient)); err != nil {
+	log.Debugf("Creating argo edit ClusterRole")
+	if err := handleCreateError("argo edit ClusterRole", createArgoEditClusterRole(kubeClient)); err != nil {
 		return err
 	}
 
-	fmt.Fprintf(out, "Creating argo view ClusterRole\n")
-	if err := handleCreateError(out, "argo view ClusterRole", createArgoViewClusterRole(kubeClient)); err != nil {
+	log.Debugf("Creating argo view ClusterRole")
+	if err := handleCreateError("argo view ClusterRole", createArgoViewClusterRole(kubeClient)); err != nil {
 		return err
 	}
 
-	fmt.Fprintf(out, "Creating argo ClusterRole\n")
-	if err := handleCreateError(out, "argo ClusterRole", createArgoClusterRole(kubeClient)); err != nil {
+	log.Debugf("Creating argo ClusterRole")
+	if err := handleCreateError("argo ClusterRole", createArgoClusterRole(kubeClient)); err != nil {
 		return err
 	}
 
-	fmt.Fprintf(out, "Creating argo ClusterRoleBinding\n")
-	if err := handleCreateError(out, "argo ClusterRoleBinding", createArgoClusterRoleBinding(kubeClient)); err != nil {
+	log.Debugf("Creating argo ClusterRoleBinding")
+	if err := handleCreateError("argo ClusterRoleBinding", createArgoClusterRoleBinding(kubeClient)); err != nil {
 		return err
 	}
 
-	fmt.Fprintf(out, "Creating argo ConfigMap\n")
-	if err := handleCreateError(out, "argo ConfigMap", createArgoConfigMap(kubeClient)); err != nil {
+	log.Debugf("Creating argo ConfigMap")
+	if err := handleCreateError("argo ConfigMap", createArgoConfigMap(kubeClient)); err != nil {
 		return err
 	}
 
-	fmt.Fprintf(out, "Creating argo Deployment\n")
-	if err := handleCreateError(out, "argo Deployment", createArgoDeployment(kubeClient)); err != nil {
+	log.Debugf("Creating argo Deployment")
+	if err := handleCreateError("argo Deployment", createArgoDeployment(kubeClient)); err != nil {
 		return err
 	}
 
@@ -380,12 +377,12 @@ func createArgoDeployment(kubeClient kubernetes.Interface) error {
 	return err
 }
 
-func handleCreateError(out io.Writer, resourceName string, err error) error {
+func handleCreateError(resourceName string, err error) error {
 	if err == nil {
 		return nil
 	}
 	if errors.IsAlreadyExists(err) {
-		fmt.Fprintf(out, "%s already exists\n", resourceName)
+		log.Debugf("%s already exists", resourceName)
 		return nil
 	}
 	return fmt.Errorf("Could not create %s: %s", resourceName, err.Error())

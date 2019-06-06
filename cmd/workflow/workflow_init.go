@@ -5,9 +5,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/ian-howell/airshipctl/pkg/environment"
-	"github.com/ian-howell/airshipctl/pkg/workflow"
-	wfenv "github.com/ian-howell/airshipctl/pkg/workflow/environment"
+	wf "github.com/ian-howell/airshipctl/pkg/workflow"
+	"github.com/ian-howell/airshipctl/pkg/workflow/environment"
 )
 
 var (
@@ -15,20 +14,21 @@ var (
 )
 
 // NewWorkflowInitCommand is a command for bootstrapping a kubernetes cluster with the necessary components for Argo workflows
-func NewWorkflowInitCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewWorkflowInitCommand(settings *environment.Settings) *cobra.Command {
 
 	workflowInitCommand := &cobra.Command{
 		Use:   "init [flags]",
 		Short: "bootstraps the kubernetes cluster with the Workflow CRDs and controller",
 		Run: func(cmd *cobra.Command, args []string) {
 			out := cmd.OutOrStdout()
-			wfSettings, ok := rootSettings.PluginSettings[PluginSettingsID].(*wfenv.Settings)
-			if !ok {
-				fmt.Fprintf(out, "settings for %s were not registered\n", PluginSettingsID)
+
+			clientset, err := wf.GetClientset(settings)
+			if err != nil {
+				fmt.Fprintf(out, "Could not get Workflow Clientset: %s\n", err.Error())
 				return
 			}
 
-			if err := workflow.Initialize(out, wfSettings, manifestPath); err != nil {
+			if err := wf.Initialize(clientset, settings, manifestPath); err != nil {
 				fmt.Fprintf(out, "error while initializing argo: %s\n", err.Error())
 				return
 			}

@@ -18,12 +18,13 @@ func NewWorkflowCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Com
 		Aliases: []string{"workflows", "wf"},
 	}
 
-	wfSettings := &wfenv.Settings{}
+	wfSettings := &wfenv.Settings{
+		AirshipCTLSettings: rootSettings,
+	}
 	wfSettings.InitFlags(workflowRootCmd)
-	rootSettings.Register(PluginSettingsID, wfSettings)
 
-	workflowRootCmd.AddCommand(NewWorkflowInitCommand(rootSettings))
-	workflowRootCmd.AddCommand(NewWorkflowListCommand(rootSettings))
+	workflowRootCmd.AddCommand(NewWorkflowInitCommand(wfSettings))
+	workflowRootCmd.AddCommand(NewWorkflowListCommand(wfSettings))
 
 	return workflowRootCmd
 }
