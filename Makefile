@@ -15,12 +15,6 @@ ADDTL_LINTERS  := goconst,gofmt,unparam
 PKG          := ./...
 TESTS        := .
 
-# coverage
-COVER        := $(SCRIPTS_DIR)/coverage_test.sh
-COVER_FILE   := cover.out
-MIN_COVERAGE := 70
-
-
 .PHONY: build
 build:
 	@CGO_ENABLED=0 go build -o $(BINDIR)/$(EXECUTABLE_CLI) $(GO_FLAGS)
@@ -30,18 +24,12 @@ test: build
 test: lint
 test: TESTFLAGS += -race -v
 test: unit-tests
-test: cover
 
 .PHONY: unit-tests
 unit-tests: build
 	@echo "Performing unit test step..."
-	@go test -run $(TESTS) $(PKG) $(TESTFLAGS) -coverprofile=$(COVER_FILE) -coverpkg=$(PKG)
+	@go test -run $(TESTS) $(PKG) $(TESTFLAGS)
 	@echo "All unit tests passed"
-
-.PHONY: cover
-cover: unit-tests
-	@./$(COVER) $(COVER_FILE) $(MIN_COVERAGE)
-
 
 .PHONY: lint
 lint:
@@ -52,7 +40,6 @@ lint:
 .PHONY: clean
 clean:
 	@rm -fr $(BINDIR)
-	@rm -fr $(COVER_FILE)
 
 .PHONY: docs
 docs:
