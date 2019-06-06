@@ -1,0 +1,15 @@
+language: go
+
+go:
+  - "1.12"
+
+env:
+- GO111MODULE=on
+
+script: make test
+
+git:
+  depth: 1
+
+notifications:
+  email: false
