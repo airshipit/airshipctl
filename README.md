@@ -34,7 +34,7 @@ import (
 )
 
 func main() {
-	rootCmd, err := cmd.NewRootCmd(os.Stdout)
+	rootCmd, _, err := cmd.NewRootCmd(os.Stdout)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create root airshipctl command: %s\n", err.Error())
 		os.Exit(1)
@@ -64,4 +64,12 @@ Now that you've built `airshipctl`, you can access your plugin with the followin
 ./airshipctl example
 ```
 
-For a more involved example, see the [example plugin project](github.com/ian-howell/examplepugin)
+You may have noticed that this example ignores the second return value from
+cmd.NewRootCmd. This value is a pointer to the AirshipCTLSettings, which
+contains various configuration details, such as the debug flag and the path to
+the config file\*. A useful paradigm involves embedding this object into a
+custom ExampleSettings struct. This can be seen in the demo repo.
+
+For a more involved example, see the [demo repo](github.com/ian-howell/examplepugin)
+
+\* Work in progress
