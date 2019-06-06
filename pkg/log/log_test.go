@@ -105,7 +105,6 @@ func TestLoggingDebug(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		t.Logf("%+v", test)
 		output := new(bytes.Buffer)
 		log.Init(test.Debug, output)
 

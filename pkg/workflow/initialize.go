@@ -382,7 +382,7 @@ func handleCreateError(resourceName string, err error) error {
 		return nil
 	}
 	if errors.IsAlreadyExists(err) {
-		log.Debugf("%s already exists", resourceName)
+		log.Debugf("*** WARNING: %s already exists ***", resourceName)
 		return nil
 	}
 	return fmt.Errorf("Could not create %s: %s", resourceName, err.Error())

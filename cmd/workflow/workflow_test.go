@@ -7,7 +7,6 @@ import (
 
 	"github.com/ian-howell/airshipctl/cmd"
 	"github.com/ian-howell/airshipctl/cmd/workflow"
-	wfenv "github.com/ian-howell/airshipctl/pkg/workflow/environment"
 	"github.com/ian-howell/airshipctl/test"
 )
 
@@ -36,9 +35,6 @@ func TestWorkflow(t *testing.T) {
 	}
 
 	for _, tt := range cmdTests {
-		settings.PluginSettings[workflow.PluginSettingsID] = &wfenv.Settings{
-			Initialized: true,
-		}
 		test.RunTest(t, tt.CmdTest, rootCmd)
 	}
 }

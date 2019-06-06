@@ -22,7 +22,6 @@ func NewWorkflowListCommand(settings *environment.Settings) *cobra.Command {
 		Aliases: []string{"ls"},
 		Run: func(cmd *cobra.Command, args []string) {
 			out := cmd.OutOrStdout()
-			fmt.Fprintf(out, "debug state: %v\n", settings.Debug)
 			clientset, err := wf.GetClientset(settings)
 			if err != nil {
 				fmt.Fprintf(out, "Could not get Workflow Clientset: %s\n", err.Error())
