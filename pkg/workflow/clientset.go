@@ -40,6 +40,7 @@ func GetClientset(settings *environment.Settings) (*Clientset, error) {
 		return nil, err
 	}
 
+	clientset = &Clientset{}
 	clientset.Kube, err = kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
 		return nil, err
@@ -55,6 +56,5 @@ func GetClientset(settings *environment.Settings) (*Clientset, error) {
 		return nil, err
 	}
 
-	clientset = &Clientset{}
 	return clientset, nil
 }
