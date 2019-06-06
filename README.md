@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/ian-howell/airshipctl.svg?branch=master)](https://travis-ci.com/ian-howell/airshipctl)
+
 # airshipctl
 
 ### Custom Plugins Tutorial
@@ -62,4 +64,4 @@ Now that you've built `airshipctl`, you can access your plugin with the followin
 ./airshipctl example
 ```
 
-For a slightly more involved example, see the [example plugin project](github.com/ian-howell/examplepugin)
+For a more involved example, see the [example plugin project](github.com/ian-howell/examplepugin)
