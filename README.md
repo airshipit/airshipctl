@@ -4,6 +4,9 @@
 
 ### Custom Plugins Tutorial
 
+This tutorial walks through a very basic plugin for `airshipctl`. For a more
+involved example, see [Plugin Support](docs/plugins.md)
+
 The following steps will get you started with a very rudimentary example plugin
 for airshipctl. First, create a directory for your project outside of the
 GOPATH:
@@ -70,6 +73,6 @@ contains various configuration details, such as the debug flag and the path to
 the config file\*. A useful paradigm involves embedding this object into a
 custom ExampleSettings struct. This can be seen in the demo repo.
 
-For a more involved example, see the [demo repo](github.com/ian-howell/examplepugin)
+For a more involved example, see [Plugin Support](docs/plugins.md)
 
 \* Work in progress
