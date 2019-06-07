@@ -11,6 +11,12 @@ import (
 	"github.com/ian-howell/airshipctl/pkg/log"
 )
 
+// NewAirshipCTLCommand creates a root `airshipctl` command with the default commands attached
+func NewAirshipCTLCommand(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings, error) {
+	rootCmd, settings, err := NewRootCmd(out)
+	return AddDefaultAirshipCTLCommands(rootCmd, settings), settings, err
+}
+
 // NewRootCmd creates the root `airshipctl` command. All other commands are
 // subcommands branching from this one
 func NewRootCmd(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings, error) {

@@ -8,13 +8,11 @@ import (
 )
 
 func main() {
-	rootCmd, settings, err := cmd.NewRootCmd(os.Stdout)
+	rootCmd, _, err := cmd.NewAirshipCTLCommand(os.Stdout)
 	if err != nil {
 		fmt.Fprintln(os.Stdout, err)
 		os.Exit(1)
 	}
-
-	cmd.AddDefaultAirshipCTLCommands(rootCmd, settings)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stdout, err)
