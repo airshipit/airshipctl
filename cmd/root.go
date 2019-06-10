@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/ian-howell/airshipctl/cmd/bootstrap"
-	"github.com/ian-howell/airshipctl/cmd/workflow"
 	"github.com/ian-howell/airshipctl/pkg/environment"
 	"github.com/ian-howell/airshipctl/pkg/log"
 )
@@ -41,7 +40,6 @@ func NewRootCmd(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings,
 // AddDefaultAirshipCTLCommands is a convenience function for adding all of the
 // default commands to airshipctl
 func AddDefaultAirshipCTLCommands(cmd *cobra.Command, settings *environment.AirshipCTLSettings) *cobra.Command {
-	cmd.AddCommand(workflow.NewWorkflowCommand(settings))
 	cmd.AddCommand(bootstrap.NewBootstrapCommand(settings))
 	return cmd
 }

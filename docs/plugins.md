@@ -84,15 +84,14 @@ Available Commands:
   bootstrap   bootstraps airshipctl
   help        Help about any command
   version     Show the version number of airshipctl
-  workflow    Access to argo workflows
   ------ more commands TBD ------
 ```
 
 Downloading and building the main `airshipctl` project will default to
-providing the builtin commands (such as `bootstrap` and `workflow`), much like
-the above. A plugin author wishing to use `airshipctl` can then use the
-`rootCmd` as the first of a series of building blocks. The following
-demonstrates the addition of a new command, `hello`:
+providing the builtin commands (such as `bootstrap`), much like the above. A
+plugin author wishing to use `airshipctl` can then use the `rootCmd` as the
+first of a series of building blocks. The following demonstrates the addition
+of a new command, `hello`:
 
 ```go
 package main
