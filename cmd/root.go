@@ -3,13 +3,13 @@ package cmd
 import (
 	"io"
 
+	argo "github.com/argoproj/argo/cmd/argo/commands"
 	"github.com/spf13/cobra"
 	kubectl "k8s.io/kubernetes/pkg/kubectl/cmd"
 
 	// Import to initialize client auth plugins.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
-	"github.com/ian-howell/airshipctl/cmd/argo"
 	"github.com/ian-howell/airshipctl/cmd/bootstrap"
 	"github.com/ian-howell/airshipctl/cmd/completion"
 	"github.com/ian-howell/airshipctl/pkg/environment"
@@ -46,7 +46,7 @@ func NewRootCmd(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings,
 // AddDefaultAirshipCTLCommands is a convenience function for adding all of the
 // default commands to airshipctl
 func AddDefaultAirshipCTLCommands(cmd *cobra.Command, settings *environment.AirshipCTLSettings) *cobra.Command {
-	cmd.AddCommand(argo.NewArgoCommand())
+	cmd.AddCommand(argo.NewCommand())
 	cmd.AddCommand(bootstrap.NewBootstrapCommand(settings))
 	cmd.AddCommand(completion.NewCompletionCommand())
 	cmd.AddCommand(kubectl.NewDefaultKubectlCommand())
