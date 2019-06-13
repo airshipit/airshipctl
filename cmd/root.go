@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/ian-howell/airshipctl/cmd/argo"
 	"github.com/ian-howell/airshipctl/cmd/bootstrap"
 	"github.com/ian-howell/airshipctl/pkg/environment"
 	"github.com/ian-howell/airshipctl/pkg/log"
@@ -41,5 +42,6 @@ func NewRootCmd(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings,
 // default commands to airshipctl
 func AddDefaultAirshipCTLCommands(cmd *cobra.Command, settings *environment.AirshipCTLSettings) *cobra.Command {
 	cmd.AddCommand(bootstrap.NewBootstrapCommand(settings))
+	cmd.AddCommand(argo.NewArgoCommand())
 	return cmd
 }
