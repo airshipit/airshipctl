@@ -48,5 +48,13 @@ func AddDefaultAirshipCTLCommands(cmd *cobra.Command, settings *environment.Airs
 	cmd.AddCommand(argo.NewArgoCommand())
 	cmd.AddCommand(bootstrap.NewBootstrapCommand(settings))
 	cmd.AddCommand(kubectl.NewDefaultKubectlCommand())
+
+	kustomizeCmd, _, err := cmd.Find([]string{"kubectl", "kustomize"})
+	if err != nil {
+		log.Fatalf("Unable to find subcommand '%s'", err.Error())
+	}
+
+	cmd.AddCommand(kustomizeCmd)
+
 	return cmd
 }

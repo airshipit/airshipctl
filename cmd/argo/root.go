@@ -11,7 +11,7 @@ import (
 
 const (
 	// CLIName is the name of the CLI
-	CLIName = "argo"
+	CLIName = "workflow"
 )
 
 // NewArgoCommand returns a new instance of an argo command
