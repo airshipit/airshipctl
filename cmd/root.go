@@ -11,6 +11,7 @@ import (
 
 	"github.com/ian-howell/airshipctl/cmd/argo"
 	"github.com/ian-howell/airshipctl/cmd/bootstrap"
+	"github.com/ian-howell/airshipctl/cmd/completion"
 	"github.com/ian-howell/airshipctl/pkg/environment"
 	"github.com/ian-howell/airshipctl/pkg/log"
 )
@@ -47,6 +48,7 @@ func NewRootCmd(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings,
 func AddDefaultAirshipCTLCommands(cmd *cobra.Command, settings *environment.AirshipCTLSettings) *cobra.Command {
 	cmd.AddCommand(argo.NewArgoCommand())
 	cmd.AddCommand(bootstrap.NewBootstrapCommand(settings))
+	cmd.AddCommand(completion.NewCompletionCommand())
 	cmd.AddCommand(kubectl.NewDefaultKubectlCommand())
 
 	kustomizeCmd, _, err := cmd.Find([]string{"kubectl", "kustomize"})
