@@ -101,8 +101,8 @@ require (
 	k8s.io/client-go v11.0.1-0.20190516230509-ae8359b20417+incompatible
 	k8s.io/cloud-provider v0.0.0-20190516232619-2bf8e45c8454 // indirect
 	k8s.io/cluster-bootstrap v0.0.0-20190516232516-d7d78ab2cfe7 // indirect
-	k8s.io/code-generator v0.0.0-20190531131525-17d711082421
 	k8s.io/component-base v0.0.0-20190516230545-9b07ebd4193b // indirect
+	k8s.io/klog v0.3.2 // indirect
 	k8s.io/kube-openapi v0.0.0-20190603182131-db7b694dc208 // indirect
 	k8s.io/kube-proxy v0.0.0-20190516232141-b2acb7b92548 // indirect
 	k8s.io/kubelet v0.0.0-20190516232236-412e4380c1a8 // indirect
