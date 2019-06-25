@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ian-howell/airshipctl/pkg/log"
+	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 const notEqualFmt = `Output does not match expected

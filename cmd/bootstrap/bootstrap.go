@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/ian-howell/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
 // PluginSettingsID is used as a key in the root settings map of plugin settings

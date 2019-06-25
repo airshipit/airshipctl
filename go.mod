@@ -1,4 +1,4 @@
-module github.com/ian-howell/airshipctl
+module opendev.org/airship/airshipctl
 
 go 1.12
 

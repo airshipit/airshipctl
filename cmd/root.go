@@ -12,10 +12,10 @@ import (
 	// Import to initialize client auth plugins.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
-	"github.com/ian-howell/airshipctl/cmd/bootstrap"
-	"github.com/ian-howell/airshipctl/cmd/completion"
-	"github.com/ian-howell/airshipctl/pkg/environment"
-	"github.com/ian-howell/airshipctl/pkg/log"
+	"opendev.org/airship/airshipctl/cmd/bootstrap"
+	"opendev.org/airship/airshipctl/cmd/completion"
+	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 // NewAirshipCTLCommand creates a root `airshipctl` command with the default commands attached

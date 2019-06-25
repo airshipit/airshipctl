@@ -66,6 +66,6 @@ docs:
 
 .PHONY: update-golden
 update-golden: TESTFLAGS += -update -v
-update-golden: PKG = github.com/ian-howell/airshipctl/cmd/...
+update-golden: PKG = opendev.org/airship/airshipctl/cmd/...
 update-golden:
 	@GO111MODULE=on go test $(PKG) $(TESTFLAGS)
