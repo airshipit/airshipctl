@@ -11,8 +11,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime"
-
-	"github.com/ian-howell/airshipctl/pkg/util"
 )
 
 // UpdateGolden writes out the golden files with the latest values, rather than failing the test.
@@ -35,7 +33,6 @@ type CmdTest struct {
 // output from its golden file, or generates golden files if the -update flag
 // is passed
 func RunTest(t *testing.T, test *CmdTest, cmd *cobra.Command) {
-	util.InitClock()
 	actual := &bytes.Buffer{}
 	cmd.SetOutput(actual)
 	args := strings.Fields(test.CmdLine)

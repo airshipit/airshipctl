@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.com/ian-howell/airshipctl.svg?branch=master)](https://travis-ci.com/ian-howell/airshipctl)
-
 # airshipctl
 
 ### Custom Plugins Tutorial
