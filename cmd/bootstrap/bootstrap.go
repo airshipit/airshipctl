@@ -8,9 +8,6 @@ import (
 	"github.com/ian-howell/airshipctl/pkg/environment"
 )
 
-// PluginSettingsID is used as a key in the root settings map of plugin settings
-const PluginSettingsID = "bootstrap"
-
 // NewBootstrapCommand creates a new command for bootstrapping airshipctl
 func NewBootstrapCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	bootstrapRootCmd := &cobra.Command{
