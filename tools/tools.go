@@ -5,5 +5,4 @@ package tools
 import (
 	// These imports are all tools used in the building and testing process
 	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
-	_ "k8s.io/code-generator"
 )
