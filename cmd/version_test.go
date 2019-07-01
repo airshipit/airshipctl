@@ -3,8 +3,8 @@ package cmd_test
 import (
 	"testing"
 
-	"github.com/ian-howell/airshipctl/cmd"
-	"github.com/ian-howell/airshipctl/test"
+	"opendev.org/airship/airshipctl/cmd"
+	"opendev.org/airship/airshipctl/test"
 )
 
 func TestVersion(t *testing.T) {

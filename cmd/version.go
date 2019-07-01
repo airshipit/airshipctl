@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/ian-howell/airshipctl/pkg/util"
+	"opendev.org/airship/airshipctl/pkg/util"
 )
 
 // NewVersionCommand prints out the versions of airshipctl and its underlying tools

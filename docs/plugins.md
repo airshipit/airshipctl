@@ -31,7 +31,7 @@ package main
 
 import (
 	"os"
-	"github.com/ian-howell/airshipctl/cmd"
+	"opendev.org/airship/airshipctl/cmd"
 )
 
 func main() {
@@ -99,7 +99,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"github.com/ian-howell/airshipctl/cmd"
+	"opendev.org/airship/airshipctl/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -148,8 +148,8 @@ package main
 
 import (
 	"os"
-	"github.com/ian-howell/airshipctl/cmd"
-	"github.com/ian-howell/airshipctl/cmd/bootstrap"
+	"opendev.org/airship/airshipctl/cmd"
+	"opendev.org/airship/airshipctl/cmd/bootstrap"
 )
 
 func main() {
@@ -184,8 +184,8 @@ package main
 import (
 	"fmt"
 	"os"
-	"github.com/ian-howell/airshipctl/cmd"
-	"github.com/ian-howell/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/cmd"
+	"opendev.org/airship/airshipctl/pkg/environment"
 	"github.com/spf13/cobra"
 )
 

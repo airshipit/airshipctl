@@ -20,7 +20,7 @@ go mod init example
 Note that modules are a relatively new feature added to Go, so you'll need to
 be running Go1.11 or greater. Also note that most modules will follow a naming
 schema that matches the remote version control system. A more realistice module
-name might look something like `github.com/ian-howell/exampleplugin`.
+name might look something like `opendev.org/airship/exampleplugin`.
 
 Next, create a file `main.go` and populate it with the following:
 ```go
@@ -30,7 +30,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ian-howell/airshipctl/cmd"
+	"opendev.org/airship/airshipctl/cmd"
 	"github.com/spf13/cobra"
 )
 

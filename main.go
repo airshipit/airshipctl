@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ian-howell/airshipctl/cmd"
+	"opendev.org/airship/airshipctl/cmd"
 )
 
 func main() {

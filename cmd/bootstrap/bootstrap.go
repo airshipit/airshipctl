@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/ian-howell/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
 // NewBootstrapCommand creates a new command for bootstrapping airshipctl
