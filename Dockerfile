@@ -18,3 +18,5 @@ RUN make ${MAKE_TARGET} && \
 
 FROM ${RELEASE_IMAGE} as release
 COPY --from=builder /usr/src/airshipctl/bin/airshipctl /usr/local/bin/airshipctl
+USER 65534
+ENTRYPOINT [ "/usr/local/bin/airshipctl" ]

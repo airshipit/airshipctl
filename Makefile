@@ -1,22 +1,29 @@
 SHELL := /bin/bash
 
-GO_FLAGS       := -ldflags '-extldflags "-static"' -tags=netgo
+GO_FLAGS            := -ldflags '-extldflags "-static"' -tags=netgo
 
-BINDIR         := bin
-EXECUTABLE_CLI := airshipctl
+BINDIR              := bin
+EXECUTABLE_CLI      := airshipctl
 
-SCRIPTS_DIR    := scripts
+SCRIPTS_DIR         := scripts
 
 # linting
-LINTER_CMD     := "github.com/golangci/golangci-lint/cmd/golangci-lint" run
-ADDTL_LINTERS  := goconst,gofmt,unparam
+LINTER_CMD          := "github.com/golangci/golangci-lint/cmd/golangci-lint" run
+ADDTL_LINTERS       := goconst,gofmt,unparam
 
 # docker
-DOCKER_MAKE_TARGET := build
+DOCKER_MAKE_TARGET  := build
+
+# docker image options
+DOCKER_REGISTRY     ?= quay.io
+DOCKER_IMAGE_NAME   ?= airshipctl
+DOCKER_IMAGE_PREFIX ?= airshipit
+DOCKER_IMAGE_TAG    ?= dev
+DOCKER_IMAGE        ?= ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
 
 # go options
-PKG          := ./...
-TESTS        := .
+PKG                 := ./...
+TESTS               := .
 
 .PHONY: get-modules
 get-modules:
@@ -46,7 +53,11 @@ lint:
 
 .PHONY: docker-image
 docker-image:
-	@docker build . --build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET)
+	@docker build . --build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET) --tag $(DOCKER_IMAGE)
+
+.PHONY: print-docker-image-tag
+print-docker-image-tag:
+	@echo "$(DOCKER_IMAGE)"
 
 .PHONY: docker-image-unit-tests
 docker-image-unit-tests: DOCKER_MAKE_TARGET = unit-tests

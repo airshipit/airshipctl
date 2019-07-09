@@ -10,8 +10,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- nodeset:
-    name: airship-airshipctl-single-node
-    nodes:
-      - name: primary
-        label: ubuntu-bionic
+- hosts: primary
+  roles:
+    - install-kubernetes

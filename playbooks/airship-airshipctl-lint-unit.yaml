@@ -9,6 +9,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-- hosts: all
-  roles:
-    - install-docker
+
+- hosts: primary
+  tasks:
+    - name: Run Linter
+      block:
+        - name: "make docker-image-lint"
+          make:
+            chdir: "{{ zuul.project.src_dir }}"
+            target: docker-image-lint
+
+    - name: Run Unit Tests
+      block:
+        - name: "make docker-image-unit-tests"
+          make:
+            chdir: "{{ zuul.project.src_dir }}"
+            target: docker-image-unit-tests
