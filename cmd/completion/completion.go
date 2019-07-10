@@ -33,12 +33,10 @@ func NewCompletionCommand() *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "completion SHELL",
-		Short: "Generate autocompletions script for the specified shell (bash or zsh)",
-		Long:  completionDesc,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return runCompletion(cmd, args)
-		},
+		Use:       "completion SHELL",
+		Short:     "Generate autocompletions script for the specified shell (bash or zsh)",
+		Long:      completionDesc,
+		RunE:      runCompletion,
 		ValidArgs: shells,
 	}
 

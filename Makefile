@@ -9,7 +9,7 @@ SCRIPTS_DIR         := scripts
 
 # linting
 LINTER_CMD          := "github.com/golangci/golangci-lint/cmd/golangci-lint" run
-ADDTL_LINTERS       := goconst,gofmt,unparam
+LINTER_CONFIG       := .golangci.yaml
 
 # docker
 DOCKER_MAKE_TARGET  := build
@@ -34,7 +34,6 @@ build: get-modules
 	@GO111MODULE=on CGO_ENABLED=0 go build -o $(BINDIR)/$(EXECUTABLE_CLI) $(GO_FLAGS)
 
 .PHONY: test
-test: build
 test: lint
 test: TESTFLAGS += -race -v
 test: unit-tests
@@ -48,7 +47,7 @@ unit-tests: build
 .PHONY: lint
 lint:
 	@echo "Performing linting step..."
-	@GO111MODULE=on go run ${LINTER_CMD} --enable ${ADDTL_LINTERS}
+	@GO111MODULE=on go run ${LINTER_CMD} --config ${LINTER_CONFIG}
 	@echo "Linting completed successfully"
 
 .PHONY: docker-image
