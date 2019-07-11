@@ -22,6 +22,7 @@ DOCKER_IMAGE        ?= $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/$(DOCKER_IMAGE_
 # go options
 PKG                 := ./...
 TESTS               := .
+COVER_PROFILE       := cover.out
 
 .PHONY: get-modules
 get-modules:
@@ -35,12 +36,17 @@ build: get-modules
 test: lint
 test: TESTFLAGS += -race -v
 test: unit-tests
+test: cover
 
 .PHONY: unit-tests
 unit-tests: build
 	@echo "Performing unit test step..."
-	@GO111MODULE=on go test -run $(TESTS) $(PKG) $(TESTFLAGS)
+	@GO111MODULE=on go test -run $(TESTS) $(PKG) $(TESTFLAGS) -covermode=atomic -coverprofile=$(COVER_PROFILE)
 	@echo "All unit tests passed"
+
+.PHONY: cover
+cover: unit-tests
+	@./tools/coverage_check $(COVER_PROFILE)
 
 .PHONY: lint
 lint:
@@ -57,7 +63,7 @@ print-docker-image-tag:
 	@echo "$(DOCKER_IMAGE)"
 
 .PHONY: docker-image-unit-tests
-docker-image-unit-tests: DOCKER_MAKE_TARGET = unit-tests
+docker-image-unit-tests: DOCKER_MAKE_TARGET = cover
 docker-image-unit-tests: docker-image
 
 .PHONY: docker-image-lint
@@ -67,6 +73,7 @@ docker-image-lint: docker-image
 .PHONY: clean
 clean:
 	@rm -fr $(BINDIR)
+	@rm -fr $(COVER_PROFILE)
 
 .PHONY: docs
 docs:

@@ -95,7 +95,7 @@ require (
 	gotest.tools v2.2.0+incompatible // indirect
 	k8s.io/api v0.0.0-20190516230258-a675ac48af67 // indirect
 	k8s.io/apiextensions-apiserver v0.0.0-20190516231611-bf6753f2aa24 // indirect
-	k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d
+	k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d // indirect
 	k8s.io/apiserver v0.0.0-20190516230822-f89599b3f645 // indirect
 	k8s.io/cli-runtime v0.0.0-20190516231937-17bc0b7fcef5 // indirect
 	k8s.io/client-go v11.0.1-0.20190516230509-ae8359b20417+incompatible

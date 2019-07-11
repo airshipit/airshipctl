@@ -4,22 +4,25 @@ import (
 	"testing"
 
 	"opendev.org/airship/airshipctl/cmd"
-	"opendev.org/airship/airshipctl/test"
+	"opendev.org/airship/airshipctl/testutil"
 )
 
 func TestVersion(t *testing.T) {
-	cmdTests := []*test.CmdTest{
-		{
-			Name:    "version",
-			CmdLine: "version",
-		},
-	}
 	rootCmd, _, err := cmd.NewRootCmd(nil)
 	if err != nil {
 		t.Fatalf("Could not create root command: %s", err.Error())
 	}
 	rootCmd.AddCommand(cmd.NewVersionCommand())
+
+	cmdTests := []*testutil.CmdTest{
+		{
+			Name:    "version",
+			CmdLine: "version",
+			Cmd:     rootCmd,
+		},
+	}
+
 	for _, tt := range cmdTests {
-		test.RunTest(t, tt, rootCmd)
+		testutil.RunTest(t, tt)
 	}
 }

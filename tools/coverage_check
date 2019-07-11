@@ -1,0 +1,23 @@
+#!/bin/bash
+set -ex
+
+if [[ $# -ne 1 ]]; then
+  printf "Usage: %s <coverfile>\n" "$0"
+  exit 0
+fi
+
+cover_file=$1
+min_coverage=80
+
+coverage_report=$(go tool cover -func="$cover_file")
+printf "%s\n" "$coverage_report"
+
+coverage_float=$(awk "/^total:/ { print \$3 }" <<< "$coverage_report")
+coverage_int=${coverage_float%.*}
+
+if (( "$coverage_int" < "$min_coverage" )) ; then
+  printf "FAIL: Test coverage is at %s, which does not meet the required coverage (%s%%)\n" "$coverage_float" "$min_coverage"
+  exit 1
+else
+  printf "SUCCESS: Test coverage is at %s, which meets the required coverage (%s%%)\n" "$coverage_float" "$min_coverage"
+fi
