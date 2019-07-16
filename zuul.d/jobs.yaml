@@ -21,3 +21,14 @@
     pre-run: playbooks/airship-airshipctl-deploy-existing-k8s.yaml
     run: playbooks/airship-airshipctl-functional-existing-k8s.yaml
     nodeset: airship-airshipctl-single-node
+
+- job:
+    name: airship-airshipctl-upload-git-mirror
+    parent: upload-git-mirror
+    description: Mirrors airship/airshipctl to airshipit/airshipctl
+    vars:
+      git_mirror_repository: airshipit/airshipctl
+    secrets:
+      - name: git_mirror_credentials
+        secret: airship-airshipctl-airshipit-github-secret
+        pass-to-parent: true

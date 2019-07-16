@@ -19,3 +19,6 @@
       jobs:
         - airship-airshipctl-lint-unit
         - airship-airshipctl-functional-existing-k8s
+    post:
+      jobs:
+        - airship-airshipctl-upload-git-mirror
