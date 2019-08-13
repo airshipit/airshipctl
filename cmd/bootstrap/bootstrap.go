@@ -1,8 +1,6 @@
 package bootstrap
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/environment"
@@ -12,12 +10,11 @@ import (
 func NewBootstrapCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	bootstrapRootCmd := &cobra.Command{
 		Use:   "bootstrap",
-		Short: "bootstraps airshipctl",
-		Run: func(cmd *cobra.Command, args []string) {
-			out := cmd.OutOrStdout()
-			fmt.Fprintf(out, "Under construction\n")
-		},
+		Short: "Bootstrap ephemeral Kubernetes cluster",
 	}
+
+	ISOGenCmd := NewISOGenCommand(bootstrapRootCmd, rootSettings)
+	bootstrapRootCmd.AddCommand(ISOGenCmd)
 
 	return bootstrapRootCmd
 }

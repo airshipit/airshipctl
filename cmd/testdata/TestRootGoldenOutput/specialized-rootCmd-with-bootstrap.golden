@@ -4,7 +4,7 @@ Usage:
   airshipctl [command]
 
 Available Commands:
-  bootstrap   bootstraps airshipctl
+  bootstrap   Bootstrap ephemeral Kubernetes cluster
   help        Help about any command
   version     Show the version number of airshipctl
 

@@ -1,0 +1,8 @@
+Generate bootstrap ISO image
+
+Usage:
+  bootstrap isogen [flags]
+
+Flags:
+  -c, --config string   Configuration file path for ISO builder container.
+  -h, --help            help for isogen

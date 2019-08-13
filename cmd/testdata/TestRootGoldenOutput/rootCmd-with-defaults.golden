@@ -5,7 +5,7 @@ Usage:
 
 Available Commands:
   argo        argo is the command line interface to Argo
-  bootstrap   bootstraps airshipctl
+  bootstrap   Bootstrap ephemeral Kubernetes cluster
   completion  Generate autocompletions script for the specified shell (bash or zsh)
   help        Help about any command
   kubeadm     kubeadm: easily bootstrap a secure Kubernetes cluster

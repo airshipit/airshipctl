@@ -1,0 +1,13 @@
+Bootstrap ephemeral Kubernetes cluster
+
+Usage:
+  bootstrap [command]
+
+Available Commands:
+  help        Help about any command
+  isogen      Generate bootstrap ISO image
+
+Flags:
+  -h, --help   help for bootstrap
+
+Use "bootstrap [command] --help" for more information about a command.
