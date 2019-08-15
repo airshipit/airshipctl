@@ -14,6 +14,7 @@ import (
 
 	"opendev.org/airship/airshipctl/cmd/bootstrap"
 	"opendev.org/airship/airshipctl/cmd/completion"
+	"opendev.org/airship/airshipctl/cmd/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/log"
 )
@@ -51,16 +52,10 @@ func AddDefaultAirshipCTLCommands(cmd *cobra.Command, settings *environment.Airs
 	cmd.AddCommand(argo.NewCommand())
 	cmd.AddCommand(bootstrap.NewBootstrapCommand(settings))
 	cmd.AddCommand(completion.NewCompletionCommand())
+	cmd.AddCommand(document.NewDocumentCommand(settings))
 	cmd.AddCommand(kubectl.NewDefaultKubectlCommand())
 	// Should we use cmd.OutOrStdout?
 	cmd.AddCommand(kubeadm.NewKubeadmCommand(os.Stdin, os.Stdout, os.Stderr))
-
-	kustomizeCmd, _, err := cmd.Find([]string{"kubectl", "kustomize"})
-	if err != nil {
-		log.Fatalf("Unable to find subcommand '%s'", err.Error())
-	}
-
-	cmd.AddCommand(kustomizeCmd)
 
 	return cmd
 }

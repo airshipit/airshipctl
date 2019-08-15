@@ -7,10 +7,10 @@ Available Commands:
   argo        argo is the command line interface to Argo
   bootstrap   bootstraps airshipctl
   completion  Generate autocompletions script for the specified shell (bash or zsh)
+  document    manages deployment documents
   help        Help about any command
   kubeadm     kubeadm: easily bootstrap a secure Kubernetes cluster
   kubectl     kubectl controls the Kubernetes cluster manager
-  kustomize   Build a kustomization target from a directory or a remote url.
   version     Show the version number of airshipctl
 
 Flags:
