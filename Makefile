@@ -5,8 +5,6 @@ GO_FLAGS            := -ldflags '-extldflags "-static"' -tags=netgo
 BINDIR              := bin
 EXECUTABLE_CLI      := airshipctl
 
-SCRIPTS_DIR         := scripts
-
 # linting
 LINTER_CMD          := "github.com/golangci/golangci-lint/cmd/golangci-lint" run
 LINTER_CONFIG       := .golangci.yaml
@@ -19,7 +17,7 @@ DOCKER_REGISTRY     ?= quay.io
 DOCKER_IMAGE_NAME   ?= airshipctl
 DOCKER_IMAGE_PREFIX ?= airshipit
 DOCKER_IMAGE_TAG    ?= dev
-DOCKER_IMAGE        ?= ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+DOCKER_IMAGE        ?= $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
 
 # go options
 PKG                 := ./...
@@ -47,7 +45,7 @@ unit-tests: build
 .PHONY: lint
 lint:
 	@echo "Performing linting step..."
-	@GO111MODULE=on go run ${LINTER_CMD} --config ${LINTER_CONFIG}
+	@GO111MODULE=on go run $(LINTER_CMD) --config $(LINTER_CONFIG)
 	@echo "Linting completed successfully"
 
 .PHONY: docker-image
@@ -75,7 +73,12 @@ docs:
 	@echo "TODO"
 
 .PHONY: update-golden
+update-golden: delete-golden
 update-golden: TESTFLAGS += -update -v
 update-golden: PKG = opendev.org/airship/airshipctl/cmd/...
-update-golden:
-	@GO111MODULE=on go test $(PKG) $(TESTFLAGS)
+update-golden: unit-tests
+
+# The delete-golden target is a utility for update-golden
+.PHONY: delete-golden
+delete-golden:
+	@find . -type f -name "*.golden" -delete
