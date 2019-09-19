@@ -16,5 +16,8 @@ func NewBootstrapCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Co
 	ISOGenCmd := NewISOGenCommand(bootstrapRootCmd, rootSettings)
 	bootstrapRootCmd.AddCommand(ISOGenCmd)
 
+	remoteDirectCmd := NewRemoteDirectCommand(rootSettings)
+	bootstrapRootCmd.AddCommand(remoteDirectCmd)
+
 	return bootstrapRootCmd
 }

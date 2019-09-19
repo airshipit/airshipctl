@@ -4,8 +4,9 @@ Usage:
   bootstrap [command]
 
 Available Commands:
-  help        Help about any command
-  isogen      Generate bootstrap ISO image
+  help         Help about any command
+  isogen       Generate bootstrap ISO image
+  remotedirect Bootstrap ephemeral node
 
 Flags:
   -h, --help   help for bootstrap

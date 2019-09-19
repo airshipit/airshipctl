@@ -7,6 +7,8 @@ require (
 	github.com/Azure/go-autorest/autorest v0.2.0 // indirect
 	github.com/MakeNowJust/heredoc v0.0.0-20171113091838-e9091a26100e // indirect
 	github.com/Microsoft/go-winio v0.4.12 // indirect
+	github.com/Nordix/go-redfish v0.0.0-20191016123452-b7790941aa86
+	github.com/Nordix/go-redfish/client v0.0.0-20191016123452-b7790941aa86
 	github.com/argoproj/argo v2.3.0+incompatible
 	github.com/argoproj/pkg v0.0.0-20190409001913-7e3ef65c8d44 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
