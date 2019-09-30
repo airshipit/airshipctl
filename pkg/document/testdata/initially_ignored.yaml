@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    airshipit.org/clustertype: target
+  name: some-random-deployment-we-will-filter
+  namespace: foobar
+spec:
+  selector:
+    matchLabels:
+      app: some-random-deployment-we-will-filter
+  serviceAccountName: something
+  template:
+    metadata:
+      labels:
+        app: some-random-deployment-we-will-filter
+    spec:
+      containers:
+      - args:
+        - foobar
+        command:
+        - somecommand
+        image: someimage
+        name: some-random-deployment-we-will-filter
