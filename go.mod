@@ -110,6 +110,6 @@ require (
 	k8s.io/metrics v0.0.0-20190516231729-8b83d5daaa8f // indirect
 	k8s.io/utils v0.0.0-20190529001817-6999998975a7 // indirect
 	sigs.k8s.io/kustomize v2.0.3+incompatible // indirect
-	sigs.k8s.io/yaml v1.1.0 // indirect
+	sigs.k8s.io/yaml v1.1.0
 	vbom.ml/util v0.0.0-20180919145318-efcd4e0f9787 // indirect
 )
