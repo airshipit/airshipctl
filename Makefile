@@ -34,7 +34,7 @@ get-modules:
 
 .PHONY: build
 build: get-modules
-	@GO111MODULE=on CGO_ENABLED=0 go build -o $(BINDIR)/$(EXECUTABLE_CLI) $(GO_FLAGS)
+	@CGO_ENABLED=0 go build -o $(BINDIR)/$(EXECUTABLE_CLI) $(GO_FLAGS)
 
 .PHONY: test
 test: lint
@@ -44,7 +44,7 @@ test: cover
 unit-tests: TESTFLAGS += -race -v
 unit-tests:
 	@echo "Performing unit test step..."
-	@GO111MODULE=on go test -run $(TESTS) $(PKG) $(TESTFLAGS) $(COVER_FLAGS)
+	@go test -run $(TESTS) $(PKG) $(TESTFLAGS) $(COVER_FLAGS)
 	@echo "All unit tests passed"
 
 .PHONY: cover
@@ -55,7 +55,7 @@ cover: unit-tests
 .PHONY: lint
 lint:
 	@echo "Performing linting step..."
-	@GO111MODULE=on go run $(LINTER_CMD) --config $(LINTER_CONFIG)
+	@go run $(LINTER_CMD) --config $(LINTER_CONFIG)
 	@echo "Linting completed successfully"
 
 .PHONY: docker-image
