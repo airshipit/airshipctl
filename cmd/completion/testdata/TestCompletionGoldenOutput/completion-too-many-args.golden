@@ -1,0 +1,7 @@
+Error: too many arguments, expected only the shell type
+Usage:
+  completion SHELL [flags]
+
+Flags:
+  -h, --help   help for completion
+

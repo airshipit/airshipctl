@@ -33,6 +33,9 @@ type CmdTest struct {
 
 	// The instatiated version of the root airshipctl command to test
 	Cmd *cobra.Command
+
+	// The expected error
+	Error error
 }
 
 // RunTest either asserts that a specific command's output matches the expected
@@ -47,15 +50,28 @@ func RunTest(t *testing.T, test *CmdTest) {
 	args := strings.Fields(test.CmdLine)
 	cmd.SetArgs(args)
 
-	if err := cmd.Execute(); err != nil {
-		t.Fatalf("Unexpected error: %s", err.Error())
-	}
+	err := cmd.Execute()
+	checkError(t, err, test.Error)
 
 	if *shouldUpdateGolden {
 		updateGolden(t, test, actual.Bytes())
 	} else {
 		assertEqualGolden(t, test, actual.Bytes())
 	}
+}
+
+// ReadFixtureBytes is a convenience function for opening a test fixture
+func ReadFixtureBytes(t *testing.T, filename string) []byte {
+	fixtureData, err := ioutil.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("Unexpected error while reading fixture at %s: %s", filename, err.Error())
+	}
+	return fixtureData
+}
+
+// ReadFixtureString is a convenience function for opening a test fixture
+func ReadFixtureString(t *testing.T, filename string) string {
+	return string(ReadFixtureBytes(t, filename))
 }
 
 func updateGolden(t *testing.T, test *CmdTest, actual []byte) {
@@ -81,6 +97,23 @@ func assertEqualGolden(t *testing.T, test *CmdTest, actual []byte) {
 	if !bytes.Equal(actual, golden) {
 		errFmt := "Output does not match golden file: %s\nEXPECTED:\n%s\nGOT:\n%s"
 		t.Errorf(errFmt, goldenFilePath, string(golden), string(actual))
+	}
+}
+
+func checkError(t *testing.T, actual, expected error) {
+	if expected == nil {
+		if actual == nil {
+			return
+		}
+		t.Fatalf("Unexpected error: %q", actual.Error())
+	}
+
+	if actual == nil {
+		t.Fatalf("Expected error %q, but got nil", expected.Error())
+	}
+
+	if actual.Error() != expected.Error() {
+		t.Fatalf("Expected error %q, but got %q", expected.Error(), actual.Error())
 	}
 }
 

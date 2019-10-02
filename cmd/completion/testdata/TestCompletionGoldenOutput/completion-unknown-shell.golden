@@ -1,0 +1,7 @@
+Error: unsupported shell type "fish"
+Usage:
+  completion SHELL [flags]
+
+Flags:
+  -h, --help   help for completion
+

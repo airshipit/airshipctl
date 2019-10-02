@@ -18,11 +18,15 @@ DOCKER_IMAGE_NAME   ?= airshipctl
 DOCKER_IMAGE_PREFIX ?= airshipit
 DOCKER_IMAGE_TAG    ?= dev
 DOCKER_IMAGE        ?= $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
+DOCKER_TARGET_STAGE ?= release
 
 # go options
 PKG                 := ./...
 TESTS               := .
+TEST_FLAGS          :=
+COVER_FLAGS         :=
 COVER_PROFILE       := cover.out
+COVER_PKG           := $(shell go list ./... | tail -n+2 | grep -v "opendev.org/airship/airshipctl/testutil" | paste -sd"," -)
 
 .PHONY: get-modules
 get-modules:
@@ -34,17 +38,17 @@ build: get-modules
 
 .PHONY: test
 test: lint
-test: TESTFLAGS += -race -v
-test: unit-tests
 test: cover
 
 .PHONY: unit-tests
-unit-tests: build
+unit-tests: TESTFLAGS += -race -v
+unit-tests:
 	@echo "Performing unit test step..."
-	@GO111MODULE=on go test -run $(TESTS) $(PKG) $(TESTFLAGS) -covermode=atomic -coverprofile=$(COVER_PROFILE)
+	@GO111MODULE=on go test -run $(TESTS) $(PKG) $(TESTFLAGS) $(COVER_FLAGS)
 	@echo "All unit tests passed"
 
 .PHONY: cover
+cover: COVER_FLAGS = -covermode=atomic -coverprofile=$(COVER_PROFILE) -coverpkg=$(COVER_PKG)
 cover: unit-tests
 	@./tools/coverage_check $(COVER_PROFILE)
 
@@ -56,7 +60,7 @@ lint:
 
 .PHONY: docker-image
 docker-image:
-	@docker build . --build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET) --tag $(DOCKER_IMAGE)
+	@docker build . --build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET) --tag $(DOCKER_IMAGE) --target $(DOCKER_TARGET_STAGE)
 
 .PHONY: print-docker-image-tag
 print-docker-image-tag:
@@ -64,10 +68,12 @@ print-docker-image-tag:
 
 .PHONY: docker-image-unit-tests
 docker-image-unit-tests: DOCKER_MAKE_TARGET = cover
+docker-image-unit-tests: DOCKER_TARGET_STAGE = builder
 docker-image-unit-tests: docker-image
 
 .PHONY: docker-image-lint
 docker-image-lint: DOCKER_MAKE_TARGET = lint
+docker-image-lint: DOCKER_TARGET_STAGE = builder
 docker-image-lint: docker-image
 
 .PHONY: clean
@@ -81,7 +87,7 @@ docs:
 
 .PHONY: update-golden
 update-golden: delete-golden
-update-golden: TESTFLAGS += -update -v
+update-golden: TESTFLAGS += -update
 update-golden: PKG = opendev.org/airship/airshipctl/cmd/...
 update-golden: unit-tests
 

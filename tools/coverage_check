@@ -1,5 +1,5 @@
 #!/bin/bash
-set -ex
+set -e
 
 if [[ $# -ne 1 ]]; then
   printf "Usage: %s <coverfile>\n" "$0"
