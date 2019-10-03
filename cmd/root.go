@@ -13,6 +13,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"opendev.org/airship/airshipctl/cmd/bootstrap"
+	"opendev.org/airship/airshipctl/cmd/cluster"
 	"opendev.org/airship/airshipctl/cmd/completion"
 	"opendev.org/airship/airshipctl/cmd/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
@@ -51,6 +52,7 @@ func NewRootCmd(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings,
 func AddDefaultAirshipCTLCommands(cmd *cobra.Command, settings *environment.AirshipCTLSettings) *cobra.Command {
 	cmd.AddCommand(argo.NewCommand())
 	cmd.AddCommand(bootstrap.NewBootstrapCommand(settings))
+	cmd.AddCommand(cluster.NewClusterCommand(settings))
 	cmd.AddCommand(completion.NewCompletionCommand())
 	cmd.AddCommand(document.NewDocumentCommand(settings))
 	cmd.AddCommand(kubectl.NewDefaultKubectlCommand())
