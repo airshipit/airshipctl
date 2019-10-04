@@ -224,4 +224,4 @@ func main() {
 ```
 
 The `AirshipCTLSettings` object can be found
-[here](/pkg/environment/settings.go). Future documentation TBD.
+[here](pkg/environment/settings.go). Future documentation TBD.

@@ -1,0 +1,7 @@
+Show the version number of airshipctl
+
+Usage:
+  version [flags]
+
+Flags:
+  -h, --help   help for version
