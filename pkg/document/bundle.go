@@ -15,7 +15,8 @@ import (
 	"sigs.k8s.io/kustomize/v3/pkg/resource"
 	"sigs.k8s.io/kustomize/v3/pkg/target"
 	"sigs.k8s.io/kustomize/v3/pkg/types"
-	"sigs.k8s.io/yaml"
+
+	utilyaml "opendev.org/airship/airshipctl/pkg/util/yaml"
 )
 
 // KustomizeBuildOptions contain the options for running a Kustomize build on a bundle
@@ -230,26 +231,10 @@ func (b *BundleFactory) GetByGvk(group, version, kind string) ([]Document, error
 // Write will write out the entire bundle resource map
 func (b *BundleFactory) Write(out io.Writer) error {
 	for _, res := range b.ResMap.Resources() {
-
-		yamlOut, err := yaml.Marshal(res.Map())
+		err := utilyaml.WriteOut(out, res)
 		if err != nil {
 			return err
 		}
-		// add separator for each document
-		_, err = out.Write([]byte("---\n"))
-		if err != nil {
-			return err
-		}
-		_, err = out.Write(yamlOut)
-		if err != nil {
-			return err
-		}
-		// add separator for each document
-		_, err = out.Write([]byte("...\n"))
-		if err != nil {
-			return err
-		}
-
 	}
 	return nil
 }
