@@ -155,20 +155,20 @@ func TestLoadConfig(t *testing.T) {
 	require.NotEmpty(t, conf.String())
 
 	// Lets make sure that the contents is as expected
-	// 2 Clusters
+	// 4 Clusters
 	// 2 Clusters Types
-	// 2 Contexts
-	// 1 User
-	require.Lenf(t, conf.Clusters, 4, "Expected 4 Clusters got %d", len(conf.Clusters))
-	require.Lenf(t, conf.Clusters["def"].ClusterTypes, 2,
-		"Expected 2 ClusterTypes got %d", len(conf.Clusters["def"].ClusterTypes))
-	require.Len(t, conf.Contexts, 3, "Expected 3 Contexts got %d", len(conf.Contexts))
-	require.Len(t, conf.AuthInfos, 2, "Expected 2 AuthInfo got %d", len(conf.AuthInfos))
+	// 3 Contexts
+	// 2 Users
+	assert.Len(t, conf.Clusters, 4)
+	assert.Len(t, conf.Clusters["def"].ClusterTypes, 2)
+	assert.Len(t, conf.Contexts, 3)
+	assert.Len(t, conf.AuthInfos, 2)
 
 }
 
 func TestPersistConfig(t *testing.T) {
 	config := InitConfig(t)
+	defer Clean(config)
 	airConfigFile := filepath.Join(testAirshipConfigDir, AirshipConfig)
 	kConfigFile := filepath.Join(testAirshipConfigDir, AirshipKubeConfig)
 	config.SetLoadedConfigPath(airConfigFile)
@@ -177,15 +177,16 @@ func TestPersistConfig(t *testing.T) {
 	config.SetLoadedPathOptions(kubePathOptions)
 
 	err := config.PersistConfig()
-	assert.Nilf(t, err, "Unable to persist configuration expected at  %v ", config.LoadedConfigPath())
+	assert.NoErrorf(t, err, "Unable to persist configuration expected at %v", config.LoadedConfigPath())
 
 	kpo := config.LoadedPathOptions()
 	assert.NotNil(t, kpo)
-	Clean(config)
 }
 
 func TestPersistConfigFail(t *testing.T) {
 	config := InitConfig(t)
+	defer Clean(config)
+
 	airConfigFile := filepath.Join(testAirshipConfigDir, "\\")
 	kConfigFile := filepath.Join(testAirshipConfigDir, "\\")
 	config.SetLoadedConfigPath(airConfigFile)
@@ -194,37 +195,43 @@ func TestPersistConfigFail(t *testing.T) {
 	config.SetLoadedPathOptions(kubePathOptions)
 
 	err := config.PersistConfig()
-	require.NotNilf(t, err, "Able to persist configuration at %v expected an error", config.LoadedConfigPath())
-	Clean(config)
+	assert.Errorf(t, err, "Able to persist configuration at %v, but expected an error", config.LoadedConfigPath())
 }
 
 func TestEnsureComplete(t *testing.T) {
 	conf := InitConfig(t)
 
-	err := conf.EnsureComplete()
-	require.NotNilf(t, err, "Configuration was incomplete %v ", err.Error())
+	conf.CurrentContext = "def_ephemeral"
+	assert.NoError(t, conf.EnsureComplete())
 
-	// Trgger Contexts Error
+	// Trigger no CurrentContext Error
+	conf.CurrentContext = ""
+	err := conf.EnsureComplete()
+	assert.EqualError(t, err, "Config: Current Context is not defined, or it doesnt identify a defined Context")
+
+	// Trigger Contexts Error
 	for key := range conf.Contexts {
 		delete(conf.Contexts, key)
 	}
 	err = conf.EnsureComplete()
-	assert.EqualValues(t, err.Error(), "Config: At least one Context needs to be defined")
+	assert.EqualError(t, err, "Config: At least one Context needs to be defined")
 
 	// Trigger Authentication Information
 	for key := range conf.AuthInfos {
 		delete(conf.AuthInfos, key)
 	}
 	err = conf.EnsureComplete()
-	assert.EqualValues(t, err.Error(), "Config: At least one Authentication Information (User) needs to be defined")
+	assert.EqualError(t, err, "Config: At least one Authentication Information (User) needs to be defined")
 
 	conf = NewConfig()
 	err = conf.EnsureComplete()
-	assert.NotNilf(t, err, "Configuration was found complete incorrectly")
+	assert.Error(t, err, "A new config object should not be complete")
 }
 
 func TestPurge(t *testing.T) {
 	config := InitConfig(t)
+	defer Clean(config)
+
 	airConfigFile := filepath.Join(testAirshipConfigDir, AirshipConfig)
 	kConfigFile := filepath.Join(testAirshipConfigDir, AirshipKubeConfig)
 	config.SetLoadedConfigPath(airConfigFile)
@@ -234,62 +241,56 @@ func TestPurge(t *testing.T) {
 
 	// Store it
 	err := config.PersistConfig()
-	assert.Nilf(t, err, "Unable to persist configuration expected at  %v [%v] ",
-		config.LoadedConfigPath(), err)
+	assert.NoErrorf(t, err, "Unable to persist configuration expected at %v", config.LoadedConfigPath())
 
 	// Verify that the file is there
-
 	_, err = os.Stat(config.LoadedConfigPath())
-	assert.Falsef(t, os.IsNotExist(err), "Test config was not persisted at  %v , cannot validate Purge [%v] ",
-		config.LoadedConfigPath(), err)
+	assert.Falsef(t, os.IsNotExist(err), "Test config was not persisted at %v, cannot validate Purge",
+		config.LoadedConfigPath())
 
 	// Delete it
 	err = config.Purge()
-	assert.Nilf(t, err, "Unable to Purge file at  %v [%v] ", config.LoadedConfigPath(), err)
+	assert.NoErrorf(t, err, "Unable to Purge file at %v", config.LoadedConfigPath())
 
 	// Verify its gone
 	_, err = os.Stat(config.LoadedConfigPath())
-	require.Falsef(t, os.IsExist(err), "Purge failed to remove file at  %v [%v] ",
-		config.LoadedConfigPath(), err)
-
-	Clean(config)
+	assert.Falsef(t, os.IsExist(err), "Purge failed to remove file at %v", config.LoadedConfigPath())
 }
 
 func TestClusterNames(t *testing.T) {
 	conf := InitConfig(t)
 	expected := []string{"def", "onlyinkubeconf", "wrongonlyinconfig", "wrongonlyinkubeconf"}
-	require.EqualValues(t, expected, conf.ClusterNames())
+	assert.EqualValues(t, expected, conf.ClusterNames())
 }
 func TestKClusterString(t *testing.T) {
 	conf := InitConfig(t)
 	kClusters := conf.KubeConfig().Clusters
 	for kClust := range kClusters {
-		require.NotNil(t, KClusterString(kClusters[kClust]))
+		assert.NotEmpty(t, KClusterString(kClusters[kClust]))
 	}
-	require.EqualValues(t, KClusterString(nil), "null\n")
+	assert.EqualValues(t, KClusterString(nil), "null\n")
 }
 func TestComplexName(t *testing.T) {
 	cName := "aCluster"
 	ctName := Ephemeral
 	clusterName := NewClusterComplexName()
 	clusterName.WithType(cName, ctName)
-	require.EqualValues(t, cName+"_"+ctName, clusterName.Name())
+	assert.EqualValues(t, cName+"_"+ctName, clusterName.Name())
 
-	require.EqualValues(t, cName, clusterName.ClusterName())
-	require.EqualValues(t, ctName, clusterName.ClusterType())
+	assert.EqualValues(t, cName, clusterName.ClusterName())
+	assert.EqualValues(t, ctName, clusterName.ClusterType())
 
 	cName = "bCluster"
 	clusterName.SetClusterName(cName)
 	clusterName.SetDefaultType()
 	ctName = clusterName.ClusterType()
-	require.EqualValues(t, cName+"_"+ctName, clusterName.Name())
-
-	require.EqualValues(t, "clusterName:"+cName+", clusterType:"+ctName, clusterName.String())
+	assert.EqualValues(t, cName+"_"+ctName, clusterName.Name())
+	assert.EqualValues(t, "clusterName:"+cName+", clusterType:"+ctName, clusterName.String())
 }
 
 func TestValidClusterTypeFail(t *testing.T) {
 	err := ValidClusterType("Fake")
-	require.NotNil(t, err)
+	assert.Error(t, err)
 }
 func TestGetCluster(t *testing.T) {
 	conf := InitConfig(t)
@@ -299,31 +300,30 @@ func TestGetCluster(t *testing.T) {
 	// Test Positives
 	assert.EqualValues(t, cluster.NameInKubeconf, "def_ephemeral")
 	assert.EqualValues(t, cluster.KubeCluster().Server, "http://5.6.7.8")
-	// Test Wrong Cluster
-	cluster, err = conf.GetCluster("unknown", Ephemeral)
-	assert.NotNil(t, err)
-	assert.Nil(t, cluster)
-	// Test Wrong Cluster Type
-	cluster, err = conf.GetCluster("def", "Unknown")
-	assert.NotNil(t, err)
-	assert.Nil(t, cluster)
-	// Test Wrong Cluster Type
 
+	// Test Wrong Cluster
+	_, err = conf.GetCluster("unknown", Ephemeral)
+	assert.Error(t, err)
+
+	// Test Wrong Cluster Type
+	_, err = conf.GetCluster("def", "Unknown")
+	assert.Error(t, err)
 }
+
 func TestAddCluster(t *testing.T) {
 	co := DummyClusterOptions()
 	conf := InitConfig(t)
 	cluster, err := conf.AddCluster(co)
 	require.NoError(t, err)
-	require.NotNil(t, cluster)
+
 	assert.EqualValues(t, conf.Clusters[co.Name].ClusterTypes[co.ClusterType], cluster)
 }
+
 func TestModifyluster(t *testing.T) {
 	co := DummyClusterOptions()
 	conf := InitConfig(t)
 	cluster, err := conf.AddCluster(co)
 	require.NoError(t, err)
-	require.NotNil(t, cluster)
 
 	co.Server += "/changes"
 	co.InsecureSkipTLSVerify = true
@@ -336,13 +336,12 @@ func TestModifyluster(t *testing.T) {
 	// Error case
 	co.CertificateAuthority = "unknown"
 	_, err = conf.ModifyCluster(cluster, co)
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 }
 
 func TestGetClusters(t *testing.T) {
 	conf := InitConfig(t)
 	clusters, err := conf.GetClusters()
 	require.NoError(t, err)
-	assert.EqualValues(t, 4, len(clusters))
-
+	assert.Len(t, clusters, 4)
 }

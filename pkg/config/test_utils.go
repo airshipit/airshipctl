@@ -25,7 +25,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	kubeconfig "k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -114,7 +114,7 @@ func InitConfigAt(t *testing.T, airConfigFile, kConfigFile string) *Config {
 	kubePathOptions := clientcmd.NewDefaultPathOptions()
 	kubePathOptions.GlobalFile = kConfigFile
 	err := conf.LoadConfig(airConfigFile, kubePathOptions)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	return conf
 }
 func InitConfig(t *testing.T) *Config {

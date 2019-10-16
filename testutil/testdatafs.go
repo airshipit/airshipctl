@@ -21,14 +21,15 @@ func SetupTestFs(t *testing.T, fixtureDir string) fs.FileSystem {
 	x := fs.MakeFakeFS()
 
 	files, err := ioutil.ReadDir(fixtureDir)
-	require.NoError(t, err, "Failed to read fixture directory, setting up testfs failed")
+	require.NoErrorf(t, err, "Failed to read fixture directory %s", fixtureDir)
 	for _, file := range files {
 		fileName := file.Name()
 		filePath := filepath.Join(fixtureDir, fileName)
+
 		fileBytes, err := ioutil.ReadFile(filePath)
-		require.NoError(t, err, "Failed to read file, setting up testfs failed")
+		require.NoErrorf(t, err, "Failed to read file %s, setting up testfs failed", filePath)
 		err = x.WriteFile(filepath.Join("/", file.Name()), fileBytes)
-		require.NoError(t, err, "Failed to write file, setting up testfs failed")
+		require.NoErrorf(t, err, "Failed to write file %s, setting up testfs failed", filePath)
 	}
 	return x
 

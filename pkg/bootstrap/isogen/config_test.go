@@ -1,10 +1,10 @@
 package isogen
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestToYaml(t *testing.T) {
@@ -18,11 +18,7 @@ container:
 		},
 	}
 
-	actualBytes, _ := cnf.ToYAML()
-	errS := fmt.Sprintf(
-		"Call ToYAML should have returned %s, got %s",
-		expectedBytes,
-		actualBytes,
-	)
-	assert.Equal(t, actualBytes, expectedBytes, errS)
+	actualBytes, err := cnf.ToYAML()
+	require.NoError(t, err)
+	assert.Equal(t, actualBytes, expectedBytes)
 }

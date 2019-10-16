@@ -2,129 +2,93 @@ package log_test
 
 import (
 	"bytes"
-	"strings"
+	"regexp"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
-const notEqualFmt = `Output does not match expected
-GOT:      %v
-Expected: %v`
+var logFormatRegex = regexp.MustCompile(`^\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} .*`)
 
-func TestLoggingPrint(t *testing.T) {
-	tests := []struct {
-		Name     string
-		Message  string
-		Vals     []interface{}
-		Debug    bool
-		Expected string
-	}{
-		{
-			Name:     "Print, debug set to false",
-			Message:  "Print test - debug false",
-			Debug:    false,
-			Expected: "Print test - debug false",
-		},
-		{
-			Name:     "Print, debug set to true",
-			Message:  "Print test - debug true",
-			Debug:    true,
-			Expected: "Print test - debug true",
-		},
-		{
-			Name:     "Printf, debug set to false",
-			Message:  "%s - %s",
-			Vals:     []interface{}{"Printf test", "debug false"},
-			Debug:    false,
-			Expected: "Printf test - debug false",
-		},
-		{
-			Name:     "Printf, debug set to true",
-			Message:  "%s - %s",
-			Vals:     []interface{}{"Printf test", "debug true"},
-			Debug:    true,
-			Expected: "Printf test - debug true",
-		},
-	}
+const prefixLength = len("2001/02/03 16:05:06 ")
 
-	for _, test := range tests {
+func TestLoggingPrintf(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	t.Run("Print", func(t *testing.T) {
 		output := new(bytes.Buffer)
-		log.Init(test.Debug, output)
+		log.Init(false, output)
 
-		if len(test.Vals) == 0 {
-			log.Print(test.Message)
-		} else {
-			log.Printf(test.Message, test.Vals...)
-		}
-		outputFields := strings.Fields(output.String())
-		if len(outputFields) < 3 {
-			t.Fatalf("Expected log message to have the following format: YYYY/MM/DD HH:MM:SS Message")
-		}
-		actual := strings.Join(outputFields[2:], " ")
-		if actual != test.Expected {
-			t.Errorf(notEqualFmt, actual, test.Expected)
-		}
-	}
+		log.Print("Print args ", 5)
+		actual := output.String()
+
+		expected := "Print args 5\n"
+		require.Regexp(logFormatRegex, actual)
+		actual = actual[prefixLength:]
+		assert.Equal(expected, actual)
+	})
+
+	t.Run("Printf", func(t *testing.T) {
+		output := new(bytes.Buffer)
+		log.Init(false, output)
+
+		log.Printf("%s %d", "Printf args", 5)
+		actual := output.String()
+
+		expected := "Printf args 5\n"
+		require.Regexp(logFormatRegex, actual)
+		actual = actual[prefixLength:]
+		assert.Equal(expected, actual)
+	})
 }
 
 func TestLoggingDebug(t *testing.T) {
-	tests := []struct {
-		Name     string
-		Message  string
-		Vals     []interface{}
-		Debug    bool
-		Expected string
-	}{
-		{
-			Name:     "Debug, debug set to false",
-			Message:  "Debug test - debug false",
-			Debug:    false,
-			Expected: "",
-		},
-		{
-			Name:     "Debug, debug set to true",
-			Message:  "Debug test - debug true",
-			Debug:    true,
-			Expected: "Debug test - debug true",
-		},
-		{
-			Name:     "Debugf, debug set to false",
-			Message:  "%s - %s",
-			Vals:     []interface{}{"Debugf test", "debug false"},
-			Debug:    false,
-			Expected: "",
-		},
-		{
-			Name:     "Debugf, debug set to true",
-			Message:  "%s - %s",
-			Vals:     []interface{}{"Debugf test", "debug true"},
-			Debug:    true,
-			Expected: "Debugf test - debug true",
-		},
-	}
+	assert := assert.New(t)
+	require := require.New(t)
 
-	for _, test := range tests {
+	t.Run("DebugTrue", func(t *testing.T) {
 		output := new(bytes.Buffer)
-		log.Init(test.Debug, output)
+		log.Init(true, output)
 
-		if len(test.Vals) == 0 {
-			log.Debug(test.Message)
-		} else {
-			log.Debugf(test.Message, test.Vals...)
-		}
-		var actual string
-		if test.Debug {
-			outputFields := strings.Fields(output.String())
-			if len(outputFields) < 3 {
-				t.Fatalf("Expected log message to have the following format: YYYY/MM/DD HH:MM:SS Message")
-			}
-			actual = strings.Join(outputFields[2:], " ")
-		} else {
-			actual = output.String()
-		}
-		if actual != test.Expected {
-			t.Errorf(notEqualFmt, actual, test.Expected)
-		}
-	}
+		log.Debug("DebugTrue args ", 5)
+		actual := output.String()
+
+		expected := "DebugTrue args 5\n"
+		require.Regexp(logFormatRegex, actual)
+		actual = actual[prefixLength:]
+		assert.Equal(expected, actual)
+	})
+
+	t.Run("DebugfTrue", func(t *testing.T) {
+		output := new(bytes.Buffer)
+		log.Init(true, output)
+
+		log.Debugf("%s %d", "DebugfTrue args", 5)
+		actual := output.String()
+
+		expected := "DebugfTrue args 5\n"
+		require.Regexp(logFormatRegex, actual)
+		actual = actual[prefixLength:]
+		assert.Equal(expected, actual)
+	})
+
+	t.Run("DebugFalse", func(t *testing.T) {
+		output := new(bytes.Buffer)
+		log.Init(false, output)
+
+		log.Debug("DebugFalse args ", 5)
+		assert.Equal("", output.String())
+	})
+
+	t.Run("DebugfFalse", func(t *testing.T) {
+		output := new(bytes.Buffer)
+		log.Init(false, output)
+
+		log.Debugf("%s %d", "DebugFalse args", 5)
+		assert.Equal("", output.String())
+	})
 }
