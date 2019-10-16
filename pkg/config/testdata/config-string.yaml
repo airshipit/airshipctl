@@ -3,10 +3,10 @@ clusters:
   dummy_cluster:
     cluster-type:
       ephemeral:
-        bootstrap-info: dummy_bootstrap
+        bootstrap-info: dummy_bootstrap_config
         cluster-kubeconf: dummycluster_ephemeral
       target:
-        bootstrap-info: dummy_bootstrap
+        bootstrap-info: dummy_bootstrap_config
         cluster-kubeconf: dummycluster_target
 contexts:
   dummy_context:
@@ -32,6 +32,15 @@ manifests:
         username: dummy_user
     target-path: /var/tmp/
 modules-config:
-  dummy-for-tests: dummy-module
+  bootstrapInfo:
+    dummy_bootstrap_config:
+      builder:
+        networkConfigFileName: netconfig
+        outputMetadataFileName: output-metadata.yaml
+        userDataFileName: user-data
+      container:
+        containerRuntime: docker
+        image: dummy_image:dummy_tag
+        volume: /dummy:dummy
 users:
   dummy_user: {}

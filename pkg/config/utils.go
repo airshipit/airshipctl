@@ -56,7 +56,9 @@ func NewAuthInfo() *AuthInfo {
 }
 
 func NewModules() *Modules {
-	return &Modules{}
+	return &Modules{
+		BootstrapInfo: make(map[string]*Bootstrap),
+	}
 }
 
 // NewClusterPurpose is a convenience function that returns a new ClusterPurpose

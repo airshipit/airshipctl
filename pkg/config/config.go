@@ -400,6 +400,7 @@ func (c *Config) GetCluster(cName, cType string) (*Cluster, error) {
 	}
 	return cluster, nil
 }
+
 func (c *Config) AddCluster(theCluster *ClusterOptions) (*Cluster, error) {
 	// Need to create new cluster placeholder
 	// Get list of ClusterPurposes that match the theCluster.name
@@ -589,6 +590,20 @@ func (c *Config) CurrentContextManifest() (*Manifest, error) {
 	return c.Manifests[currentContext.Manifest], nil
 }
 
+// CurrentContextBootstrapInfo returns bootstrap info for current context
+func (c *Config) CurrentContextBootstrapInfo() (*Bootstrap, error) {
+	currentCluster, err := c.CurrentContextCluster()
+	if err != nil {
+		return nil, err
+	}
+
+	bootstrap, exists := c.ModulesConfig.BootstrapInfo[currentCluster.Bootstrap]
+	if !exists {
+		return nil, ErrBootstrapInfoNotFound{Name: currentCluster.Bootstrap}
+	}
+	return bootstrap, nil
+}
+
 // Purge removes the config file
 func (c *Config) Purge() error {
 	return os.Remove(c.loadedConfigPath)
@@ -602,10 +617,10 @@ func (c *Config) Equal(d *Config) bool {
 	authInfoEq := reflect.DeepEqual(c.AuthInfos, d.AuthInfos)
 	contextEq := reflect.DeepEqual(c.Contexts, d.Contexts)
 	manifestEq := reflect.DeepEqual(c.Manifests, d.Manifests)
+	modulesEq := reflect.DeepEqual(c.ModulesConfig, d.ModulesConfig)
 	return c.Kind == d.Kind &&
 		c.APIVersion == d.APIVersion &&
-		clusterEq && authInfoEq && contextEq && manifestEq &&
-		c.ModulesConfig.Equal(d.ModulesConfig)
+		clusterEq && authInfoEq && contextEq && manifestEq && modulesEq
 }
 
 // Cluster functions
@@ -753,10 +768,64 @@ func (m *Modules) Equal(n *Modules) bool {
 	if n == nil {
 		return n == m
 	}
-	return m.Dummy == n.Dummy
+	return reflect.DeepEqual(m.BootstrapInfo, n.BootstrapInfo)
 }
 func (m *Modules) String() string {
 	yaml, err := yaml.Marshal(&m)
+	if err != nil {
+		return ""
+	}
+	return string(yaml)
+}
+
+// Bootstrap functions
+func (b *Bootstrap) Equal(c *Bootstrap) bool {
+	if c == nil {
+		return b == c
+	}
+	contEq := reflect.DeepEqual(b.Container, c.Container)
+	bldrEq := reflect.DeepEqual(b.Builder, c.Builder)
+	return contEq && bldrEq
+}
+
+func (b *Bootstrap) String() string {
+	yaml, err := yaml.Marshal(&b)
+	if err != nil {
+		return ""
+	}
+	return string(yaml)
+}
+
+// Container functions
+func (c *Container) Equal(d *Container) bool {
+	if d == nil {
+		return d == c
+	}
+	return c.Volume == d.Volume &&
+		c.Image == d.Image &&
+		c.ContainerRuntime == d.ContainerRuntime
+}
+
+func (c *Container) String() string {
+	yaml, err := yaml.Marshal(&c)
+	if err != nil {
+		return ""
+	}
+	return string(yaml)
+}
+
+// Builder functions
+func (b *Builder) Equal(c *Builder) bool {
+	if c == nil {
+		return b == c
+	}
+	return b.UserDataFileName == c.UserDataFileName &&
+		b.NetworkConfigFileName == c.NetworkConfigFileName &&
+		b.OutputMetadataFileName == c.OutputMetadataFileName
+}
+
+func (b *Builder) String() string {
+	yaml, err := yaml.Marshal(&b)
 	if err != nil {
 		return ""
 	}

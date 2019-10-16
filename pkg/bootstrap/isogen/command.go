@@ -8,8 +8,10 @@ import (
 	"strings"
 
 	"opendev.org/airship/airshipctl/pkg/bootstrap/cloudinit"
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/util"
@@ -22,24 +24,37 @@ const (
 )
 
 // GenerateBootstrapIso will generate data for cloud init and start ISO builder container
-func GenerateBootstrapIso(settings *Settings, args []string) error {
-	if settings.IsogenConfigFile == "" {
-		log.Print("Reading config file location from global settings is not supported")
-		return errors.ErrNotImplemented{}
-	}
-
+func GenerateBootstrapIso(settings *environment.AirshipCTLSettings, args []string) error {
 	ctx := context.Background()
-	cfg := &Config{}
 
-	if err := util.ReadYAMLFile(settings.IsogenConfigFile, &cfg); err != nil {
+	globalConf := settings.Config()
+	if err := globalConf.EnsureComplete(); err != nil {
 		return err
 	}
 
-	if err := verifyInputs(cfg, args); err != nil {
+	cfg, err := globalConf.CurrentContextBootstrapInfo()
+	if err != nil {
 		return err
 	}
 
-	docBundle, err := document.NewBundle(fs.MakeRealFS(), args[0], "")
+	var manifest *config.Manifest
+	manifest, err = globalConf.CurrentContextManifest()
+	if err != nil {
+		return err
+	}
+
+	// TODO (dukov) This check should be implemented as part of the config  module
+	if manifest == nil {
+		return errors.ErrMissingConfig{What: "manifest for currnet context not found"}
+	}
+
+	if err = verifyInputs(cfg); err != nil {
+		return err
+	}
+
+	// TODO (dukov) replace with the appropriate function once it's available
+	// in doncument module
+	docBundle, err := document.NewBundle(fs.MakeRealFS(), manifest.TargetPath, "")
 	if err != nil {
 		return err
 	}
@@ -60,12 +75,7 @@ func GenerateBootstrapIso(settings *Settings, args []string) error {
 	return verifyArtifacts(cfg)
 }
 
-func verifyInputs(cfg *Config, args []string) error {
-	if len(args) == 0 {
-		log.Print("Specify path to document model. Config param from global settings is not supported")
-		return errors.ErrNotImplemented{}
-	}
-
+func verifyInputs(cfg *config.Bootstrap) error {
 	if cfg.Container.Volume == "" {
 		log.Print("Specify volume bind for ISO builder container")
 		return errors.ErrWrongConfig{}
@@ -87,21 +97,19 @@ func verifyInputs(cfg *Config, args []string) error {
 	return nil
 }
 
-func getContainerCfg(cfg *Config, userData []byte, netConf []byte) (map[string][]byte, error) {
+func getContainerCfg(cfg *config.Bootstrap, userData []byte, netConf []byte) map[string][]byte {
 	hostVol := strings.Split(cfg.Container.Volume, ":")[0]
 
 	fls := make(map[string][]byte)
 	fls[filepath.Join(hostVol, cfg.Builder.UserDataFileName)] = userData
 	fls[filepath.Join(hostVol, cfg.Builder.NetworkConfigFileName)] = netConf
-	builderData, err := cfg.ToYAML()
-	if err != nil {
-		return nil, err
-	}
+	// TODO (dukov) Get rid of this ugly conversion byte -> string -> byte
+	builderData := []byte(cfg.String())
 	fls[filepath.Join(hostVol, builderConfigFileName)] = builderData
-	return fls, nil
+	return fls
 }
 
-func verifyArtifacts(cfg *Config) error {
+func verifyArtifacts(cfg *config.Bootstrap) error {
 	hostVol := strings.Split(cfg.Container.Volume, ":")[0]
 	metadataPath := filepath.Join(hostVol, cfg.Builder.OutputMetadataFileName)
 	_, err := os.Stat(metadataPath)
@@ -111,22 +119,17 @@ func verifyArtifacts(cfg *Config) error {
 func generateBootstrapIso(
 	docBubdle document.Bundle,
 	builder container.Container,
-	cfg *Config,
+	cfg *config.Bootstrap,
 	debug bool,
 ) error {
 	cntVol := strings.Split(cfg.Container.Volume, ":")[1]
 	log.Print("Creating cloud-init for ephemeral K8s")
-	userData, netConf, err := cloudinit.GetCloudData(docBubdle, EphemeralClusterAnnotation)
+	userData, netConf, err := cloudinit.GetCloudData(docBubdle, document.EphemeralClusterMarker)
 	if err != nil {
 		return err
 	}
 
-	var fls map[string][]byte
-	fls, err = getContainerCfg(cfg, userData, netConf)
-	if err != nil {
-		return err
-	}
-
+	fls := getContainerCfg(cfg, userData, netConf)
 	if err = util.WriteFiles(fls, 0600); err != nil {
 		return err
 	}

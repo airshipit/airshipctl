@@ -94,7 +94,7 @@ type Cluster struct {
 // Configuration that the Document Module would need
 // Configuration that the Workflows Module would need
 type Modules struct {
-	Dummy string `json:"dummy-for-tests"`
+	BootstrapInfo map[string]*Bootstrap `json:"bootstrapInfo"`
 }
 
 // Context is a tuple of references to a cluster (how do I communicate with a kubernetes context),
@@ -147,4 +147,32 @@ type Repository struct {
 type ClusterComplexName struct {
 	clusterName string
 	clusterType string
+}
+
+// Bootstrap holds configurations for bootstrap steps
+type Bootstrap struct {
+	// Configuration parameters for container
+	Container *Container `json:"container,omitempty"`
+	// Configuration parameters for ISO builder
+	Builder *Builder `json:"builder,omitempty"`
+}
+
+// Container parameters
+type Container struct {
+	// Container volume directory binding.
+	Volume string `json:"volume,omitempty"`
+	// ISO generator container image URL
+	Image string `json:"image,omitempty"`
+	// Container Runtime Interface driver
+	ContainerRuntime string `json:"containerRuntime,omitempty"`
+}
+
+// Builder parameters
+type Builder struct {
+	// Cloud Init user-data file name placed to the container volume root
+	UserDataFileName string `json:"userDataFileName,omitempty"`
+	// Cloud Init network-config file name placed to the container volume root
+	NetworkConfigFileName string `json:"networkConfigFileName,omitempty"`
+	// File name for output metadata
+	OutputMetadataFileName string `json:"outputMetadataFileName,omitempty"`
 }

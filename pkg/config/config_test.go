@@ -67,6 +67,30 @@ func TestString(t *testing.T) {
 			name:     "repository",
 			stringer: DummyRepository(),
 		},
+		{
+			name:     "bootstrap",
+			stringer: DummyBootstrap(),
+		},
+		{
+			name:     "bootstrap",
+			stringer: DummyBootstrap(),
+		},
+		{
+			name: "builder",
+			stringer: &Builder{
+				UserDataFileName:       "user-data",
+				NetworkConfigFileName:  "netconfig",
+				OutputMetadataFileName: "output-metadata.yaml",
+			},
+		},
+		{
+			name: "container",
+			stringer: &Container{
+				Volume:           "/dummy:dummy",
+				Image:            "dummy_image:dummy_tag",
+				ContainerRuntime: "docker",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -139,13 +163,47 @@ func TestEqual(t *testing.T) {
 		assert.False(t, testRepository1.Equal(nil))
 	})
 
-	// TODO(howell): this needs to be fleshed out when the Modules type is finished
 	t.Run("modules-equal", func(t *testing.T) {
-		testModules1 := &Modules{Dummy: "same"}
-		testModules2 := &Modules{Dummy: "different"}
+		testModules1 := NewModules()
+		testModules2 := NewModules()
+		testModules2.BootstrapInfo["different"] = &Bootstrap{
+			Container: &Container{Volume: "different"},
+		}
 		assert.True(t, testModules1.Equal(testModules1))
 		assert.False(t, testModules1.Equal(testModules2))
 		assert.False(t, testModules1.Equal(nil))
+	})
+
+	t.Run("bootstrap-equal", func(t *testing.T) {
+		testBootstrap1 := &Bootstrap{
+			Container: &Container{
+				Image: "same",
+			},
+		}
+		testBootstrap2 := &Bootstrap{
+			Container: &Container{
+				Image: "different",
+			},
+		}
+		assert.True(t, testBootstrap1.Equal(testBootstrap1))
+		assert.False(t, testBootstrap1.Equal(testBootstrap2))
+		assert.False(t, testBootstrap1.Equal(nil))
+	})
+
+	t.Run("container-equal", func(t *testing.T) {
+		testContainer1 := &Container{Image: "same"}
+		testContainer2 := &Container{Image: "different"}
+		assert.True(t, testContainer1.Equal(testContainer1))
+		assert.False(t, testContainer1.Equal(testContainer2))
+		assert.False(t, testContainer1.Equal(nil))
+	})
+
+	t.Run("builder-equal", func(t *testing.T) {
+		testBuilder1 := &Builder{UserDataFileName: "same"}
+		testBuilder2 := &Builder{UserDataFileName: "different"}
+		assert.True(t, testBuilder1.Equal(testBuilder1))
+		assert.False(t, testBuilder1.Equal(testBuilder2))
+		assert.False(t, testBuilder1.Equal(nil))
 	})
 }
 

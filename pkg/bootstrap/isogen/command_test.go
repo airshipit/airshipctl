@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/log"
@@ -51,12 +52,12 @@ func TestBootstrapIso(t *testing.T) {
 
 	volBind := "/tmp:/dst"
 	testErr := fmt.Errorf("TestErr")
-	testCfg := &Config{
-		Container: Container{
+	testCfg := &config.Bootstrap{
+		Container: &config.Container{
 			Volume:           volBind,
 			ContainerRuntime: "docker",
 		},
-		Builder: Builder{
+		Builder: &config.Builder{
 			UserDataFileName:      "user-data",
 			NetworkConfigFileName: "net-conf",
 		},
@@ -71,7 +72,7 @@ func TestBootstrapIso(t *testing.T) {
 
 	tests := []struct {
 		builder     *mockContainer
-		cfg         *Config
+		cfg         *config.Bootstrap
 		debug       bool
 		expectedOut []string
 		expectdErr  error
@@ -124,59 +125,53 @@ func TestBootstrapIso(t *testing.T) {
 
 func TestVerifyInputs(t *testing.T) {
 	tests := []struct {
-		cfg         *Config
+		cfg         *config.Bootstrap
 		args        []string
 		expectedErr error
 	}{
 		{
-			cfg:         &Config{},
-			args:        []string{},
-			expectedErr: errors.ErrNotImplemented{},
-		},
-		{
-			cfg:         &Config{},
-			args:        []string{"."},
+			cfg: &config.Bootstrap{
+				Container: &config.Container{},
+			},
 			expectedErr: errors.ErrWrongConfig{},
 		},
 		{
-			cfg: &Config{
-				Container: Container{
+			cfg: &config.Bootstrap{
+				Container: &config.Container{
 					Volume: "/tmp:/dst",
 				},
+				Builder: &config.Builder{},
 			},
-			args:        []string{"."},
 			expectedErr: errors.ErrWrongConfig{},
 		},
 		{
-			cfg: &Config{
-				Container: Container{
+			cfg: &config.Bootstrap{
+				Container: &config.Container{
 					Volume: "/tmp",
 				},
-				Builder: Builder{
+				Builder: &config.Builder{
 					UserDataFileName:      "user-data",
 					NetworkConfigFileName: "net-conf",
 				},
 			},
-			args:        []string{"."},
 			expectedErr: nil,
 		},
 		{
-			cfg: &Config{
-				Container: Container{
+			cfg: &config.Bootstrap{
+				Container: &config.Container{
 					Volume: "/tmp:/dst:/dst1",
 				},
-				Builder: Builder{
+				Builder: &config.Builder{
 					UserDataFileName:      "user-data",
 					NetworkConfigFileName: "net-conf",
 				},
 			},
-			args:        []string{"."},
 			expectedErr: errors.ErrWrongConfig{},
 		},
 	}
 
 	for _, tt := range tests {
-		actualErr := verifyInputs(tt.cfg, tt.args)
+		actualErr := verifyInputs(tt.cfg)
 		assert.Equal(t, tt.expectedErr, actualErr)
 	}
 }

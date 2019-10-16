@@ -1,0 +1,3 @@
+containerRuntime: docker
+image: dummy_image:dummy_tag
+volume: /dummy:dummy

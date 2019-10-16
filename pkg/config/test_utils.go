@@ -79,7 +79,7 @@ func DummyCluster() *Cluster {
 	cluster.CertificateAuthority = "dummy_ca"
 	c.SetKubeCluster(cluster)
 	c.NameInKubeconf = "dummycluster_target"
-	c.Bootstrap = "dummy_bootstrap"
+	c.Bootstrap = "dummy_bootstrap_config"
 	return c
 }
 
@@ -108,7 +108,9 @@ func DummyAuthInfo() *AuthInfo {
 }
 
 func DummyModules() *Modules {
-	return &Modules{Dummy: "dummy-module"}
+	m := NewModules()
+	m.BootstrapInfo["dummy_bootstrap_config"] = DummyBootstrap()
+	return m
 }
 
 // DummyClusterPurpose , utility function used for tests
@@ -164,6 +166,25 @@ func DummyContextOptions() *ContextOptions {
 	co.Namespace = "dummy_namespace"
 
 	return co
+}
+
+func DummyBootstrap() *Bootstrap {
+	bs := &Bootstrap{}
+	cont := Container{
+		Volume:           "/dummy:dummy",
+		Image:            "dummy_image:dummy_tag",
+		ContainerRuntime: "docker",
+	}
+	builder := Builder{
+		UserDataFileName:       "user-data",
+		NetworkConfigFileName:  "netconfig",
+		OutputMetadataFileName: "output-metadata.yaml",
+	}
+
+	bs.Container = &cont
+	bs.Builder = &builder
+
+	return bs
 }
 
 const (

@@ -1,6 +1,6 @@
 Cluster: dummycluster
 target:
-bootstrap-info: dummy_bootstrap
+bootstrap-info: dummy_bootstrap_config
 cluster-kubeconf: dummycluster_target
 
 LocationOfOrigin: ""

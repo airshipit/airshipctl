@@ -1,0 +1,8 @@
+builder:
+  networkConfigFileName: netconfig
+  outputMetadataFileName: output-metadata.yaml
+  userDataFileName: user-data
+container:
+  containerRuntime: docker
+  image: dummy_image:dummy_tag
+  volume: /dummy:dummy
