@@ -2,6 +2,7 @@ package yaml_test
 
 import (
 	"bytes"
+	"io"
 	"regexp"
 	"testing"
 	"time"
@@ -12,6 +13,25 @@ import (
 
 	utilyaml "opendev.org/airship/airshipctl/pkg/util/yaml"
 )
+
+// FakeYaml Used to emulate yaml
+type FakeYaml struct {
+	Key string
+}
+
+// FakeErrorDashWriter fake object to simulate errors of writer
+type FakeErrorDashWriter struct {
+	Err   error
+	Match string
+}
+
+func (f *FakeErrorDashWriter) Write(b []byte) (int, error) {
+	if string(b) == f.Match {
+		// arbitrary error from io package
+		return 0, f.Err
+	}
+	return len(b), nil
+}
 
 func TestWriteOut(t *testing.T) {
 
@@ -52,4 +72,27 @@ func TestWriteOut(t *testing.T) {
 
 	// Compare original object with reverse marshaled
 	assert.Equal(t, ob, &rob)
+}
+
+func TestWriteOutErrorsWrongYaml(t *testing.T) {
+	src := make(chan int)
+	var b bytes.Buffer
+	assert.Error(t, utilyaml.WriteOut(&b, src))
+}
+
+func TestWriteOutErrorsErrorWriter(t *testing.T) {
+	// Some easy to match yaml
+	fakeYaml := FakeYaml{Key: "value"}
+	fakeWriter := &FakeErrorDashWriter{Err: io.ErrUnexpectedEOF}
+
+	strings := []string{
+		utilyaml.DotYamlSeparator,
+		utilyaml.DashYamlSeparator,
+		"Key: value\n",
+	}
+	for _, str := range strings {
+		fakeWriter.Match = str
+		assert.Error(t, utilyaml.WriteOut(fakeWriter, fakeYaml))
+
+	}
 }
