@@ -1,0 +1,37 @@
+apiVersion: airshipit.org/v1alpha1
+clusters:
+  dummy_cluster:
+    cluster-type:
+      ephemeral:
+        bootstrap-info: dummy_bootstrap
+        cluster-kubeconf: dummycluster_ephemeral
+      target:
+        bootstrap-info: dummy_bootstrap
+        cluster-kubeconf: dummycluster_target
+contexts:
+  dummy_context:
+    context-kubeconf: dummy_cluster
+    manifest: dummy_manifest
+current-context: dummy_context
+kind: Config
+manifests:
+  dummy_manifest:
+    repositories:
+      dummy:
+        target-path: dummy_targetpath
+        url:
+          ForceQuery: false
+          Fragment: ""
+          Host: dummy.url.com
+          Opaque: ""
+          Path: ""
+          RawPath: ""
+          RawQuery: ""
+          Scheme: http
+          User: null
+        username: dummy_user
+    target-path: /var/tmp/
+modules-config:
+  dummy-for-tests: dummy-module
+users:
+  dummy_user: {}

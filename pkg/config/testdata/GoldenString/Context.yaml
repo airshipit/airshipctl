@@ -1,0 +1,2 @@
+context-kubeconf: dummy_cluster
+manifest: dummy_manifest

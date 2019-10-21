@@ -11,3 +11,5 @@ const (
 	NameOnly = "name"
 	Wide     = "wide"
 )
+
+const HomePlaceholder = "$HOME"

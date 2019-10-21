@@ -1,0 +1,15 @@
+Modify airshipctl config files using subcommands 
+like "airshipctl config set-current-context my-context"
+
+Usage:
+  config [command]
+
+Available Commands:
+  get-cluster Display a specific cluster
+  help        Help about any command
+  set-cluster Sets a cluster entry in the airshipctl config
+
+Flags:
+  -h, --help   help for config
+
+Use "config [command] --help" for more information about a command.

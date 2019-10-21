@@ -1,0 +1,12 @@
+target-path: dummy_targetpath
+url:
+  ForceQuery: false
+  Fragment: ""
+  Host: dummy.url.com
+  Opaque: ""
+  Path: ""
+  RawPath: ""
+  RawQuery: ""
+  Scheme: http
+  User: null
+username: dummy_user
