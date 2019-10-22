@@ -4,9 +4,10 @@ GO_FLAGS            := -ldflags '-extldflags "-static"' -tags=netgo
 
 BINDIR              := bin
 EXECUTABLE_CLI      := airshipctl
+TOOLBINDIR          := tools/bin
 
 # linting
-LINTER_CMD          := "github.com/golangci/golangci-lint/cmd/golangci-lint" run
+LINTER              := $(TOOLBINDIR)/golangci-lint
 LINTER_CONFIG       := .golangci.yaml
 
 # docker
@@ -53,9 +54,9 @@ cover: unit-tests
 	@./tools/coverage_check $(COVER_PROFILE)
 
 .PHONY: lint
-lint:
+lint: $(LINTER)
 	@echo "Performing linting step..."
-	@go run $(LINTER_CMD) --config $(LINTER_CONFIG)
+	@./$(LINTER) run --config $(LINTER_CONFIG)
 	@echo "Linting completed successfully"
 
 .PHONY: docker-image
@@ -84,6 +85,12 @@ clean:
 .PHONY: docs
 docs:
 	@echo "TODO"
+
+$(TOOLBINDIR):
+	mkdir -p $(TOOLBINDIR)
+
+$(LINTER): $(TOOLBINDIR)
+	./tools/install_linter
 
 .PHONY: update-golden
 update-golden: delete-golden
