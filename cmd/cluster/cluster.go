@@ -16,8 +16,8 @@ func NewClusterCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comm
 	clusterRootCmd := &cobra.Command{
 		Use: ClusterUse,
 		// TODO: (kkalynovskyi) Add more description when more subcommands are added
-		Short: "Control kubernetes cluster",
-		Long:  "Interactions with kubernetes cluster, such as get status, deploy initial infrastructure",
+		Short: "Control Kubernetes cluster",
+		Long:  "Interactions with Kubernetes cluster, such as get status, deploy initial infrastructure",
 	}
 
 	return clusterRootCmd
