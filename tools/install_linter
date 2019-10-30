@@ -1,0 +1,11 @@
+#!/bin/bash
+set -x
+
+tools_bin_dir="${BASH_SOURCE%/*}"
+download_url=https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh
+version=v1.21.0
+
+if ! curl -sfL "$download_url" | sh -s -- -b "$tools_bin_dir/bin" "$version"; then
+  printf "Something went wrong while installing golangci-lint\n" 1>&2
+  exit 1
+fi
