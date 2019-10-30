@@ -9,18 +9,12 @@ import (
 	"sigs.k8s.io/kustomize/v3/pkg/gvk"
 	"sigs.k8s.io/kustomize/v3/pkg/types"
 
-	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
 func TestNewBundle(t *testing.T) {
 
-	fSys := testutil.SetupTestFs(t, "testdata")
-	bundle, err := document.NewBundle(fSys, "/", "/")
-	if err != nil {
-		t.Fatalf("Building Bundle Failed: %v", err)
-	}
-
+	bundle := testutil.NewTestBundle(t, "testdata")
 	require := require.New(t)
 	require.NotNil(bundle)
 
@@ -28,12 +22,7 @@ func TestNewBundle(t *testing.T) {
 
 func TestBundleDocumentFiltering(t *testing.T) {
 
-	fSys := testutil.SetupTestFs(t, "testdata")
-	bundle, err := document.NewBundle(fSys, "/", "/")
-	if err != nil {
-		t.Fatalf("Building Bundle Failed: %v", err)
-	}
-
+	bundle := testutil.NewTestBundle(t, "testdata")
 	assert := assert.New(t)
 
 	t.Run("GetKustomizeResourceMap", func(t *testing.T) {
