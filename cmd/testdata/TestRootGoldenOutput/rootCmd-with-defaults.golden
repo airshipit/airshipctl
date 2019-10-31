@@ -18,6 +18,6 @@ Flags:
   -h, --help    help for airshipctl
 
 Additional help topics:
-  airshipctl cluster    Control kubernetes cluster
+  airshipctl cluster    Control Kubernetes cluster
 
 Use "airshipctl [command] --help" for more information about a command.
