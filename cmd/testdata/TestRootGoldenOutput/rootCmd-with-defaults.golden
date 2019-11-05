@@ -4,18 +4,19 @@ Usage:
   airshipctl [command]
 
 Available Commands:
-  argo        argo is the command line interface to Argo
   bootstrap   Bootstrap ephemeral Kubernetes cluster
   completion  Generate autocompletions script for the specified shell (bash or zsh)
+  config      Modify airshipctl config files
   document    manages deployment documents
   help        Help about any command
-  kubeadm     kubeadm: easily bootstrap a secure Kubernetes cluster
   kubectl     kubectl controls the Kubernetes cluster manager
   version     Show the version number of airshipctl
 
 Flags:
-      --debug   enable verbose output
-  -h, --help    help for airshipctl
+      --airshipconf string   Path to file for airshipctl configuration. (default "$HOME/.airship/config")
+      --debug                enable verbose output
+  -h, --help                 help for airshipctl
+      --kubeconfig string    Path to kubeconfig associated with airshipctl configuration. (default "$HOME/.airship/kubeconfig")
 
 Additional help topics:
   airshipctl cluster    Control Kubernetes cluster

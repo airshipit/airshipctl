@@ -1,0 +1,6 @@
+bootstrap-info: dummy_bootstrap
+cluster-kubeconf: dummycluster_target
+
+LocationOfOrigin: ""
+certificate-authority: dummy_ca
+server: http://dummy.server
