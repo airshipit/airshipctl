@@ -22,12 +22,11 @@ DOCKER_IMAGE        ?= $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/$(DOCKER_IMAGE_
 DOCKER_TARGET_STAGE ?= release
 
 # go options
-PKG                 := ./...
-TESTS               := .
-TEST_FLAGS          :=
-COVER_FLAGS         :=
-COVER_PROFILE       := cover.out
-COVER_PKG           := $(shell go list ./... | tail -n+2 | grep -v "opendev.org/airship/airshipctl/testutil" | paste -sd"," -)
+PKG                 ?= ./...
+TESTS               ?= .
+TEST_FLAGS          ?=
+COVER_FLAGS         ?=
+COVER_PROFILE       ?= cover.out
 
 .PHONY: get-modules
 get-modules:
@@ -49,7 +48,7 @@ unit-tests:
 	@echo "All unit tests passed"
 
 .PHONY: cover
-cover: COVER_FLAGS = -covermode=atomic -coverprofile=$(COVER_PROFILE) -coverpkg=$(COVER_PKG)
+cover: COVER_FLAGS = -covermode=atomic -coverprofile=$(COVER_PROFILE)
 cover: unit-tests
 	@./tools/coverage_check $(COVER_PROFILE)
 
