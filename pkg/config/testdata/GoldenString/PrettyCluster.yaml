@@ -1,9 +1,0 @@
-Cluster: def
-ephemeral:
-bootstrap-info: ""
-cluster-kubeconf: def_ephemeral
-
-LocationOfOrigin: ../../pkg/config/testdata/kubeconfig.yaml
-insecure-skip-tls-verify: true
-server: http://5.6.7.8
-

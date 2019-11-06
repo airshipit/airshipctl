@@ -497,7 +497,7 @@ func (c *Config) Purge() error {
 
 func (c *Config) Equal(d *Config) bool {
 	if d == nil {
-		return false
+		return d == c
 	}
 	clusterEq := reflect.DeepEqual(c.Clusters, d.Clusters)
 	authInfoEq := reflect.DeepEqual(c.AuthInfos, d.AuthInfos)
@@ -512,7 +512,7 @@ func (c *Config) Equal(d *Config) bool {
 // Cluster functions
 func (c *Cluster) Equal(d *Cluster) bool {
 	if d == nil {
-		return false
+		return d == c
 	}
 	return c.NameInKubeconf == d.NameInKubeconf &&
 		c.Bootstrap == d.Bootstrap
@@ -536,8 +536,8 @@ func (c *Cluster) PrettyString() string {
 	clusterName := NewClusterComplexName()
 	clusterName.FromName(c.NameInKubeconf)
 
-	return fmt.Sprintf("Cluster: %s\n%s:\n%s\n",
-		clusterName.ClusterName(), clusterName.ClusterType(), c.String())
+	return fmt.Sprintf("Cluster: %s\n%s:\n%s",
+		clusterName.ClusterName(), clusterName.ClusterType(), c)
 }
 
 func (c *Cluster) KubeCluster() *kubeconfig.Cluster {
@@ -550,11 +550,12 @@ func (c *Cluster) SetKubeCluster(kc *kubeconfig.Cluster) {
 // Context functions
 func (c *Context) Equal(d *Context) bool {
 	if d == nil {
-		return false
+		return d == c
 	}
 	return c.NameInKubeconf == d.NameInKubeconf &&
 		c.Manifest == d.Manifest
 }
+
 func (c *Context) String() string {
 	yaml, err := yaml.Marshal(&c)
 	if err != nil {
@@ -566,7 +567,7 @@ func (c *Context) String() string {
 // AuthInfo functions
 func (c *AuthInfo) Equal(d *AuthInfo) bool {
 	if d == nil {
-		return false
+		return d == c
 	}
 	return c == d
 }
@@ -582,11 +583,12 @@ func (c *AuthInfo) String() string {
 // Manifest functions
 func (m *Manifest) Equal(n *Manifest) bool {
 	if n == nil {
-		return false
+		return n == m
 	}
 	repositoryEq := reflect.DeepEqual(m.Repositories, n.Repositories)
 	return repositoryEq && m.TargetPath == n.TargetPath
 }
+
 func (m *Manifest) String() string {
 	yaml, err := yaml.Marshal(&m)
 	if err != nil {
@@ -598,11 +600,16 @@ func (m *Manifest) String() string {
 // Repository functions
 func (r *Repository) Equal(s *Repository) bool {
 	if s == nil {
-		return false
+		return r == s
 	}
-	url := (r.Url == nil && s.Url == nil) ||
-		(r.Url != nil && s.Url != nil && r.Url.String() == s.Url.String())
-	return url &&
+	var urlMatches bool
+	if r.Url != nil && s.Url != nil {
+		urlMatches = (r.Url.String() == s.Url.String())
+	} else {
+		// this catches cases where one or both are nil
+		urlMatches = (r.Url == s.Url)
+	}
+	return urlMatches &&
 		r.Username == s.Username &&
 		r.TargetPath == s.TargetPath
 }
@@ -616,8 +623,10 @@ func (r *Repository) String() string {
 
 // Modules functions
 func (m *Modules) Equal(n *Modules) bool {
-
-	return n != nil && m.Dummy == n.Dummy
+	if n == nil {
+		return n == m
+	}
+	return m.Dummy == n.Dummy
 }
 func (m *Modules) String() string {
 	yaml, err := yaml.Marshal(&m)

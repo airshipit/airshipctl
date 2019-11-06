@@ -75,7 +75,7 @@ func TestGetAllClusters(t *testing.T) {
 	clusters, err := conf.GetClusters()
 	require.NoError(t, err)
 	for _, cluster := range clusters {
-		expected += fmt.Sprintf("%s", cluster.PrettyString())
+		expected += fmt.Sprintf("%s\n", cluster.PrettyString())
 	}
 
 	test := getClusterTest{

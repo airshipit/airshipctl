@@ -17,109 +17,133 @@ limitations under the License.
 package config
 
 import (
-	"io/ioutil"
+	"fmt"
 	"os"
 	"path/filepath"
-	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
 	"k8s.io/client-go/tools/clientcmd"
+
+	"opendev.org/airship/airshipctl/testutil"
 )
 
-// Testing related constants
-
-var AirshipStructs = [...]reflect.Value{
-	reflect.ValueOf(DummyConfig()),
-	reflect.ValueOf(DummyCluster()),
-	reflect.ValueOf(DummyContext()),
-	reflect.ValueOf(DummyManifest()),
-	reflect.ValueOf(DummyAuthInfo()),
-	reflect.ValueOf(DummyRepository()),
-	reflect.ValueOf(DummyModules()),
-}
-
-// I can probable reflect to generate this two slices, instead based on the 1st one
-// Exercise left for later -- YES I will remove this comment in the next patchset
-var AirshipStructsEqual = [...]reflect.Value{
-	reflect.ValueOf(DummyConfig()),
-	reflect.ValueOf(DummyCluster()),
-	reflect.ValueOf(DummyContext()),
-	reflect.ValueOf(DummyManifest()),
-	reflect.ValueOf(DummyAuthInfo()),
-	reflect.ValueOf(DummyRepository()),
-	reflect.ValueOf(DummyModules()),
-}
-
-var AirshipStructsDiff = [...]reflect.Value{
-	reflect.ValueOf(NewConfig()),
-	reflect.ValueOf(NewCluster()),
-	reflect.ValueOf(NewContext()),
-	reflect.ValueOf(NewManifest()),
-	reflect.ValueOf(NewAuthInfo()),
-	reflect.ValueOf(NewRepository()),
-	reflect.ValueOf(NewModules()),
-}
-
-// Test to complete min coverage
 func TestString(t *testing.T) {
-	for s := range AirshipStructs {
-		airStruct := AirshipStructs[s]
-		airStringMethod := airStruct.MethodByName("String")
-		yaml := airStringMethod.Call([]reflect.Value{})
-		require.NotNil(t, yaml)
+	fSys := testutil.SetupTestFs(t, "testdata")
 
-		structName := strings.Split(airStruct.Type().String(), ".")
-		expectedFile := filepath.Join(testDataDir, "GoldenString", structName[1]+testMimeType)
-		expectedData, err := ioutil.ReadFile(expectedFile)
-		assert.Nil(t, err)
-		require.EqualValues(t, string(expectedData), yaml[0].String())
+	tests := []struct {
+		name     string
+		stringer fmt.Stringer
+	}{
+		{
+			name:     "config",
+			stringer: DummyConfig(),
+		},
+		{
+			name:     "context",
+			stringer: DummyContext(),
+		},
+		{
+			name:     "cluster",
+			stringer: DummyCluster(),
+		},
+		{
+			name:     "authinfo",
+			stringer: DummyAuthInfo(),
+		},
+		{
+			name:     "manifest",
+			stringer: DummyManifest(),
+		},
+		{
+			name:     "modules",
+			stringer: DummyModules(),
+		},
+		{
+			name:     "repository",
+			stringer: DummyRepository(),
+		},
+	}
 
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			filename := fmt.Sprintf("/%s-string.yaml", tt.name)
+			data, err := fSys.ReadFile(filename)
+			require.NoError(t, err)
+
+			assert.Equal(t, string(data), tt.stringer.String())
+		})
 	}
 }
+
 func TestPrettyString(t *testing.T) {
-	conf := InitConfig(t)
-	cluster, err := conf.GetCluster("def", Ephemeral)
+	fSys := testutil.SetupTestFs(t, "testdata")
+	data, err := fSys.ReadFile("/prettycluster-string.yaml")
 	require.NoError(t, err)
-	expectedFile := filepath.Join(testDataDir, "GoldenString", "PrettyCluster.yaml")
-	expectedData, err := ioutil.ReadFile(expectedFile)
-	assert.Nil(t, err)
 
-	assert.EqualValues(t, cluster.PrettyString(), string(expectedData))
-
+	cluster := DummyCluster()
+	assert.EqualValues(t, cluster.PrettyString(), string(data))
 }
 
 func TestEqual(t *testing.T) {
-	for s := range AirshipStructs {
-		airStruct := AirshipStructs[s]
-		airStringMethod := airStruct.MethodByName("Equal")
-		args := []reflect.Value{AirshipStructsEqual[s]}
-		eq := airStringMethod.Call(args)
-		assert.NotNilf(t, eq, "Equal for %v failed to return response to Equal .  ", airStruct.Type().String())
-		require.Truef(t, eq[0].Bool(), "Equal for %v failed to return true for equal values  ", airStruct.Type().String())
+	t.Run("config-equal", func(t *testing.T) {
+		testConfig1 := NewConfig()
+		testConfig2 := NewConfig()
+		testConfig2.Kind = "Different"
+		assert.True(t, testConfig1.Equal(testConfig1))
+		assert.False(t, testConfig1.Equal(testConfig2))
+		assert.False(t, testConfig1.Equal(nil))
+	})
 
-		// Lets test Equals against nil struct
-		args = []reflect.Value{reflect.New(airStruct.Type()).Elem()}
-		nileq := airStringMethod.Call(args)
-		assert.NotNil(t, nileq, "Equal for %v failed to return response to Equal .  ", airStruct.Type().String())
-		require.Falsef(t, nileq[0].Bool(),
-			"Equal for %v failed to return false when comparing against nil value  ", airStruct.Type().String())
+	t.Run("cluster-equal", func(t *testing.T) {
+		testCluster1 := &Cluster{NameInKubeconf: "same"}
+		testCluster2 := &Cluster{NameInKubeconf: "different"}
+		assert.True(t, testCluster1.Equal(testCluster1))
+		assert.False(t, testCluster1.Equal(testCluster2))
+		assert.False(t, testCluster1.Equal(nil))
+	})
 
-		// Ignore False Equals test for AuthInfo for now
-		if airStruct.Type().String() == "*config.AuthInfo" {
-			continue
-		}
-		// Lets test that equal returns false when they are diff
-		args = []reflect.Value{AirshipStructsDiff[s]}
-		neq := airStringMethod.Call(args)
-		assert.NotNil(t, neq, "Equal for %v failed to return response to Equal .  ", airStruct.Type().String())
-		require.Falsef(t, neq[0].Bool(),
-			"Equal for %v failed to return false for different values  ", airStruct.Type().String())
+	t.Run("context-equal", func(t *testing.T) {
+		testContext1 := &Context{NameInKubeconf: "same"}
+		testContext2 := &Context{NameInKubeconf: "different"}
+		assert.True(t, testContext1.Equal(testContext1))
+		assert.False(t, testContext1.Equal(testContext2))
+		assert.False(t, testContext1.Equal(nil))
+	})
 
-	}
+	// TODO(howell): this needs to be fleshed out when the AuthInfo type is finished
+	t.Run("authinfo-equal", func(t *testing.T) {
+		testAuthInfo1 := &AuthInfo{}
+		assert.True(t, testAuthInfo1.Equal(testAuthInfo1))
+		assert.False(t, testAuthInfo1.Equal(nil))
+	})
+
+	t.Run("manifest-equal", func(t *testing.T) {
+		testManifest1 := &Manifest{TargetPath: "same"}
+		testManifest2 := &Manifest{TargetPath: "different"}
+		assert.True(t, testManifest1.Equal(testManifest1))
+		assert.False(t, testManifest1.Equal(testManifest2))
+		assert.False(t, testManifest1.Equal(nil))
+	})
+
+	t.Run("repository-equal", func(t *testing.T) {
+		testRepository1 := &Repository{TargetPath: "same"}
+		testRepository2 := &Repository{TargetPath: "different"}
+		assert.True(t, testRepository1.Equal(testRepository1))
+		assert.False(t, testRepository1.Equal(testRepository2))
+		assert.False(t, testRepository1.Equal(nil))
+	})
+
+	// TODO(howell): this needs to be fleshed out when the Modules type is finished
+	t.Run("modules-equal", func(t *testing.T) {
+		testModules1 := &Modules{Dummy: "same"}
+		testModules2 := &Modules{Dummy: "different"}
+		assert.True(t, testModules1.Equal(testModules1))
+		assert.False(t, testModules1.Equal(testModules2))
+		assert.False(t, testModules1.Equal(nil))
+	})
 }
 
 func TestLoadConfig(t *testing.T) {

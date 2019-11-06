@@ -103,7 +103,7 @@ func getClusters(out io.Writer, rootSettings *environment.AirshipCTLSettings) er
 		fmt.Fprint(out, "No clusters found in the configuration.\n")
 	}
 	for _, cluster := range clusters {
-		fmt.Fprintf(out, "%s", cluster.PrettyString())
+		fmt.Fprintf(out, "%s\n", cluster.PrettyString())
 	}
 	return nil
 }
