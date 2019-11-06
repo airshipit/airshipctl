@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: test-rc
+  namespace: test
+  annotations:
+    airshipit.org/initinfra: "workflow"
+  labels:
+    name: test-rc
+    airshipit.org/initinfra: "workflow"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: test-rc
+    spec:
+      containers:
+        - name: test-rc
+          image: nginx
+          ports:
+          - containerPort: 80
