@@ -8,17 +8,17 @@ import (
 )
 
 func TestVersion(t *testing.T) {
-	rootCmd, _, err := cmd.NewRootCmd(nil)
-	if err != nil {
-		t.Fatalf("Could not create root command: %s", err.Error())
-	}
-	rootCmd.AddCommand(cmd.NewVersionCommand())
-
+	versionCmd := cmd.NewVersionCommand()
 	cmdTests := []*testutil.CmdTest{
 		{
 			Name:    "version",
-			CmdLine: "version",
-			Cmd:     rootCmd,
+			CmdLine: "",
+			Cmd:     versionCmd,
+		},
+		{
+			Name:    "version-help",
+			CmdLine: "--help",
+			Cmd:     versionCmd,
 		},
 	}
 
