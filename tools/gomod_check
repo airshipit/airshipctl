@@ -1,0 +1,22 @@
+#!/bin/bash
+set -e
+
+backup_dir=$(mktemp -d)
+
+revert() {
+  cp "$backup_dir/go.mod" "go.mod"
+  cp "$backup_dir/go.sum" "go.sum"
+}
+
+cp go.mod go.sum "$backup_dir"
+if [[ $(go mod tidy 2>&1) ]]; then
+  printf "FAIL: error in go.mod. Please run 'go mod tidy' and fix any issues\n"
+  revert
+  exit 1
+fi
+
+if [[ $(diff "go.mod" "$backup_dir/go.mod") ]] || [[ $(diff "go.sum" "$backup_dir/go.sum") ]]; then
+  printf "FAIL: go.mod/go.sum are not up to date. Please run 'go mod tidy'\n"
+  revert
+  exit 1
+fi
