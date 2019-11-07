@@ -18,7 +18,6 @@ package config
 
 import (
 	"bytes"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -49,12 +48,11 @@ func TestGetCluster(t *testing.T) {
 	// Retrieve one of the test
 	theClusterIWant, err := conf.GetCluster(tname, tctype)
 	require.NoError(t, err)
-	require.NotNil(t, theClusterIWant)
 
 	err = conf.Purge()
-	require.NoErrorf(t, err, "unexpected error , unable to Purge before persisting the expected configuration: %v", err)
+	require.NoError(t, err, "Unable to Purge before persisting the expected configuration")
 	err = conf.PersistConfig()
-	require.NoErrorf(t, err, "unexpected error , unable to Persist the expected configuration: %v", err)
+	require.NoError(t, err, "Unable to Persist the expected configuration")
 
 	test := getClusterTest{
 		config: conf,
@@ -71,12 +69,43 @@ func TestGetCluster(t *testing.T) {
 func TestGetAllClusters(t *testing.T) {
 	conf := config.InitConfig(t)
 
-	expected := ""
-	clusters, err := conf.GetClusters()
-	require.NoError(t, err)
-	for _, cluster := range clusters {
-		expected += fmt.Sprintf("%s\n", cluster.PrettyString())
-	}
+	expected := `Cluster: def
+ephemeral:
+bootstrap-info: ""
+cluster-kubeconf: def_ephemeral
+
+LocationOfOrigin: ../../pkg/config/testdata/kubeconfig.yaml
+insecure-skip-tls-verify: true
+server: http://5.6.7.8
+
+Cluster: def
+target:
+bootstrap-info: ""
+cluster-kubeconf: def_target
+
+LocationOfOrigin: ../../pkg/config/testdata/kubeconfig.yaml
+insecure-skip-tls-verify: true
+server: http://1.2.3.4
+
+Cluster: onlyinkubeconf
+target:
+bootstrap-info: ""
+cluster-kubeconf: onlyinkubeconf_target
+
+LocationOfOrigin: ../../pkg/config/testdata/kubeconfig.yaml
+insecure-skip-tls-verify: true
+server: http://9.10.11.12
+
+Cluster: wrongonlyinkubeconf
+target:
+bootstrap-info: ""
+cluster-kubeconf: wrongonlyinkubeconf_target
+
+LocationOfOrigin: ../../pkg/config/testdata/kubeconfig.yaml
+certificate-authority: cert_file
+server: ""
+
+`
 
 	test := getClusterTest{
 		config:   conf,
@@ -97,10 +126,10 @@ func (test getClusterTest) run(t *testing.T) {
 	cmd.SetOutput(buf)
 	cmd.SetArgs(test.args)
 	err := cmd.Flags().Parse(test.flags)
-	require.NoErrorf(t, err, "unexpected error flags args to command: %v,  flags: %v", err, test.flags)
+	require.NoErrorf(t, err, "unexpected error flags args to command: %v, flags: %v", err, test.flags)
 
 	err = cmd.Execute()
-	assert.NoErrorf(t, err, "unexpected error executing command: %v", err)
+	require.NoError(t, err)
 	if len(test.expected) != 0 {
 		assert.EqualValues(t, test.expected, buf.String())
 	}

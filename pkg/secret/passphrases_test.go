@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"opendev.org/airship/airshipctl/pkg/secret"
 )
 
@@ -18,6 +20,7 @@ const (
 )
 
 func TestDeterministicGenerateValidPassphrase(t *testing.T) {
+	assert := assert.New(t)
 	testSource := rand.NewSource(42)
 	engine := secret.NewPassphraseEngine(testSource)
 
@@ -37,29 +40,40 @@ func TestDeterministicGenerateValidPassphrase(t *testing.T) {
 
 	for i, expected := range expectedPassphrases {
 		actual := engine.GeneratePassphrase()
-		if expected != actual {
-			t.Errorf("Call #%d to engine.GeneratePassphrase() should have returned %s, got %s",
-				i, expected, actual)
-		}
+		assert.Equal(expected, actual, "Test #%d failed", i)
 	}
 }
 
 func TestNondeterministicGenerateValidPassphrase(t *testing.T) {
+	assert := assert.New(t)
 	// Due to the nondeterminism of random number generators, this
 	// functionality is impossible to fully test. Let's just generate
 	// enough passphrases that we can be confident in the randomness.
-	// Fortunately, Go is pretty fast, so we can do upward of 100,000 of
+	// Fortunately, Go is pretty fast, so we can do upward of 10,000 of
 	// these without slowing down the test too much
+	charSets := []string{
+		asciiLowers,
+		asciiUppers,
+		asciiNumbers,
+		asciiSymbols,
+	}
+
 	engine := secret.NewPassphraseEngine(nil)
-	for i := 0; i < 100000; i++ {
+	for i := 0; i < 10000; i++ {
 		passphrase := engine.GeneratePassphrase()
-		if !isValid(passphrase) {
-			t.Errorf("The engine generated an invalid password: %s", passphrase)
+		assert.Truef(len(passphrase) >= defaultLength,
+			"%s does not meet the length requirement", passphrase)
+
+		for _, charSet := range charSets {
+			assert.Truef(strings.ContainsAny(passphrase, charSet),
+				"%s does not contain any characters from [%s]",
+				passphrase, charSet)
 		}
 	}
 }
 
 func TestGenerateValidPassphraseN(t *testing.T) {
+	assert := assert.New(t)
 	testSource := rand.NewSource(42)
 	engine := secret.NewPassphraseEngine(testSource)
 	tests := []struct {
@@ -82,28 +96,6 @@ func TestGenerateValidPassphraseN(t *testing.T) {
 
 	for _, tt := range tests {
 		passphrase := engine.GeneratePassphraseN(tt.inputLegth)
-		if len(passphrase) != tt.expectedLength {
-			t.Errorf(`Passphrase "%s" should have length %d, got %d\n`,
-				passphrase, len(passphrase), tt.expectedLength)
-		}
+		assert.Len(passphrase, tt.expectedLength)
 	}
-}
-
-func isValid(passphrase string) bool {
-	if len(passphrase) < defaultLength {
-		return false
-	}
-
-	charSets := []string{
-		asciiLowers,
-		asciiUppers,
-		asciiNumbers,
-		asciiSymbols,
-	}
-	for _, charSet := range charSets {
-		if !strings.ContainsAny(passphrase, charSet) {
-			return false
-		}
-	}
-	return true
 }

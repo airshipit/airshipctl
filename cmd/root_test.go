@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/cmd"
 	"opendev.org/airship/airshipctl/cmd/bootstrap"
@@ -36,18 +37,16 @@ func TestRoot(t *testing.T) {
 }
 
 func getVanillaRootCmd(t *testing.T) *cobra.Command {
+	t.Helper()
 	rootCmd, _, err := cmd.NewRootCmd(nil)
-	if err != nil {
-		t.Fatalf("Could not create root command: %s", err.Error())
-	}
+	require.NoError(t, err, "Could not create root commands")
 	return rootCmd
 }
 
 func getDefaultRootCmd(t *testing.T) *cobra.Command {
+	t.Helper()
 	rootCmd, _, err := cmd.NewAirshipCTLCommand(nil)
-	if err != nil {
-		t.Fatalf("Could not create root command: %s", err.Error())
-	}
+	require.NoError(t, err, "Could not create root commands")
 	return rootCmd
 }
 

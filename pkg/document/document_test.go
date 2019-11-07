@@ -12,6 +12,8 @@ import (
 )
 
 func TestDocument(t *testing.T) {
+	require := require.New(t)
+	assert := assert.New(t)
 
 	// the easiest way to construct a bunch of documents
 	// is by manufacturing a bundle
@@ -21,20 +23,13 @@ func TestDocument(t *testing.T) {
 	// on a bundle might be useful
 	fSys := testutil.SetupTestFs(t, "testdata")
 	bundle, err := document.NewBundle(fSys, "/", "/")
-	if err != nil {
-		t.Fatalf("Unexpected error building bundle: %v", err)
-	}
-
-	require := require.New(t)
-	assert := assert.New(t)
+	require.NoError(err, "Building Bundle Failed")
 	require.NotNil(bundle)
 
 	t.Run("GetName", func(t *testing.T) {
 
 		docs, err := bundle.GetAllDocuments()
-		if err != nil {
-			t.Fatalf("Unexpected error trying to GetAllDocuments: %v", err)
-		}
+		require.NoError(err, "Unexpected error trying to GetAllDocuments")
 
 		nameList := []string{}
 
@@ -49,23 +44,17 @@ func TestDocument(t *testing.T) {
 	t.Run("AsYAML", func(t *testing.T) {
 
 		doc, err := bundle.GetByName("some-random-deployment-we-will-filter")
-		if err != nil {
-			t.Fatalf("Unexpected error trying to GetByName for AsYAML Test: %v", err)
-		}
+		require.NoError(err, "Unexpected error trying to GetByName for AsYAML Test")
 
 		// see if we can marshal it while we're here for coverage
 		// as this is a dependency for AsYAML
 		json, err := doc.MarshalJSON()
+		require.NoError(err, "Unexpected error trying to MarshalJSON()")
 		assert.NotNil(json)
-		if err != nil {
-			t.Fatalf("Unexpected error trying to MarshalJSON(): %v", err)
-		}
 
 		// get it as yaml
 		yaml, err := doc.AsYAML()
-		if err != nil {
-			t.Fatalf("Unexpected error trying to AsYAML(): %v", err)
-		}
+		require.NoError(err, "Unexpected error trying to AsYAML()")
 
 		// convert the bytes into a string for comparison
 		//
@@ -76,27 +65,22 @@ func TestDocument(t *testing.T) {
 		// look more or less how unmarshalling it would look
 		s := string(yaml)
 		fileData, err := fSys.ReadFile("/initially_ignored.yaml")
-		if err != nil {
-			t.Fatalf("Unexpected error reading initially_ignored.yaml file")
-		}
+		require.NoError(err, "Unexpected error reading initially_ignored.yaml file")
 
 		// increase the chance of a match by removing any \n suffix on both actual
 		// and expected
-		assert.Equal(strings.TrimSuffix(s, "\n"), strings.TrimSuffix(string(fileData), "\n"))
+		assert.Equal(strings.TrimRight(s, "\n"), strings.TrimRight(string(fileData), "\n"))
 
 	})
 
 	t.Run("GetString", func(t *testing.T) {
 
 		doc, err := bundle.GetByName("some-random-deployment-we-will-filter")
-		if err != nil {
-			t.Fatalf("Unexpected error trying to GetByName for test: %v", err)
-		}
+		require.NoError(err, "Unexpected error trying to GetByName")
 
 		appLabelMatch, err := doc.GetString("spec.selector.matchLabels.app")
-		if err != nil {
-			t.Fatalf("Unexpected error trying to GetString from document")
-		}
+		require.NoError(err, "Unexpected error trying to GetString from document")
+
 		assert.Equal(appLabelMatch, "some-random-deployment-we-will-filter")
 
 	})
@@ -104,9 +88,7 @@ func TestDocument(t *testing.T) {
 	t.Run("GetNamespace", func(t *testing.T) {
 
 		doc, err := bundle.GetByName("some-random-deployment-we-will-filter")
-		if err != nil {
-			t.Fatalf("Unexpected error trying to GetByName for test: %v", err)
-		}
+		require.NoError(err, "Unexpected error trying to GetByName")
 
 		assert.Equal("foobar", doc.GetNamespace())
 
@@ -115,16 +97,11 @@ func TestDocument(t *testing.T) {
 	t.Run("GetStringSlice", func(t *testing.T) {
 
 		doc, err := bundle.GetByName("some-random-deployment-we-will-filter")
-		if err != nil {
-			t.Fatalf("Unexpected error trying to GetByName for test: %v", err)
-		}
-		s := make([]string, 1)
-		s[0] = "foobar"
+		require.NoError(err, "Unexpected error trying to GetByName")
+		s := []string{"foobar"}
 
 		gotSlice, err := doc.GetStringSlice("spec.template.spec.containers[0].args")
-		if err != nil {
-			t.Fatalf("Unexpected error trying to GetStringSlice: %v", err)
-		}
+		require.NoError(err, "Unexpected error trying to GetStringSlice")
 
 		assert.Equal(s, gotSlice)
 

@@ -10,6 +10,8 @@ import (
 	"testing"
 
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // UpdateGolden writes out the golden files with the latest values, rather than failing the test.
@@ -42,6 +44,7 @@ type CmdTest struct {
 // output from its golden file, or generates golden files if the -update flag
 // is passed
 func RunTest(t *testing.T, test *CmdTest) {
+	t.Helper()
 	cmd := test.Cmd
 
 	actual := &bytes.Buffer{}
@@ -62,58 +65,45 @@ func RunTest(t *testing.T, test *CmdTest) {
 
 // ReadFixtureBytes is a convenience function for opening a test fixture
 func ReadFixtureBytes(t *testing.T, filename string) []byte {
+	t.Helper()
 	fixtureData, err := ioutil.ReadFile(filename)
-	if err != nil {
-		t.Fatalf("Unexpected error while reading fixture at %s: %s", filename, err.Error())
-	}
+	require.NoErrorf(t, err, "Unexpected error while reading fixture at %s", filename)
 	return fixtureData
 }
 
 // ReadFixtureString is a convenience function for opening a test fixture
 func ReadFixtureString(t *testing.T, filename string) string {
+	t.Helper()
 	return string(ReadFixtureBytes(t, filename))
 }
 
 func updateGolden(t *testing.T, test *CmdTest, actual []byte) {
+	t.Helper()
 	goldenDir := filepath.Join(testdataDir, t.Name()+goldenDirSuffix)
-	if err := os.MkdirAll(goldenDir, 0775); err != nil {
-		t.Fatalf("Failed to create golden directory %s: %s", goldenDir, err)
-	}
+	err := os.MkdirAll(goldenDir, 0775)
+	require.NoErrorf(t, err, "Failed to create golden directory %s", goldenDir)
 	t.Logf("Created %s", goldenDir)
 	goldenFilePath := filepath.Join(goldenDir, test.Name+goldenFileSuffix)
 	t.Logf("Updating golden file: %s", goldenFilePath)
-	if err := ioutil.WriteFile(goldenFilePath, normalize(actual), 0666); err != nil {
-		t.Fatalf("Failed to update golden file: %s", err)
-	}
+	err = ioutil.WriteFile(goldenFilePath, normalize(actual), 0666)
+	require.NoErrorf(t, err, "Failed to update golden file at %s", goldenFilePath)
 }
 
 func assertEqualGolden(t *testing.T, test *CmdTest, actual []byte) {
+	t.Helper()
 	goldenDir := filepath.Join(testdataDir, t.Name()+goldenDirSuffix)
 	goldenFilePath := filepath.Join(goldenDir, test.Name+goldenFileSuffix)
 	golden, err := ioutil.ReadFile(goldenFilePath)
-	if err != nil {
-		t.Fatalf("Failed while reading golden file: %s", err)
-	}
-	if !bytes.Equal(actual, golden) {
-		errFmt := "Output does not match golden file: %s\nEXPECTED:\n%s\nGOT:\n%s"
-		t.Errorf(errFmt, goldenFilePath, string(golden), string(actual))
-	}
+	require.NoErrorf(t, err, "Failed while reading golden file at %s", goldenFilePath)
+	assert.Equal(t, string(actual), string(golden))
 }
 
 func checkError(t *testing.T, actual, expected error) {
+	t.Helper()
 	if expected == nil {
-		if actual == nil {
-			return
-		}
-		t.Fatalf("Unexpected error: %q", actual.Error())
-	}
-
-	if actual == nil {
-		t.Fatalf("Expected error %q, but got nil", expected.Error())
-	}
-
-	if actual.Error() != expected.Error() {
-		t.Fatalf("Expected error %q, but got %q", expected.Error(), actual.Error())
+		require.NoError(t, actual)
+	} else {
+		require.Error(t, actual)
 	}
 }
 

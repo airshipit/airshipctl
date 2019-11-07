@@ -24,36 +24,40 @@ import (
 
 func TestValidate(t *testing.T) {
 	co := DummyClusterOptions()
-	// Valid Data case
+
+	// Assert that the initial dummy config is valid
 	err := co.Validate()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	// Validate with Embedded Data
 	// Empty CA
 	co.EmbedCAData = true
 	co.CertificateAuthority = ""
 	err = co.Validate()
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 
 	// Lets add a CA
 	co.CertificateAuthority = "testdata/ca.crt"
 	err = co.Validate()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
+
 	// Lets add a CA but garbage
 	co.CertificateAuthority = "garbage"
 	err = co.Validate()
-	assert.NotNil(t, err)
+	assert.Error(t, err)
+
 	// Lets change the Insecure mode
 	co.InsecureSkipTLSVerify = true
 	err = co.Validate()
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 
 	// Invalid Cluter Type
 	co.ClusterType = "Invalid"
 	err = co.Validate()
-	assert.NotNil(t, err)
+	assert.Error(t, err)
+
 	// Empty Cluster Name case
 	co.Name = ""
 	err = co.Validate()
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 }

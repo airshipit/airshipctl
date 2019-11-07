@@ -93,8 +93,9 @@ func TestSetClusterWithCAFileData(t *testing.T) {
 
 	expkCluster := kubeconfig.NewCluster()
 	readData, err := ioutil.ReadFile(certFile)
+	require.NoError(t, err)
+
 	expkCluster.CertificateAuthorityData = readData
-	assert.Nil(t, err)
 	expkCluster.InsecureSkipTLSVerify = false
 	expconf.KubeConfig().Clusters[clusterName.Name()] = expkCluster
 
@@ -225,22 +226,18 @@ func (test setClusterTest) run(t *testing.T) {
 	require.NotNil(t, afterRunCluster)
 
 	afterKcluster := afterRunCluster.KubeCluster()
+	require.NotNil(t, afterKcluster)
+
 	testKcluster := test.config.KubeConfig().
 		Clusters[test.config.Clusters[test.args[0]].ClusterTypes[tctype].NameInKubeconf]
-
-	require.NotNilf(t, afterKcluster,
-		"Fail in %q\n expected cluster server %v\n but got nil \n",
-		test.description,
-		testKcluster.Server)
 
 	assert.EqualValues(t, afterKcluster.Server, testKcluster.Server)
 
 	// Test that the Return Message looks correct
 	if len(test.expected) != 0 {
-		assert.EqualValuesf(t, buf.String(), test.expected, "expected %v, but got %v", test.expected, buf.String())
+		assert.EqualValues(t, test.expected, buf.String())
 	}
 
 	config.Clean(test.config)
 	config.Clean(afterRunConf)
-
 }
