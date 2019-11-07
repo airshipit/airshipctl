@@ -37,18 +37,28 @@ const (
 
 // DummyConfig used by tests, to initialize min set of data
 func DummyConfig() *Config {
-	conf := NewConfig()
-	// Make sure the .airship directory is created
-	//conf.ConfigFilePath()
-	conf.Clusters["dummy_cluster"] = DummyClusterPurpose()
-	conf.KubeConfig().Clusters["dummycluster_target"] = conf.Clusters["dummy_cluster"].ClusterTypes[Target].KubeCluster()
-	conf.KubeConfig().Clusters["dummycluster_ephemeral"] =
-		conf.Clusters["dummy_cluster"].ClusterTypes[Ephemeral].KubeCluster()
-	conf.AuthInfos["dummy_user"] = DummyAuthInfo()
-	conf.Contexts["dummy_context"] = DummyContext()
-	conf.Manifests["dummy_manifest"] = DummyManifest()
-	conf.ModulesConfig = DummyModules()
-	conf.CurrentContext = "dummy_context"
+	conf := &Config{
+		Kind:       AirshipConfigKind,
+		APIVersion: AirshipConfigApiVersion,
+		Clusters: map[string]*ClusterPurpose{
+			"dummy_cluster": DummyClusterPurpose(),
+		},
+		AuthInfos: map[string]*AuthInfo{
+			"dummy_user": DummyAuthInfo(),
+		},
+		Contexts: map[string]*Context{
+			"dummy_context": DummyContext(),
+		},
+		Manifests: map[string]*Manifest{
+			"dummy_manifest": DummyManifest(),
+		},
+		ModulesConfig:  DummyModules(),
+		CurrentContext: "dummy_context",
+		kubeConfig:     kubeconfig.NewConfig(),
+	}
+	dummyCluster := conf.Clusters["dummy_cluster"]
+	conf.KubeConfig().Clusters["dummycluster_target"] = dummyCluster.ClusterTypes[Target].KubeCluster()
+	conf.KubeConfig().Clusters["dummycluster_ephemeral"] = dummyCluster.ClusterTypes[Ephemeral].KubeCluster()
 	return conf
 }
 
@@ -111,10 +121,13 @@ func DummyClusterPurpose() *ClusterPurpose {
 
 func InitConfigAt(t *testing.T, airConfigFile, kConfigFile string) *Config {
 	conf := NewConfig()
+
 	kubePathOptions := clientcmd.NewDefaultPathOptions()
 	kubePathOptions.GlobalFile = kConfigFile
+
 	err := conf.LoadConfig(airConfigFile, kubePathOptions)
 	require.NoError(t, err)
+
 	return conf
 }
 func InitConfig(t *testing.T) *Config {

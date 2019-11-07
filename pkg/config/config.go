@@ -37,7 +37,6 @@ import (
 
 // Called from root to Load the initial configuration
 func (c *Config) LoadConfig(configFileArg string, kPathOptions *clientcmd.PathOptions) error {
-
 	err := c.loadFromAirConfig(configFileArg)
 	if err != nil {
 		return err
@@ -49,9 +48,8 @@ func (c *Config) LoadConfig(configFileArg string, kPathOptions *clientcmd.PathOp
 		return err
 	}
 
-	// Lets navigate through the kConfig to populate the references in airship config
+	// Lets navigate through the kubeconfig to populate the references in airship config
 	return c.reconcileConfig()
-
 }
 
 func (c *Config) loadFromAirConfig(configFileArg string) error {

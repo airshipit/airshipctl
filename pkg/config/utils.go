@@ -16,30 +16,17 @@ limitations under the License.
 
 package config
 
-import (
-	"path/filepath"
-
-	"k8s.io/client-go/tools/clientcmd"
-)
-
-// NewConfig is a convenience function that returns a new Config
-// object with non-nill maps
+// NewConfig returns a newly initialized Config object
 func NewConfig() *Config {
-	conf := &Config{
-		Clusters:  make(map[string]*ClusterPurpose),
-		Contexts:  make(map[string]*Context),
-		AuthInfos: make(map[string]*AuthInfo),
-		Manifests: make(map[string]*Manifest),
+	return &Config{
+		Kind:          AirshipConfigKind,
+		APIVersion:    AirshipConfigApiVersion,
+		Clusters:      make(map[string]*ClusterPurpose),
+		Contexts:      make(map[string]*Context),
+		AuthInfos:     make(map[string]*AuthInfo),
+		Manifests:     make(map[string]*Manifest),
+		ModulesConfig: NewModules(),
 	}
-	conf.ModulesConfig = NewModules()
-	conf.Kind = AirshipConfigKind
-	conf.APIVersion = AirshipConfigApiVersion
-
-	conf.loadedConfigPath = filepath.Join(AirshipConfigDir, AirshipConfig)
-	conf.loadedPathOptions = clientcmd.NewDefaultPathOptions()
-	conf.kubeConfig, _ = conf.loadedPathOptions.GetStartingConfig()
-	return conf
-
 }
 
 // NewContext is a convenience function that returns a new Context

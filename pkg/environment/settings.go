@@ -34,12 +34,12 @@ func (a *AirshipCTLSettings) InitFlags(cmd *cobra.Command) {
 	flags.StringVar(&a.kubeConfigPath, clientcmd.RecommendedConfigPathFlag,
 		filepath.Join(HomePlaceholder, config.AirshipConfigDir, config.AirshipKubeConfig),
 		"Path to kubeconfig associated with airshipctl configuration.")
-
 }
 
 func (a *AirshipCTLSettings) Config() *config.Config {
 	return a.config
 }
+
 func (a *AirshipCTLSettings) SetConfig(conf *config.Config) {
 	a.config = conf
 }
@@ -47,30 +47,31 @@ func (a *AirshipCTLSettings) SetConfig(conf *config.Config) {
 func (a *AirshipCTLSettings) AirshipConfigPath() string {
 	return a.airshipConfigPath
 }
+
 func (a *AirshipCTLSettings) SetAirshipConfigPath(acp string) {
 	a.airshipConfigPath = acp
 }
+
 func (a *AirshipCTLSettings) KubeConfigPath() string {
 	return a.kubeConfigPath
 }
+
 func (a *AirshipCTLSettings) SetKubeConfigPath(kcp string) {
 	a.kubeConfigPath = kcp
 }
 
 // InitConfig - Initializes and loads Config it exists.
 func (a *AirshipCTLSettings) InitConfig() {
-
-	// Raw - Empty Config object
 	a.SetConfig(config.NewConfig())
 
 	a.setAirshipConfigPath()
+
 	//Pass the airshipConfigPath and kubeConfig object
 	err := a.Config().LoadConfig(a.AirshipConfigPath(), a.setKubePathOptions())
 	if err != nil {
 		// Should stop airshipctl
 		log.Fatal(err)
 	}
-
 }
 
 func (a *AirshipCTLSettings) setAirshipConfigPath() {
@@ -113,8 +114,8 @@ func (a *AirshipCTLSettings) setKubePathOptions() *clientcmd.PathOptions {
 	kubePathOptions.GlobalFileSubpath = a.kubeConfigPath
 
 	return kubePathOptions
-
 }
+
 func (a *AirshipCTLSettings) replaceHomePlaceholder(configPath string) (string, string) {
 	home, err := os.UserHomeDir()
 	if err != nil {
