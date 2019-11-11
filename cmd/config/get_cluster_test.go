@@ -14,122 +14,132 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package config
+package config_test
 
 import (
-	"bytes"
-	"path/filepath"
+	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	kubeconfig "k8s.io/client-go/tools/clientcmd/api"
 
+	cmd "opendev.org/airship/airshipctl/cmd/config"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/testutil"
 )
 
-type getClusterTest struct {
-	config   *config.Config
-	args     []string
-	flags    []string
-	expected string
-}
+const (
+	ephemeralFlag = "--" + config.FlagClusterType + "=" + config.Ephemeral
+	targetFlag    = "--" + config.FlagClusterType + "=" + config.Target
 
-func TestGetCluster(t *testing.T) {
-	tname := "def"
-	tctype := config.Ephemeral
+	fooCluster     = "clusterFoo"
+	barCluster     = "clusterBar"
+	bazCluster     = "clusterBaz"
+	missingCluster = "clusterMissing"
+)
 
-	conf := config.InitConfig(t)
-
-	// Retrieve one of the test
-	theClusterIWant, err := conf.GetCluster(tname, tctype)
-	require.NoError(t, err)
-
-	err = conf.Purge()
-	require.NoError(t, err, "Unable to Purge before persisting the expected configuration")
-	err = conf.PersistConfig()
-	require.NoError(t, err, "Unable to Persist the expected configuration")
-
-	test := getClusterTest{
-		config: conf,
-		args:   []string{tname},
-		flags: []string{
-			"--" + config.FlagClusterType + "=" + config.Ephemeral,
+func TestGetClusterCmd(t *testing.T) {
+	conf := &config.Config{
+		Clusters: map[string]*config.ClusterPurpose{
+			fooCluster: {
+				ClusterTypes: map[string]*config.Cluster{
+					config.Ephemeral: getNamedTestCluster(fooCluster, config.Ephemeral),
+					config.Target:    getNamedTestCluster(fooCluster, config.Target),
+				},
+			},
+			barCluster: {
+				ClusterTypes: map[string]*config.Cluster{
+					config.Ephemeral: getNamedTestCluster(barCluster, config.Ephemeral),
+					config.Target:    getNamedTestCluster(barCluster, config.Target),
+				},
+			},
+			bazCluster: {
+				ClusterTypes: map[string]*config.Cluster{
+					config.Ephemeral: getNamedTestCluster(bazCluster, config.Ephemeral),
+					config.Target:    getNamedTestCluster(bazCluster, config.Target),
+				},
+			},
 		},
-		expected: theClusterIWant.PrettyString(),
 	}
 
-	test.run(t)
-}
-
-func TestGetAllClusters(t *testing.T) {
-	conf := config.InitConfig(t)
-
-	testDir := filepath.Dir(conf.LoadedConfigPath())
-	kubeconfigPath := filepath.Join(testDir, "kubeconfig")
-
-	expected := `Cluster: def
-ephemeral:
-bootstrap-info: ""
-cluster-kubeconf: def_ephemeral
-
-LocationOfOrigin: ` + kubeconfigPath + `
-insecure-skip-tls-verify: true
-server: http://5.6.7.8
-
-Cluster: def
-target:
-bootstrap-info: ""
-cluster-kubeconf: def_target
-
-LocationOfOrigin: ` + kubeconfigPath + `
-insecure-skip-tls-verify: true
-server: http://1.2.3.4
-
-Cluster: onlyinkubeconf
-target:
-bootstrap-info: ""
-cluster-kubeconf: onlyinkubeconf_target
-
-LocationOfOrigin: ` + kubeconfigPath + `
-insecure-skip-tls-verify: true
-server: http://9.10.11.12
-
-Cluster: wrongonlyinkubeconf
-target:
-bootstrap-info: ""
-cluster-kubeconf: wrongonlyinkubeconf_target
-
-LocationOfOrigin: ` + kubeconfigPath + `
-certificate-authority: cert_file
-server: ""
-
-`
-
-	test := getClusterTest{
-		config:   conf,
-		args:     []string{},
-		flags:    []string{},
-		expected: expected,
-	}
-
-	test.run(t)
-}
-
-func (test getClusterTest) run(t *testing.T) {
-	// Get the Environment
 	settings := &environment.AirshipCTLSettings{}
-	settings.SetConfig(test.config)
-	buf := bytes.NewBuffer([]byte{})
-	cmd := NewCmdConfigGetCluster(settings)
-	cmd.SetOutput(buf)
-	cmd.SetArgs(test.args)
-	err := cmd.Flags().Parse(test.flags)
-	require.NoErrorf(t, err, "unexpected error flags args to command: %v, flags: %v", err, test.flags)
+	settings.SetConfig(conf)
 
-	err = cmd.Execute()
-	require.NoError(t, err)
-	if len(test.expected) != 0 {
-		assert.EqualValues(t, test.expected, buf.String())
+	cmdTests := []*testutil.CmdTest{
+		{
+			Name:    "get-ephemeral",
+			CmdLine: fmt.Sprintf("%s %s", ephemeralFlag, fooCluster),
+			Cmd:     cmd.NewCmdConfigGetCluster(settings),
+		},
+		{
+			Name:    "get-target",
+			CmdLine: fmt.Sprintf("%s %s", targetFlag, fooCluster),
+			Cmd:     cmd.NewCmdConfigGetCluster(settings),
+		},
+
+		// FIXME(howell): "airshipctl config get-cluster foo bar" will
+		// print *all* clusters, regardless of whether they are
+		// specified on the command line
+		// In this case, the bazCluster should not be included in the
+		// output, yet it is
+		{
+			Name:    "get-multiple-ephemeral",
+			CmdLine: fmt.Sprintf("%s %s %s", ephemeralFlag, fooCluster, barCluster),
+			Cmd:     cmd.NewCmdConfigGetCluster(settings),
+		},
+		{
+			Name:    "get-multiple-target",
+			CmdLine: fmt.Sprintf("%s %s %s", targetFlag, fooCluster, barCluster),
+			Cmd:     cmd.NewCmdConfigGetCluster(settings),
+		},
+
+		// FIXME(howell): "airshipctl config get-cluster
+		// --cluster-type=ephemeral" will print *all* clusters,
+		// regardless of whether they are ephemeral or target
+		{
+			Name:    "get-all-ephemeral",
+			CmdLine: ephemeralFlag,
+			Cmd:     cmd.NewCmdConfigGetCluster(settings),
+		},
+		{
+			Name:    "get-all-target",
+			CmdLine: targetFlag,
+			Cmd:     cmd.NewCmdConfigGetCluster(settings),
+		},
+		{
+			Name:    "missing",
+			CmdLine: fmt.Sprintf("%s %s", targetFlag, missingCluster),
+			Cmd:     cmd.NewCmdConfigGetCluster(settings),
+			Error: fmt.Errorf("Cluster clusterMissing information was not " +
+				"found in the configuration."),
+		},
 	}
+
+	for _, tt := range cmdTests {
+		testutil.RunTest(t, tt)
+	}
+}
+
+func TestNoClustersGetClusterCmd(t *testing.T) {
+	settings := &environment.AirshipCTLSettings{}
+	settings.SetConfig(&config.Config{})
+	cmdTest := &testutil.CmdTest{
+		Name:    "no-clusters",
+		CmdLine: "",
+		Cmd:     cmd.NewCmdConfigGetCluster(settings),
+	}
+	testutil.RunTest(t, cmdTest)
+}
+
+func getNamedTestCluster(clusterName, clusterType string) *config.Cluster {
+	kCluster := &kubeconfig.Cluster{
+		LocationOfOrigin:      "",
+		InsecureSkipTLSVerify: true,
+		Server:                "",
+	}
+
+	newCluster := &config.Cluster{NameInKubeconf: fmt.Sprintf("%s_%s", clusterName, clusterType)}
+	newCluster.SetKubeCluster(kCluster)
+
+	return newCluster
 }

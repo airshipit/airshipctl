@@ -1,0 +1,8 @@
+Cluster: clusterFoo
+ephemeral:
+bootstrap-info: ""
+cluster-kubeconf: clusterFoo_ephemeral
+
+LocationOfOrigin: ""
+insecure-skip-tls-verify: true
+server: ""

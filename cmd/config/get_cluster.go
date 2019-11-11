@@ -24,7 +24,6 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
-	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 var (
@@ -48,14 +47,11 @@ func NewCmdConfigGetCluster(rootSettings *environment.AirshipCTLSettings) *cobra
 		Short:   "Display a specific cluster",
 		Long:    getClusterLong,
 		Example: getClusterExample,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 1 {
 				theCluster.Name = args[0]
 			}
-			err := runGetCluster(theCluster, cmd.OutOrStdout(), rootSettings)
-			if err != nil {
-				log.Fatal(err)
-			}
+			return runGetCluster(theCluster, cmd.OutOrStdout(), rootSettings)
 		},
 	}
 
@@ -99,9 +95,11 @@ func getClusters(out io.Writer, rootSettings *environment.AirshipCTLSettings) er
 	if err != nil {
 		return err
 	}
-	if clusters == nil {
-		fmt.Fprint(out, "No clusters found in the configuration.\n")
+	if len(clusters) == 0 {
+		fmt.Fprintln(out, "No clusters found in the configuration.")
+		return nil
 	}
+
 	for _, cluster := range clusters {
 		fmt.Fprintf(out, "%s\n", cluster.PrettyString())
 	}
