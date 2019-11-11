@@ -105,33 +105,55 @@ func (c *Config) reconcileConfig() error {
 	return nil
 }
 
-func (c *Config) reconcileClusters() (map[string]*ClusterComplexName, bool) {
-	updatedClusters := make(map[string]*kubeconfig.Cluster)
-	updatedClusterNames := make(map[string]*ClusterComplexName)
-	persistIt := false
-	for key, cluster := range c.kubeConfig.Clusters {
+// reconcileClusters synchronizes the airshipconfig file with the kubeconfig file.
+//
+// It iterates over the clusters listed in the kubeconfig. If any cluster in
+// the kubeconfig does not meet the <name>_<type> convention, the name is
+// first changed to the airship default.
+//
+// It then updates the airshipconfig's names of those clusters, as well as the
+// pointer to the clusters.
+// If the cluster wasn't referenced prior to the call, it is created; otherwise
+// it is modified.
+//
+// Finally, any clusters listed in the airshipconfig that are no longer
+// referenced in the kubeconfig are deleted
+//
+// The function returns a mapping of changed names in the kubeconfig, as well
+// as a boolean denoting that the config files need to be written to file
+func (c *Config) reconcileClusters() (map[string]string, bool) {
+	// updatedClusterNames is a mapping from OLD cluster names to NEW
+	// cluster names. This will be used later when we update contexts
+	updatedClusterNames := map[string]string{}
 
+	persistIt := false
+	for clusterName, cluster := range c.kubeConfig.Clusters {
 		clusterComplexName := NewClusterComplexName()
-		clusterComplexName.FromName(key)
-		// Lets check if the cluster from the kubeconfig file complies with the complex naming convention
+		clusterComplexName.FromName(clusterName)
+		// Check if the cluster from the kubeconfig file complies with
+		// the airship naming convention
 		if !clusterComplexName.validName() {
 			clusterComplexName.SetDefaultType()
-			// Lets update the kubeconfig with proper airship name
-			updatedClusters[clusterComplexName.Name()] = cluster
+			// Update the kubeconfig with proper airship name
+			c.kubeConfig.Clusters[clusterComplexName.Name()] = cluster
+			delete(c.kubeConfig.Clusters, clusterName)
 
-			// Remember name changes since Contexts has to be updated as well for this clusters
-			updatedClusterNames[key] = clusterComplexName
+			// We also need to save the mapping from the old name
+			// so we can update the context in the kubeconfig later
+			updatedClusterNames[clusterName] = clusterComplexName.Name()
+
+			// Since we've modified the kubeconfig object, we'll
+			// need to let the caller know that the kubeconfig file
+			// needs to be updated
 			persistIt = true
 
-			if c.kubeConfig.Clusters[key] == nil {
-				c.kubeConfig.Clusters[key] = updatedClusters[key]
-			}
-			// Otherwise this is a cluster that didnt have an airship cluster type, however when you added the cluster type
+			// Otherwise this is a cluster that didnt have an
+			// airship cluster type, however when you added the
+			// cluster type
 			// Probable should just add a number _<COUNTER to it
 		}
 
-		// The cluster name is good at this point
-		// Lets update the airship config file updated
+		// Update the airship config file
 		if c.Clusters[clusterComplexName.ClusterName()] == nil {
 			c.Clusters[clusterComplexName.ClusterName()] = NewClusterPurpose()
 		}
@@ -145,45 +167,43 @@ func (c *Config) reconcileClusters() (map[string]*ClusterComplexName, bool) {
 		}
 		// Store the reference to the KubeConfig Cluster in the Airship Config
 		configCluster.SetKubeCluster(cluster)
-
-		// Done updating
-		// Lets remove anything that was updated
-		if updatedClusterNames[key] != nil {
-			delete(c.kubeConfig.Clusters, key)
-		}
 	}
 
 	persistIt = c.rmConfigClusterStragglers(persistIt)
 
 	return updatedClusterNames, persistIt
-
 }
 
-// Removes or Deletes Cluster configuration that exist in Airship Config
-// and do not have any kubeconfig appropriate <clustername>_<clustertype>
-// entries
+// Removes Cluster configuration that exist in Airship Config and do not have
+// any kubeconfig appropriate <clustername>_<clustertype> entries
 func (c *Config) rmConfigClusterStragglers(persistIt bool) bool {
 	rccs := persistIt
 	// Checking if there is any Cluster reference in airship config that does not match
 	// an actual Cluster struct in kubeconfig
-	for key := range c.Clusters {
-		for cType, cluster := range c.Clusters[key].ClusterTypes {
-			if c.kubeConfig.Clusters[cluster.NameInKubeconf] == nil {
+	for clusterName := range c.Clusters {
+		for cType, cluster := range c.Clusters[clusterName].ClusterTypes {
+			if _, found := c.kubeConfig.Clusters[cluster.NameInKubeconf]; !found {
 				// Instead of removing it , I could add a empty entry in kubeconfig as well
 				// Will see what is more appropriae with use of Modules configuration
-				delete(c.Clusters[key].ClusterTypes, cType)
+				delete(c.Clusters[clusterName].ClusterTypes, cType)
+
+				// If that was the last cluster type, then we
+				// should delete the cluster entry
+				if len(c.Clusters[clusterName].ClusterTypes) == 0 {
+					delete(c.Clusters, clusterName)
+				}
 				rccs = true
 			}
 		}
 	}
 	return rccs
 }
-func (c *Config) reconcileContexts(updatedClusterNames map[string]*ClusterComplexName) {
+func (c *Config) reconcileContexts(updatedClusterNames map[string]string) {
 	for key, context := range c.kubeConfig.Contexts {
 		// Check if the Cluster name referred to by the context
 		// was updated during the cluster reconcile
-		if updatedClusterNames[context.Cluster] != nil {
-			context.Cluster = updatedClusterNames[context.Cluster].Name()
+		if newName, ok := updatedClusterNames[context.Cluster]; ok {
+			context.Cluster = newName
 		}
 
 		if c.Contexts[key] == nil {
