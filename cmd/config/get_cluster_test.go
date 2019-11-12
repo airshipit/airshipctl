@@ -18,6 +18,7 @@ package config
 
 import (
 	"bytes"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,11 +34,6 @@ type getClusterTest struct {
 	flags    []string
 	expected string
 }
-
-const (
-	testMimeType = ".yaml"
-	testDataDir  = "../../pkg/config/testdata"
-)
 
 func TestGetCluster(t *testing.T) {
 	tname := "def"
@@ -69,12 +65,15 @@ func TestGetCluster(t *testing.T) {
 func TestGetAllClusters(t *testing.T) {
 	conf := config.InitConfig(t)
 
+	testDir := filepath.Dir(conf.LoadedConfigPath())
+	kubeconfigPath := filepath.Join(testDir, "kubeconfig")
+
 	expected := `Cluster: def
 ephemeral:
 bootstrap-info: ""
 cluster-kubeconf: def_ephemeral
 
-LocationOfOrigin: ../../pkg/config/testdata/kubeconfig.yaml
+LocationOfOrigin: ` + kubeconfigPath + `
 insecure-skip-tls-verify: true
 server: http://5.6.7.8
 
@@ -83,7 +82,7 @@ target:
 bootstrap-info: ""
 cluster-kubeconf: def_target
 
-LocationOfOrigin: ../../pkg/config/testdata/kubeconfig.yaml
+LocationOfOrigin: ` + kubeconfigPath + `
 insecure-skip-tls-verify: true
 server: http://1.2.3.4
 
@@ -92,7 +91,7 @@ target:
 bootstrap-info: ""
 cluster-kubeconf: onlyinkubeconf_target
 
-LocationOfOrigin: ../../pkg/config/testdata/kubeconfig.yaml
+LocationOfOrigin: ` + kubeconfigPath + `
 insecure-skip-tls-verify: true
 server: http://9.10.11.12
 
@@ -101,7 +100,7 @@ target:
 bootstrap-info: ""
 cluster-kubeconf: wrongonlyinkubeconf_target
 
-LocationOfOrigin: ../../pkg/config/testdata/kubeconfig.yaml
+LocationOfOrigin: ` + kubeconfigPath + `
 certificate-authority: cert_file
 server: ""
 

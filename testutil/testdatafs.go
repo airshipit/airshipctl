@@ -32,7 +32,6 @@ func SetupTestFs(t *testing.T, fixtureDir string) fs.FileSystem {
 		require.NoErrorf(t, err, "Failed to write file %s, setting up testfs failed", filePath)
 	}
 	return x
-
 }
 
 // NewTestBundle helps to create a new bundle with FakeFs containing documents from fixtureDir
