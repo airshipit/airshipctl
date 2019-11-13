@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -51,7 +52,13 @@ func GenerateBootstrapIso(settings *Settings, args []string, out io.Writer) erro
 		return err
 	}
 
-	return generateBootstrapIso(docBundle, builder, cfg, out, settings.Debug)
+	err = generateBootstrapIso(docBundle, builder, cfg, out, settings.Debug)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(out, "Checking artifacts")
+	return verifyArtifacts(cfg)
+
 }
 
 func verifyInputs(cfg *Config, args []string, out io.Writer) error {
@@ -93,6 +100,13 @@ func getContainerCfg(cfg *Config, userData []byte, netConf []byte) (map[string][
 	}
 	fls[filepath.Join(hostVol, builderConfigFileName)] = builderData
 	return fls, nil
+}
+
+func verifyArtifacts(cfg *Config) error {
+	hostVol := strings.Split(cfg.Container.Volume, ":")[0]
+	metadataPath := filepath.Join(hostVol, cfg.Builder.OutputMetadataFileName)
+	_, err := os.Stat(metadataPath)
+	return err
 }
 
 func generateBootstrapIso(
