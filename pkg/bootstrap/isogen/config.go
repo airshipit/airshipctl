@@ -8,6 +8,11 @@ import (
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
+const (
+	// TODO this should be part of a airshipctl config
+	EphemeralClusterAnnotation = "airshipit.org/clustertype=ephemeral"
+)
+
 // Settings settings for isogen command
 type Settings struct {
 	*environment.AirshipCTLSettings
