@@ -3,7 +3,6 @@ package isogen
 import (
 	"context"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/errors"
+	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/util"
 
 	"sigs.k8s.io/kustomize/v3/pkg/fs"
@@ -22,9 +22,9 @@ const (
 )
 
 // GenerateBootstrapIso will generate data for cloud init and start ISO builder container
-func GenerateBootstrapIso(settings *Settings, args []string, out io.Writer) error {
+func GenerateBootstrapIso(settings *Settings, args []string) error {
 	if settings.IsogenConfigFile == "" {
-		fmt.Fprintln(out, "Reading config file location from global settings is not supported")
+		log.Print("Reading config file location from global settings is not supported")
 		return errors.ErrNotImplemented{}
 	}
 
@@ -35,7 +35,7 @@ func GenerateBootstrapIso(settings *Settings, args []string, out io.Writer) erro
 		return err
 	}
 
-	if err := verifyInputs(cfg, args, out); err != nil {
+	if err := verifyInputs(cfg, args); err != nil {
 		return err
 	}
 
@@ -44,7 +44,7 @@ func GenerateBootstrapIso(settings *Settings, args []string, out io.Writer) erro
 		return err
 	}
 
-	fmt.Fprintln(out, "Creating ISO builder container")
+	log.Print("Creating ISO builder container")
 	builder, err := container.NewContainer(
 		&ctx, cfg.Container.ContainerRuntime,
 		cfg.Container.Image)
@@ -52,28 +52,28 @@ func GenerateBootstrapIso(settings *Settings, args []string, out io.Writer) erro
 		return err
 	}
 
-	err = generateBootstrapIso(docBundle, builder, cfg, out, settings.Debug)
+	err = generateBootstrapIso(docBundle, builder, cfg, settings.Debug)
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(out, "Checking artifacts")
+	log.Print("Checking artifacts")
 	return verifyArtifacts(cfg)
 
 }
 
-func verifyInputs(cfg *Config, args []string, out io.Writer) error {
+func verifyInputs(cfg *Config, args []string) error {
 	if len(args) == 0 {
-		fmt.Fprintln(out, "Specify path to document model. Config param from global settings is not supported")
+		log.Print("Specify path to document model. Config param from global settings is not supported")
 		return errors.ErrNotImplemented{}
 	}
 
 	if cfg.Container.Volume == "" {
-		fmt.Fprintln(out, "Specify volume bind for ISO builder container")
+		log.Print("Specify volume bind for ISO builder container")
 		return errors.ErrWrongConfig{}
 	}
 
 	if (cfg.Builder.UserDataFileName == "") || (cfg.Builder.NetworkConfigFileName == "") {
-		fmt.Fprintln(out, "UserDataFileName or NetworkConfigFileName are not specified in ISO builder config")
+		log.Print("UserDataFileName or NetworkConfigFileName are not specified in ISO builder config")
 		return errors.ErrWrongConfig{}
 	}
 
@@ -82,7 +82,7 @@ func verifyInputs(cfg *Config, args []string, out io.Writer) error {
 	case len(vols) == 1:
 		cfg.Container.Volume = fmt.Sprintf("%s:%s", vols[0], vols[0])
 	case len(vols) > 2:
-		fmt.Fprintln(out, "Bad container volume format. Use hostPath:contPath")
+		log.Print("Bad container volume format. Use hostPath:contPath")
 		return errors.ErrWrongConfig{}
 	}
 	return nil
@@ -113,11 +113,10 @@ func generateBootstrapIso(
 	docBubdle document.Bundle,
 	builder container.Container,
 	cfg *Config,
-	out io.Writer,
 	debug bool,
 ) error {
 	cntVol := strings.Split(cfg.Container.Volume, ":")[1]
-	fmt.Fprintln(out, "Creating cloud-init for ephemeral K8s")
+	log.Print("Creating cloud-init for ephemeral K8s")
 	userData, netConf, err := cloudinit.GetCloudData(docBubdle, EphemeralClusterAnnotation)
 	if err != nil {
 		return err
@@ -131,7 +130,7 @@ func generateBootstrapIso(
 
 	vols := []string{cfg.Container.Volume}
 	builderCfgLocation := filepath.Join(cntVol, builderConfigFileName)
-	fmt.Fprintf(out, "Running default container command. Mounted dir: %s\n", vols)
+	log.Printf("Running default container command. Mounted dir: %s", vols)
 	if err := builder.RunCommand(
 		[]string{},
 		nil,
@@ -142,15 +141,12 @@ func generateBootstrapIso(
 		return err
 	}
 
-	fmt.Fprintln(out, "ISO successfully built.")
-	if debug {
-		fmt.Fprintf(
-			out,
-			"Debug flag is set. Container %s stopped but not deleted.\n",
-			builder.GetId(),
-		)
-		return nil
+	log.Print("ISO successfully built.")
+	if !debug {
+		log.Print("Removing container.")
+		return builder.RmContainer()
 	}
-	fmt.Fprintln(out, "Removing container.")
-	return builder.RmContainer()
+
+	log.Debugf("Debug flag is set. Container %s stopped but not deleted.", builder.GetId())
+	return nil
 }
