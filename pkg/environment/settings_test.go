@@ -28,21 +28,12 @@ import (
 	"opendev.org/airship/airshipctl/pkg/config"
 )
 
-// Bogus for coverage
-func FakeCmd() *cobra.Command {
-	fakecmd := &cobra.Command{
-		Use: "fakecmd",
-		Run: func(cmd *cobra.Command, args []string) {},
-	}
-	return fakecmd
-}
-
 func TestInitFlags(t *testing.T) {
 	// Get the Environment
 	settings := &AirshipCTLSettings{}
-	fakecmd := FakeCmd()
-	settings.InitFlags(fakecmd)
-	assert.True(t, fakecmd.HasPersistentFlags())
+	testCmd := &cobra.Command{}
+	settings.InitFlags(testCmd)
+	assert.True(t, testCmd.HasPersistentFlags())
 }
 
 func TestSpecifyAirConfigFromEnv(t *testing.T) {
@@ -55,6 +46,7 @@ func TestSpecifyAirConfigFromEnv(t *testing.T) {
 
 	assert.EqualValues(t, fakeConfig, settings.AirshipConfigPath())
 }
+
 func TestGetSetPaths(t *testing.T) {
 	settings := &AirshipCTLSettings{}
 	settings.InitConfig()
@@ -65,12 +57,4 @@ func TestGetSetPaths(t *testing.T) {
 
 	settings.SetKubeConfigPath(kConfigFile)
 	assert.EqualValues(t, kConfigFile, settings.KubeConfigPath())
-}
-
-func TestSpecifyKubeConfigInCli(t *testing.T) {
-	fakecmd := FakeCmd()
-
-	settings := &AirshipCTLSettings{}
-	settings.InitFlags(fakecmd)
-	assert.True(t, fakecmd.HasPersistentFlags())
 }
