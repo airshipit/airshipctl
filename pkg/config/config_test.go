@@ -18,6 +18,7 @@ package config
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -147,55 +148,24 @@ func TestEqual(t *testing.T) {
 }
 
 func TestLoadConfig(t *testing.T) {
-	// Shouuld have the defult in testdata
-	// And copy it to the default prior to the test
-	// Create from defaults using existing kubeconf
 	conf := InitConfig(t)
-
 	require.NotEmpty(t, conf.String())
 
-	// Lets make sure that the contents is as expected
-	// 4 Clusters
-	// 2 Clusters Types
-	// 3 Contexts
-	// 2 Users
 	assert.Len(t, conf.Clusters, 4)
+	require.Contains(t, conf.Clusters, "def")
 	assert.Len(t, conf.Clusters["def"].ClusterTypes, 2)
 	assert.Len(t, conf.Contexts, 3)
 	assert.Len(t, conf.AuthInfos, 2)
-
 }
 
 func TestPersistConfig(t *testing.T) {
 	config := InitConfig(t)
-	defer Clean(config)
-	airConfigFile := filepath.Join(testAirshipConfigDir, AirshipConfig)
-	kConfigFile := filepath.Join(testAirshipConfigDir, AirshipKubeConfig)
-	config.SetLoadedConfigPath(airConfigFile)
-	kubePathOptions := clientcmd.NewDefaultPathOptions()
-	kubePathOptions.GlobalFile = kConfigFile
-	config.SetLoadedPathOptions(kubePathOptions)
 
 	err := config.PersistConfig()
 	assert.NoErrorf(t, err, "Unable to persist configuration expected at %v", config.LoadedConfigPath())
 
 	kpo := config.LoadedPathOptions()
 	assert.NotNil(t, kpo)
-}
-
-func TestPersistConfigFail(t *testing.T) {
-	config := InitConfig(t)
-	defer Clean(config)
-
-	airConfigFile := filepath.Join(testAirshipConfigDir, "\\")
-	kConfigFile := filepath.Join(testAirshipConfigDir, "\\")
-	config.SetLoadedConfigPath(airConfigFile)
-	kubePathOptions := clientcmd.NewDefaultPathOptions()
-	kubePathOptions.GlobalFile = kConfigFile
-	config.SetLoadedPathOptions(kubePathOptions)
-
-	err := config.PersistConfig()
-	assert.Errorf(t, err, "Able to persist configuration at %v, but expected an error", config.LoadedConfigPath())
 }
 
 func TestEnsureComplete(t *testing.T) {
@@ -230,17 +200,20 @@ func TestEnsureComplete(t *testing.T) {
 
 func TestPurge(t *testing.T) {
 	config := InitConfig(t)
-	defer Clean(config)
 
-	airConfigFile := filepath.Join(testAirshipConfigDir, AirshipConfig)
-	kConfigFile := filepath.Join(testAirshipConfigDir, AirshipKubeConfig)
+	// Point the config objects at a temporary directory
+	tempDir, err := ioutil.TempDir("", "airship-test-purge")
+	require.NoError(t, err)
+
+	airConfigFile := filepath.Join(tempDir, AirshipConfig)
+	kConfigFile := filepath.Join(tempDir, AirshipKubeConfig)
 	config.SetLoadedConfigPath(airConfigFile)
 	kubePathOptions := clientcmd.NewDefaultPathOptions()
 	kubePathOptions.GlobalFile = kConfigFile
 	config.SetLoadedPathOptions(kubePathOptions)
 
 	// Store it
-	err := config.PersistConfig()
+	err = config.PersistConfig()
 	assert.NoErrorf(t, err, "Unable to persist configuration expected at %v", config.LoadedConfigPath())
 
 	// Verify that the file is there

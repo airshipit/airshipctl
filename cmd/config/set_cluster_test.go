@@ -44,13 +44,13 @@ const (
 )
 
 func TestSetClusterWithCAFile(t *testing.T) {
-	conf := config.DefaultInitConfig(t)
+	conf := config.InitConfig(t)
 	certFile := "../../pkg/config/testdata/ca.crt"
 
 	tname := testCluster
 	tctype := config.Ephemeral
 
-	expconf := config.DefaultInitConfig(t)
+	expconf := config.InitConfig(t)
 	expconf.Clusters[tname] = config.NewClusterPurpose()
 	expconf.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
 	clusterName := config.NewClusterComplexName()
@@ -78,13 +78,13 @@ func TestSetClusterWithCAFile(t *testing.T) {
 	test.run(t)
 }
 func TestSetClusterWithCAFileData(t *testing.T) {
-	conf := config.DefaultInitConfig(t)
+	conf := config.InitConfig(t)
 	certFile := "../../pkg/config/testdata/ca.crt"
 
 	tname := testCluster
 	tctype := config.Ephemeral
 
-	expconf := config.DefaultInitConfig(t)
+	expconf := config.InitConfig(t)
 	expconf.Clusters[tname] = config.NewClusterPurpose()
 	expconf.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
 	clusterName := config.NewClusterComplexName()
@@ -117,7 +117,7 @@ func TestSetClusterWithCAFileData(t *testing.T) {
 
 func TestSetCluster(t *testing.T) {
 
-	conf := config.DefaultInitConfig(t)
+	conf := config.InitConfig(t)
 
 	//	err := conf.Purge()
 	//	assert.Nilf(t, err, "Unable to purge test configuration %v", err)
@@ -125,7 +125,7 @@ func TestSetCluster(t *testing.T) {
 	tname := testCluster
 	tctype := config.Ephemeral
 
-	expconf := config.DefaultInitConfig(t)
+	expconf := config.InitConfig(t)
 	expconf.Clusters[tname] = config.NewClusterPurpose()
 	expconf.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
 	clusterName := config.NewClusterComplexName()
@@ -156,7 +156,7 @@ func TestModifyCluster(t *testing.T) {
 	tname := testClusterName
 	tctype := config.Ephemeral
 
-	conf := config.DefaultInitConfig(t)
+	conf := config.InitConfig(t)
 	conf.Clusters[tname] = config.NewClusterPurpose()
 	clusterName := config.NewClusterComplexName()
 	clusterName.WithType(tname, tctype)
@@ -167,7 +167,7 @@ func TestModifyCluster(t *testing.T) {
 	conf.KubeConfig().Clusters[clusterName.Name()] = kCluster
 	conf.Clusters[tname].ClusterTypes[tctype].SetKubeCluster(kCluster)
 
-	expconf := config.DefaultInitConfig(t)
+	expconf := config.InitConfig(t)
 	expconf.Clusters[tname] = config.NewClusterPurpose()
 	expconf.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
 	expconf.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.Name()
@@ -237,7 +237,4 @@ func (test setClusterTest) run(t *testing.T) {
 	if len(test.expected) != 0 {
 		assert.EqualValues(t, test.expected, buf.String())
 	}
-
-	config.Clean(test.config)
-	config.Clean(afterRunConf)
 }

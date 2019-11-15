@@ -17,8 +17,6 @@ limitations under the License.
 package environment
 
 import (
-	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -28,11 +26,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-)
-
-const (
-	testDataDir  = "../../pkg/config/testdata"
-	testMimeType = ".yaml"
 )
 
 // Bogus for coverage
@@ -45,31 +38,11 @@ func FakeCmd() *cobra.Command {
 }
 
 func TestInitFlags(t *testing.T) {
-
 	// Get the Environment
 	settings := &AirshipCTLSettings{}
 	fakecmd := FakeCmd()
 	settings.InitFlags(fakecmd)
 	assert.True(t, fakecmd.HasPersistentFlags())
-
-}
-
-func TestNewConfig(t *testing.T) {
-	// Initialize kubeconfig
-	src := filepath.Join(testDataDir, config.AirshipKubeConfig+testMimeType)
-	dst := filepath.Join(config.AirshipConfigDir, config.AirshipKubeConfig)
-	err := initTestDir(config.AirshipConfigDir)
-	require.NoError(t, err)
-
-	defer clean(config.AirshipConfigDir)
-	_, err = copy(src, dst)
-	require.NoError(t, err)
-
-	settings := &AirshipCTLSettings{}
-	settings.InitConfig()
-	conf := settings.Config()
-	assert.NotNil(t, conf)
-
 }
 
 func TestSpecifyAirConfigFromEnv(t *testing.T) {
@@ -100,37 +73,4 @@ func TestSpecifyKubeConfigInCli(t *testing.T) {
 	settings := &AirshipCTLSettings{}
 	settings.InitFlags(fakecmd)
 	assert.True(t, fakecmd.HasPersistentFlags())
-}
-
-func initTestDir(dst string) error {
-	return os.MkdirAll(dst, 0755)
-}
-
-func copy(src, dst string) (int64, error) {
-	sourceFileStat, err := os.Stat(src)
-	if err != nil {
-		return 0, err
-	}
-
-	if !sourceFileStat.Mode().IsRegular() {
-		return 0, fmt.Errorf("%s is not a regular file", src)
-	}
-
-	source, err := os.Open(src)
-	if err != nil {
-		return 0, err
-	}
-	defer source.Close()
-
-	destination, err := os.Create(dst)
-	if err != nil {
-		return 0, err
-	}
-	defer destination.Close()
-	nBytes, err := io.Copy(destination, source)
-	return nBytes, err
-}
-
-func clean(dst string) error {
-	return os.RemoveAll(dst)
 }

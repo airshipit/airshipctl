@@ -305,6 +305,12 @@ func (c *Config) PersistConfig() error {
 		return err
 	}
 
+	// FIXME(howell): if this fails, then the results from the previous
+	// actions will persist, meaning that we might have overwritten our
+	// airshipconfig without updating our kubeconfig. A possible solution
+	// is to generate brand new config files and then write them at the
+	// end. That could still fail, but should be more robust
+
 	// Persist the kubeconfig file referenced
 	if err := clientcmd.ModifyConfig(c.loadedPathOptions, *c.kubeConfig, true); err != nil {
 		return err
