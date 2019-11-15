@@ -119,9 +119,6 @@ func TestSetCluster(t *testing.T) {
 
 	conf := config.InitConfig(t)
 
-	//	err := conf.Purge()
-	//	assert.Nilf(t, err, "Unable to purge test configuration %v", err)
-
 	tname := testCluster
 	tctype := config.Ephemeral
 
@@ -209,11 +206,7 @@ func (test setClusterTest) run(t *testing.T) {
 	err = cmd.Execute()
 	require.NoErrorf(t, err, "unexpected error executing command: %v, args: %v, flags: %v", err, test.args, test.flags)
 
-	// Load a New Config from the default Config File
-	//afterSettings := &environment.AirshipCTLSettings{}
 	// Loads the Config File that was updated
-	//afterSettings.NewConfig()
-	// afterRunConf := afterSettings.GetConfig()
 	afterRunConf := settings.Config()
 	// Get ClusterType
 	tctypeFlag := cmd.Flag(config.FlagClusterType)

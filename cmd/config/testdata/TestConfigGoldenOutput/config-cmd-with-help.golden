@@ -1,4 +1,4 @@
-Modify airshipctl config files using subcommands 
+Modify airshipctl config files using subcommands
 like "airshipctl config set-current-context my-context"
 
 Usage:

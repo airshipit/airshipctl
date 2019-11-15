@@ -482,33 +482,6 @@ func (c *Config) GetClusters() ([]*Cluster, error) {
 	return clusters, nil
 }
 
-// CurrentConfig Returns the appropriate information for the current context
-// Current Context holds labels for the approriate config objects
-//      Cluster is the name of the cluster for this context
-//      ClusterType is the name of the clustertye for this context
-//      AuthInfo is the name of the authInfo for this context
-//      Manifest is the default manifest to be use with this context
-//      Namespace is the default namespace to use on unspecified requests
-// Purpose for this method is simplifying ting the current context information
-/*
-func (c *Config) CurrentContext() (*Context, *Cluster, *AuthInfo, *Manifest, error) {
-	if err := c.EnsureComplete(); err != nil {
-		return nil, nil, nil, nil, err
-	}
-	currentContext := c.Contexts[c.CurrentContext]
-	if currentContext == nil {
-		// this should not happened
-		return nil, nil, nil, nil,
-			errors.New("CurrentContext was unable to find the configured current context.")
-	}
-	return currentContext,
-		c.Clusters[currentContext.Cluster].ClusterTypes[currentContext.ClusterType],
-		c.AuthInfos[currentContext.AuthInfo],
-		c.Manifests[currentContext.Manifest],
-		nil
-}
-*/
-
 // Purge removes the config file
 func (c *Config) Purge() error {
 	//configFile := c.ConfigFile()
