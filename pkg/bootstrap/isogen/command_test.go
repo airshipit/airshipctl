@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,6 +12,7 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/errors"
+	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
@@ -60,18 +62,18 @@ func TestBootstrapIso(t *testing.T) {
 		},
 	}
 	expOut := []string{
-		"Creating cloud-init for ephemeral K8s\n",
-		fmt.Sprintf("Running default container command. Mounted dir: [%s]\n", volBind),
-		"ISO successfully built.\n",
-		"Debug flag is set. Container TESTID stopped but not deleted.\n",
-		"Removing container.\n",
+		"Creating cloud-init for ephemeral K8s",
+		fmt.Sprintf("Running default container command. Mounted dir: [%s]", volBind),
+		"ISO successfully built.",
+		"Debug flag is set. Container TESTID stopped but not deleted.",
+		"Removing container.",
 	}
 
 	tests := []struct {
 		builder     *mockContainer
 		cfg         *Config
 		debug       bool
-		expectedOut string
+		expectedOut []string
 		expectdErr  error
 	}{
 		{
@@ -80,7 +82,7 @@ func TestBootstrapIso(t *testing.T) {
 			},
 			cfg:         testCfg,
 			debug:       false,
-			expectedOut: expOut[0] + expOut[1],
+			expectedOut: []string{expOut[0], expOut[1]},
 			expectdErr:  testErr,
 		},
 		{
@@ -90,7 +92,7 @@ func TestBootstrapIso(t *testing.T) {
 			},
 			cfg:         testCfg,
 			debug:       true,
-			expectedOut: expOut[0] + expOut[1] + expOut[2] + expOut[3],
+			expectedOut: []string{expOut[0], expOut[1], expOut[2], expOut[3]},
 			expectdErr:  nil,
 		},
 		{
@@ -101,20 +103,22 @@ func TestBootstrapIso(t *testing.T) {
 			},
 			cfg:         testCfg,
 			debug:       false,
-			expectedOut: expOut[0] + expOut[1] + expOut[2] + expOut[4],
+			expectedOut: []string{expOut[0], expOut[1], expOut[2], expOut[4]},
 			expectdErr:  testErr,
 		},
 	}
 
 	for _, tt := range tests {
-		actualOut := bytes.NewBufferString("")
-		actualErr := generateBootstrapIso(bundle, tt.builder, tt.cfg, actualOut, tt.debug)
+		outBuf := &bytes.Buffer{}
+		log.Init(tt.debug, outBuf)
+		actualErr := generateBootstrapIso(bundle, tt.builder, tt.cfg, tt.debug)
+		actualOut := outBuf.String()
 
-		errS := fmt.Sprintf("generateBootstrapIso should have return error %s, got %s", tt.expectdErr, actualErr)
-		assert.Equal(t, actualErr, tt.expectdErr, errS)
+		for _, line := range tt.expectedOut {
+			assert.True(t, strings.Contains(actualOut, line))
+		}
 
-		errS = fmt.Sprintf("generateBootstrapIso should have print %s, got %s", tt.expectedOut, actualOut)
-		assert.Equal(t, actualOut.String(), tt.expectedOut, errS)
+		assert.Equal(t, tt.expectdErr, actualErr)
 	}
 }
 
@@ -172,7 +176,7 @@ func TestVerifyInputs(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		actualErr := verifyInputs(tt.cfg, tt.args, bytes.NewBufferString(""))
+		actualErr := verifyInputs(tt.cfg, tt.args)
 		assert.Equal(t, tt.expectedErr, actualErr)
 	}
 

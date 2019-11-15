@@ -14,7 +14,7 @@ func NewISOGenCommand(parent *cobra.Command, rootSettings *environment.AirshipCT
 		Use:   "isogen",
 		Short: "Generate bootstrap ISO image",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return isogen.GenerateBootstrapIso(settings, args, cmd.OutOrStdout())
+			return isogen.GenerateBootstrapIso(settings, args)
 		},
 	}
 
