@@ -1,0 +1,54 @@
+Cluster: clusterBar
+ephemeral:
+bootstrap-info: ""
+cluster-kubeconf: clusterBar_ephemeral
+
+LocationOfOrigin: ""
+insecure-skip-tls-verify: true
+server: ""
+
+Cluster: clusterBar
+target:
+bootstrap-info: ""
+cluster-kubeconf: clusterBar_target
+
+LocationOfOrigin: ""
+insecure-skip-tls-verify: true
+server: ""
+
+Cluster: clusterBaz
+ephemeral:
+bootstrap-info: ""
+cluster-kubeconf: clusterBaz_ephemeral
+
+LocationOfOrigin: ""
+insecure-skip-tls-verify: true
+server: ""
+
+Cluster: clusterBaz
+target:
+bootstrap-info: ""
+cluster-kubeconf: clusterBaz_target
+
+LocationOfOrigin: ""
+insecure-skip-tls-verify: true
+server: ""
+
+Cluster: clusterFoo
+ephemeral:
+bootstrap-info: ""
+cluster-kubeconf: clusterFoo_ephemeral
+
+LocationOfOrigin: ""
+insecure-skip-tls-verify: true
+server: ""
+
+Cluster: clusterFoo
+target:
+bootstrap-info: ""
+cluster-kubeconf: clusterFoo_target
+
+LocationOfOrigin: ""
+insecure-skip-tls-verify: true
+server: ""
+
