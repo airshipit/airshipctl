@@ -25,7 +25,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	"k8s.io/client-go/tools/clientcmd"
+	kubeconfig "k8s.io/client-go/tools/clientcmd/api"
 
 	"opendev.org/airship/airshipctl/testutil"
 )
@@ -317,4 +319,56 @@ func TestGetClusters(t *testing.T) {
 	clusters, err := conf.GetClusters()
 	require.NoError(t, err)
 	assert.Len(t, clusters, 4)
+}
+
+func TestReconcileClusters(t *testing.T) {
+	testCluster := &kubeconfig.Cluster{
+		Server:                "testServer",
+		InsecureSkipTLSVerify: true,
+	}
+
+	testKubeConfig := &kubeconfig.Config{
+		Clusters: map[string]*kubeconfig.Cluster{
+			"invalidName":                        nil,
+			"missingFromAirshipConfig_ephemeral": testCluster,
+		},
+	}
+
+	testConfig := &Config{
+		Clusters: map[string]*ClusterPurpose{
+			"straggler": {
+				map[string]*Cluster{
+					"ephemeral": {
+						NameInKubeconf: "notThere!",
+						kCluster:       nil,
+					},
+				},
+			},
+		},
+		kubeConfig: testKubeConfig,
+	}
+	updatedClusterNames, persistIt := testConfig.reconcileClusters()
+
+	// Check that there are clusters that need to be updated in contexts
+	expectedUpdatedClusterNames := map[string]string{"invalidName": "invalidName_target"}
+	assert.Equal(t, expectedUpdatedClusterNames, updatedClusterNames)
+
+	// Check that we need to update the config file
+	assert.True(t, persistIt)
+
+	// Check that the invalid name was changed to a valid one
+	assert.NotContains(t, testKubeConfig.Clusters, "invalidName")
+	assert.Contains(t, testKubeConfig.Clusters, "invalidName_target")
+
+	// Check that the missing cluster was added to the airshipconfig
+	missingCluster := testConfig.Clusters["missingFromAirshipConfig"]
+	require.NotNil(t, missingCluster)
+	require.NotNil(t, missingCluster.ClusterTypes)
+	require.NotNil(t, missingCluster.ClusterTypes[Ephemeral])
+	assert.Equal(t, "missingFromAirshipConfig_ephemeral",
+		missingCluster.ClusterTypes[Ephemeral].NameInKubeconf)
+	assert.Equal(t, testCluster, missingCluster.ClusterTypes[Ephemeral].kCluster)
+
+	// Check that the "stragglers" were removed from the airshipconfig
+	assert.NotContains(t, testConfig.Clusters, "straggler")
 }
