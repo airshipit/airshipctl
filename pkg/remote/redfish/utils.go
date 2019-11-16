@@ -89,8 +89,8 @@ func RebootSystem(ctx context.Context, api redfishApi.RedfishAPI, systemId strin
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 	_, httpResp, err := api.ResetSystem(ctx, systemId, resetReq)
-	if err != nil {
-		return ScreenRedfishError(httpResp, err)
+	if err = ScreenRedfishError(httpResp, err); err != nil {
+		return err
 	}
 
 	time.Sleep(SystemRebootDelay)
