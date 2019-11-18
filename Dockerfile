@@ -3,11 +3,13 @@ ARG RELEASE_IMAGE=scratch
 FROM ${GO_IMAGE} as builder
 
 SHELL [ "/bin/bash", "-cex" ]
-ADD . /usr/src/airshipctl
 WORKDIR /usr/src/airshipctl
 
-RUN make get-modules
+# Take advantage of caching for dependency acquisition
+COPY go.mod go.sum /usr/src/airshipctl/
+RUN go mod download
 
+COPY . /usr/src/airshipctl/
 ARG MAKE_TARGET=build
 RUN make ${MAKE_TARGET}
 
