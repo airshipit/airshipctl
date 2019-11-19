@@ -27,7 +27,7 @@ Blog Series](https://www.airshipit.org/blog/).
 This project is under heavy active development to reach an alpha state.
 
 New developers should read the [contributing guide](/CONTRIBUTING.md)   as
-well as the [developer guide](/docs/developer.md) in order to get started.
+well as the [developer guide](/docs/developers.md) in order to get started.
 
 ## Architecture
 
