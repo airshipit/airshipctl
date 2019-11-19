@@ -53,10 +53,17 @@ cover: unit-tests
 	@./tools/coverage_check $(COVER_PROFILE)
 
 .PHONY: lint
+lint: tidy
 lint: $(LINTER)
 	@echo "Performing linting step..."
 	@./$(LINTER) run --config $(LINTER_CONFIG)
 	@echo "Linting completed successfully"
+
+.PHONY: tidy
+tidy:
+	@echo "Checking that go.mod is up to date..."
+	@./tools/gomod_check
+	@echo "go.mod is up to date"
 
 .PHONY: docker-image
 docker-image:
