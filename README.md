@@ -26,15 +26,15 @@ Blog Series](https://www.airshipit.org/blog/).
 
 This project is under heavy active development to reach an alpha state.
 
-New developers should read the [contributing guide](/CONTRIBUTING.md)   as
-well as the [developer guide](/docs/developers.md) in order to get started.
+New developers should read the [contributing guide](CONTRIBUTING.md)   as
+well as the [developer guide](docs/developers.md) in order to get started.
 
 ## Architecture
 
 The `airshipctl` tool is designed to work against declarative infrastructure
 housed in source control and manage the lifecycle of a site.
 
-![architecture diagram](/docs/img/architecture.png)
+![architecture diagram](docs/img/architecture.png)
 
 ## Example Usage
 
@@ -73,5 +73,5 @@ submit sitemanage` to introduce those changes to the site.
 
 ## Project Resources
 
-- Airship Website - [airshipit.org](http://airshipit.org)
-- Airship UI Project - [github.com/airshipit/airshipui](https://github.com/airshipit/airshipui)
+- Airship Website - [airshipit.org](https://airshipit.org)
+- Airship UI Project - [opendev.org/airship/airshipui](https://opendev.org/airship/airshipui)
