@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	aerror "opendev.org/airship/airshipctl/pkg/error"
+	aerror "opendev.org/airship/airshipctl/pkg/errors"
 )
 
 type RedfishClientError struct {
