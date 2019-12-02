@@ -1,0 +1,12 @@
+Render documents from model
+
+Usage:
+  render [flags]
+
+Flags:
+  -a, --annotation stringArray   Filter documents by Annotations
+  -g, --apiversion stringArray   Filter documents by API version
+  -f, --filter string            Logical expression for document filtering
+  -h, --help                     help for render
+  -k, --kind stringArray         Filter documents by Kinds
+  -l, --label stringArray        Filter documents by Labels
