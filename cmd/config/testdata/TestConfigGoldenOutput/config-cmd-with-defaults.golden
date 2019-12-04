@@ -5,9 +5,11 @@ Usage:
   config [command]
 
 Available Commands:
-  get-cluster Display a specific cluster
+  get-cluster Display a specific cluster or all defined clusters if no name is provided
+  get-context Display a specific context, the current-context or all defined contexts if no name is provided
   help        Help about any command
   set-cluster Sets a cluster entry in the airshipctl config
+  set-context Sets a context entry or updates current-context in the airshipctl config
 
 Flags:
   -h, --help   help for config

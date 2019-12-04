@@ -1,7 +1,9 @@
-context-kubeconf: dummy_cluster
-manifest: dummy_manifest
+Context: ContextFoo
+context-kubeconf: ContextFoo_ephemeral
+manifest: Manifest_ContextFoo
 
 LocationOfOrigin: ""
 cluster: dummycluster_ephemeral
 namespace: dummy_namespace
 user: dummy_user
+

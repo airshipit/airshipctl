@@ -27,8 +27,7 @@ import (
 )
 
 var (
-	getClusterLong = (`
-Gets a specific cluster or all defined clusters if no name is provided`)
+	getClusterLong = (`Display a specific cluster or all defined clusters if no name is provided`)
 
 	getClusterExample = fmt.Sprintf(`
 # List all the clusters airshipctl knows about
@@ -44,8 +43,7 @@ func NewCmdConfigGetCluster(rootSettings *environment.AirshipCTLSettings) *cobra
 	theCluster := &config.ClusterOptions{}
 	getclustercmd := &cobra.Command{
 		Use:     "get-cluster NAME",
-		Short:   "Display a specific cluster",
-		Long:    getClusterLong,
+		Short:   getClusterLong,
 		Example: getClusterExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 1 {

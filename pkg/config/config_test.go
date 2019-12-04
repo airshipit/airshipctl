@@ -232,16 +232,19 @@ func TestPurge(t *testing.T) {
 	assert.Falsef(t, os.IsExist(err), "Purge failed to remove file at %v", config.LoadedConfigPath())
 }
 
-func TestClusterNames(t *testing.T) {
-	conf := InitConfig(t)
-	expected := []string{"def", "onlyinkubeconf", "wrongonlyinconfig", "wrongonlyinkubeconf"}
-	assert.EqualValues(t, expected, conf.ClusterNames())
-}
 func TestKClusterString(t *testing.T) {
 	conf := InitConfig(t)
 	kClusters := conf.KubeConfig().Clusters
 	for kClust := range kClusters {
 		assert.NotEmpty(t, KClusterString(kClusters[kClust]))
+	}
+	assert.EqualValues(t, KClusterString(nil), "null\n")
+}
+func TestKContextString(t *testing.T) {
+	conf := InitConfig(t)
+	kContexts := conf.KubeConfig().Contexts
+	for kCtx := range kContexts {
+		assert.NotEmpty(t, KContextString(kContexts[kCtx]))
 	}
 	assert.EqualValues(t, KClusterString(nil), "null\n")
 }
@@ -371,4 +374,26 @@ func TestReconcileClusters(t *testing.T) {
 
 	// Check that the "stragglers" were removed from the airshipconfig
 	assert.NotContains(t, testConfig.Clusters, "straggler")
+}
+
+func TestGetContexts(t *testing.T) {
+	conf := InitConfig(t)
+	contexts, err := conf.GetContexts()
+	require.NoError(t, err)
+	assert.Len(t, contexts, 3)
+}
+
+func TestGetContext(t *testing.T) {
+	conf := InitConfig(t)
+	context, err := conf.GetContext("def_ephemeral")
+	require.NoError(t, err)
+
+	// Test Positives
+	assert.EqualValues(t, context.NameInKubeconf, "def_ephemeral")
+	assert.EqualValues(t, context.KubeContext().Cluster, "def_ephemeral")
+
+	// Test Wrong Cluster
+	_, err = conf.GetContext("unknown")
+	assert.Error(t, err)
+
 }

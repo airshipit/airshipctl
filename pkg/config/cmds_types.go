@@ -8,3 +8,13 @@ type ClusterOptions struct {
 	CertificateAuthority  string
 	EmbedCAData           bool
 }
+
+type ContextOptions struct {
+	Name           string
+	ClusterType    string
+	CurrentContext bool
+	Cluster        string
+	AuthInfo       string
+	Manifest       string
+	Namespace      string
+}

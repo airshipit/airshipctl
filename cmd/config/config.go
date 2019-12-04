@@ -17,6 +17,8 @@ like "airshipctl config set-current-context my-context" `),
 	}
 	configRootCmd.AddCommand(NewCmdConfigSetCluster(rootSettings))
 	configRootCmd.AddCommand(NewCmdConfigGetCluster(rootSettings))
+	configRootCmd.AddCommand(NewCmdConfigSetContext(rootSettings))
+	configRootCmd.AddCommand(NewCmdConfigGetContext(rootSettings))
 
 	return configRootCmd
 }
