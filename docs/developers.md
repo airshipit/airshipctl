@@ -98,4 +98,4 @@ Read more:
 
 In order to ensure that all package unit tests follow the same standards and use
 the same frameworks, airshipctl has a document outlining [specific test
-guidelines](/docs/testing-guidelines.md) maintained separately.
+guidelines](docs/testing-guidelines.md) maintained separately.
