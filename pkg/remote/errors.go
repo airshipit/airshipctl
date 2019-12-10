@@ -3,7 +3,7 @@ package remote
 import (
 	"fmt"
 
-	aerror "opendev.org/airship/airshipctl/pkg/error"
+	aerror "opendev.org/airship/airshipctl/pkg/errors"
 )
 
 type RemoteDirectError struct {
