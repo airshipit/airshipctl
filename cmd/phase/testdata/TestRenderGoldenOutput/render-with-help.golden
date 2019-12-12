@@ -1,0 +1,22 @@
+Render phase documents from model
+
+Usage:
+  render PHASE_NAME [flags]
+
+Examples:
+
+# Get all 'initinfra' phase documents containing labels "app=helm" and
+# "service=tiller"
+airshipctl phase render initinfra -l app=helm,service=tiller
+
+# Get all documents containing labels "app=helm" and "service=tiller"
+# and kind 'Deployment'
+airshipctl phase render initinfra -l app=helm,service=tiller -k Deployment
+
+
+Flags:
+  -a, --annotation string   filter documents by Annotations
+  -g, --apiversion string   filter documents by API version
+  -h, --help                help for render
+  -k, --kind string         filter documents by Kinds
+  -l, --label string        filter documents by Labels

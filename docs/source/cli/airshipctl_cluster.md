@@ -26,5 +26,4 @@ such as getting status and deploying initial infrastructure.
 
 * [airshipctl](airshipctl.md)	 - A unified entrypoint to various airship components
 * [airshipctl cluster init](airshipctl_cluster_init.md)	 - Deploy cluster-api provider components
-* [airshipctl cluster initinfra](airshipctl_cluster_initinfra.md)	 - Deploy initinfra components to cluster
 
