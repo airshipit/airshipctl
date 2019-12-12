@@ -28,6 +28,11 @@ TEST_FLAGS          ?=
 COVER_FLAGS         ?=
 COVER_PROFILE       ?= cover.out
 
+# proxy options
+PROXY               ?= http://proxy.foo.com:8000
+NO_PROXY            ?= localhost,127.0.0.1,.svc.cluster.local
+USE_PROXY           ?= false
+
 .PHONY: get-modules
 get-modules:
 	@go mod download
@@ -67,7 +72,24 @@ tidy:
 
 .PHONY: docker-image
 docker-image:
-	@docker build . --build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET) --tag $(DOCKER_IMAGE) --target $(DOCKER_TARGET_STAGE)
+ifeq ($(USE_PROXY), true)
+	@docker build . --network=host \
+		--build-arg http_proxy=$(PROXY) \
+		--build-arg https_proxy=$(PROXY) \
+		--build-arg HTTP_PROXY=$(PROXY) \
+		--build-arg HTTPS_PROXY=$(PROXY) \
+		--build-arg no_proxy=$(NO_PROXY) \
+		--build-arg NO_PROXY=$(NO_PROXY) \
+	    --build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET) \
+	    --tag $(DOCKER_IMAGE) \
+	    --target $(DOCKER_TARGET_STAGE)
+else
+	@docker build . --network=host \
+	    --build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET) \
+	    --tag $(DOCKER_IMAGE) \
+	    --target $(DOCKER_TARGET_STAGE)
+endif
+
 
 .PHONY: print-docker-image-tag
 print-docker-image-tag:
