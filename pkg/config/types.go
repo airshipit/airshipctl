@@ -167,6 +167,8 @@ type RepoCheckout struct {
 	// for example refs/changes/04/691202/5
 	// TODO Add support for fetching remote refs
 	RemoteRef string `json:"remote-ref"`
+	// ForceCheckout is a boolean to indicate whether to use the `--force` option when checking out
+	ForceCheckout bool `json:"force"`
 }
 
 // Holds the complex cluster name information

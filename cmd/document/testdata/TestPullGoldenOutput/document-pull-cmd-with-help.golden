@@ -1,0 +1,7 @@
+pulls documents from remote git repository
+
+Usage:
+  pull [flags]
+
+Flags:
+  -h, --help   help for pull

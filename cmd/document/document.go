@@ -14,6 +14,7 @@ func NewDocumentCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Com
 		Short: "manages deployment documents",
 	}
 
+	documentRootCmd.AddCommand(NewDocumentPullCommand(rootSettings))
 	documentRootCmd.AddCommand(secret.NewSecretCommand(rootSettings))
 
 	return documentRootCmd

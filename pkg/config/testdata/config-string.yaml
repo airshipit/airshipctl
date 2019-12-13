@@ -22,6 +22,7 @@ manifests:
         type: ssh-key
       checkout:
         branch: ""
+        force: false
         remote-ref: ""
         tag: v1.0.1
       url: http://dummy.url.com
