@@ -31,22 +31,21 @@ To run airshipctl locally, you can run `bin/airshipctl`.
 
 ## Docker Images
 
-If you want to build an `airshipctl` Docker container, run `make docker-image`.
+If you want to build an `airshipctl` Docker image, run `make docker-image`.
 
-To build Docker images, use `make docker-image`.
-
-Pre-built images are already available at [quay.io](http://quay.io/airshipit/airshipctl).
+Pre-built images are already available at [quay.io](
+  https://quay.io/airshipit/airshipctl).
 
 ## Contribution Guidelines
 
 We welcome contributions. This project has set up some guidelines in order to
 ensure that (a) code quality remains high, (b) the project remains consistent,
-and (c) contributions follow the open source legal requirements. Our intent is
-not to burden contributors, but to build elegant and high-quality open source
+and \\(c\\) contributions follow the open source legal requirements. Our intent
+is not to burden contributors, but to build elegant and high-quality open source
 code so that our users will benefit.
 
 Make sure you have read and understood the main airshipctl [Contributing
-Guide](/CONTRIBUTING.md)
+Guide](CONTRIBUTING.md)
 
 ### Structure of the Code
 
@@ -59,8 +58,10 @@ The code for the airshipctl project is organized as follows:
   should be placed in a `testdata/` subdirectory within the command or library.
 - The `testutil/` directory contains functions that are helpful for unit tests.
 - The `zuul.d/` directory contains Zuul YAML definitions for CI/CD jobs to run.
-- The `playbooks/` directory contains playbooks that the Zuul CI/CD jobs will run.
-- The `tools/` directory contains scripts used by the Makefile and CI/CD pipeline.
+- The `playbooks/` directory contains playbooks that the Zuul CI/CD jobs will
+  run.
+- The `tools/` directory contains scripts used by the Makefile and CI/CD
+  pipeline.
 - The `docs/` folder is used for documentation and examples.
 
 Go dependencies are managed by `go mod` and stored in `go.mod` and `go.sum`
@@ -78,7 +79,8 @@ this is as follows:
    work on that branch.
 3. When you are ready for us to review, push your branch to gerrit using
    `git-review`.  For more information on the gerrit workflow, see the [OpenDev
-   documentation](https://docs.openstack.org/contributors/common/setup-gerrit.html).
+   documentation](
+     https://docs.openstack.org/contributors/common/setup-gerrit.html).
 
 ### Go Conventions
 
