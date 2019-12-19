@@ -69,6 +69,14 @@ func TestString(t *testing.T) {
 			stringer: DummyRepository(),
 		},
 		{
+			name:     "repo-auth",
+			stringer: DummyRepoAuth(),
+		},
+		{
+			name:     "repo-checkout",
+			stringer: DummyRepoCheckout(),
+		},
+		{
 			name:     "bootstrap",
 			stringer: DummyBootstrap(),
 		},
@@ -157,11 +165,27 @@ func TestEqual(t *testing.T) {
 	})
 
 	t.Run("repository-equal", func(t *testing.T) {
-		testRepository1 := &Repository{TargetPath: "same"}
-		testRepository2 := &Repository{TargetPath: "different"}
+		testRepository1 := &Repository{URLString: "same"}
+		testRepository2 := &Repository{URLString: "different"}
 		assert.True(t, testRepository1.Equal(testRepository1))
 		assert.False(t, testRepository1.Equal(testRepository2))
 		assert.False(t, testRepository1.Equal(nil))
+	})
+	t.Run("auth-equal", func(t *testing.T) {
+		testSpec1 := &RepoAuth{}
+		testSpec2 := &RepoAuth{}
+		testSpec2.Type = "ssh-key"
+		assert.True(t, testSpec1.Equal(testSpec1))
+		assert.False(t, testSpec1.Equal(testSpec2))
+		assert.False(t, testSpec1.Equal(nil))
+	})
+	t.Run("checkout-equal", func(t *testing.T) {
+		testSpec1 := &RepoCheckout{}
+		testSpec2 := &RepoCheckout{}
+		testSpec2.Branch = "Master"
+		assert.True(t, testSpec1.Equal(testSpec1))
+		assert.False(t, testSpec1.Equal(testSpec2))
+		assert.False(t, testSpec1.Equal(nil))
 	})
 
 	t.Run("modules-equal", func(t *testing.T) {

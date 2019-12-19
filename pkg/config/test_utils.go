@@ -18,7 +18,6 @@ package config
 
 import (
 	"io/ioutil"
-	"net/url"
 	"path/filepath"
 	"testing"
 
@@ -86,19 +85,34 @@ func DummyCluster() *Cluster {
 func DummyManifest() *Manifest {
 	m := NewManifest()
 	// Repositories is the map of repository adddressable by a name
-	m.Repositories["dummy"] = DummyRepository()
+	m.Repository = DummyRepository()
 	m.TargetPath = "/var/tmp/"
 	return m
 }
 
 func DummyRepository() *Repository {
-	// TODO(howell): handle this error
-	//nolint: errcheck
-	parsedUrl, _ := url.Parse("http://dummy.url.com")
 	return &Repository{
-		Url:        parsedUrl,
-		Username:   "dummy_user",
-		TargetPath: "dummy_targetpath",
+		URLString: "http://dummy.url.com",
+		CheckoutOptions: &RepoCheckout{
+			Tag: "v1.0.1",
+		},
+		Auth: &RepoAuth{
+			Type:    "ssh-key",
+			KeyPath: "testdata/test-key.pem",
+		},
+	}
+}
+
+func DummyRepoAuth() *RepoAuth {
+	return &RepoAuth{
+		Type:    "ssh-key",
+		KeyPath: "testdata/test-key.pem",
+	}
+}
+
+func DummyRepoCheckout() *RepoCheckout {
+	return &RepoCheckout{
+		Tag: "v1.0.1",
 	}
 }
 

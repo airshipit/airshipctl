@@ -43,7 +43,8 @@ func NewCluster() *Cluster {
 // object with non-nil maps
 func NewManifest() *Manifest {
 	return &Manifest{
-		Repositories: make(map[string]*Repository),
+		Repository:        NewRepository(),
+		ExtraRepositories: make(map[string]*Repository),
 	}
 }
 
