@@ -40,12 +40,12 @@ Pre-built images are already available at [quay.io](
 
 We welcome contributions. This project has set up some guidelines in order to
 ensure that (a) code quality remains high, (b) the project remains consistent,
-and \\(c\\) contributions follow the open source legal requirements. Our intent
+and \(c\) contributions follow the open source legal requirements. Our intent
 is not to burden contributors, but to build elegant and high-quality open source
 code so that our users will benefit.
 
 Make sure you have read and understood the main airshipctl [Contributing
-Guide](CONTRIBUTING.md)
+Guide](../CONTRIBUTING.md)
 
 ### Structure of the Code
 
@@ -100,4 +100,4 @@ Read more:
 
 In order to ensure that all package unit tests follow the same standards and use
 the same frameworks, airshipctl has a document outlining [specific test
-guidelines](docs/testing-guidelines.md) maintained separately.
+guidelines](testing-guidelines.md) maintained separately.
