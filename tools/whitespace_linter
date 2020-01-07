@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# git 1.9.0+ allows for exclusions in pathspecs via ':!foo' syntax.
+# However, until git 2.13.0 there must be at least one "inclusive" pathspec, hence the './*'
+trailing_whitespace=$(git grep -E -n -- ' +$' -- './*' ':!*.png')
+
+if [[ -n "$trailing_whitespace" ]]; then
+  printf "ERROR: Trailing whitespaces:\n"
+  awk 'BEGIN {FS=":"} {printf " * %s:%s\n", $1, $2}' <<< "$trailing_whitespace"
+  exit 1
+fi

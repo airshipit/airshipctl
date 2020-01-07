@@ -80,6 +80,7 @@ fmt: lint
 lint: tidy
 lint: $(LINTER)
 	@echo "Performing linting step..."
+	@./tools/whitespace_linter
 	@./$(LINTER) run --config $(LINTER_CONFIG)
 	@echo "Linting completed successfully"
 
