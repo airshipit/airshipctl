@@ -33,13 +33,29 @@ PROXY               ?= http://proxy.foo.com:8000
 NO_PROXY            ?= localhost,127.0.0.1,.svc.cluster.local
 USE_PROXY           ?= false
 
-.PHONY: get-modules
-get-modules:
+# Sphinx document options
+PYTHON_EXECUTABLE   := python
+SPHINXBUILD         ?= sphinx-build
+SOURCEDIR           = docs/source
+BUILDDIR            = docs/build
+REQUIREMENTSTXT     := docs/requirements.txt
+
+# Godoc server options
+GD_GOROOT           ?= /usr/lib/go  # Godoc has trouble with symbolic links, some may need to use /usr/share/go
+GD_PORT             ?= 8080
+
+.PHONY: depend
+depend:
 	@go mod download
 
 .PHONY: build
-build: get-modules
+build: depend
 	@CGO_ENABLED=0 go build -o $(BINDIR)/$(EXECUTABLE_CLI) $(GO_FLAGS)
+
+.PHONY: install
+install: depend
+install:
+	@CGO_ENABLED=0 go install .
 
 .PHONY: test
 test: lint
@@ -57,6 +73,9 @@ cover: COVER_FLAGS = -covermode=atomic -coverprofile=$(COVER_PROFILE)
 cover: unit-tests
 	@./tools/coverage_check $(COVER_PROFILE)
 
+.PHONY: fmt
+fmt: lint
+
 .PHONY: lint
 lint: tidy
 lint: $(LINTER)
@@ -69,6 +88,9 @@ tidy:
 	@echo "Checking that go.mod is up to date..."
 	@./tools/gomod_check
 	@echo "go.mod is up to date"
+
+.PHONY: images
+images: docker-image
 
 .PHONY: docker-image
 docker-image:
@@ -112,6 +134,21 @@ clean:
 
 .PHONY: docs
 docs:
+	@$(PYTHON_EXECUTABLE) -m venv venv
+	source ./venv/bin/activate
+	@$(PYTHON_EXECUTABLE) -m pip install -r ${REQUIREMENTSTXT}
+	@$(SPHINXBUILD) "$(SOURCEDIR)" "$(BUILDDIR)"
+	rm -rf venv
+
+.PHONY: godoc
+godoc:
+	@go get golang.org/x/tools
+	@go install golang.org/x/tools/cmd/godoc
+	@echo "Follow this link to package documentation: http://localhost:${GD_PORT}/pkg/opendev.org/airship/airshipctl/"
+	@godoc -http=":${GD_PORT}" -goroot ${GD_GOROOT}
+
+.PHONY: releasenotes
+releasenotes:
 	@echo "TODO"
 
 $(TOOLBINDIR):

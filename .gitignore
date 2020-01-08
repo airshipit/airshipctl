@@ -19,3 +19,6 @@ bin/
 .vimrc
 *.swp
 .vscode/
+
+# Sphinx build venv
+venv/

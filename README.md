@@ -27,14 +27,14 @@ Blog Series](https://www.airshipit.org/blog/).
 This project is under heavy active development to reach an alpha state.
 
 New developers should read the [contributing guide](CONTRIBUTING.md)   as
-well as the [developer guide](docs/developers.md) in order to get started.
+well as the [developer guide](docs/source/developers.md) in order to get started.
 
 ## Architecture
 
 The `airshipctl` tool is designed to work against declarative infrastructure
 housed in source control and manage the lifecycle of a site.
 
-![architecture diagram](docs/img/architecture.png)
+![architecture diagram](docs/source/img/architecture.png)
 
 ## Example Usage
 

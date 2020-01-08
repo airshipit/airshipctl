@@ -39,4 +39,4 @@ chronologically ordering work in Jira.
 
 Airship has a set of [coding conventions](https://airship-docs.readthedocs.io/en/latest/conventions.html) that are meant to cover all Airship subprojects.
 
-However, airshipctl also has its own specific coding conventions and standards in the official airshipctl [developer guide](docs/developers.md).
+However, airshipctl also has its own specific coding conventions and standards in the official airshipctl [developer guide](docs/source/developers.md).
