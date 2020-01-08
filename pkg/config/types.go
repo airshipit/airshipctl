@@ -97,15 +97,18 @@ type Modules struct {
 	Dummy string `json:"dummy-for-tests"`
 }
 
-// Context is a tuple of references to a cluster (how do I communicate with a kubernetes cluster),
+// Context is a tuple of references to a cluster (how do I communicate with a kubernetes context),
 // a user (how do I identify myself), and a namespace (what subset of resources do I want to work with)
 type Context struct {
-	// Context name in kubeconf. Should include a clustername following the naming conventions for airshipctl
-	// <clustername>_<clustertype>
+	// Context name in kubeconf
 	NameInKubeconf string `json:"context-kubeconf"`
+
 	// Manifest is the default manifest to be use with this context
 	// +optional
 	Manifest string `json:"manifest,omitempty"`
+
+	// Kubeconfig Context Object
+	kContext *kubeconfig.Context
 }
 
 type AuthInfo struct {

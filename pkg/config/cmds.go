@@ -47,3 +47,18 @@ func (o *ClusterOptions) Validate() error {
 	}
 	return nil
 }
+
+func (o *ContextOptions) Validate() error {
+	if len(o.Name) == 0 {
+		return errors.New("you must specify a non-empty context name")
+	}
+	// Expect ClusterType only when this is not setting currentContext
+	if o.ClusterType != "" {
+		err := ValidClusterType(o.ClusterType)
+		if err != nil {
+			return err
+		}
+	}
+	// TODO Manifest, Cluster could be validated against the existing config maps
+	return nil
+}

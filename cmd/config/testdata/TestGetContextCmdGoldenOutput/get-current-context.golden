@@ -1,7 +1,9 @@
-context-kubeconf: dummy_cluster
-manifest: dummy_manifest
+Context: ContextBaz
+context-kubeconf: ContextBaz_ephemeral
+manifest: Manifest_ContextBaz
 
 LocationOfOrigin: ""
 cluster: dummycluster_ephemeral
 namespace: dummy_namespace
 user: dummy_user
+

@@ -32,6 +32,7 @@ import (
 
 	kubeconfig "k8s.io/client-go/tools/clientcmd/api"
 
+	conferrors "opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/util"
 )
 
@@ -97,7 +98,7 @@ func (c *Config) reconcileConfig() error {
 
 	// I changed things during the reconciliation
 	// Lets reflect them in the config files
-	// Specially useful if the cnofig is loaded during a get operation
+	// Specially useful if the config is loaded during a get operation
 	// If it was a Set this would have happened eventually any way
 	if persistIt {
 		return c.PersistConfig()
@@ -211,6 +212,7 @@ func (c *Config) reconcileContexts(updatedClusterNames map[string]string) {
 		}
 		// Make sure the name matches
 		c.Contexts[key].NameInKubeconf = context.Cluster
+		c.Contexts[key].SetKubeContext(context)
 
 		// What about if a Context refers to a properly named cluster
 		// that does not exist in airship config
@@ -267,8 +269,6 @@ func (c *Config) reconcileCurrentContext() {
 			c.kubeConfig.CurrentContext = c.CurrentContext
 		}
 	}
-	c.kubeConfig.CurrentContext = ""
-	c.CurrentContext = ""
 }
 
 // This is called by users of the config to make sure that they have
@@ -370,7 +370,6 @@ func (c *Config) KubeConfig() *kubeconfig.Config {
 	return c.kubeConfig
 }
 
-// This might be changed later to be generalized
 func (c *Config) ClusterNames() []string {
 	names := []string{}
 	for k := range c.Clusters {
@@ -378,7 +377,15 @@ func (c *Config) ClusterNames() []string {
 	}
 	sort.Strings(names)
 	return names
+}
 
+func (c *Config) ContextNames() []string {
+	names := []string{}
+	for k := range c.Contexts {
+		names = append(names, k)
+	}
+	sort.Strings(names)
+	return names
 }
 
 // Get A Cluster
@@ -476,10 +483,115 @@ func (c *Config) GetClusters() ([]*Cluster, error) {
 			if err == nil {
 				clusters = append(clusters, cluster)
 			}
-
 		}
 	}
 	return clusters, nil
+}
+
+// Context Operations from Config point of view
+// Get Context
+func (c *Config) GetContext(cName string) (*Context, error) {
+	context, exists := c.Contexts[cName]
+	if !exists {
+		return nil, conferrors.ErrMissingConfig{}
+	}
+	return context, nil
+}
+
+func (c *Config) GetContexts() ([]*Context, error) {
+	contexts := []*Context{}
+	// Given that we change the testing metholdogy
+	// The ordered names are no longer required
+	for _, cName := range c.ContextNames() {
+		context, err := c.GetContext(cName)
+		if err == nil {
+			contexts = append(contexts, context)
+		}
+	}
+	return contexts, nil
+}
+
+func (c *Config) AddContext(theContext *ContextOptions) *Context {
+	// Create the new Airship config context
+	nContext := NewContext()
+	c.Contexts[theContext.Name] = nContext
+	// Create a new Kubeconfig Context object as well
+	kContext := kubeconfig.NewContext()
+	nContext.NameInKubeconf = theContext.Name
+	contextName := NewClusterComplexName()
+	contextName.WithType(theContext.Name, theContext.ClusterType)
+
+	nContext.SetKubeContext(kContext)
+	c.KubeConfig().Contexts[theContext.Name] = kContext
+
+	// Ok , I have initialized structs for the Context information
+	// We can use Modify to populate the correct information
+	c.ModifyContext(nContext, theContext)
+	return nContext
+
+}
+
+func (c *Config) ModifyContext(context *Context, theContext *ContextOptions) {
+	kContext := context.KubeContext()
+	if kContext == nil {
+		return
+	}
+	if theContext.Cluster != "" {
+		kContext.Cluster = theContext.Cluster
+	}
+	if theContext.AuthInfo != "" {
+		kContext.AuthInfo = theContext.AuthInfo
+	}
+	if theContext.Manifest != "" {
+		context.Manifest = theContext.Manifest
+	}
+	if theContext.Namespace != "" {
+		kContext.Namespace = theContext.Namespace
+	}
+}
+
+// CurrentContext methods Returns the appropriate information for the current context
+// Current Context holds labels for the approriate config objects
+//      Cluster is the name of the cluster for this context
+//      ClusterType is the name of the clustertype for this context, it should be a flag we pass to it??
+//      AuthInfo is the name of the authInfo for this context
+//      Manifest is the default manifest to be use with this context
+// Purpose for this method is simplifying the current context information
+func (c *Config) GetCurrentContext() (*Context, error) {
+	if err := c.EnsureComplete(); err != nil {
+		return nil, err
+	}
+	currentContext, err := c.GetContext(c.CurrentContext)
+	if err != nil {
+		// this should not happen since Ensure Complete checks for this
+		return nil, err
+	}
+	return currentContext, nil
+}
+func (c *Config) CurrentContextCluster() (*Cluster, error) {
+	currentContext, err := c.GetCurrentContext()
+	if err != nil {
+		return nil, err
+	}
+
+	return c.Clusters[currentContext.KubeContext().Cluster].ClusterTypes[currentContext.ClusterType()], nil
+}
+
+func (c *Config) CurrentContextAuthInfo() (*AuthInfo, error) {
+	currentContext, err := c.GetCurrentContext()
+	if err != nil {
+		return nil, err
+	}
+
+	return c.AuthInfos[currentContext.KubeContext().AuthInfo], nil
+}
+func (c *Config) CurrentContextManifest() (*Manifest, error) {
+	currentContext, err := c.GetCurrentContext()
+	if err != nil {
+		return nil, err
+	}
+
+	return c.Manifests[currentContext.Manifest], nil
 }
 
 // Purge removes the config file
@@ -550,15 +662,44 @@ func (c *Context) Equal(d *Context) bool {
 		return d == c
 	}
 	return c.NameInKubeconf == d.NameInKubeconf &&
-		c.Manifest == d.Manifest
+		c.Manifest == d.Manifest &&
+		c.kContext == d.kContext
 }
 
 func (c *Context) String() string {
-	yaml, err := yaml.Marshal(&c)
+	cyaml, err := yaml.Marshal(&c)
 	if err != nil {
 		return ""
 	}
-	return string(yaml)
+	kcluster := c.KubeContext()
+	kyaml, err := yaml.Marshal(&kcluster)
+	if err != nil {
+		return string(cyaml)
+	}
+	return fmt.Sprintf("%s\n%s", string(cyaml), string(kyaml))
+}
+
+func (c *Context) PrettyString() string {
+	clusterName := NewClusterComplexName()
+	clusterName.FromName(c.NameInKubeconf)
+
+	return fmt.Sprintf("Context: %s\n%s\n",
+		clusterName.ClusterName(), c.String())
+}
+
+func (c *Context) KubeContext() *kubeconfig.Context {
+	return c.kContext
+}
+
+func (c *Context) SetKubeContext(kc *kubeconfig.Context) {
+	c.kContext = kc
+}
+
+func (c *Context) ClusterType() string {
+	clusterName := NewClusterComplexName()
+	clusterName.FromName(c.NameInKubeconf)
+	return clusterName.ClusterType()
+
 }
 
 // AuthInfo functions
@@ -689,6 +830,14 @@ HAS SOMETHING LIKE THIS
 
 func KClusterString(kCluster *kubeconfig.Cluster) string {
 	yaml, err := yaml.Marshal(&kCluster)
+	if err != nil {
+		return ""
+	}
+
+	return string(yaml)
+}
+func KContextString(kContext *kubeconfig.Context) string {
+	yaml, err := yaml.Marshal(&kContext)
 	if err != nil {
 		return ""
 	}

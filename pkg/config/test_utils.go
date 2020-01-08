@@ -60,6 +60,12 @@ func DummyContext() *Context {
 	c := NewContext()
 	c.NameInKubeconf = "dummy_cluster"
 	c.Manifest = "dummy_manifest"
+	context := kubeconfig.NewContext()
+	context.Namespace = "dummy_namespace"
+	context.AuthInfo = "dummy_user"
+	context.Cluster = "dummycluster_ephemeral"
+	c.SetKubeContext(context)
+
 	return c
 }
 
@@ -140,6 +146,17 @@ func DummyClusterOptions() *ClusterOptions {
 	co.InsecureSkipTLSVerify = false
 	co.CertificateAuthority = ""
 	co.EmbedCAData = false
+
+	return co
+}
+
+func DummyContextOptions() *ContextOptions {
+	co := &ContextOptions{}
+	co.Name = "dummy_context"
+	co.Manifest = "dummy_manifest"
+	co.AuthInfo = "dummy_user"
+	co.CurrentContext = false
+	co.Namespace = "dummy_namespace"
 
 	return co
 }
