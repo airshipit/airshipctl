@@ -99,7 +99,6 @@ func TestNoContextsGetContextCmd(t *testing.T) {
 }
 
 func getNamedTestContext(contextName string) *config.Context {
-
 	kContext := &kubeconfig.Context{
 		Namespace: "dummy_namespace",
 		AuthInfo:  "dummy_user",

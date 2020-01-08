@@ -67,5 +67,4 @@ func TestValidateContext(t *testing.T) {
 	// Valid Data case
 	err := co.Validate()
 	assert.NoError(t, err)
-
 }

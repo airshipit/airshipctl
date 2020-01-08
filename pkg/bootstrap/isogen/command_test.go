@@ -179,5 +179,4 @@ func TestVerifyInputs(t *testing.T) {
 		actualErr := verifyInputs(tt.cfg, tt.args)
 		assert.Equal(t, tt.expectedErr, actualErr)
 	}
-
 }

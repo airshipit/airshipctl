@@ -58,7 +58,6 @@ func GenerateBootstrapIso(settings *Settings, args []string) error {
 	}
 	log.Print("Checking artifacts")
 	return verifyArtifacts(cfg)
-
 }
 
 func verifyInputs(cfg *Config, args []string) error {
@@ -124,6 +123,10 @@ func generateBootstrapIso(
 
 	var fls map[string][]byte
 	fls, err = getContainerCfg(cfg, userData, netConf)
+	if err != nil {
+		return err
+	}
+
 	if err = util.WriteFiles(fls, 0600); err != nil {
 		return err
 	}

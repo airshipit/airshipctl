@@ -39,7 +39,6 @@ airshipctl config get-cluster e2e --%v=ephemeral`, config.FlagClusterType)
 
 // NewCmdConfigGetCluster returns a Command instance for 'config -Cluster' sub command
 func NewCmdConfigGetCluster(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
-
 	theCluster := &config.ClusterOptions{}
 	getclustercmd := &cobra.Command{
 		Use:     "get-cluster NAME",

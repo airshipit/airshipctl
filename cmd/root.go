@@ -38,7 +38,6 @@ func NewRootCmd(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings,
 		SilenceUsage:  true,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			log.Init(settings.Debug, cmd.OutOrStderr())
-
 		},
 	}
 	rootCmd.SetOutput(out)
@@ -54,7 +53,6 @@ func NewRootCmd(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings,
 // AddDefaultAirshipCTLCommands is a convenience function for adding all of the
 // default commands to airshipctl
 func AddDefaultAirshipCTLCommands(cmd *cobra.Command, settings *environment.AirshipCTLSettings) *cobra.Command {
-	//cmd.AddCommand(argo.NewCommand())
 	cmd.AddCommand(bootstrap.NewBootstrapCommand(settings))
 	cmd.AddCommand(cluster.NewClusterCommand(settings))
 	cmd.AddCommand(completion.NewCompletionCommand())

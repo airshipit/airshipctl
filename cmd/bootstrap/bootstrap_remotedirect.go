@@ -59,7 +59,6 @@ func NewRemoteDirectCommand(rootSettings *environment.AirshipCTLSettings) *cobra
 		Use:   "remotedirect",
 		Short: "Bootstrap ephemeral node",
 		RunE: func(cmd *cobra.Command, args []string) error {
-
 			/* TODO: Get config from settings.GetCurrentContext() and remove cli arguments */
 
 			/* Trigger remotedirect based on remote type */

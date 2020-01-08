@@ -77,7 +77,6 @@ func NewCmdConfigSetContext(rootSettings *environment.AirshipCTLSettings) *cobra
 }
 
 func sctxInitFlags(o *config.ContextOptions, setcontextcmd *cobra.Command) {
-
 	setcontextcmd.Flags().BoolVar(&o.CurrentContext, config.FlagCurrentContext, false,
 		config.FlagCurrentContext+" for the context entry in airshipctl config")
 
@@ -95,7 +94,6 @@ func sctxInitFlags(o *config.ContextOptions, setcontextcmd *cobra.Command) {
 
 	setcontextcmd.Flags().StringVar(&o.ClusterType, config.FlagClusterType, "",
 		config.FlagClusterType+" for the context entry in airshipctl config")
-
 }
 
 func runSetContext(o *config.ContextOptions, airconfig *config.Config) (bool, error) {

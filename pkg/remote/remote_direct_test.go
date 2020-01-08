@@ -9,7 +9,6 @@ import (
 )
 
 func TestUnknownRemoteType(t *testing.T) {
-
 	rdCfg := RemoteDirectConfig{
 		RemoteType:      "new-remote",
 		RemoteURL:       "http://localhost:8000",
@@ -24,7 +23,6 @@ func TestUnknownRemoteType(t *testing.T) {
 }
 
 func TestRedfishRemoteDirectWithBogusConfig(t *testing.T) {
-
 	rdCfg := RemoteDirectConfig{
 		RemoteType:      "redfish",
 		RemoteURL:       "http://nolocalhost:8888",
@@ -39,7 +37,6 @@ func TestRedfishRemoteDirectWithBogusConfig(t *testing.T) {
 }
 
 func TestRedfishRemoteDirectWithEmptyURL(t *testing.T) {
-
 	rdCfg := RemoteDirectConfig{
 		RemoteType:      "redfish",
 		RemoteURL:       "",
@@ -54,7 +51,6 @@ func TestRedfishRemoteDirectWithEmptyURL(t *testing.T) {
 }
 
 func TestRedfishRemoteDirectWithEmptyNodeID(t *testing.T) {
-
 	rdCfg := RemoteDirectConfig{
 		RemoteType:      "redfish",
 		RemoteURL:       "http://nolocalhost:8888",
@@ -69,7 +65,6 @@ func TestRedfishRemoteDirectWithEmptyNodeID(t *testing.T) {
 }
 
 func TestRedfishRemoteDirectWithEmptyIsoPath(t *testing.T) {
-
 	rdCfg := RemoteDirectConfig{
 		RemoteType:      "redfish",
 		RemoteURL:       "http://nolocalhost:8888",

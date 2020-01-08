@@ -54,8 +54,7 @@ type Bundle interface {
 // NewBundle is a convenience function to create a new bundle
 // Over time, it will evolve to support allowing more control
 // for kustomize plugins
-func NewBundle(fSys fs.FileSystem, kustomizePath string, outputPath string) (Bundle, error) {
-
+func NewBundle(fSys fs.FileSystem, kustomizePath string, outputPath string) (bundle Bundle, err error) {
 	var options = KustomizeBuildOptions{
 		KustomizationPath: kustomizePath,
 		OutputPath:        outputPath,
@@ -64,11 +63,15 @@ func NewBundle(fSys fs.FileSystem, kustomizePath string, outputPath string) (Bun
 	}
 
 	// init an empty bundle factory
-	var bundle Bundle = &BundleFactory{}
+	bundle = &BundleFactory{}
 
 	// set the fs and build options we will use
-	bundle.SetFileSystem(fSys)
-	bundle.SetKustomizeBuildOptions(options)
+	if err = bundle.SetFileSystem(fSys); err != nil {
+		return nil, err
+	}
+	if err = bundle.SetKustomizeBuildOptions(options); err != nil {
+		return nil, err
+	}
 
 	// boiler plate to allow us to run Kustomize build
 	uf := kunstruct.NewKunstructuredFactoryImpl()
@@ -84,7 +87,11 @@ func NewBundle(fSys fs.FileSystem, kustomizePath string, outputPath string) (Bun
 	if err != nil {
 		return bundle, err
 	}
-	defer ldr.Cleanup()
+
+	defer func() {
+		err = ldr.Cleanup()
+	}()
+
 	kt, err := target.NewKustTarget(ldr, rf, pf, pl)
 	if err != nil {
 		return bundle, err
@@ -92,13 +99,12 @@ func NewBundle(fSys fs.FileSystem, kustomizePath string, outputPath string) (Bun
 
 	// build a resource map of kustomize rendered objects
 	m, err := kt.MakeCustomizedResMap()
-	bundle.SetKustomizeResourceMap(m)
 	if err != nil {
 		return bundle, err
 	}
+	err = bundle.SetKustomizeResourceMap(m)
 
-	return bundle, nil
-
+	return bundle, err
 }
 
 // GetKustomizeResourceMap returns a Kustomize Resource Map for this bundle
@@ -175,7 +181,6 @@ func (b *BundleFactory) GetByName(name string) (Document, error) {
 // Select offers a direct interface to pass a Kustomize Selector to the bundle
 // returning Documents that match the criteria
 func (b *BundleFactory) Select(selector types.Selector) ([]Document, error) {
-
 	// use the kustomize select method
 	resources, err := b.ResMap.Select(selector)
 	if err != nil {
@@ -185,7 +190,8 @@ func (b *BundleFactory) Select(selector types.Selector) ([]Document, error) {
 	// Construct Bundle document for each resource returned
 	docSet := []Document{}
 	for _, res := range resources {
-		doc, err := NewDocument(res)
+		var doc Document
+		doc, err = NewDocument(res)
 		if err != nil {
 			return docSet, err
 		}
@@ -196,36 +202,30 @@ func (b *BundleFactory) Select(selector types.Selector) ([]Document, error) {
 
 // GetByAnnotation is a convenience method to get documents for a particular annotation
 func (b *BundleFactory) GetByAnnotation(annotation string) ([]Document, error) {
-
 	// Construct kustomize annotation selector
 	selector := types.Selector{AnnotationSelector: annotation}
 
 	// pass it to the selector
 	return b.Select(selector)
-
 }
 
 // GetByLabel is a convenience method to get documents for a particular label
 func (b *BundleFactory) GetByLabel(label string) ([]Document, error) {
-
 	// Construct kustomize annotation selector
 	selector := types.Selector{LabelSelector: label}
 
 	// pass it to the selector
 	return b.Select(selector)
-
 }
 
 // GetByGvk is a convenience method to get documents for a particular Gvk tuple
 func (b *BundleFactory) GetByGvk(group, version, kind string) ([]Document, error) {
-
 	// Construct kustomize gvk object
 	g := gvk.Gvk{Group: group, Version: version, Kind: kind}
 
 	// pass it to the selector
 	selector := types.Selector{Gvk: g}
 	return b.Select(selector)
-
 }
 
 // Write will write out the entire bundle resource map

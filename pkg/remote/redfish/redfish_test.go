@@ -22,7 +22,6 @@ const (
 )
 
 func TestRedfishRemoteDirectNormal(t *testing.T) {
-
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
@@ -60,7 +59,6 @@ func TestRedfishRemoteDirectNormal(t *testing.T) {
 }
 
 func TestRedfishRemoteDirectInvalidSystemId(t *testing.T) {
-
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
@@ -81,7 +79,6 @@ func TestRedfishRemoteDirectInvalidSystemId(t *testing.T) {
 }
 
 func TestRedfishRemoteDirectGetSystemNetworkError(t *testing.T) {
-
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
@@ -103,7 +100,6 @@ func TestRedfishRemoteDirectGetSystemNetworkError(t *testing.T) {
 }
 
 func TestRedfishRemoteDirectInvalidIsoPath(t *testing.T) {
-
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
@@ -131,7 +127,6 @@ func TestRedfishRemoteDirectInvalidIsoPath(t *testing.T) {
 }
 
 func TestRedfishRemoteDirectCdDvdNotAvailableInBootSources(t *testing.T) {
-
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
@@ -157,7 +152,6 @@ func TestRedfishRemoteDirectCdDvdNotAvailableInBootSources(t *testing.T) {
 }
 
 func TestRedfishRemoteDirectSetSystemBootSourceFailed(t *testing.T) {
-
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
@@ -185,7 +179,6 @@ func TestRedfishRemoteDirectSetSystemBootSourceFailed(t *testing.T) {
 }
 
 func TestRedfishRemoteDirectSystemRebootFailed(t *testing.T) {
-
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 

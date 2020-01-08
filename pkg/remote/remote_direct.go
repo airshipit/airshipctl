@@ -41,7 +41,6 @@ type RemoteDirectClient interface {
 
 // Get remotedirect client based on config
 func getRemoteDirectClient(remoteConfig RemoteDirectConfig) (RemoteDirectClient, error) {
-
 	var client RemoteDirectClient
 	var err error
 
@@ -68,7 +67,6 @@ func getRemoteDirectClient(remoteConfig RemoteDirectConfig) (RemoteDirectClient,
 
 // Top level function to execute remote direct based on remote type
 func DoRemoteDirect(remoteConfig RemoteDirectConfig) error {
-
 	client, err := getRemoteDirectClient(remoteConfig)
 	if err != nil {
 		return err

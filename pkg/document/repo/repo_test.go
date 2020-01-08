@@ -46,8 +46,8 @@ func TestNewRepositoryNegative(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, repo)
 }
-func TestDownload(t *testing.T) {
 
+func TestDownload(t *testing.T) {
 	err := fixtures.Init()
 	require.NoError(t, err)
 	fx := fixtures.Basic().One()
@@ -134,7 +134,7 @@ func TestUpdate(t *testing.T) {
 	err = repo.Checkout(true)
 	assert.NoError(t, err)
 	// update repository
-	err = repo.Update(true)
+	require.NoError(t, repo.Update(true))
 
 	currentHash, err := repo.Driver.Head()
 	assert.NoError(t, err)
@@ -144,7 +144,6 @@ func TestUpdate(t *testing.T) {
 	repo.Driver.Close()
 	updateError := repo.Update(true)
 	assert.Error(t, updateError)
-
 }
 
 func TestOpen(t *testing.T) {
@@ -161,11 +160,10 @@ func TestOpen(t *testing.T) {
 
 	repo, err := NewRepository(".", builder)
 	require.NoError(t, err)
-	driver := &GitDriver{
+	repo.Driver = &GitDriver{
 		Filesystem: memfs.New(),
 		Storer:     memory.NewStorage(),
 	}
-	repo.Driver = driver
 
 	err = repo.Clone()
 	assert.NotNil(t, repo.Driver)
@@ -173,7 +171,17 @@ func TestOpen(t *testing.T) {
 
 	// This should open the repo
 	repoOpen, err := NewRepository(".", builder)
-	err = repoOpen.Open()
+	require.NoError(t, err)
+
+	storer := memory.NewStorage()
+	err = storer.SetReference(plumbing.NewReferenceFromStrings("HEAD", ""))
+	require.NoError(t, err)
+	repoOpen.Driver = &GitDriver{
+		Filesystem: memfs.New(),
+		Storer:     storer,
+	}
+
+	require.NoError(t, repoOpen.Open())
 	ref, err := repo.Driver.Head()
 	assert.NoError(t, err)
 	assert.NotNil(t, ref.String())

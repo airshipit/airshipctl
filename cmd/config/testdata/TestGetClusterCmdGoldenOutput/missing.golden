@@ -1,4 +1,4 @@
-Error: Cluster clusterMissing information was not found in the configuration.
+Error: Missing configuration: Cluster with name 'clusterMissing' of type 'target'
 Usage:
   get-cluster NAME [flags]
 
