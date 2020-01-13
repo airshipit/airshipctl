@@ -116,7 +116,6 @@ func TestSetClusterWithCAFileData(t *testing.T) {
 }
 
 func TestSetCluster(t *testing.T) {
-
 	conf := config.InitConfig(t)
 
 	tname := testCluster
@@ -188,7 +187,6 @@ func TestModifyCluster(t *testing.T) {
 }
 
 func (test setClusterTest) run(t *testing.T) {
-
 	// Get the Environment
 	settings := &environment.AirshipCTLSettings{}
 	settings.SetConfig(test.config)

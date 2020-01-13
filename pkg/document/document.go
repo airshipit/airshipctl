@@ -30,9 +30,8 @@ type Document interface {
 
 // GetNamespace returns the namespace the resource thinks it's in.
 func (d *DocumentFactory) GetNamespace() string {
-	namespace, _ := d.GetString("metadata.namespace")
-	// if err, namespace is empty, so no need to check.
-	return namespace
+	r := d.GetKustomizeResource()
+	return r.GetNamespace()
 }
 
 // GetString returns the string value at path.
@@ -125,9 +124,7 @@ func (d *DocumentFactory) SetKustomizeResource(r *resource.Resource) error {
 // documents - e.g. in the future all documents require an airship
 // annotation X
 func NewDocument(r *resource.Resource) (Document, error) {
-
 	var doc Document = &DocumentFactory{}
 	err := doc.SetKustomizeResource(r)
 	return doc, err
-
 }

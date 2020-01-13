@@ -13,5 +13,4 @@ func WriteFiles(fls map[string][]byte, mode os.FileMode) error {
 		}
 	}
 	return nil
-
 }

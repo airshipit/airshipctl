@@ -93,6 +93,8 @@ func DummyManifest() *Manifest {
 }
 
 func DummyRepository() *Repository {
+	// TODO(howell): handle this error
+	//nolint: errcheck
 	url, _ := url.Parse("http://dummy.url.com")
 	return &Repository{
 		Url:        url,
@@ -121,12 +123,15 @@ func DummyClusterPurpose() *ClusterPurpose {
 func InitConfig(t *testing.T) *Config {
 	t.Helper()
 	testDir, err := ioutil.TempDir("", "airship-test")
+	require.NoError(t, err)
 
 	configPath := filepath.Join(testDir, "config")
-	ioutil.WriteFile(configPath, []byte(testConfigYAML), 0666)
+	err = ioutil.WriteFile(configPath, []byte(testConfigYAML), 0666)
+	require.NoError(t, err)
 
 	kubeConfigPath := filepath.Join(testDir, "kubeconfig")
-	ioutil.WriteFile(kubeConfigPath, []byte(testKubeConfigYAML), 0666)
+	err = ioutil.WriteFile(kubeConfigPath, []byte(testKubeConfigYAML), 0666)
+	require.NoError(t, err)
 
 	conf := NewConfig()
 

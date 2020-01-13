@@ -395,5 +395,4 @@ func TestGetContext(t *testing.T) {
 	// Test Wrong Cluster
 	_, err = conf.GetContext("unknown")
 	assert.Error(t, err)
-
 }

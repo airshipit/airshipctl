@@ -17,12 +17,14 @@ limitations under the License.
 package config
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
+	conferrors "opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
@@ -87,7 +89,6 @@ func NewCmdConfigSetCluster(rootSettings *environment.AirshipCTLSettings) *cobra
 }
 
 func scInitFlags(o *config.ClusterOptions, setclustercmd *cobra.Command) {
-
 	setclustercmd.Flags().StringVar(&o.Server, config.FlagAPIServer, o.Server,
 		config.FlagAPIServer+" for the cluster entry in airshipctl config")
 
@@ -106,11 +107,9 @@ func scInitFlags(o *config.ClusterOptions, setclustercmd *cobra.Command) {
 
 	setclustercmd.Flags().BoolVar(&o.EmbedCAData, config.FlagEmbedCerts, false,
 		config.FlagEmbedCerts+" for the cluster entry in airshipctl config")
-
 }
 
 func runSetCluster(o *config.ClusterOptions, rootSettings *environment.AirshipCTLSettings) (bool, error) {
-
 	clusterWasModified := false
 	err := o.Validate()
 	if err != nil {
@@ -119,9 +118,14 @@ func runSetCluster(o *config.ClusterOptions, rootSettings *environment.AirshipCT
 
 	airconfig := rootSettings.Config()
 	cluster, err := airconfig.GetCluster(o.Name, o.ClusterType)
-	// Safe to ignore the error. Simple means I didnt find the cluster
-	if cluster == nil {
-		// New Cluster
+	if err != nil {
+		var cerr conferrors.ErrMissingConfig
+		if !errors.As(err, &cerr) {
+			// An error occurred, but it wasn't a "missing" config error.
+			return clusterWasModified, err
+		}
+
+		// Cluster didn't exist, create it
 		_, err := airconfig.AddCluster(o)
 		if err != nil {
 			return clusterWasModified, err

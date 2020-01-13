@@ -16,13 +16,11 @@ const (
 )
 
 func TestRedfishErrorNoError(t *testing.T) {
-
 	err := ScreenRedfishError(nil, nil)
 	assert.NoError(t, err)
 }
 
 func TestRedfishErrorNonNilErrorWithoutHttpResp(t *testing.T) {
-
 	realErr := fmt.Errorf("Sample error")
 	err := ScreenRedfishError(nil, realErr)
 	assert.Error(t, err)
@@ -31,7 +29,6 @@ func TestRedfishErrorNonNilErrorWithoutHttpResp(t *testing.T) {
 }
 
 func TestRedfishErrorNonNilErrorWithHttpRespError(t *testing.T) {
-
 	realErr := fmt.Errorf("Sample error")
 
 	httpResp := &http.Response{StatusCode: 408}
@@ -48,7 +45,6 @@ func TestRedfishErrorNonNilErrorWithHttpRespError(t *testing.T) {
 }
 
 func TestRedfishErrorNonNilErrorWithHttpRespOK(t *testing.T) {
-
 	realErr := fmt.Errorf("Sample error")
 
 	httpResp := &http.Response{StatusCode: 204}
@@ -65,28 +61,23 @@ func TestRedfishErrorNonNilErrorWithHttpRespOK(t *testing.T) {
 }
 
 func TestRedfishUtilGetResIDFromURL(t *testing.T) {
-
 	// simple case
 	url := "api/user/123"
-	id, err := GetResourceIDFromURL(url)
-	assert.NoError(t, err)
+	id := GetResourceIDFromURL(url)
 	assert.Equal(t, id, "123")
 
 	// FQDN
 	url = "http://www.abc.com/api/user/123"
-	id, err = GetResourceIDFromURL(url)
-	assert.NoError(t, err)
+	id = GetResourceIDFromURL(url)
 	assert.Equal(t, id, "123")
 
 	//Trailing slash
 	url = "api/user/123/"
-	id, err = GetResourceIDFromURL(url)
-	assert.NoError(t, err)
+	id = GetResourceIDFromURL(url)
 	assert.Equal(t, id, "123")
 }
 
 func TestRedfishUtilIsIdInList(t *testing.T) {
-
 	idList := []redfishClient.IdRef{
 		{OdataId: "/path/to/id/1"},
 		{OdataId: "/path/to/id/2"},
@@ -106,7 +97,6 @@ func TestRedfishUtilIsIdInList(t *testing.T) {
 }
 
 func TestRedfishUtilRebootSystemOK(t *testing.T) {
-
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
@@ -127,7 +117,6 @@ func TestRedfishUtilRebootSystemOK(t *testing.T) {
 }
 
 func TestRedfishUtilRebootSystemForceOffError2(t *testing.T) {
-
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
@@ -148,7 +137,6 @@ func TestRedfishUtilRebootSystemForceOffError2(t *testing.T) {
 }
 
 func TestRedfishUtilRebootSystemForceOffError(t *testing.T) {
-
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
@@ -168,7 +156,6 @@ func TestRedfishUtilRebootSystemForceOffError(t *testing.T) {
 }
 
 func TestRedfishUtilRebootSystemTurningOnError(t *testing.T) {
-
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 

@@ -11,7 +11,6 @@ import (
 )
 
 func TestGetCloudData(t *testing.T) {
-
 	fSys := testutil.SetupTestFs(t, "testdata")
 	bundle, err := document.NewBundle(fSys, "/", "/")
 	require.NoError(t, err, "Building Bundle Failed")

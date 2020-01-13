@@ -46,7 +46,6 @@ airshipctl config get-context e2e`,
 
 // NewCmdConfigGetContext returns a Command instance for 'config -Context' sub command
 func NewCmdConfigGetContext(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
-
 	theContext := &config.ContextOptions{}
 	getcontextcmd := &cobra.Command{
 		Use:     "get-context NAME",
@@ -68,7 +67,6 @@ func NewCmdConfigGetContext(rootSettings *environment.AirshipCTLSettings) *cobra
 func gctxInitFlags(o *config.ContextOptions, getcontextcmd *cobra.Command) {
 	getcontextcmd.Flags().BoolVar(&o.CurrentContext, config.FlagCurrentContext, false,
 		config.FlagCurrentContext+" to retrieve the current context entry in airshipctl config")
-
 }
 
 // runGetContext performs the execution of 'config get-Context' sub command

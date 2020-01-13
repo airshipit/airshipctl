@@ -8,6 +8,8 @@ import (
 
 	redfishApi "github.com/Nordix/go-redfish/api"
 	redfishClient "github.com/Nordix/go-redfish/client"
+
+	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 const (
@@ -17,24 +19,23 @@ const (
 // Redfish Id ref is a URI which contains resource Id
 // as the last part. This function extracts resource
 // ID from ID ref
-func GetResourceIDFromURL(refURL string) (string, error) {
-
+func GetResourceIDFromURL(refURL string) string {
 	u, err := url.Parse(refURL)
-
 	if err != nil {
-		return "", err
+		log.Fatal(err)
 	}
+
 	url := strings.TrimSuffix(u.Path, "/")
 	elems := strings.Split(url, "/")
 
 	id := elems[len(elems)-1]
-	return id, nil
+	return id
 }
 
 // Checks whether an ID exists in Redfish IDref collection
 func IsIDInList(idRefList []redfishClient.IdRef, id string) bool {
 	for _, r := range idRefList {
-		rId, _ := GetResourceIDFromURL(r.OdataId)
+		rId := GetResourceIDFromURL(r.OdataId)
 		if rId == id {
 			return true
 		}
@@ -48,7 +49,6 @@ func GetVirtualMediaId(ctx context.Context,
 	api redfishApi.RedfishAPI,
 	managerId string,
 ) (string, string, error) {
-
 	// TODO: Sushy emulator has a bug which sends 'virtualMedia.inserted' field as
 	//       string instead of a boolean which causes the redfish client to fail
 	//       while unmarshalling this field.
@@ -62,7 +62,6 @@ func SetSystemBootSourceForMediaType(ctx context.Context,
 	api redfishApi.RedfishAPI,
 	systemId string,
 	mediaType string) error {
-
 	/* Check available boot sources for system */
 	system, _, err := api.GetSystem(ctx, systemId)
 	if err != nil {
@@ -85,7 +84,6 @@ func SetSystemBootSourceForMediaType(ctx context.Context,
 
 // Reboots a system by force shutoff and turning on.
 func RebootSystem(ctx context.Context, api redfishApi.RedfishAPI, systemId string) error {
-
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 	_, httpResp, err := api.ResetSystem(ctx, systemId, resetReq)
@@ -109,7 +107,6 @@ func SetVirtualMedia(ctx context.Context,
 	managerId string,
 	vMediaId string,
 	isoPath string) error {
-
 	vMediaReq := redfishClient.InsertMediaRequestBody{}
 	vMediaReq.Image = isoPath
 	vMediaReq.Inserted = true

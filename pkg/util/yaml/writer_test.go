@@ -34,7 +34,6 @@ func (f *FakeErrorDashWriter) Write(b []byte) (int, error) {
 }
 
 func TestWriteOut(t *testing.T) {
-
 	// Create some object, that can be marshaled into yaml
 	ob := &metav1.ObjectMeta{
 		Name:              "RandomName",
@@ -93,6 +92,5 @@ func TestWriteOutErrorsErrorWriter(t *testing.T) {
 	for _, str := range strings {
 		fakeWriter.Match = str
 		assert.Error(t, utilyaml.WriteOut(fakeWriter, fakeYaml))
-
 	}
 }

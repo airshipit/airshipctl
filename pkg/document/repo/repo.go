@@ -50,7 +50,6 @@ type Repository struct {
 // NewRepository create repository object, with real filesystem on disk
 // basePath is used to calculate final path where to clone/open the repository
 func NewRepository(basePath string, builder OptionsBuilder) (*Repository, error) {
-
 	dirName := nameFromURL(builder.URL())
 	if dirName == "" {
 		return nil, fmt.Errorf("URL: %s, original error: %w", builder.URL(), ErrCantParseUrl)

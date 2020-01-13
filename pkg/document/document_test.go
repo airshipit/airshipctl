@@ -27,7 +27,6 @@ func TestDocument(t *testing.T) {
 	require.NotNil(bundle)
 
 	t.Run("GetName", func(t *testing.T) {
-
 		docs, err := bundle.GetAllDocuments()
 		require.NoError(err, "Unexpected error trying to GetAllDocuments")
 
@@ -38,11 +37,9 @@ func TestDocument(t *testing.T) {
 		}
 
 		assert.Contains(nameList, "tiller-deploy", "Could not find expected name")
-
 	})
 
 	t.Run("AsYAML", func(t *testing.T) {
-
 		doc, err := bundle.GetByName("some-random-deployment-we-will-filter")
 		require.NoError(err, "Unexpected error trying to GetByName for AsYAML Test")
 
@@ -70,11 +67,9 @@ func TestDocument(t *testing.T) {
 		// increase the chance of a match by removing any \n suffix on both actual
 		// and expected
 		assert.Equal(strings.TrimRight(s, "\n"), strings.TrimRight(string(fileData), "\n"))
-
 	})
 
 	t.Run("GetString", func(t *testing.T) {
-
 		doc, err := bundle.GetByName("some-random-deployment-we-will-filter")
 		require.NoError(err, "Unexpected error trying to GetByName")
 
@@ -82,20 +77,16 @@ func TestDocument(t *testing.T) {
 		require.NoError(err, "Unexpected error trying to GetString from document")
 
 		assert.Equal(appLabelMatch, "some-random-deployment-we-will-filter")
-
 	})
 
 	t.Run("GetNamespace", func(t *testing.T) {
-
 		doc, err := bundle.GetByName("some-random-deployment-we-will-filter")
 		require.NoError(err, "Unexpected error trying to GetByName")
 
 		assert.Equal("foobar", doc.GetNamespace())
-
 	})
 
 	t.Run("GetStringSlice", func(t *testing.T) {
-
 		doc, err := bundle.GetByName("some-random-deployment-we-will-filter")
 		require.NoError(err, "Unexpected error trying to GetByName")
 		s := []string{"foobar"}
@@ -104,7 +95,5 @@ func TestDocument(t *testing.T) {
 		require.NoError(err, "Unexpected error trying to GetStringSlice")
 
 		assert.Equal(s, gotSlice)
-
 	})
-
 }

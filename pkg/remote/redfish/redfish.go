@@ -30,7 +30,6 @@ type RedfishRemoteDirect struct {
 
 // Top level function to handle Redfish remote direct
 func (cfg RedfishRemoteDirect) DoRemoteDirect() error {
-
 	alog.Debugf("Using Redfish Endpoint: '%s'", cfg.RemoteURL.String())
 
 	/* TODO: Add Authentication when redfish library supports it. */
@@ -44,10 +43,7 @@ func (cfg RedfishRemoteDirect) DoRemoteDirect() error {
 	alog.Debugf("Ephemeral Node System ID: '%s'", systemId)
 
 	/* get manager for system */
-	managerId, err := GetResourceIDFromURL(system.Links.ManagedBy[0].OdataId)
-	if err != nil {
-		return err
-	}
+	managerId := GetResourceIDFromURL(system.Links.ManagedBy[0].OdataId)
 	alog.Debugf("Ephemeral node managerId: '%s'", managerId)
 
 	/* Get manager's Cd or DVD virtual media ID */
@@ -86,7 +82,6 @@ func NewRedfishRemoteDirectClient(ctx context.Context,
 	ephNodeID string,
 	isoPath string,
 ) (RedfishRemoteDirect, error) {
-
 	if remoteURL == "" {
 		return RedfishRemoteDirect{},
 			NewRedfishConfigErrorf("redfish remote url empty")

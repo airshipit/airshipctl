@@ -44,7 +44,6 @@ type setContextTest struct {
 }
 
 func TestConfigSetContext(t *testing.T) {
-
 	cmdTests := []*testutil.CmdTest{
 		{
 			Name:    "config-cmd-set-context-with-help",
@@ -59,7 +58,6 @@ func TestConfigSetContext(t *testing.T) {
 }
 
 func TestSetContext(t *testing.T) {
-
 	conf := config.InitConfig(t)
 
 	tname := "dummycontext"
@@ -149,7 +147,6 @@ func TestModifyContext(t *testing.T) {
 }
 
 func (test setContextTest) run(t *testing.T) {
-
 	// Get the Environment
 	settings := &environment.AirshipCTLSettings{}
 	settings.SetConfig(test.config)
@@ -186,5 +183,4 @@ func (test setContextTest) run(t *testing.T) {
 	if len(test.expected) != 0 {
 		assert.EqualValuesf(t, buf.String(), test.expected, "expected %v, but got %v", test.expected, buf.String())
 	}
-
 }

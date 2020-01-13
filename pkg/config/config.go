@@ -240,7 +240,6 @@ func (c *Config) reconcileAuthInfos() {
 		if c.AuthInfos[key] == nil && authinfo != nil {
 			// Add the reference
 			c.AuthInfos[key] = NewAuthInfo()
-
 		}
 	}
 	// Checking if there is any AuthInfo reference in airship config that does not match
@@ -392,14 +391,12 @@ func (c *Config) ContextNames() []string {
 func (c *Config) GetCluster(cName, cType string) (*Cluster, error) {
 	_, exists := c.Clusters[cName]
 	if !exists {
-		return nil, errors.New("Cluster " + cName +
-			" information was not found in the configuration.")
+		return nil, conferrors.ErrMissingConfig{What: fmt.Sprintf("Cluster with name '%s' of type '%s'", cName, cType)}
 	}
 	// Alternative to this would be enhance Cluster.String() to embedd the appropriate kubeconfig cluster information
 	cluster, exists := c.Clusters[cName].ClusterTypes[cType]
 	if !exists {
-		return nil, errors.New("Cluster " + cName + " of type " + cType +
-			" information was not found in the configuration.")
+		return nil, conferrors.ErrMissingConfig{What: fmt.Sprintf("Cluster with name '%s' of type '%s'", cName, cType)}
 	}
 	return cluster, nil
 }
@@ -426,7 +423,6 @@ func (c *Config) AddCluster(theCluster *ClusterOptions) (*Cluster, error) {
 	// Ok , I have initialized structs for the Cluster information
 	// We can use Modify to populate the correct information
 	return c.ModifyCluster(nCluster, theCluster)
-
 }
 
 func (c *Config) ModifyCluster(cluster *Cluster, theCluster *ClusterOptions) (*Cluster, error) {
@@ -470,8 +466,8 @@ func (c *Config) ModifyCluster(cluster *Cluster, theCluster *ClusterOptions) (*C
 		}
 	}
 	return cluster, nil
-
 }
+
 func (c *Config) GetClusters() ([]*Cluster, error) {
 	clusters := []*Cluster{}
 	for _, cName := range c.ClusterNames() {
@@ -493,7 +489,7 @@ func (c *Config) GetClusters() ([]*Cluster, error) {
 func (c *Config) GetContext(cName string) (*Context, error) {
 	context, exists := c.Contexts[cName]
 	if !exists {
-		return nil, conferrors.ErrMissingConfig{}
+		return nil, conferrors.ErrMissingConfig{What: fmt.Sprintf("Context with name '%s'", cName)}
 	}
 	return context, nil
 }
@@ -528,7 +524,6 @@ func (c *Config) AddContext(theContext *ContextOptions) *Context {
 	// We can use Modify to populate the correct information
 	c.ModifyContext(nContext, theContext)
 	return nContext
-
 }
 
 func (c *Config) ModifyContext(context *Context, theContext *ContextOptions) {
@@ -596,12 +591,7 @@ func (c *Config) CurrentContextManifest() (*Manifest, error) {
 
 // Purge removes the config file
 func (c *Config) Purge() error {
-	//configFile := c.ConfigFile()
-	err := os.Remove(c.loadedConfigPath)
-	if err != nil {
-		return err
-	}
-	return nil
+	return os.Remove(c.loadedConfigPath)
 }
 
 func (c *Config) Equal(d *Config) bool {
@@ -699,7 +689,6 @@ func (c *Context) ClusterType() string {
 	clusterName := NewClusterComplexName()
 	clusterName.FromName(c.NameInKubeconf)
 	return clusterName.ClusterType()
-
 }
 
 // AuthInfo functions

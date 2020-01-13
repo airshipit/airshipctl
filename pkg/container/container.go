@@ -30,8 +30,6 @@ func NewContainer(ctx *context.Context, driver string, url string) (Container, e
 		}
 		return NewDockerContainer(ctx, url, cli)
 	default:
-
 		return nil, ErrContainerDrvNotSupported{Driver: driver}
 	}
-
 }

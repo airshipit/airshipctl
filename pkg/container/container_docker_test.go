@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -139,7 +140,6 @@ func TestGetCmd(t *testing.T) {
 							Cmd: []string{"testCmd"},
 						},
 					}, nil, nil
-
 				},
 			},
 			expectedResult: []string{"testCmd"},
@@ -166,9 +166,7 @@ func TestGetCmd(t *testing.T) {
 
 		assert.Equal(t, tt.expectedErr, actualErr)
 		assert.Equal(t, tt.expectedResult, actualRes)
-
 	}
-
 }
 
 func TestGetImageId(t *testing.T) {
@@ -242,7 +240,8 @@ func TestImagePull(t *testing.T) {
 
 func TestGetId(t *testing.T) {
 	cnt := getDockerContainerMock(mockDockerClient{})
-	cnt.RunCommand([]string{"testCmd"}, nil, nil, []string{}, false)
+	err := cnt.RunCommand([]string{"testCmd"}, nil, nil, []string{}, false)
+	require.NoError(t, err)
 	actialId := cnt.GetId()
 
 	assert.Equal(t, "testID", actialId)
@@ -333,7 +332,6 @@ func TestRunCommand(t *testing.T) {
 			debug:          false,
 			mockDockerClient: mockDockerClient{
 				containerWait: func() (<-chan container.ContainerWaitOKBody, <-chan error) {
-
 					errC := make(chan error)
 					go func() {
 						errC <- containerWaitError
@@ -351,7 +349,6 @@ func TestRunCommand(t *testing.T) {
 			debug:          false,
 			mockDockerClient: mockDockerClient{
 				containerWait: func() (<-chan container.ContainerWaitOKBody, <-chan error) {
-
 					resC := make(chan container.ContainerWaitOKBody)
 					go func() {
 						resC <- container.ContainerWaitOKBody{StatusCode: 1}
@@ -412,7 +409,9 @@ func TestRunCommandOutput(t *testing.T) {
 
 		var actualResBytes []byte
 		if actualRes != nil {
-			actualResBytes, _ = ioutil.ReadAll(actualRes)
+			var err error
+			actualResBytes, err = ioutil.ReadAll(actualRes)
+			require.NoError(t, err)
 		} else {
 			actualResBytes = []byte{}
 		}

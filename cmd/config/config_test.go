@@ -27,7 +27,6 @@ const (
 )
 
 func TestConfig(t *testing.T) {
-
 	cmdTests := []*testutil.CmdTest{
 		{
 			Name:    "config-cmd-with-defaults",

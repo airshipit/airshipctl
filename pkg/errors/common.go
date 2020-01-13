@@ -31,10 +31,11 @@ func (e ErrWrongConfig) Error() string {
 
 // ErrMissingConfig returned in case of missing configuration
 type ErrMissingConfig struct {
+	What string
 }
 
 func (e ErrMissingConfig) Error() string {
-	return "Missing configuration"
+	return "Missing configuration: " + e.What
 }
 
 // ErrConfigFailed returned in case of failure during configuration
