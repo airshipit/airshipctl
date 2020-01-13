@@ -32,7 +32,6 @@ import (
 
 	kubeconfig "k8s.io/client-go/tools/clientcmd/api"
 
-	conferrors "opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/util"
 )
 
@@ -391,12 +390,12 @@ func (c *Config) ContextNames() []string {
 func (c *Config) GetCluster(cName, cType string) (*Cluster, error) {
 	_, exists := c.Clusters[cName]
 	if !exists {
-		return nil, conferrors.ErrMissingConfig{What: fmt.Sprintf("Cluster with name '%s' of type '%s'", cName, cType)}
+		return nil, ErrMissingConfig{What: fmt.Sprintf("Cluster with name '%s' of type '%s'", cName, cType)}
 	}
 	// Alternative to this would be enhance Cluster.String() to embedd the appropriate kubeconfig cluster information
 	cluster, exists := c.Clusters[cName].ClusterTypes[cType]
 	if !exists {
-		return nil, conferrors.ErrMissingConfig{What: fmt.Sprintf("Cluster with name '%s' of type '%s'", cName, cType)}
+		return nil, ErrMissingConfig{What: fmt.Sprintf("Cluster with name '%s' of type '%s'", cName, cType)}
 	}
 	return cluster, nil
 }
@@ -490,7 +489,7 @@ func (c *Config) GetClusters() ([]*Cluster, error) {
 func (c *Config) GetContext(cName string) (*Context, error) {
 	context, exists := c.Contexts[cName]
 	if !exists {
-		return nil, conferrors.ErrMissingConfig{What: fmt.Sprintf("Context with name '%s'", cName)}
+		return nil, ErrMissingConfig{What: fmt.Sprintf("Context with name '%s'", cName)}
 	}
 	return context, nil
 }

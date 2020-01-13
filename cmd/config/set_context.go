@@ -24,7 +24,6 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
-	conferrors "opendev.org/airship/airshipctl/pkg/errors"
 )
 
 var (
@@ -106,14 +105,14 @@ func runSetContext(o *config.ContextOptions, airconfig *config.Config) (bool, er
 	contextIWant := o.Name
 	context, err := airconfig.GetContext(contextIWant)
 	if err != nil {
-		var cerr conferrors.ErrMissingConfig
+		var cerr config.ErrMissingConfig
 		if !errors.As(err, &cerr) {
 			// An error occurred, but it wasn't a "missing" config error.
 			return contextWasModified, err
 		}
 
 		if o.CurrentContext {
-			return contextWasModified, conferrors.ErrMissingConfig{}
+			return contextWasModified, config.ErrMissingConfig{}
 		}
 		// context didn't exist, create it
 		// ignoring the returned added context
@@ -132,7 +131,7 @@ func runSetContext(o *config.ContextOptions, airconfig *config.Config) (bool, er
 	// Update configuration file just in time persistence approach
 	if err := airconfig.PersistConfig(); err != nil {
 		// Error that it didnt persist the changes
-		return contextWasModified, conferrors.ErrConfigFailed{}
+		return contextWasModified, config.ErrConfigFailed{}
 	}
 
 	return contextWasModified, nil

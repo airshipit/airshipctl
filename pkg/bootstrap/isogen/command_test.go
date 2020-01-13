@@ -12,7 +12,6 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/testutil"
 )
@@ -133,7 +132,7 @@ func TestVerifyInputs(t *testing.T) {
 			cfg: &config.Bootstrap{
 				Container: &config.Container{},
 			},
-			expectedErr: errors.ErrWrongConfig{},
+			expectedErr: config.ErrWrongConfig{},
 		},
 		{
 			cfg: &config.Bootstrap{
@@ -142,7 +141,7 @@ func TestVerifyInputs(t *testing.T) {
 				},
 				Builder: &config.Builder{},
 			},
-			expectedErr: errors.ErrWrongConfig{},
+			expectedErr: config.ErrWrongConfig{},
 		},
 		{
 			cfg: &config.Bootstrap{
@@ -166,7 +165,7 @@ func TestVerifyInputs(t *testing.T) {
 					NetworkConfigFileName: "net-conf",
 				},
 			},
-			expectedErr: errors.ErrWrongConfig{},
+			expectedErr: config.ErrWrongConfig{},
 		},
 	}
 

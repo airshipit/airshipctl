@@ -12,7 +12,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
-	"opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/util"
 
@@ -45,7 +44,7 @@ func GenerateBootstrapIso(settings *environment.AirshipCTLSettings, args []strin
 
 	// TODO (dukov) This check should be implemented as part of the config  module
 	if manifest == nil {
-		return errors.ErrMissingConfig{What: "manifest for currnet context not found"}
+		return config.ErrMissingConfig{What: "manifest for currnet context not found"}
 	}
 
 	if err = verifyInputs(cfg); err != nil {
@@ -78,12 +77,12 @@ func GenerateBootstrapIso(settings *environment.AirshipCTLSettings, args []strin
 func verifyInputs(cfg *config.Bootstrap) error {
 	if cfg.Container.Volume == "" {
 		log.Print("Specify volume bind for ISO builder container")
-		return errors.ErrWrongConfig{}
+		return config.ErrWrongConfig{}
 	}
 
 	if (cfg.Builder.UserDataFileName == "") || (cfg.Builder.NetworkConfigFileName == "") {
 		log.Print("UserDataFileName or NetworkConfigFileName are not specified in ISO builder config")
-		return errors.ErrWrongConfig{}
+		return config.ErrWrongConfig{}
 	}
 
 	vols := strings.Split(cfg.Container.Volume, ":")
@@ -92,7 +91,7 @@ func verifyInputs(cfg *config.Bootstrap) error {
 		cfg.Container.Volume = fmt.Sprintf("%s:%s", vols[0], vols[0])
 	case len(vols) > 2:
 		log.Print("Bad container volume format. Use hostPath:contPath")
-		return errors.ErrWrongConfig{}
+		return config.ErrWrongConfig{}
 	}
 	return nil
 }

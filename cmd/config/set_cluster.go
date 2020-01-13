@@ -24,7 +24,6 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
-	conferrors "opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
@@ -119,7 +118,7 @@ func runSetCluster(o *config.ClusterOptions, rootSettings *environment.AirshipCT
 	airconfig := rootSettings.Config()
 	cluster, err := airconfig.GetCluster(o.Name, o.ClusterType)
 	if err != nil {
-		var cerr conferrors.ErrMissingConfig
+		var cerr config.ErrMissingConfig
 		if !errors.As(err, &cerr) {
 			// An error occurred, but it wasn't a "missing" config error.
 			return clusterWasModified, err
