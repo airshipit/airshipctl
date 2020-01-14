@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/url"
 
-	redfishApi "github.com/Nordix/go-redfish/api"
-	redfishClient "github.com/Nordix/go-redfish/client"
+	redfishApi "opendev.org/airship/go-redfish/api"
+	redfishClient "opendev.org/airship/go-redfish/client"
 
 	alog "opendev.org/airship/airshipctl/pkg/log"
 )

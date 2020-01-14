@@ -6,12 +6,13 @@ import (
 	"net/http"
 	"testing"
 
-	redfishAPI "github.com/Nordix/go-redfish/api"
-	redfishMocks "github.com/Nordix/go-redfish/api/mocks"
-	redfishClient "github.com/Nordix/go-redfish/client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+
+	redfishAPI "opendev.org/airship/go-redfish/api"
+	redfishMocks "opendev.org/airship/go-redfish/api/mocks"
+	redfishClient "opendev.org/airship/go-redfish/client"
 
 	. "opendev.org/airship/airshipctl/pkg/remote/redfish"
 )

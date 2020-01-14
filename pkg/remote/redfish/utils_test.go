@@ -6,9 +6,10 @@ import (
 	"net/http"
 	"testing"
 
-	redfishMocks "github.com/Nordix/go-redfish/api/mocks"
-	redfishClient "github.com/Nordix/go-redfish/client"
 	"github.com/stretchr/testify/assert"
+
+	redfishMocks "opendev.org/airship/go-redfish/api/mocks"
+	redfishClient "opendev.org/airship/go-redfish/client"
 )
 
 const (

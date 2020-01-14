@@ -5,8 +5,6 @@ go 1.13
 require (
 	github.com/MakeNowJust/heredoc v0.0.0-20171113091838-e9091a26100e // indirect
 	github.com/Microsoft/go-winio v0.4.12 // indirect
-	github.com/Nordix/go-redfish v0.0.0-20191016123452-b7790941aa86
-	github.com/Nordix/go-redfish/client v0.0.0-20191016123452-b7790941aa86
 	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1 // indirect
 	github.com/daviddengcn/go-colortext v0.0.0-20180409174941-186a3d44e920 // indirect
 	github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
@@ -31,6 +29,8 @@ require (
 	k8s.io/apimachinery v0.0.0
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/kubernetes v1.16.3
+	opendev.org/airship/go-redfish v0.0.0-20200110185254-3ab47e28bae8
+	opendev.org/airship/go-redfish/client v0.0.0-20200110185254-3ab47e28bae8
 	sigs.k8s.io/kustomize/v3 v3.2.0
 	sigs.k8s.io/yaml v1.1.0
 	vbom.ml/util v0.0.0-20180919145318-efcd4e0f9787 // indirect
