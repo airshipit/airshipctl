@@ -1,9 +1,11 @@
 package cmd_test
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/cmd"
@@ -33,6 +35,41 @@ func TestRoot(t *testing.T) {
 
 	for _, tt := range tests {
 		testutil.RunTest(t, tt)
+	}
+}
+
+func TestFlagLoading(t *testing.T) {
+	tests := []struct {
+		name     string
+		args     []string
+		expected string
+	}{
+		{
+			name:     "default, no flags",
+			args:     []string{},
+			expected: "$HOME/.airship/config",
+		},
+		{
+			name:     "alternate airshipconfig",
+			args:     []string{"--airshipconf", "/custom/path/to/airshipconfig"},
+			expected: "/custom/path/to/airshipconfig",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(subTest *testing.T) {
+			// We don't care about the output of this test, so toss
+			// it into a thowaway &bytes.buffer{}
+			rootCmd, settings, err := cmd.NewRootCmd(&bytes.Buffer{})
+			require.NoError(t, err)
+			rootCmd.SetArgs(tt.args)
+
+			err = rootCmd.Execute()
+			require.NoError(t, err)
+
+			assert.Equal(t, settings.AirshipConfigPath(), tt.expected)
+		})
 	}
 }
 
