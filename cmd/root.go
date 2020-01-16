@@ -38,14 +38,15 @@ func NewRootCmd(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings,
 		SilenceUsage:  true,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			log.Init(settings.Debug, cmd.OutOrStderr())
+
+			// Load or Initialize airship Config
+			settings.InitConfig()
 		},
 	}
 	rootCmd.SetOutput(out)
 	rootCmd.AddCommand(NewVersionCommand())
 
 	settings.InitFlags(rootCmd)
-	// Load or Initialize airship Config
-	settings.InitConfig()
 
 	return rootCmd, settings, nil
 }
