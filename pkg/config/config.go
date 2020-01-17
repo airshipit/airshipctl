@@ -269,31 +269,59 @@ func (c *Config) reconcileCurrentContext() {
 	}
 }
 
-// This is called by users of the config to make sure that they have
-// A complete configuration before they try to use it.
-// What is a Complete configuration:
-// Should be :
-//	At least 1 cluster defined
-//	At least 1 authinfo (user) defined
-//	At least 1 context defined
-//	The current context properly associated with an existsing context
-// 	At least one Manifest defined
-//
+// EnsureComplete verifies that a Config object is ready to use.
+// A complete Config object meets the following criteria:
+//   * At least 1 Cluster is defined
+//   * At least 1 AuthInfo (user) is defined
+//   * At least 1 Context is defined
+//   * At least 1 Manifest is defined
+//   * The CurrentContext is set
+//   * The CurrentContext identifies an existing Context
+//   * The CurrentContext identifies an existing Manifest
 func (c *Config) EnsureComplete() error {
 	if len(c.Clusters) == 0 {
-		return errors.New("Config: At least one cluster needs to be defined")
+		return ErrMissingConfig{
+			What: "At least one cluster needs to be defined",
+		}
 	}
+
 	if len(c.AuthInfos) == 0 {
-		return errors.New("Config: At least one Authentication Information (User) needs to be defined")
+		return ErrMissingConfig{
+			What: "At least one Authentication Information (User) needs to be defined",
+		}
 	}
 
 	if len(c.Contexts) == 0 {
-		return errors.New("Config: At least one Context needs to be defined")
+		return ErrMissingConfig{
+			What: "At least one Context needs to be defined",
+		}
 	}
 
-	if c.CurrentContext == "" || c.Contexts[c.CurrentContext] == nil {
-		return errors.New("Config: Current Context is not defined, or it doesnt identify a defined Context")
+	if len(c.Manifests) == 0 {
+		return ErrMissingConfig{
+			What: "At least one Manifest needs to be defined",
+		}
 	}
+
+	if c.CurrentContext == "" {
+		return ErrMissingConfig{
+			What: "Current Context is not defined",
+		}
+	}
+
+	currentContext, found := c.Contexts[c.CurrentContext]
+	if !found {
+		return ErrMissingConfig{
+			What: fmt.Sprintf("Current Context (%s) does not identify a defined Context", c.CurrentContext),
+		}
+	}
+
+	if _, found := c.Manifests[currentContext.Manifest]; !found {
+		return ErrMissingConfig{
+			What: fmt.Sprintf("Current Context (%s) does not identify a defined Manifest", c.CurrentContext),
+		}
+	}
+
 	return nil
 }
 

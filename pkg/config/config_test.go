@@ -229,33 +229,112 @@ func TestPersistConfig(t *testing.T) {
 }
 
 func TestEnsureComplete(t *testing.T) {
-	conf := InitConfig(t)
-
-	conf.CurrentContext = "def_ephemeral"
-	assert.NoError(t, conf.EnsureComplete())
-
-	// Trigger no CurrentContext Error
-	conf.CurrentContext = ""
-	err := conf.EnsureComplete()
-	assert.EqualError(t, err, "Config: Current Context is not defined, or it doesnt identify a defined Context")
-
-	// Trigger Contexts Error
-	for key := range conf.Contexts {
-		delete(conf.Contexts, key)
+	// This test is intentionally verbose. Since a user of EnsureComplete
+	// does not need to know about the order of validation, each test
+	// object passed into EnsureComplete should have exactly one issue, and
+	// be otherwise valid
+	tests := []struct {
+		name        string
+		config      Config
+		expectedErr error
+	}{
+		{
+			name: "no clusters defined",
+			config: Config{
+				Clusters:       map[string]*ClusterPurpose{},
+				AuthInfos:      map[string]*AuthInfo{"testAuthInfo": {}},
+				Contexts:       map[string]*Context{"testContext": {Manifest: "testManifest"}},
+				Manifests:      map[string]*Manifest{"testManifest": {}},
+				CurrentContext: "testContext",
+			},
+			expectedErr: ErrMissingConfig{What: "At least one cluster needs to be defined"},
+		},
+		{
+			name: "no users defined",
+			config: Config{
+				Clusters:       map[string]*ClusterPurpose{"testCluster": {}},
+				AuthInfos:      map[string]*AuthInfo{},
+				Contexts:       map[string]*Context{"testContext": {Manifest: "testManifest"}},
+				Manifests:      map[string]*Manifest{"testManifest": {}},
+				CurrentContext: "testContext",
+			},
+			expectedErr: ErrMissingConfig{What: "At least one Authentication Information (User) needs to be defined"},
+		},
+		{
+			name: "no contexts defined",
+			config: Config{
+				Clusters:       map[string]*ClusterPurpose{"testCluster": {}},
+				AuthInfos:      map[string]*AuthInfo{"testAuthInfo": {}},
+				Contexts:       map[string]*Context{},
+				Manifests:      map[string]*Manifest{"testManifest": {}},
+				CurrentContext: "testContext",
+			},
+			expectedErr: ErrMissingConfig{What: "At least one Context needs to be defined"},
+		},
+		{
+			name: "no manifests defined",
+			config: Config{
+				Clusters:       map[string]*ClusterPurpose{"testCluster": {}},
+				AuthInfos:      map[string]*AuthInfo{"testAuthInfo": {}},
+				Contexts:       map[string]*Context{"testContext": {Manifest: "testManifest"}},
+				Manifests:      map[string]*Manifest{},
+				CurrentContext: "testContext",
+			},
+			expectedErr: ErrMissingConfig{What: "At least one Manifest needs to be defined"},
+		},
+		{
+			name: "current context not defined",
+			config: Config{
+				Clusters:       map[string]*ClusterPurpose{"testCluster": {}},
+				AuthInfos:      map[string]*AuthInfo{"testAuthInfo": {}},
+				Contexts:       map[string]*Context{"testContext": {Manifest: "testManifest"}},
+				Manifests:      map[string]*Manifest{"testManifest": {}},
+				CurrentContext: "",
+			},
+			expectedErr: ErrMissingConfig{What: "Current Context is not defined"},
+		},
+		{
+			name: "no context for current context",
+			config: Config{
+				Clusters:       map[string]*ClusterPurpose{"testCluster": {}},
+				AuthInfos:      map[string]*AuthInfo{"testAuthInfo": {}},
+				Contexts:       map[string]*Context{"DIFFERENT_CONTEXT": {Manifest: "testManifest"}},
+				Manifests:      map[string]*Manifest{"testManifest": {}},
+				CurrentContext: "testContext",
+			},
+			expectedErr: ErrMissingConfig{What: "Current Context (testContext) does not identify a defined Context"},
+		},
+		{
+			name: "no manifest for current context",
+			config: Config{
+				Clusters:       map[string]*ClusterPurpose{"testCluster": {}},
+				AuthInfos:      map[string]*AuthInfo{"testAuthInfo": {}},
+				Contexts:       map[string]*Context{"testContext": {Manifest: "testManifest"}},
+				Manifests:      map[string]*Manifest{"DIFFERENT_MANIFEST": {}},
+				CurrentContext: "testContext",
+			},
+			expectedErr: ErrMissingConfig{What: "Current Context (testContext) does not identify a defined Manifest"},
+		},
+		{
+			name: "complete config",
+			config: Config{
+				Clusters:       map[string]*ClusterPurpose{"testCluster": {}},
+				AuthInfos:      map[string]*AuthInfo{"testAuthInfo": {}},
+				Contexts:       map[string]*Context{"testContext": {Manifest: "testManifest"}},
+				Manifests:      map[string]*Manifest{"testManifest": {}},
+				CurrentContext: "testContext",
+			},
+			expectedErr: nil,
+		},
 	}
-	err = conf.EnsureComplete()
-	assert.EqualError(t, err, "Config: At least one Context needs to be defined")
 
-	// Trigger Authentication Information
-	for key := range conf.AuthInfos {
-		delete(conf.AuthInfos, key)
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(subTest *testing.T) {
+			actualErr := tt.config.EnsureComplete()
+			assert.Equal(subTest, tt.expectedErr, actualErr)
+		})
 	}
-	err = conf.EnsureComplete()
-	assert.EqualError(t, err, "Config: At least one Authentication Information (User) needs to be defined")
-
-	conf = NewConfig()
-	err = conf.EnsureComplete()
-	assert.Error(t, err, "A new config object should not be complete")
 }
 
 func TestPurge(t *testing.T) {
