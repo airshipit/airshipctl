@@ -16,6 +16,7 @@ import (
 	"sigs.k8s.io/kustomize/v3/pkg/target"
 	"sigs.k8s.io/kustomize/v3/pkg/types"
 
+	"opendev.org/airship/airshipctl/pkg/log"
 	utilyaml "opendev.org/airship/airshipctl/pkg/util/yaml"
 )
 
@@ -89,7 +90,9 @@ func NewBundle(fSys fs.FileSystem, kustomizePath string, outputPath string) (bun
 	}
 
 	defer func() {
-		err = ldr.Cleanup()
+		if e := ldr.Cleanup(); e != nil {
+			log.Fatal("failed to cleanup loader ERROR: ", e)
+		}
 	}()
 
 	kt, err := target.NewKustTarget(ldr, rf, pf, pl)
