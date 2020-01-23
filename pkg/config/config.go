@@ -596,8 +596,10 @@ func (c *Config) CurrentContextCluster() (*Cluster, error) {
 	if err != nil {
 		return nil, err
 	}
+	clusterName := NewClusterComplexName()
+	clusterName.FromName(currentContext.KubeContext().Cluster)
 
-	return c.Clusters[currentContext.KubeContext().Cluster].ClusterTypes[currentContext.ClusterType()], nil
+	return c.Clusters[clusterName.ClusterName()].ClusterTypes[currentContext.ClusterType()], nil
 }
 
 func (c *Config) CurrentContextAuthInfo() (*AuthInfo, error) {
