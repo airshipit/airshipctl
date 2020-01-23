@@ -42,11 +42,6 @@ func GenerateBootstrapIso(settings *environment.AirshipCTLSettings, args []strin
 		return err
 	}
 
-	// TODO (dukov) This check should be implemented as part of the config  module
-	if manifest == nil {
-		return config.ErrMissingConfig{What: "manifest for currnet context not found"}
-	}
-
 	if err = verifyInputs(cfg); err != nil {
 		return err
 	}
