@@ -28,21 +28,21 @@ func TestBundleDocumentFiltering(t *testing.T) {
 		docs, err := bundle.GetByGvk("apps", "v1", "Deployment")
 		require.NoError(err)
 
-		assert.Len(docs, 3, "GetGvk returned the wrong number of resources")
+		assert.Len(docs, 3)
 	})
 
 	t.Run("GetByAnnotation", func(t *testing.T) {
 		docs, err := bundle.GetByAnnotation("airshipit.org/clustertype=ephemeral")
 		require.NoError(err, "Error trying to GetByAnnotation")
 
-		assert.Len(docs, 4, "GetByAnnotation returned wrong number of resources")
+		assert.Len(docs, 4)
 	})
 
 	t.Run("GetByLabel", func(t *testing.T) {
 		docs, err := bundle.GetByLabel("app=workflow-controller")
 		require.NoError(err, "Error trying to GetByLabel")
 
-		assert.Len(docs, 1, "GetByLabel returned wrong number of resources")
+		assert.Len(docs, 1)
 	})
 
 	t.Run("SelectGvk", func(t *testing.T) {
@@ -53,7 +53,7 @@ func TestBundleDocumentFiltering(t *testing.T) {
 		docs, err := bundle.Select(selector)
 		require.NoError(err, "Error trying to select resources")
 
-		assert.Len(docs, 3, "SelectGvk returned wrong number of resources")
+		assert.Len(docs, 3)
 	})
 
 	t.Run("SelectAnnotations", func(t *testing.T) {
@@ -62,7 +62,7 @@ func TestBundleDocumentFiltering(t *testing.T) {
 		docs, err := bundle.Select(selector)
 		require.NoError(err, "Error trying to select annotated resources")
 
-		assert.Len(docs, 4, "SelectAnnotations returned wrong number of resources")
+		assert.Len(docs, 4)
 	})
 
 	t.Run("SelectLabels", func(t *testing.T) {
@@ -73,7 +73,7 @@ func TestBundleDocumentFiltering(t *testing.T) {
 		docs, err := bundle.Select(selector)
 		require.NoError(err, "Error trying to select labeled resources")
 
-		assert.Len(docs, 1, "SelectLabels returned wrong number of resources")
+		assert.Len(docs, 1)
 	})
 
 	t.Run("SelectByLabelAndName", func(t *testing.T) {
@@ -83,7 +83,7 @@ func TestBundleDocumentFiltering(t *testing.T) {
 		docs, err := bundle.Select(selector)
 		require.NoError(err, "Error trying to select labeled with name resources")
 
-		assert.Len(docs, 1, "SelectByLabelAndName returned wrong number of resources")
+		assert.Len(docs, 1)
 	})
 
 	t.Run("SelectByTwoLabels", func(t *testing.T) {
@@ -94,7 +94,7 @@ func TestBundleDocumentFiltering(t *testing.T) {
 		docs, err := bundle.Select(selector)
 		require.NoError(err, "Error trying to select by two labels")
 
-		assert.Len(docs, 1, "SelectByTwoLabels returned wrong number of resources")
+		assert.Len(docs, 1)
 		assert.Equal("workflow-controller", docs[0].GetName())
 	})
 
@@ -107,8 +107,20 @@ func TestBundleDocumentFiltering(t *testing.T) {
 		docs, err := bundle.Select(selector)
 		require.NoError(err, "Error trying to select by two annotations")
 
-		assert.Len(docs, 1, "SelectByTwoAnnotations returned wrong number of resources")
+		assert.Len(docs, 1)
 		assert.Equal("argo-ui", docs[0].GetName())
+	})
+
+	t.Run("SelectByFieldValue", func(t *testing.T) {
+		// Find documents with a particular value referenced by JSON path
+		filter := func(val interface{}) bool { return val == "01:3b:8b:0c:ec:8b" }
+		filteredBundle, err := bundle.SelectByFieldValue("spec.bootMACAddress", filter)
+		require.NoError(err, "Error trying to filter resources")
+		docs, err := filteredBundle.GetAllDocuments()
+		require.NoError(err)
+		assert.Len(docs, 1)
+		assert.Equal(docs[0].GetKind(), "BareMetalHost")
+		assert.Equal(docs[0].GetName(), "master-1")
 	})
 
 	t.Run("Write", func(t *testing.T) {
