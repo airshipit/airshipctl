@@ -221,6 +221,10 @@ func DummyBootstrap() *Bootstrap {
 const (
 	testConfigYAML = `apiVersion: airshipit.org/v1alpha1
 clusters:
+  straggler:
+    cluster-type:
+      ephemeral:
+        cluster-kubeconf: notThere
   def:
     cluster-type:
       ephemeral:
@@ -277,6 +281,10 @@ clusters:
     certificate-authority: cert_file
     server: ""
   name: wrongonlyinkubeconf_target
+- cluster:
+    insecure-skip-tls-verify: true
+    server: http://9.10.11.12
+  name: invalidName
 contexts:
 - context:
     cluster: def_ephemeral
