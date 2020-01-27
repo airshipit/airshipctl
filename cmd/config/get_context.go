@@ -95,8 +95,8 @@ func getContexts(out io.Writer, airconfig *config.Config) error {
 	if err != nil {
 		return err
 	}
-	if contexts == nil {
-		fmt.Fprint(out, "No Contexts found in the configuration.\n")
+	if len(contexts) == 0 {
+		fmt.Fprintln(out, "No Contexts found in the configuration.")
 	}
 	for _, context := range contexts {
 		fmt.Fprintf(out, "%s", context.PrettyString())
