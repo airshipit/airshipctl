@@ -1,0 +1,7 @@
+Error: Not implemented
+Usage:
+  init [flags]
+
+Flags:
+  -h, --help   help for init
+
