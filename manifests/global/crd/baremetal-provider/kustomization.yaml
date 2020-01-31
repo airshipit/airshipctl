@@ -1,0 +1,4 @@
+resources:
+  - baremetalclusters.infrastructure.cluster.x-k8s.io.yaml
+  - baremetalmachines.infrastructure.cluster.x-k8s.io.yaml
+  - baremetalmachinetemplates.infrastructure.cluster.x-k8s.io.yaml
