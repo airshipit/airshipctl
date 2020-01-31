@@ -1,0 +1,18 @@
+resources:
+  - ../../global/crd/cluster-api
+  - rbac
+  - operator.yaml
+  - namespace.yaml
+
+commonLabels:
+  # NOTE We can't use airshipit.org/clustertype
+  # bacause a label can't consists of multiple values
+  airshipit.org/ephemeral: "true"
+  airshipit.org/target: "true"
+
+namespace: capi
+
+#vars:
+# $(IMAGE_PULL_POLICY)
+# The image pull policy by default should be "IfNotPresent",
+# it should be globally defined for all images
