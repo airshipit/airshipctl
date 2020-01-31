@@ -1,0 +1,7 @@
+resources:
+  - cabpk-leader-election-rolebinding.yaml
+  - cabpk-leader-election-role.yaml
+  - cabpk-manager-rolebinding.yaml
+  - cabpk-manager-role.yaml
+  - cabpk-proxy-rolebinding.yaml
+  - cabpk-proxy-role.yaml
