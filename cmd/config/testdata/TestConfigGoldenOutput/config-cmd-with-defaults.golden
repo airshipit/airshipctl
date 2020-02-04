@@ -1,16 +1,18 @@
 Modify airshipctl config files using subcommands
-like "airshipctl config set-current-context my-context"
+like "airshipctl config set-context --current-context my-context"
 
 Usage:
   config [command]
 
 Available Commands:
-  get-cluster Display a specific cluster or all defined clusters if no name is provided
-  get-context Display a specific context, the current-context or all defined contexts if no name is provided
-  help        Help about any command
-  init        Generate initial configuration files for airshipctl
-  set-cluster Sets a cluster entry in the airshipctl config
-  set-context Sets a context entry or updates current-context in the airshipctl config
+  get-cluster     Display a specific cluster or all defined clusters if no name is provided
+  get-context     Display a specific context, the current-context or all defined contexts if no name is provided
+  get-credentials Gets a user entry from the airshipctl config
+  help            Help about any command
+  init            Generate initial configuration files for airshipctl
+  set-cluster     Sets a cluster entry in the airshipctl config
+  set-context     Sets a context entry or updates current-context in the airshipctl config
+  set-credentials Sets a user entry in the airshipctl config
 
 Flags:
   -h, --help   help for config

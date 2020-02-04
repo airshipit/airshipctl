@@ -62,3 +62,28 @@ func (o *ContextOptions) Validate() error {
 	// TODO Manifest, Cluster could be validated against the existing config maps
 	return nil
 }
+
+func (o *AuthInfoOptions) Validate() error {
+	if len(o.Token) > 0 && (len(o.Username) > 0 || len(o.Password) > 0) {
+		return fmt.Errorf("you cannot specify more than one authentication method at the same time: --%v  or --%v/--%v",
+			FlagBearerToken, FlagUsername, FlagPassword)
+	}
+	if !o.EmbedCertData {
+		return nil
+	}
+	certPath := o.ClientCertificate
+	if certPath == "" {
+		return fmt.Errorf("you must specify a --%s to embed", FlagCertFile)
+	}
+	if _, err := ioutil.ReadFile(certPath); err != nil {
+		return fmt.Errorf("error reading %s data from %s: %v", FlagCertFile, certPath, err)
+	}
+	keyPath := o.ClientKey
+	if keyPath == "" {
+		return fmt.Errorf("you must specify a --%s to embed", FlagKeyFile)
+	}
+	if _, err := ioutil.ReadFile(keyPath); err != nil {
+		return fmt.Errorf("error reading %s data from %s: %v", FlagKeyFile, keyPath, err)
+	}
+	return nil
+}

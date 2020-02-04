@@ -18,3 +18,13 @@ type ContextOptions struct {
 	Manifest       string
 	Namespace      string
 }
+
+type AuthInfoOptions struct {
+	Name              string
+	ClientCertificate string
+	ClientKey         string
+	Token             string
+	Username          string
+	Password          string
+	EmbedCertData     bool
+}

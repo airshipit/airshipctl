@@ -240,6 +240,7 @@ func (c *Config) reconcileAuthInfos() {
 			// Add the reference
 			c.AuthInfos[key] = NewAuthInfo()
 		}
+		c.AuthInfos[key].SetKubeAuthInfo(authinfo)
 	}
 	// Checking if there is any AuthInfo reference in airship config that does not match
 	// an actual Auth Info struct in kubeconfig
@@ -619,6 +620,61 @@ func (c *Config) CurrentContextManifest() (*Manifest, error) {
 	return c.Manifests[currentContext.Manifest], nil
 }
 
+// Credential or AuthInfo related methods
+func (c *Config) GetAuthInfo(aiName string) (*AuthInfo, error) {
+	authinfo, exists := c.AuthInfos[aiName]
+	if !exists {
+		return nil, ErrMissingConfig{What: fmt.Sprintf("User credentials with name '%s'", aiName)}
+	}
+	return authinfo, nil
+}
+
+func (c *Config) GetAuthInfos() ([]*AuthInfo, error) {
+	authinfos := []*AuthInfo{}
+	for cName := range c.AuthInfos {
+		authinfo, err := c.GetAuthInfo(cName)
+		if err == nil {
+			authinfos = append(authinfos, authinfo)
+		}
+	}
+	return authinfos, nil
+}
+
+func (c *Config) AddAuthInfo(theAuthInfo *AuthInfoOptions) *AuthInfo {
+	// Create the new Airship config context
+	nAuthInfo := NewAuthInfo()
+	c.AuthInfos[theAuthInfo.Name] = nAuthInfo
+	// Create a new Kubeconfig AuthInfo object as well
+	kAuthInfo := kubeconfig.NewAuthInfo()
+	nAuthInfo.SetKubeAuthInfo(kAuthInfo)
+	c.KubeConfig().AuthInfos[theAuthInfo.Name] = kAuthInfo
+
+	c.ModifyAuthInfo(nAuthInfo, theAuthInfo)
+	return nAuthInfo
+}
+
+func (c *Config) ModifyAuthInfo(authinfo *AuthInfo, theAuthInfo *AuthInfoOptions) {
+	kAuthInfo := authinfo.KubeAuthInfo()
+	if kAuthInfo == nil {
+		return
+	}
+	if theAuthInfo.ClientCertificate != "" {
+		kAuthInfo.ClientCertificate = theAuthInfo.ClientCertificate
+	}
+	if theAuthInfo.Token != "" {
+		kAuthInfo.Token = theAuthInfo.Token
+	}
+	if theAuthInfo.Username != "" {
+		kAuthInfo.Username = theAuthInfo.Username
+	}
+	if theAuthInfo.Password != "" {
+		kAuthInfo.Password = theAuthInfo.Password
+	}
+	if theAuthInfo.ClientKey != "" {
+		kAuthInfo.ClientKey = theAuthInfo.ClientKey
+	}
+}
+
 // CurrentContextBootstrapInfo returns bootstrap info for current context
 func (c *Config) CurrentContextBootstrapInfo() (*Bootstrap, error) {
 	currentCluster, err := c.CurrentContextCluster()
@@ -738,17 +794,25 @@ func (c *Context) ClusterType() string {
 // AuthInfo functions
 func (c *AuthInfo) Equal(d *AuthInfo) bool {
 	if d == nil {
-		return d == c
+		return c == d
 	}
-	return c == d
+	return c.kAuthInfo == d.kAuthInfo
 }
 
 func (c *AuthInfo) String() string {
-	yaml, err := yaml.Marshal(&c)
+	kauthinfo := c.KubeAuthInfo()
+	kyaml, err := yaml.Marshal(&kauthinfo)
 	if err != nil {
 		return ""
 	}
-	return string(yaml)
+	return string(kyaml)
+}
+
+func (c *AuthInfo) KubeAuthInfo() *kubeconfig.AuthInfo {
+	return c.kAuthInfo
+}
+func (c *AuthInfo) SetKubeAuthInfo(kc *kubeconfig.AuthInfo) {
+	c.kAuthInfo = kc
 }
 
 // Manifest functions
@@ -925,6 +989,14 @@ func KClusterString(kCluster *kubeconfig.Cluster) string {
 }
 func KContextString(kContext *kubeconfig.Context) string {
 	yaml, err := yaml.Marshal(&kContext)
+	if err != nil {
+		return ""
+	}
+
+	return string(yaml)
+}
+func KAuthInfoString(kAuthInfo *kubeconfig.AuthInfo) string {
+	yaml, err := yaml.Marshal(&kAuthInfo)
 	if err != nil {
 		return ""
 	}

@@ -46,7 +46,7 @@ airshipctl config set-context e2e --%v=true`,
 )
 
 // NewCmdConfigSetContext creates a command object for the "set-context" action, which
-// defines a new Context airship config.
+// defines a new Context airshipctl config.
 func NewCmdConfigSetContext(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	theContext := &config.ContextOptions{}
 

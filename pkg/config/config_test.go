@@ -32,6 +32,8 @@ import (
 	"opendev.org/airship/airshipctl/testutil"
 )
 
+const stringDelta = "_changed"
+
 func TestString(t *testing.T) {
 	fSys := testutil.SetupTestFs(t, "testdata")
 
@@ -215,7 +217,7 @@ func TestLoadConfig(t *testing.T) {
 	require.Contains(t, conf.Clusters, "def")
 	assert.Len(t, conf.Clusters["def"].ClusterTypes, 2)
 	assert.Len(t, conf.Contexts, 3)
-	assert.Len(t, conf.AuthInfos, 2)
+	assert.Len(t, conf.AuthInfos, 3)
 }
 
 func TestPersistConfig(t *testing.T) {
@@ -385,6 +387,15 @@ func TestKContextString(t *testing.T) {
 	}
 	assert.EqualValues(t, KClusterString(nil), "null\n")
 }
+func TestKAuthInfoString(t *testing.T) {
+	conf := InitConfig(t)
+	kAuthInfos := conf.KubeConfig().AuthInfos
+	for kAi := range kAuthInfos {
+		assert.NotEmpty(t, KAuthInfoString(kAuthInfos[kAi]))
+	}
+	assert.EqualValues(t, KAuthInfoString(nil), "null\n")
+}
+
 func TestComplexName(t *testing.T) {
 	cName := "aCluster"
 	ctName := Ephemeral
@@ -434,13 +445,13 @@ func TestAddCluster(t *testing.T) {
 	assert.EqualValues(t, conf.Clusters[co.Name].ClusterTypes[co.ClusterType], cluster)
 }
 
-func TestModifyluster(t *testing.T) {
+func TestModifyCluster(t *testing.T) {
 	co := DummyClusterOptions()
 	conf := InitConfig(t)
 	cluster, err := conf.AddCluster(co)
 	require.NoError(t, err)
 
-	co.Server += "/changes"
+	co.Server += stringDelta
 	co.InsecureSkipTLSVerify = true
 	co.EmbedCAData = true
 	mcluster, err := conf.ModifyCluster(cluster, co)
@@ -532,4 +543,76 @@ func TestGetContext(t *testing.T) {
 	// Test Wrong Cluster
 	_, err = conf.GetContext("unknown")
 	assert.Error(t, err)
+}
+
+func TestAddContext(t *testing.T) {
+	co := DummyContextOptions()
+	conf := InitConfig(t)
+	context := conf.AddContext(co)
+	assert.EqualValues(t, conf.Contexts[co.Name], context)
+}
+
+func TestModifyContext(t *testing.T) {
+	co := DummyContextOptions()
+	conf := InitConfig(t)
+	context := conf.AddContext(co)
+
+	co.Namespace += stringDelta
+	co.Cluster += stringDelta
+	co.AuthInfo += stringDelta
+	co.Manifest += stringDelta
+	conf.ModifyContext(context, co)
+	assert.EqualValues(t, conf.Contexts[co.Name].KubeContext().Namespace, co.Namespace)
+	assert.EqualValues(t, conf.Contexts[co.Name].KubeContext().Cluster, co.Cluster)
+	assert.EqualValues(t, conf.Contexts[co.Name].KubeContext().AuthInfo, co.AuthInfo)
+	assert.EqualValues(t, conf.Contexts[co.Name].Manifest, co.Manifest)
+	assert.EqualValues(t, conf.Contexts[co.Name], context)
+}
+
+// AuthInfo Related
+
+func TestGetAuthInfos(t *testing.T) {
+	conf := InitConfig(t)
+	authinfos, err := conf.GetAuthInfos()
+	require.NoError(t, err)
+	assert.Len(t, authinfos, 3)
+}
+
+func TestGetAuthInfo(t *testing.T) {
+	conf := InitConfig(t)
+	authinfo, err := conf.GetAuthInfo("def-user")
+	require.NoError(t, err)
+
+	// Test Positives
+	assert.EqualValues(t, authinfo.KubeAuthInfo().Username, "dummy_username")
+
+	// Test Wrong Cluster
+	_, err = conf.GetAuthInfo("unknown")
+	assert.Error(t, err)
+}
+
+func TestAddAuthInfo(t *testing.T) {
+	co := DummyAuthInfoOptions()
+	conf := InitConfig(t)
+	authinfo := conf.AddAuthInfo(co)
+	assert.EqualValues(t, conf.AuthInfos[co.Name], authinfo)
+}
+
+func TestModifyAuthInfo(t *testing.T) {
+	co := DummyAuthInfoOptions()
+	conf := InitConfig(t)
+	authinfo := conf.AddAuthInfo(co)
+
+	co.Username += stringDelta
+	co.Password += stringDelta
+	co.ClientCertificate += stringDelta
+	co.ClientKey += stringDelta
+	co.Token += stringDelta
+	conf.ModifyAuthInfo(authinfo, co)
+	assert.EqualValues(t, conf.AuthInfos[co.Name].KubeAuthInfo().Username, co.Username)
+	assert.EqualValues(t, conf.AuthInfos[co.Name].KubeAuthInfo().Password, co.Password)
+	assert.EqualValues(t, conf.AuthInfos[co.Name].KubeAuthInfo().ClientCertificate, co.ClientCertificate)
+	assert.EqualValues(t, conf.AuthInfos[co.Name].KubeAuthInfo().ClientKey, co.ClientKey)
+	assert.EqualValues(t, conf.AuthInfos[co.Name].KubeAuthInfo().Token, co.Token)
+	assert.EqualValues(t, conf.AuthInfos[co.Name], authinfo)
 }

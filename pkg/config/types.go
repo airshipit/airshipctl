@@ -112,8 +112,8 @@ type Context struct {
 }
 
 type AuthInfo struct {
-	// Empty in purpose
-	// Will implement Interface to Set/Get fields from kubeconfig as needed
+	// Kubeconfig AuthInfo Object
+	kAuthInfo *kubeconfig.AuthInfo
 }
 
 // Manifests is a tuple of references to a Manifest (how do Identify, collect ,

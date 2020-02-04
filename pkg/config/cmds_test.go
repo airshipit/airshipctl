@@ -68,3 +68,15 @@ func TestValidateContext(t *testing.T) {
 	err := co.Validate()
 	assert.NoError(t, err)
 }
+
+func TestValidateAuthInfo(t *testing.T) {
+	co := DummyAuthInfoOptions()
+	// Token and cert error case
+	err := co.Validate()
+	assert.Error(t, err)
+
+	// Valid Data case
+	co.Token = ""
+	err = co.Validate()
+	assert.NoError(t, err)
+}

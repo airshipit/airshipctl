@@ -56,7 +56,7 @@ airshipctl config set-cluster e2e --%v-type=target --%v=true --%v=".airship/cert
 )
 
 // NewCmdConfigSetCluster creates a command object for the "set-cluster" action, which
-// defines a new cluster airship config.
+// defines a new cluster airshipctl config.
 func NewCmdConfigSetCluster(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	theCluster := &config.ClusterOptions{}
 
