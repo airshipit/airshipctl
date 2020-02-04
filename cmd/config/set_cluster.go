@@ -37,13 +37,13 @@ Specifying a name that already exists will merge new fields on top of existing v
 airshipctl config set-cluster e2e --%v=ephemeral --%v=https://1.2.3.4
 
 # Embed certificate authority data for the e2e cluster entry
-airshipctl config set-cluster e2e --%v-type=target --%v-authority=~/.airship/e2e/kubernetes.ca.crt
+airshipctl config set-cluster e2e --%v=target --%v-authority=~/.airship/e2e/kubernetes.ca.crt
 
 # Disable cert checking for the dev cluster entry
-airshipctl config set-cluster e2e --%v-type=target --%v=true
+airshipctl config set-cluster e2e --%v=target --%v=true
 
 # Configure Client Certificate
-airshipctl config set-cluster e2e --%v-type=target --%v=true --%v=".airship/cert_file"`,
+airshipctl config set-cluster e2e --%v=target --%v=true --%v=".airship/cert_file"`,
 		config.FlagClusterType,
 		config.FlagAPIServer,
 		config.FlagClusterType,
