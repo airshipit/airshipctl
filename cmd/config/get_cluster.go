@@ -27,7 +27,7 @@ import (
 )
 
 var (
-	getClusterLong = (`Display a specific cluster or all defined clusters if no name is provided`)
+	getClusterLong = "Display a specific cluster or all defined clusters if no name is provided"
 
 	getClusterExample = fmt.Sprintf(`
 # List all the clusters airshipctl knows about

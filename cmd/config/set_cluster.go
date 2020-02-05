@@ -28,9 +28,9 @@ import (
 )
 
 var (
-	setClusterLong = (`
+	setClusterLong = `
 Sets a cluster entry in arshipctl config.
-Specifying a name that already exists will merge new fields on top of existing values for those fields.`)
+Specifying a name that already exists will merge new fields on top of existing values for those fields.`
 
 	setClusterExample = fmt.Sprintf(`
 # Set only the server field on the e2e cluster entry without touching other values.

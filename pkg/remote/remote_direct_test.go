@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	redfish "opendev.org/airship/airshipctl/pkg/remote/redfish"
+	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 )
 
 func TestUnknownRemoteType(t *testing.T) {

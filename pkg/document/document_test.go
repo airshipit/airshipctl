@@ -30,7 +30,7 @@ func TestDocument(t *testing.T) {
 		docs, err := bundle.GetAllDocuments()
 		require.NoError(err, "Unexpected error trying to GetAllDocuments")
 
-		nameList := []string{}
+		nameList := make([]string, 0, len(docs))
 
 		for _, doc := range docs {
 			nameList = append(nameList, doc.GetName())

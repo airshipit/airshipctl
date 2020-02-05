@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	configInitLong = (`Generate initial configuration files for airshipctl`)
+	configInitLong = "Generate initial configuration files for airshipctl"
 )
 
 // NewCmdConfigInit returns a Command instance for 'config init' sub command

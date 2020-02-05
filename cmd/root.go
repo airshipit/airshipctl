@@ -43,7 +43,7 @@ func NewRootCmd(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings,
 			settings.InitConfig()
 		},
 	}
-	rootCmd.SetOutput(out)
+	rootCmd.SetOut(out)
 	rootCmd.AddCommand(NewVersionCommand())
 
 	settings.InitFlags(rootCmd)

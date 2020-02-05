@@ -105,14 +105,14 @@ func NewRedfishRemoteDirectClient(ctx context.Context,
 
 	var api redfishApi.RedfishAPI = redfishClient.NewAPIClient(cfg).DefaultApi
 
-	url, err := url.Parse(remoteURL)
+	parsedUrl, err := url.Parse(remoteURL)
 	if err != nil {
 		return RedfishRemoteDirect{}, NewRedfishConfigErrorf("Invalid URL format: %v", err)
 	}
 
 	client := RedfishRemoteDirect{
 		Context:         ctx,
-		RemoteURL:       *url,
+		RemoteURL:       *parsedUrl,
 		EphemeralNodeId: ephNodeID,
 		IsoPath:         isoPath,
 		Api:             api,

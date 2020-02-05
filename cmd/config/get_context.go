@@ -27,7 +27,7 @@ import (
 )
 
 var (
-	getContextLong = (`Display a specific context, the current-context or all defined contexts if no name is provided`)
+	getContextLong = "Display a specific context, the current-context or all defined contexts if no name is provided"
 
 	getContextExample = fmt.Sprintf(`# List all the contexts  airshipctl knows about
 airshipctl config get-context

@@ -25,8 +25,8 @@ func GetResourceIDFromURL(refURL string) string {
 		log.Fatal(err)
 	}
 
-	url := strings.TrimSuffix(u.Path, "/")
-	elems := strings.Split(url, "/")
+	trimmedUrl := strings.TrimSuffix(u.Path, "/")
+	elems := strings.Split(trimmedUrl, "/")
 
 	id := elems[len(elems)-1]
 	return id

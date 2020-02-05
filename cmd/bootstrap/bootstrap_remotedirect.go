@@ -5,7 +5,7 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/environment"
 	alog "opendev.org/airship/airshipctl/pkg/log"
-	remote "opendev.org/airship/airshipctl/pkg/remote"
+	"opendev.org/airship/airshipctl/pkg/remote"
 )
 
 // RemoteDirect settings for remotedirect command

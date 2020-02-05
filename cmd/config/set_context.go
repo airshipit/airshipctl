@@ -27,9 +27,9 @@ import (
 )
 
 var (
-	setContextLong = (`
+	setContextLong = `
 Sets a context entry in arshipctl config.
-Specifying a name that already exists will merge new fields on top of existing values for those fields.`)
+Specifying a name that already exists will merge new fields on top of existing values for those fields.`
 
 	setContextExample = fmt.Sprintf(`
 # Create a completely new e2e context entry

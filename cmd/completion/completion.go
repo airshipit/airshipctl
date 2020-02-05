@@ -27,7 +27,7 @@ var (
 )
 
 func NewCompletionCommand() *cobra.Command {
-	shells := []string{}
+	shells := make([]string, 0, len(completionShells))
 	for s := range completionShells {
 		shells = append(shells, s)
 	}

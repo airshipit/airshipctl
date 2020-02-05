@@ -154,7 +154,7 @@ func (test setContextTest) run(t *testing.T) {
 	buf := bytes.NewBuffer([]byte{})
 
 	cmd := NewCmdConfigSetContext(settings)
-	cmd.SetOutput(buf)
+	cmd.SetOut(buf)
 	cmd.SetArgs(test.args)
 	err := cmd.Flags().Parse(test.flags)
 	require.NoErrorf(t, err, "unexpected error flags args to command: %v,  flags: %v", err, test.flags)

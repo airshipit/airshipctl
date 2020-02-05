@@ -155,14 +155,14 @@ func (b *BundleFactory) GetFileSystem() fs.FileSystem {
 
 // GetAllDocuments returns all documents in this bundle
 func (b *BundleFactory) GetAllDocuments() ([]Document, error) {
-	docSet := []Document{}
-	for _, res := range b.ResMap.Resources() {
+	docSet := make([]Document, len(b.ResMap.Resources()))
+	for i, res := range b.ResMap.Resources() {
 		// Construct Bundle document for each resource returned
 		doc, err := NewDocument(res)
 		if err != nil {
 			return docSet, err
 		}
-		docSet = append(docSet, doc)
+		docSet[i] = doc
 	}
 	return docSet, nil
 }
@@ -170,7 +170,7 @@ func (b *BundleFactory) GetAllDocuments() ([]Document, error) {
 // GetByName finds a document by name, error if more than one document found
 // or if no documents found
 func (b *BundleFactory) GetByName(name string) (Document, error) {
-	resSet := []*resource.Resource{}
+	resSet := make([]*resource.Resource, 0, len(b.ResMap.Resources()))
 	for _, res := range b.ResMap.Resources() {
 		if res.GetName() == name {
 			resSet = append(resSet, res)
@@ -198,14 +198,14 @@ func (b *BundleFactory) Select(selector types.Selector) ([]Document, error) {
 	}
 
 	// Construct Bundle document for each resource returned
-	docSet := []Document{}
-	for _, res := range resources {
+	docSet := make([]Document, len(resources))
+	for i, res := range resources {
 		var doc Document
 		doc, err = NewDocument(res)
 		if err != nil {
 			return docSet, err
 		}
-		docSet = append(docSet, doc)
+		docSet[i] = doc
 	}
 	return docSet, err
 }

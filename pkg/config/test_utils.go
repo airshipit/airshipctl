@@ -95,9 +95,9 @@ func DummyManifest() *Manifest {
 func DummyRepository() *Repository {
 	// TODO(howell): handle this error
 	//nolint: errcheck
-	url, _ := url.Parse("http://dummy.url.com")
+	parsedUrl, _ := url.Parse("http://dummy.url.com")
 	return &Repository{
-		Url:        url,
+		Url:        parsedUrl,
 		Username:   "dummy_user",
 		TargetPath: "dummy_targetpath",
 	}

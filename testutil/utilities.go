@@ -48,7 +48,7 @@ func RunTest(t *testing.T, test *CmdTest) {
 	cmd := test.Cmd
 
 	actual := &bytes.Buffer{}
-	cmd.SetOutput(actual)
+	cmd.SetOut(actual)
 
 	args := strings.Fields(test.CmdLine)
 	cmd.SetArgs(args)
@@ -95,7 +95,7 @@ func assertEqualGolden(t *testing.T, test *CmdTest, actual []byte) {
 	goldenFilePath := filepath.Join(goldenDir, test.Name+goldenFileSuffix)
 	golden, err := ioutil.ReadFile(goldenFilePath)
 	require.NoErrorf(t, err, "Failed while reading golden file at %s", goldenFilePath)
-	assert.Equal(t, string(actual), string(golden))
+	assert.Equal(t, string(golden), string(actual))
 }
 
 func checkError(t *testing.T, actual, expected error) {

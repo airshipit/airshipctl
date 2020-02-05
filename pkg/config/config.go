@@ -367,12 +367,12 @@ func (c *Config) PersistConfig() error {
 }
 
 func (c *Config) String() string {
-	yaml, err := c.ToYaml()
+	yamlData, err := c.ToYaml()
 	// This is hiding the error perhaps
 	if err != nil {
 		return ""
 	}
-	return string(yaml)
+	return string(yamlData)
 }
 
 func (c *Config) ToYaml() ([]byte, error) {
@@ -398,18 +398,18 @@ func (c *Config) KubeConfig() *kubeconfig.Config {
 }
 
 func (c *Config) ClusterNames() []string {
-	names := []string{}
-	for k := range c.Clusters {
-		names = append(names, k)
+	names := make([]string, 0, len(c.Clusters))
+	for c := range c.Clusters {
+		names = append(names, c)
 	}
 	sort.Strings(names)
 	return names
 }
 
 func (c *Config) ContextNames() []string {
-	names := []string{}
-	for k := range c.Contexts {
-		names = append(names, k)
+	names := make([]string, 0, len(c.Contexts))
+	for c := range c.Contexts {
+		names = append(names, c)
 	}
 	sort.Strings(names)
 	return names
@@ -498,7 +498,7 @@ func (c *Config) ModifyCluster(cluster *Cluster, theCluster *ClusterOptions) (*C
 }
 
 func (c *Config) GetClusters() ([]*Cluster, error) {
-	clusters := []*Cluster{}
+	clusters := make([]*Cluster, 0, len(c.ClusterNames()))
 	for _, cName := range c.ClusterNames() {
 		for _, ctName := range AllClusterTypes {
 			cluster, err := c.GetCluster(cName, ctName)
@@ -524,7 +524,7 @@ func (c *Config) GetContext(cName string) (*Context, error) {
 }
 
 func (c *Config) GetContexts() ([]*Context, error) {
-	contexts := []*Context{}
+	contexts := make([]*Context, 0, len(c.ContextNames()))
 	// Given that we change the testing metholdogy
 	// The ordered names are no longer required
 	for _, cName := range c.ContextNames() {
@@ -630,7 +630,7 @@ func (c *Config) GetAuthInfo(aiName string) (*AuthInfo, error) {
 }
 
 func (c *Config) GetAuthInfos() ([]*AuthInfo, error) {
-	authinfos := []*AuthInfo{}
+	authinfos := make([]*AuthInfo, 0, len(c.AuthInfos))
 	for cName := range c.AuthInfos {
 		authinfo, err := c.GetAuthInfo(cName)
 		if err == nil {
@@ -825,11 +825,11 @@ func (m *Manifest) Equal(n *Manifest) bool {
 }
 
 func (m *Manifest) String() string {
-	yaml, err := yaml.Marshal(&m)
+	yamlData, err := yaml.Marshal(&m)
 	if err != nil {
 		return ""
 	}
-	return string(yaml)
+	return string(yamlData)
 }
 
 // Repository functions
@@ -839,21 +839,21 @@ func (r *Repository) Equal(s *Repository) bool {
 	}
 	var urlMatches bool
 	if r.Url != nil && s.Url != nil {
-		urlMatches = (r.Url.String() == s.Url.String())
+		urlMatches = r.Url.String() == s.Url.String()
 	} else {
 		// this catches cases where one or both are nil
-		urlMatches = (r.Url == s.Url)
+		urlMatches = r.Url == s.Url
 	}
 	return urlMatches &&
 		r.Username == s.Username &&
 		r.TargetPath == s.TargetPath
 }
 func (r *Repository) String() string {
-	yaml, err := yaml.Marshal(&r)
+	yamlData, err := yaml.Marshal(&r)
 	if err != nil {
 		return ""
 	}
-	return string(yaml)
+	return string(yamlData)
 }
 
 // Modules functions
@@ -864,11 +864,11 @@ func (m *Modules) Equal(n *Modules) bool {
 	return reflect.DeepEqual(m.BootstrapInfo, n.BootstrapInfo)
 }
 func (m *Modules) String() string {
-	yaml, err := yaml.Marshal(&m)
+	yamlData, err := yaml.Marshal(&m)
 	if err != nil {
 		return ""
 	}
-	return string(yaml)
+	return string(yamlData)
 }
 
 // Bootstrap functions
@@ -882,11 +882,11 @@ func (b *Bootstrap) Equal(c *Bootstrap) bool {
 }
 
 func (b *Bootstrap) String() string {
-	yaml, err := yaml.Marshal(&b)
+	yamlData, err := yaml.Marshal(&b)
 	if err != nil {
 		return ""
 	}
-	return string(yaml)
+	return string(yamlData)
 }
 
 // Container functions
@@ -900,11 +900,11 @@ func (c *Container) Equal(d *Container) bool {
 }
 
 func (c *Container) String() string {
-	yaml, err := yaml.Marshal(&c)
+	yamlData, err := yaml.Marshal(&c)
 	if err != nil {
 		return ""
 	}
-	return string(yaml)
+	return string(yamlData)
 }
 
 // Builder functions
@@ -918,11 +918,11 @@ func (b *Builder) Equal(c *Builder) bool {
 }
 
 func (b *Builder) String() string {
-	yaml, err := yaml.Marshal(&b)
+	yamlData, err := yaml.Marshal(&b)
 	if err != nil {
 		return ""
 	}
-	return string(yaml)
+	return string(yamlData)
 }
 
 // ClusterComplexName functions
@@ -980,26 +980,26 @@ HAS SOMETHING LIKE THIS
 */
 
 func KClusterString(kCluster *kubeconfig.Cluster) string {
-	yaml, err := yaml.Marshal(&kCluster)
+	yamlData, err := yaml.Marshal(&kCluster)
 	if err != nil {
 		return ""
 	}
 
-	return string(yaml)
+	return string(yamlData)
 }
 func KContextString(kContext *kubeconfig.Context) string {
-	yaml, err := yaml.Marshal(&kContext)
+	yamlData, err := yaml.Marshal(&kContext)
 	if err != nil {
 		return ""
 	}
 
-	return string(yaml)
+	return string(yamlData)
 }
 func KAuthInfoString(kAuthInfo *kubeconfig.AuthInfo) string {
-	yaml, err := yaml.Marshal(&kAuthInfo)
+	yamlData, err := yaml.Marshal(&kAuthInfo)
 	if err != nil {
 		return ""
 	}
 
-	return string(yaml)
+	return string(yamlData)
 }

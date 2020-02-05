@@ -85,7 +85,7 @@ func TestRedfishUtilIsIdInList(t *testing.T) {
 		{OdataId: "/path/to/id/3"},
 		{OdataId: "/path/to/id/4"},
 	}
-	emptyList := []redfishClient.IdRef{}
+	var emptyList []redfishClient.IdRef
 
 	res := IsIDInList(idList, "1")
 	assert.True(t, res)

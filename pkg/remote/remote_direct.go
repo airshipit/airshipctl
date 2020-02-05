@@ -4,7 +4,7 @@ import (
 	"context"
 
 	alog "opendev.org/airship/airshipctl/pkg/log"
-	redfish "opendev.org/airship/airshipctl/pkg/remote/redfish"
+	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 )
 
 const (
