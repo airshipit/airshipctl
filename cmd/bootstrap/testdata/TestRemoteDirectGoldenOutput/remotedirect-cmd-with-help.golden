@@ -4,8 +4,4 @@ Usage:
   remotedirect [flags]
 
 Flags:
-      --eph-node-id string   [Temporary. Will be removed] Ephemeral Node ID
-  -h, --help                 help for remotedirect
-      --iso-path string      [Temporary. Will be removed] Remote ISO path for ephemeral node
-      --remote-type string   Remote type e.g. redfish, smash etc. (default "redfish")
-      --remote-url string    [Temporary. Will be removed] Remote Redfish/Smash URL (default "http://localhost:8000")
+  -h, --help   help for remotedirect
