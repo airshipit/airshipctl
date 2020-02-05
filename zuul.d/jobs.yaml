@@ -72,6 +72,7 @@
       test_roles:
         - airshipctl-systemwide-executable
         - airshipctl-test-configs
+        - airshipctl-build-ephemeral-iso
       serve_dir: /srv/iso
       serve_port: 8099
 

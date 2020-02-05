@@ -16,8 +16,10 @@
     - name: set default roles
       set_fact:
         test_roles_default:
+          - sync-manifests
           - airshipctl-systemwide-executable
           - airshipctl-test-configs
+          - airshipctl-build-ephemeral-iso
         var_files_default:
           - local-dev.yaml
           - airship-ipam.yaml
