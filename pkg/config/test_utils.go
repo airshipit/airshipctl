@@ -50,20 +50,20 @@ func DummyConfig() *Config {
 		kubeConfig:     kubeconfig.NewConfig(),
 	}
 	dummyCluster := conf.Clusters["dummy_cluster"]
-	conf.KubeConfig().Clusters["dummycluster_target"] = dummyCluster.ClusterTypes[Target].KubeCluster()
-	conf.KubeConfig().Clusters["dummycluster_ephemeral"] = dummyCluster.ClusterTypes[Ephemeral].KubeCluster()
+	conf.KubeConfig().Clusters["dummy_cluster_target"] = dummyCluster.ClusterTypes[Target].KubeCluster()
+	conf.KubeConfig().Clusters["dummy_cluster_ephemeral"] = dummyCluster.ClusterTypes[Ephemeral].KubeCluster()
 	return conf
 }
 
 // DummyContext , utility function used for tests
 func DummyContext() *Context {
 	c := NewContext()
-	c.NameInKubeconf = "dummy_cluster"
+	c.NameInKubeconf = "dummy_cluster_ephemeral"
 	c.Manifest = "dummy_manifest"
 	context := kubeconfig.NewContext()
 	context.Namespace = "dummy_namespace"
 	context.AuthInfo = "dummy_user"
-	context.Cluster = "dummycluster_ephemeral"
+	context.Cluster = "dummy_cluster_ephemeral"
 	c.SetKubeContext(context)
 
 	return c
@@ -78,7 +78,7 @@ func DummyCluster() *Cluster {
 	cluster.InsecureSkipTLSVerify = false
 	cluster.CertificateAuthority = "dummy_ca"
 	c.SetKubeCluster(cluster)
-	c.NameInKubeconf = "dummycluster_target"
+	c.NameInKubeconf = "dummy_cluster_target"
 	c.Bootstrap = "dummy_bootstrap_config"
 	return c
 }
@@ -125,7 +125,7 @@ func DummyModules() *Modules {
 func DummyClusterPurpose() *ClusterPurpose {
 	cp := NewClusterPurpose()
 	cp.ClusterTypes["ephemeral"] = DummyCluster()
-	cp.ClusterTypes["ephemeral"].NameInKubeconf = "dummycluster_ephemeral"
+	cp.ClusterTypes["ephemeral"].NameInKubeconf = "dummy_cluster_ephemeral"
 	cp.ClusterTypes["target"] = DummyCluster()
 	return cp
 }
