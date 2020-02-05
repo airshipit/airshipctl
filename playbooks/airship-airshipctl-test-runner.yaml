@@ -20,6 +20,7 @@
           - airshipctl-systemwide-executable
           - airshipctl-test-configs
           - airshipctl-build-ephemeral-iso
+          - airshipctl-deploy-ephemeral-node
         var_files_default:
           - local-dev.yaml
           - airship-ipam.yaml

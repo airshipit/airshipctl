@@ -35,6 +35,9 @@ modules-config:
         volume: {{ airship_config_iso_gen_target_path }}:/config
         image: {{ airship_config_iso_builder_docker_image }}
         containerRuntime: docker
+      remoteDirect:
+        remoteType: redfish
+        isoUrl: http://{{ airship_config_iso_serve_host }}:{{ airship_config_iso_port }}/{{ airship_config_iso_name }}
       builder:
         userDataFileName: user-data
         networkConfigFileName: network-config
