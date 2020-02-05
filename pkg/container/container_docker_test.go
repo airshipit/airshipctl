@@ -242,13 +242,13 @@ func TestGetId(t *testing.T) {
 	cnt := getDockerContainerMock(mockDockerClient{})
 	err := cnt.RunCommand([]string{"testCmd"}, nil, nil, []string{}, false)
 	require.NoError(t, err)
-	actialId := cnt.GetId()
+	actualId := cnt.GetId()
 
-	assert.Equal(t, "testID", actialId)
+	assert.Equal(t, "testID", actualId)
 }
 
 func TestRunCommand(t *testing.T) {
-	imageListeError := fmt.Errorf("Image List Error")
+	imageListError := fmt.Errorf("Image List Error")
 	attachError := fmt.Errorf("Attach error")
 	containerStartError := fmt.Errorf("Container Start error")
 	containerWaitError := fmt.Errorf("Container Wait Error")
@@ -277,10 +277,10 @@ func TestRunCommand(t *testing.T) {
 			debug:          false,
 			mockDockerClient: mockDockerClient{
 				imageList: func() ([]types.ImageSummary, error) {
-					return nil, imageListeError
+					return nil, imageListError
 				},
 			},
-			expectedErr: imageListeError,
+			expectedErr: imageListError,
 			assertF:     func(t *testing.T) {},
 		},
 		{
@@ -467,17 +467,17 @@ func TestNewDockerContainer(t *testing.T) {
 
 		assert.Equal(t, tt.expectedErr, actualErr)
 
-		var actualResStuct resultStruct
+		var actualResStruct resultStruct
 		if actualRes == nil {
-			actualResStuct = resultStruct{}
+			actualResStruct = resultStruct{}
 		} else {
-			actualResStuct = resultStruct{
+			actualResStruct = resultStruct{
 				tag:      actualRes.tag,
 				imageUrl: actualRes.imageUrl,
 				id:       actualRes.id,
 			}
 		}
-		assert.Equal(t, tt.expectedResult, actualResStuct)
+		assert.Equal(t, tt.expectedResult, actualResStruct)
 	}
 }
 

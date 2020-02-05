@@ -142,7 +142,7 @@ func runSetCluster(o *config.ClusterOptions, rootSettings *environment.AirshipCT
 	// Update configuration file
 	// Just in time persistence approach
 	if err := airconfig.PersistConfig(); err != nil {
-		// Some warning here , that it didnt persit the changes because of this
+		// Some warning here , that it didnt persist the changes because of this
 		// Or should we float this up
 		// What would it mean? No value.
 		return clusterWasModified, err

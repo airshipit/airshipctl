@@ -14,7 +14,7 @@ type Source struct{}
 var _ rand.Source = &Source{}
 
 // Uint64 returns a secure random uint64 in the range [0, 1<<64]. It will fail
-// if an error is returned from the system's secure random numer generator
+// if an error is returned from the system's secure random number generator
 func (s *Source) Uint64() uint64 {
 	var value uint64
 	err := binary.Read(crypto.Reader, binary.BigEndian, &value)

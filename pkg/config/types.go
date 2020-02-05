@@ -27,8 +27,8 @@ import (
 // Top level config objects and all values required for proper functioning are not "omitempty".
 // Any truly optional piece of config is allowed to be omitted.
 
-// Config holds the information required by airshipct commands
-// It is somewhat a superset of what akubeconfig looks like, we allow for this overlaps by providing
+// Config holds the information required by airshipctl commands
+// It is somewhat a superset of what a kubeconfig looks like, we allow for this overlaps by providing
 // a mechanism to consume or produce a kubeconfig into / from the airship config.
 type Config struct {
 	// +optional
@@ -71,7 +71,7 @@ type Config struct {
 	kubeConfig *kubeconfig.Config
 }
 
-// Encapsultaes the Cluster Type as an enumeration
+// Encapsulates the Cluster Type as an enumeration
 type ClusterPurpose struct {
 	// Cluster map of referenceable names to cluster configs
 	ClusterTypes map[string]*Cluster `json:"cluster-type"`
@@ -79,13 +79,13 @@ type ClusterPurpose struct {
 
 // Cluster contains information about how to communicate with a kubernetes cluster
 type Cluster struct {
-	// Complex cluster name defined by the using <cluster name>_<clustertype)
+	// Complex cluster name defined by the using <cluster name>_<cluster type>)
 	NameInKubeconf string `json:"cluster-kubeconf"`
 
 	// Kubeconfig Cluster Object
 	kCluster *kubeconfig.Cluster
 
-	// Boostrap configuration this clusters ephemral hosts will rely on
+	// Bootstrap configuration this clusters ephemeral hosts will rely on
 	Bootstrap string `json:"bootstrap-info"`
 }
 
@@ -122,7 +122,7 @@ type Manifest struct {
 	// Repositories is the map of repository adddressable by a name
 	Repositories map[string]*Repository `json:"repositories"`
 
-	// Local Targer path for working or home dirctory for all Manifest Cloned/Returned/Generated
+	// Local Target path for working or home directory for all Manifest Cloned/Returned/Generated
 	TargetPath string `json:"target-path"`
 }
 
@@ -130,7 +130,7 @@ type Manifest struct {
 // Information such as location, authentication info,
 // as well as details of what to get such as branch, tag, commit it, etc.
 type Repository struct {
-	// URL for Repositor,
+	// URL for Repository
 	Url *url.URL `json:"url"`
 
 	// Username is the username for authentication to the repository .

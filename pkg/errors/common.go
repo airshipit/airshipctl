@@ -7,7 +7,7 @@ type AirshipError struct {
 	Message string
 }
 
-// Error function implments the golang
+// Error function implements the golang
 // error interface
 func (ae *AirshipError) Error() string {
 	return ae.Message

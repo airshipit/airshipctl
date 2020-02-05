@@ -13,7 +13,7 @@ const (
 	DashYamlSeparator = "---\n"
 )
 
-// WriteOut dumps any yaml competible document to writer, adding yaml separator `---`
+// WriteOut dumps any yaml compatible document to writer, adding yaml separator `---`
 // at the beginning of the document, and `...` at the end
 func WriteOut(dst io.Writer, src interface{}) error {
 	yamlOut, err := yaml.Marshal(src)

@@ -184,7 +184,7 @@ func (c *Config) rmConfigClusterStragglers(persistIt bool) bool {
 		for cType, cluster := range c.Clusters[clusterName].ClusterTypes {
 			if _, found := c.kubeConfig.Clusters[cluster.NameInKubeconf]; !found {
 				// Instead of removing it , I could add a empty entry in kubeconfig as well
-				// Will see what is more appropriae with use of Modules configuration
+				// Will see what is more appropriate with use of Modules configuration
 				delete(c.Clusters[clusterName].ClusterTypes, cType)
 
 				// If that was the last cluster type, then we
@@ -333,7 +333,7 @@ func (c *Config) EnsureComplete() error {
 //    If the file specified by ConfigFile does not exist it will create a new file.
 func (c *Config) PersistConfig() error {
 	// Dont care if the file exists or not, will create if needed
-	// We are 100% overwriting the existsing file
+	// We are 100% overwriting the existing file
 	configyaml, err := c.ToYaml()
 	if err != nil {
 		return err
@@ -421,7 +421,7 @@ func (c *Config) GetCluster(cName, cType string) (*Cluster, error) {
 	if !exists {
 		return nil, ErrMissingConfig{What: fmt.Sprintf("Cluster with name '%s' of type '%s'", cName, cType)}
 	}
-	// Alternative to this would be enhance Cluster.String() to embedd the appropriate kubeconfig cluster information
+	// Alternative to this would be enhance Cluster.String() to embed the appropriate kubeconfig cluster information
 	cluster, exists := c.Clusters[cName].ClusterTypes[cType]
 	if !exists {
 		return nil, ErrMissingConfig{What: fmt.Sprintf("Cluster with name '%s' of type '%s'", cName, cType)}

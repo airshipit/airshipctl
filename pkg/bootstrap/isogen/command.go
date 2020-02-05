@@ -47,7 +47,7 @@ func GenerateBootstrapIso(settings *environment.AirshipCTLSettings, args []strin
 	}
 
 	// TODO (dukov) replace with the appropriate function once it's available
-	// in doncument module
+	// in document module
 	docBundle, err := document.NewBundle(fs.MakeRealFS(), manifest.TargetPath, "")
 	if err != nil {
 		return err
@@ -111,14 +111,14 @@ func verifyArtifacts(cfg *config.Bootstrap) error {
 }
 
 func generateBootstrapIso(
-	docBubdle document.Bundle,
+	docBundle document.Bundle,
 	builder container.Container,
 	cfg *config.Bootstrap,
 	debug bool,
 ) error {
 	cntVol := strings.Split(cfg.Container.Volume, ":")[1]
 	log.Print("Creating cloud-init for ephemeral K8s")
-	userData, netConf, err := cloudinit.GetCloudData(docBubdle, document.EphemeralClusterMarker)
+	userData, netConf, err := cloudinit.GetCloudData(docBundle, document.EphemeralClusterMarker)
 	if err != nil {
 		return err
 	}

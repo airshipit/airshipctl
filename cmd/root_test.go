@@ -60,7 +60,7 @@ func TestFlagLoading(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(subTest *testing.T) {
 			// We don't care about the output of this test, so toss
-			// it into a thowaway &bytes.buffer{}
+			// it into a throwaway &bytes.buffer{}
 			rootCmd, settings, err := cmd.NewRootCmd(&bytes.Buffer{})
 			require.NoError(t, err)
 			rootCmd.SetArgs(tt.args)

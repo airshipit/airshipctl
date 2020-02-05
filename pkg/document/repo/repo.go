@@ -27,7 +27,7 @@ const (
 
 var (
 	ErrNoOpenRepo              = errors.New("No open repository is stored")
-	ErrRemoteRefNotImplemented = errors.New("RemoteRef is not yet impletemented")
+	ErrRemoteRefNotImplemented = errors.New("RemoteRef is not yet implemented")
 	ErrCantParseUrl            = errors.New("Couldn't get target directory from URL")
 )
 

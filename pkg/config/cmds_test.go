@@ -51,7 +51,7 @@ func TestValidateCluster(t *testing.T) {
 	err = co.Validate()
 	assert.Error(t, err)
 
-	// Invalid Cluter Type
+	// Invalid Cluster Type
 	co.ClusterType = "Invalid"
 	err = co.Validate()
 	assert.Error(t, err)

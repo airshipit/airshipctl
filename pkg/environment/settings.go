@@ -75,9 +75,9 @@ func (a *AirshipCTLSettings) InitConfig() {
 }
 
 func (a *AirshipCTLSettings) setAirshipConfigPath() {
-	// (1) If the airshipConfigPath was received as an argument its aleady set
+	// (1) If the airshipConfigPath was received as an argument its already set
 	if a.airshipConfigPath == "" {
-		// (2) If not , we can check if we got the Path via ENVIRONMNT variable,
+		// (2) If not , we can check if we got the Path via ENVIRONMENT variable,
 		// set the appropriate fields
 		a.setAirshipConfigPathFromEnv()
 	}
@@ -101,7 +101,7 @@ func (a *AirshipCTLSettings) setKubePathOptions() *clientcmd.PathOptions {
 	kubePathOptions := clientcmd.NewDefaultPathOptions()
 	// No need to check the Environment , since we are relying on the kubeconfig defaults
 	// If we did not get an explicit kubeconfig definition on airshipctl
-	// as far as airshipctkl is concerned will use the default expectations for the kubeconfig
+	// as far as airshipctl is concerned will use the default expectations for the kubeconfig
 	// file location . This avoids messing up someones kubeconfig if they didnt explicitly want
 	// airshipctl to use it.
 	kcp, home := a.replaceHomePlaceholder(a.kubeConfigPath)

@@ -9,7 +9,7 @@ type ErrEmptyImageList struct {
 }
 
 func (e ErrEmptyImageList) Error() string {
-	return "Image List Error. No images filetered"
+	return "Image List Error. No images filtered"
 }
 
 // ErrRunContainerCommand returned if container command

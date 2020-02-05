@@ -74,7 +74,7 @@ func TestBootstrapIso(t *testing.T) {
 		cfg         *config.Bootstrap
 		debug       bool
 		expectedOut []string
-		expectdErr  error
+		expectedErr error
 	}{
 		{
 			builder: &mockContainer{
@@ -83,7 +83,7 @@ func TestBootstrapIso(t *testing.T) {
 			cfg:         testCfg,
 			debug:       false,
 			expectedOut: []string{expOut[0], expOut[1]},
-			expectdErr:  testErr,
+			expectedErr: testErr,
 		},
 		{
 			builder: &mockContainer{
@@ -93,7 +93,7 @@ func TestBootstrapIso(t *testing.T) {
 			cfg:         testCfg,
 			debug:       true,
 			expectedOut: []string{expOut[0], expOut[1], expOut[2], expOut[3]},
-			expectdErr:  nil,
+			expectedErr: nil,
 		},
 		{
 			builder: &mockContainer{
@@ -104,7 +104,7 @@ func TestBootstrapIso(t *testing.T) {
 			cfg:         testCfg,
 			debug:       false,
 			expectedOut: []string{expOut[0], expOut[1], expOut[2], expOut[4]},
-			expectdErr:  testErr,
+			expectedErr: testErr,
 		},
 	}
 
@@ -118,7 +118,7 @@ func TestBootstrapIso(t *testing.T) {
 			assert.True(t, strings.Contains(actualOut, line))
 		}
 
-		assert.Equal(t, tt.expectdErr, actualErr)
+		assert.Equal(t, tt.expectedErr, actualErr)
 	}
 }
 

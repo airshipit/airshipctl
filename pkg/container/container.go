@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-// Container interface abstracion for continer.
+// Container interface abstraction for container.
 // Particular implementation depends on container runtime environment (CRE). Interface
 // defines methods that must be implemented for CRE (e.g. docker, containerd or CRI-O)
 type Container interface {
@@ -17,7 +17,7 @@ type Container interface {
 }
 
 // NewContainer returns instance of Container interface implemented by particular driver
-// Returned instance type (i.e. implementation) depends on driver sceified via function
+// Returned instance type (i.e. implementation) depends on driver specified via function
 // arguments (e.g. "docker").
 // Supported drivers:
 //   * docker

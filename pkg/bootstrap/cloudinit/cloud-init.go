@@ -9,7 +9,7 @@ import (
 const (
 	// TODO (dukov) This should depend on cluster api version once it is
 	// fully available for Metal3. In other words:
-	// - Sectet for v1alpha1
+	// - Secret for v1alpha1
 	// - KubeAdmConfig for v1alpha2
 	EphemeralClusterConfKind = "Secret"
 )

@@ -1,6 +1,6 @@
 package document
 
-// Document lables and annotations
+// Document labels and annotations
 const (
 	ClusterType = "clustertype"
 	// TODO (dukov) Replace with constants defined in config module once
