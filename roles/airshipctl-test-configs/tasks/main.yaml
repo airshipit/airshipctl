@@ -1,0 +1,1 @@
+- include_tasks: "{{ airship_config_action }}.yaml"

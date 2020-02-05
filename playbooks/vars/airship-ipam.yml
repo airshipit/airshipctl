@@ -1,0 +1,9 @@
+airship_gate_ipam:
+  nat_network:
+    bridge_ip: "10.23.25.1"
+    ephemeral_ip: "10.23.25.101"
+    dhcp_start: "10.23.25.150"
+    dhcp_end: "10.23.25.160"
+  provision_network:
+    bridge_ip: "10.23.24.1"
+    ephemeral_ip: "10.23.24.101"
