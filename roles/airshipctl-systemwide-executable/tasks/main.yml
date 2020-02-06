@@ -1,0 +1,17 @@
+- name: "make docker-image"
+  make:
+    chdir: "{{ remote_work_dir | default(zuul.project.src_dir) }}"
+    target: docker-image
+
+- name: "copy airshipctl binary to host"
+  shell: |
+    set -ex
+    DOCKER_IMAGE_TAG=$(make print-docker-image-tag)
+    CONTAINER=$(docker create "${DOCKER_IMAGE_TAG}")
+    sudo docker cp "${CONTAINER}:/usr/local/bin/airshipctl" "/usr/local/bin/airshipctl"
+    docker rm "${CONTAINER}"
+  args:
+    chdir: "{{ remote_work_dir | default(zuul.project.src_dir) }}"
+
+- name: "make sure airshipctl is executable"
+  command: airshipctl version

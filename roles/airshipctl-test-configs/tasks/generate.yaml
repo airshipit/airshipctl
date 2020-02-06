@@ -1,0 +1,30 @@
+- name: set airshipctl config directory
+  set_fact:
+    airshipctl_config_dir: "{{ ansible_env.HOME }}/.airship"
+
+- name: Ensure airshipctl directory exists
+  file:
+    state: directory
+    path: "{{ airshipctl_config_dir }}"
+    mode: "0700"
+
+- name: generate airshipctl config file
+  template:
+    src: "airshipconfig.j2"
+    dest: "{{ airshipctl_config_dir }}/config"
+
+- name: generate kubeconfig
+  template:
+    src: "kubeconfig.j2"
+    dest: "{{ airshipctl_config_dir }}/kubeconfig"
+
+- name: verify airshipctl config is working
+  block:
+    - name: verify cluster is set
+      command: airshipctl config get-cluster
+      register: airshipctl_cluster
+
+    - name: assert that cluster is correct
+      assert:
+        that:
+          - "'dummycluster_ephemeral' in airshipctl_cluster.stdout"

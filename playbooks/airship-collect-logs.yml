@@ -1,3 +1,5 @@
+# Copyright 2017 The Openstack-Helm Authors.
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -10,17 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- project:
-    check:
-      jobs:
-        - airship-airshipctl-lint-unit
-        - airship-airshipctl-functional-existing-k8s
-        - airship-airshipctl-gate-test
-    gate:
-      jobs:
-        - airship-airshipctl-lint-unit
-        - airship-airshipctl-functional-existing-k8s
-        - airship-airshipctl-gate-test
-    post:
-      jobs:
-        - airship-airshipctl-upload-git-mirror
+- hosts: primary
+  vars:
+    logs_dir: "/tmp/logs"
+  roles:
+    - gather-host-logs
+    - airship-gather-sushy-logs
+    - airship-gather-libvirt-logs
+  environment:
+    LIBVIRT_DEFAULT_URI: qemu:///system
+

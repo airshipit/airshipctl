@@ -32,3 +32,28 @@
       - name: git_mirror_credentials
         secret: airship-airshipctl-airshipit-github-secret
         pass-to-parent: true
+
+- job:
+    voting: false
+    name: airship-airshipctl-gate-test
+    attempts: 1
+    timeout: 3600
+    roles:
+      - zuul: airship/zuul-airship-roles
+      - zuul: openstack/openstack-helm-infra
+    pre-run:
+      - playbooks/airship-airshipctl-deploy-docker.yaml
+    run: playbooks/airship-airshipctl-test-runner.yml
+    post-run: playbooks/airship-collect-logs.yml
+    nodeset: airship-airshipctl-single-node
+    vars:
+      site_name: test-bootstrap
+## var files are the files that are located at playbooks/vars directory
+      var_files:
+        - airship-ipam.yml
+        - test-config.yaml
+      test_roles:
+        - airshipctl-systemwide-executable
+        - airshipctl-test-configs
+      serve_dir: /srv/iso
+      serve_port: 8099
