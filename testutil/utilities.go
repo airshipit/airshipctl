@@ -33,7 +33,7 @@ type CmdTest struct {
 	// and arguments. The initial "airshipctl" is implied
 	CmdLine string
 
-	// The instatiated version of the root airshipctl command to test
+	// The instantiated version of the root airshipctl command to test
 	Cmd *cobra.Command
 
 	// The expected error

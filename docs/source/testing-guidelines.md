@@ -1,6 +1,6 @@
 # Testing Guidelines
 
-This document lays out several guidelines to secure high quality and
+This document lays out several guidelines to ensure quality and
 consistency throughout `airshipctl`'s test bed.
 
 ## Testing packages
@@ -8,6 +8,7 @@ consistency throughout `airshipctl`'s test bed.
 The `airshipctl` project uses the [testify] library, a thin wrapper around Go's
 builtin `testing` package. The `testify` package provides the following
 packages:
+
 * `assert`: Functions from this package can be used to replace most calls to
   `t.Error`
 * `require`: Contains the same functions as above, but these functions should
@@ -19,7 +20,7 @@ packages:
 
 Tests should cover at least __80%__ of the codebase. Anything less will cause
 the CI gates to fail. A developer should assert that their code meets this
-criteria before submitting a patchset. This check can be performed with one of
+criteria before submitting a change. This check can be performed with one of
 the following `make` targets:
 
 ```

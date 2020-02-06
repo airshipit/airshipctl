@@ -17,7 +17,7 @@ We use Make to build our programs. The simplest way to get started is:
 $ make build
 ```
 
-NOTE: The airshipctl application is a go module.  This means you do not need to
+NOTE: The airshipctl application is a Go module.  This means you do not need to
 clone the repository into `$GOPATH` in order to build it.  You should be able to
 build it from any directory.
 
@@ -75,17 +75,17 @@ We accept changes to the code via Gerrit pull requests. One workflow for doing
 this is as follows:
 
 1. `git clone` the `opendev.org/airship/airshipctl` repository.
-2. Create a new working branch (`git checkout -b feat/my-feature`) and do your
-   work on that branch.
-3. When you are ready for us to review, push your branch to gerrit using
-   `git-review`.  For more information on the gerrit workflow, see the [OpenDev
+2. Create a new working branch (`git checkout -b feature/my-feature`) and do your
+   work on that branch. This will act as your topic in Gerrit.
+3. When you are ready for us to review, push your branch to Gerrit using
+   `git-review`.  For more information on the Gerrit workflow, see the [OpenDev
    documentation](
      https://docs.openstack.org/contributors/common/setup-gerrit.html).
 
 ### Go Conventions
 
 We follow the Go coding style standards very closely. Typically, running `go
-fmt` will make your code beautiful for you.
+fmt -s -w ./` will make your code beautiful for you.
 
 We also typically follow the conventions of `golangci-lint`.
 
