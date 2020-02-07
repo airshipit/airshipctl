@@ -20,76 +20,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 )
 
-// Validate that the arguments are correct
-func (o *ClusterOptions) Validate() error {
-	if len(o.Name) == 0 {
-		return errors.New("you must specify a non-empty cluster name")
-	}
-	err := ValidClusterType(o.ClusterType)
-	if err != nil {
-		return err
-	}
-	if o.InsecureSkipTLSVerify && o.CertificateAuthority != "" {
-		return fmt.Errorf("you cannot specify a %s and %s mode at the same time", FlagCAFile, FlagInsecure)
-	}
-
-	if !o.EmbedCAData {
-		return nil
-	}
-	caPath := o.CertificateAuthority
-	if caPath == "" {
-		return fmt.Errorf("you must specify a --%s to embed", FlagCAFile)
-	}
-	if _, err := ioutil.ReadFile(caPath); err != nil {
-		return fmt.Errorf("could not read %s data from %s: %v", FlagCAFile, caPath, err)
-	}
-	return nil
-}
-
-func (o *ContextOptions) Validate() error {
-	if len(o.Name) == 0 {
-		return errors.New("you must specify a non-empty context name")
-	}
-	// Expect ClusterType only when this is not setting currentContext
-	if o.ClusterType != "" {
-		err := ValidClusterType(o.ClusterType)
-		if err != nil {
-			return err
-		}
-	}
-	// TODO Manifest, Cluster could be validated against the existing config maps
-	return nil
-}
-
-func (o *AuthInfoOptions) Validate() error {
-	if len(o.Token) > 0 && (len(o.Username) > 0 || len(o.Password) > 0) {
-		return fmt.Errorf("you cannot specify more than one authentication method at the same time: --%v  or --%v/--%v",
-			FlagBearerToken, FlagUsername, FlagPassword)
-	}
-	if !o.EmbedCertData {
-		return nil
-	}
-	certPath := o.ClientCertificate
-	if certPath == "" {
-		return fmt.Errorf("you must specify a --%s to embed", FlagCertFile)
-	}
-	if _, err := ioutil.ReadFile(certPath); err != nil {
-		return fmt.Errorf("error reading %s data from %s: %v", FlagCertFile, certPath, err)
-	}
-	keyPath := o.ClientKey
-	if keyPath == "" {
-		return fmt.Errorf("you must specify a --%s to embed", FlagKeyFile)
-	}
-	if _, err := ioutil.ReadFile(keyPath); err != nil {
-		return fmt.Errorf("error reading %s data from %s: %v", FlagKeyFile, keyPath, err)
-	}
-	return nil
-}
-
-// runGetAuthInfo performs the execution of 'config get-credentials' sub command
+// RunGetAuthInfo performs the execution of 'config get-credentials' sub command
 func RunGetAuthInfo(o *AuthInfoOptions, out io.Writer, airconfig *Config) error {
 	if o.Name == "" {
 		getAuthInfos(out, airconfig)
@@ -117,7 +50,7 @@ func getAuthInfos(out io.Writer, airconfig *Config) {
 	}
 }
 
-// runGetCluster performs the execution of 'config get-cluster' sub command
+// RunGetCluster performs the execution of 'config get-cluster' sub command
 func RunGetCluster(o *ClusterOptions, out io.Writer, airconfig *Config) error {
 	if o.Name == "" {
 		getClusters(out, airconfig)
@@ -126,8 +59,7 @@ func RunGetCluster(o *ClusterOptions, out io.Writer, airconfig *Config) error {
 	return getCluster(o.Name, o.ClusterType, out, airconfig)
 }
 
-func getCluster(cName, cType string,
-	out io.Writer, airconfig *Config) error {
+func getCluster(cName, cType string, out io.Writer, airconfig *Config) error {
 	cluster, err := airconfig.GetCluster(cName, cType)
 	if err != nil {
 		return err
@@ -147,7 +79,7 @@ func getClusters(out io.Writer, airconfig *Config) {
 	}
 }
 
-// runGetContext performs the execution of 'config get-Context' sub command
+// RunGetContext performs the execution of 'config get-Context' sub command
 func RunGetContext(o *ContextOptions, out io.Writer, airconfig *Config) error {
 	if o.Name == "" && !o.CurrentContext {
 		getContexts(out, airconfig)
@@ -157,11 +89,10 @@ func RunGetContext(o *ContextOptions, out io.Writer, airconfig *Config) error {
 }
 
 func getContext(o *ContextOptions, out io.Writer, airconfig *Config) error {
-	cName := o.Name
 	if o.CurrentContext {
-		cName = airconfig.CurrentContext
+		o.Name = airconfig.CurrentContext
 	}
-	context, err := airconfig.GetContext(cName)
+	context, err := airconfig.GetContext(o.Name)
 	if err != nil {
 		return err
 	}
@@ -180,19 +111,18 @@ func getContexts(out io.Writer, airconfig *Config) {
 }
 
 func RunSetAuthInfo(o *AuthInfoOptions, airconfig *Config, writeToStorage bool) (bool, error) {
-	authinfoWasModified := false
+	modified := false
 	err := o.Validate()
 	if err != nil {
-		return authinfoWasModified, err
+		return modified, err
 	}
 
-	authinfoIWant := o.Name
-	authinfo, err := airconfig.GetAuthInfo(authinfoIWant)
+	authinfo, err := airconfig.GetAuthInfo(o.Name)
 	if err != nil {
 		var cerr ErrMissingConfig
 		if !errors.As(err, &cerr) {
 			// An error occurred, but it wasn't a "missing" config error.
-			return authinfoWasModified, err
+			return modified, err
 		}
 
 		// authinfo didn't exist, create it
@@ -201,24 +131,24 @@ func RunSetAuthInfo(o *AuthInfoOptions, airconfig *Config, writeToStorage bool) 
 	} else {
 		// AuthInfo exists, lets update
 		airconfig.ModifyAuthInfo(authinfo, o)
-		authinfoWasModified = true
+		modified = true
 	}
 	// Update configuration file just in time persistence approach
 	if writeToStorage {
 		if err := airconfig.PersistConfig(); err != nil {
 			// Error that it didnt persist the changes
-			return authinfoWasModified, ErrConfigFailed{}
+			return modified, ErrConfigFailed{}
 		}
 	}
 
-	return authinfoWasModified, nil
+	return modified, nil
 }
 
 func RunSetCluster(o *ClusterOptions, airconfig *Config, writeToStorage bool) (bool, error) {
-	clusterWasModified := false
+	modified := false
 	err := o.Validate()
 	if err != nil {
-		return clusterWasModified, err
+		return modified, err
 	}
 
 	cluster, err := airconfig.GetCluster(o.Name, o.ClusterType)
@@ -226,22 +156,22 @@ func RunSetCluster(o *ClusterOptions, airconfig *Config, writeToStorage bool) (b
 		var cerr ErrMissingConfig
 		if !errors.As(err, &cerr) {
 			// An error occurred, but it wasn't a "missing" config error.
-			return clusterWasModified, err
+			return modified, err
 		}
 
 		// Cluster didn't exist, create it
 		_, err := airconfig.AddCluster(o)
 		if err != nil {
-			return clusterWasModified, err
+			return modified, err
 		}
-		clusterWasModified = false
+		modified = false
 	} else {
 		// Cluster exists, lets update
 		_, err := airconfig.ModifyCluster(cluster, o)
 		if err != nil {
-			return clusterWasModified, err
+			return modified, err
 		}
-		clusterWasModified = true
+		modified = true
 	}
 
 	// Update configuration file
@@ -251,31 +181,30 @@ func RunSetCluster(o *ClusterOptions, airconfig *Config, writeToStorage bool) (b
 			// Some warning here , that it didnt persist the changes because of this
 			// Or should we float this up
 			// What would it mean? No value.
-			return clusterWasModified, err
+			return modified, err
 		}
 	}
 
-	return clusterWasModified, nil
+	return modified, nil
 }
 
 func RunSetContext(o *ContextOptions, airconfig *Config, writeToStorage bool) (bool, error) {
-	contextWasModified := false
+	modified := false
 	err := o.Validate()
 	if err != nil {
-		return contextWasModified, err
+		return modified, err
 	}
 
-	contextIWant := o.Name
-	context, err := airconfig.GetContext(contextIWant)
+	context, err := airconfig.GetContext(o.Name)
 	if err != nil {
 		var cerr ErrMissingConfig
 		if !errors.As(err, &cerr) {
 			// An error occurred, but it wasn't a "missing" config error.
-			return contextWasModified, err
+			return modified, err
 		}
 
 		if o.CurrentContext {
-			return contextWasModified, ErrMissingConfig{}
+			return modified, ErrMissingConfig{}
 		}
 		// context didn't exist, create it
 		// ignoring the returned added context
@@ -289,15 +218,15 @@ func RunSetContext(o *ContextOptions, airconfig *Config, writeToStorage bool) (b
 			// Context exists, lets update
 			airconfig.ModifyContext(context, o)
 		}
-		contextWasModified = true
+		modified = true
 	}
 	// Update configuration file just in time persistence approach
 	if writeToStorage {
 		if err := airconfig.PersistConfig(); err != nil {
 			// Error that it didnt persist the changes
-			return contextWasModified, ErrConfigFailed{}
+			return modified, ErrConfigFailed{}
 		}
 	}
 
-	return contextWasModified, nil
+	return modified, nil
 }

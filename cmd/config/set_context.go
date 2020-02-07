@@ -44,11 +44,11 @@ airshipctl config set-context e2e`,
 )
 
 // NewCmdConfigSetContext creates a command object for the "set-context" action, which
-// defines a new Context airshipctl config.
+// creates and modifies contexts in the airshipctl config
 func NewCmdConfigSetContext(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
-	theContext := &config.ContextOptions{}
+	o := &config.ContextOptions{}
 
-	setcontextcmd := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "set-context NAME",
 		Short:   "Switch to a new context or update context values in the airshipctl config",
 		Long:    setContextLong,
@@ -58,40 +58,56 @@ func NewCmdConfigSetContext(rootSettings *environment.AirshipCTLSettings) *cobra
 			nFlags := cmd.Flags().NFlag()
 			if nFlags == 0 {
 				// Change the current context to the provided context name if no flags are provided
-				theContext.CurrentContext = true
+				o.CurrentContext = true
 			}
-			theContext.Name = cmd.Flags().Args()[0]
-			modified, err := config.RunSetContext(theContext, rootSettings.Config(), true)
-
+			o.Name = args[0]
+			modified, err := config.RunSetContext(o, rootSettings.Config(), true)
 			if err != nil {
 				return err
 			}
 			if modified {
-				fmt.Fprintf(cmd.OutOrStdout(), "Context %q modified.\n", theContext.Name)
+				fmt.Fprintf(cmd.OutOrStdout(), "Context %q modified.\n", o.Name)
 			} else {
-				fmt.Fprintf(cmd.OutOrStdout(), "Context %q created.\n", theContext.Name)
+				fmt.Fprintf(cmd.OutOrStdout(), "Context %q created.\n", o.Name)
 			}
 			return nil
 		},
 	}
 
-	sctxInitFlags(theContext, setcontextcmd)
-	return setcontextcmd
+	addSetContextFlags(o, cmd)
+	return cmd
 }
 
-func sctxInitFlags(o *config.ContextOptions, setcontextcmd *cobra.Command) {
-	setcontextcmd.Flags().StringVar(&o.Cluster, config.FlagClusterName, o.Cluster,
-		config.FlagClusterName+" for the context entry in airshipctl config")
+func addSetContextFlags(o *config.ContextOptions, cmd *cobra.Command) {
+	flags := cmd.Flags()
 
-	setcontextcmd.Flags().StringVar(&o.AuthInfo, config.FlagAuthInfoName, o.AuthInfo,
-		config.FlagAuthInfoName+" for the context entry in airshipctl config")
+	flags.StringVar(
+		&o.Cluster,
+		config.FlagClusterName,
+		"",
+		"sets the "+config.FlagClusterName+" for the specified context in the airshipctl config")
 
-	setcontextcmd.Flags().StringVar(&o.Manifest, config.FlagManifest, o.Manifest,
-		config.FlagManifest+" for the context entry in airshipctl config")
+	flags.StringVar(
+		&o.AuthInfo,
+		config.FlagAuthInfoName,
+		"",
+		"sets the "+config.FlagAuthInfoName+" for the specified context in the airshipctl config")
 
-	setcontextcmd.Flags().StringVar(&o.Namespace, config.FlagNamespace, o.Namespace,
-		config.FlagNamespace+" for the context entry in airshipctl config")
+	flags.StringVar(
+		&o.Manifest,
+		config.FlagManifest,
+		"",
+		"sets the "+config.FlagManifest+" for the specified context in the airshipctl config")
 
-	setcontextcmd.Flags().StringVar(&o.ClusterType, config.FlagClusterType, "",
-		config.FlagClusterType+" for the context entry in airshipctl config")
+	flags.StringVar(
+		&o.Namespace,
+		config.FlagNamespace,
+		"",
+		"sets the "+config.FlagNamespace+" for the specified context in the airshipctl config")
+
+	flags.StringVar(
+		&o.ClusterType,
+		config.FlagClusterType,
+		"",
+		"sets the "+config.FlagClusterType+" for the specified context in the airshipctl config")
 }
