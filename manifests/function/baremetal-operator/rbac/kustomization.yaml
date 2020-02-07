@@ -1,0 +1,2 @@
+resources:
+  - bm-operator-rbac.yaml
