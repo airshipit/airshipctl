@@ -50,3 +50,8 @@ func Fatal(v ...interface{}) {
 func Fatalf(format string, v ...interface{}) {
 	airshipLog.Fatalf(format, v...)
 }
+
+// Writer returns log output writer object
+func Writer() io.Writer {
+	return airshipLog.Writer()
+}

@@ -352,7 +352,7 @@ func TestRunCommand(t *testing.T) {
 			cmd:            []string{"testCmd"},
 			containerInput: nil,
 			volumeMounts:   nil,
-			debug:          false,
+			debug:          true,
 			mockDockerClient: mockDockerClient{
 				containerWait: func() (<-chan container.ContainerWaitOKBody, <-chan error) {
 					resC := make(chan container.ContainerWaitOKBody)
@@ -360,6 +360,26 @@ func TestRunCommand(t *testing.T) {
 						resC <- container.ContainerWaitOKBody{StatusCode: 1}
 					}()
 					return resC, nil
+				},
+			},
+			expectedErr: ErrRunContainerCommand{Cmd: "docker logs testID"},
+			assertF:     func(t *testing.T) {},
+		},
+		{
+			cmd:            []string{"testCmd"},
+			containerInput: nil,
+			volumeMounts:   nil,
+			debug:          true,
+			mockDockerClient: mockDockerClient{
+				containerWait: func() (<-chan container.ContainerWaitOKBody, <-chan error) {
+					resC := make(chan container.ContainerWaitOKBody)
+					go func() {
+						resC <- container.ContainerWaitOKBody{StatusCode: 1}
+					}()
+					return resC, nil
+				},
+				containerLogs: func() (io.ReadCloser, error) {
+					return nil, fmt.Errorf("Logs error")
 				},
 			},
 			expectedErr: ErrRunContainerCommand{Cmd: "docker logs testID"},
