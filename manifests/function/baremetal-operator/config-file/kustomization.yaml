@@ -1,0 +1,14 @@
+generatorOptions:
+ disableNameSuffixHash: true
+
+configMapGenerator:
+- name: ironic-config-files
+  files:
+    - dnsmasq.conf
+    - dualboot.ipxe
+    - httpd.conf
+    - inspector.conf
+    - inspector.ipxe
+    - ironic.conf
+    - my.cnf
+    - configure-mysql.sql
