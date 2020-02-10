@@ -154,6 +154,8 @@ type Bootstrap struct {
 	Container *Container `json:"container,omitempty"`
 	// Configuration parameters for ISO builder
 	Builder *Builder `json:"builder,omitempty"`
+	// Configuration parameters for ephmeral node remote management
+	RemoteDirect *RemoteDirect `json:"remoteDirect,omitempty"`
 }
 
 // Container parameters
@@ -174,4 +176,13 @@ type Builder struct {
 	NetworkConfigFileName string `json:"networkConfigFileName,omitempty"`
 	// File name for output metadata
 	OutputMetadataFileName string `json:"outputMetadataFileName,omitempty"`
+}
+
+// RemoteDirect configuration options
+type RemoteDirect struct {
+	// RemoteType specifies type of epehemeral node managfement (e.g redfish,
+	// smash e.t.c.)
+	RemoteType string `json:"remoteType,omitempty"`
+	// IsoURL specifies url to download ISO image for epehemeral node
+	IsoURL string `json:"isoUrl,omitempty"`
 }
