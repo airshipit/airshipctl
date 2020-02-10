@@ -15,3 +15,30 @@
     nodes:
       - name: primary
         label: ubuntu-bionic
+- nodeset:
+    name: airship-airshipctl-full-4-nodes-bionic-cluster
+    nodes:
+      - name: primary
+        label: ubuntu-bionic-32GB
+      - name: compute-1
+        label: ubuntu-bionic-expanded
+      - name: compute-2
+        label: ubuntu-bionic-expanded
+      - name: compute-3
+        label: ubuntu-bionic-expanded
+    groups:
+      - name: compute
+        nodes:
+          - compute-1
+          - compute-2
+          - compute-3
+- nodeset:
+    name: airship-airshipctl-single-16GB-bionic-node
+    nodes:
+      - name: primary
+        label: ubuntu-bionic-expanded
+- nodeset:
+    name: airship-airshipctl-single-32GB-bionic-node
+    nodes:
+      - name: primary
+        label: ubuntu-bionic-32GB
