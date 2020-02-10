@@ -40,7 +40,7 @@ type setClusterTest struct {
 }
 
 const (
-	testCluster = "my-new-cluster"
+	testCluster = "my_new-cluster"
 )
 
 func TestSetClusterWithCAFile(t *testing.T) {

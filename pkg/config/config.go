@@ -931,15 +931,27 @@ func (c *ClusterComplexName) validName() bool {
 	err := ValidClusterType(c.clusterType)
 	return c.clusterName != "" && err == nil
 }
+
 func (c *ClusterComplexName) FromName(clusterName string) {
-	if clusterName != "" {
-		userNameSplit := strings.Split(clusterName, AirshipClusterNameSep)
-		if len(userNameSplit) == 2 {
-			c.clusterType = userNameSplit[1]
+	if clusterName == "" {
+		return
+	}
+
+	userNameSplit := strings.Split(clusterName, AirshipClusterNameSep)
+	if len(userNameSplit) == 1 {
+		c.clusterName = clusterName
+		return
+	}
+
+	for _, cType := range AllClusterTypes {
+		if userNameSplit[len(userNameSplit)-1] == cType {
+			c.clusterType = userNameSplit[len(userNameSplit)-1]
+			c.clusterName = strings.Join(userNameSplit[:len(userNameSplit)-1], AirshipClusterNameSep)
+			return
 		}
-		c.clusterName = userNameSplit[0]
 	}
 }
+
 func (c *ClusterComplexName) WithType(clusterName string, clusterType string) {
 	c.FromName(clusterName)
 	c.SetClusterType(clusterType)

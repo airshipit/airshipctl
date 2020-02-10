@@ -1,7 +1,7 @@
-Cluster: dummycluster
+Cluster: dummy_cluster
 target:
 bootstrap-info: dummy_bootstrap_config
-cluster-kubeconf: dummycluster_target
+cluster-kubeconf: dummy_cluster_target
 
 LocationOfOrigin: ""
 certificate-authority: dummy_ca
