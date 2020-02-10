@@ -29,21 +29,20 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/client-go/tools/clientcmd"
-
-	kubeconfig "k8s.io/client-go/tools/clientcmd/api"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
 	"opendev.org/airship/airshipctl/pkg/util"
 )
 
-// Called from root to Load the initial configuration
-func (c *Config) LoadConfig(configFileArg string, kPathOptions *clientcmd.PathOptions) error {
-	err := c.loadFromAirConfig(configFileArg)
+// LoadConfig populates the Config object using the files found at
+// airshipConfigPath and kubeConfigPath
+func (c *Config) LoadConfig(airshipConfigPath, kubeConfigPath string) error {
+	err := c.loadFromAirConfig(airshipConfigPath)
 	if err != nil {
 		return err
 	}
 
-	// Load or initialize the kubeconfig object from a file
-	err = c.loadKubeConfig(kPathOptions)
+	err = c.loadKubeConfig(kubeConfigPath)
 	if err != nil {
 		return err
 	}
@@ -52,36 +51,45 @@ func (c *Config) LoadConfig(configFileArg string, kPathOptions *clientcmd.PathOp
 	return c.reconcileConfig()
 }
 
-func (c *Config) loadFromAirConfig(configFileArg string) error {
-	// If it exists,  Read the ConfigFile data
-	// Only care about the errors here, because there is a file
-	// And essentially I cannot use its data.
-	// airshipctl probable should stop
-	if configFileArg == "" {
+// loadFromAirConfig populates the Config from the file found at airshipConfigPath.
+// If there is no file at airshipConfigPath, this function does nothing.
+// An error is returned if:
+// * airshipConfigPath is the empty string
+// * the file at airshipConfigPath is inaccessible
+// * the file at airshipConfigPath cannot be marshaled into Config
+func (c *Config) loadFromAirConfig(airshipConfigPath string) error {
+	if airshipConfigPath == "" {
 		return errors.New("Configuration file location was not provided.")
 	}
+
 	// Remember where I loaded the Config from
-	c.loadedConfigPath = configFileArg
-	// If I have a file to read, load from it
+	c.loadedConfigPath = airshipConfigPath
 
-	if _, err := os.Stat(configFileArg); os.IsNotExist(err) {
+	// If I can read from the file, load from it
+	if _, err := os.Stat(airshipConfigPath); os.IsNotExist(err) {
 		return nil
-	}
-	return util.ReadYAMLFile(configFileArg, c)
-}
-
-func (c *Config) loadKubeConfig(kPathOptions *clientcmd.PathOptions) error {
-	// Will need this for Persisting the changes
-	c.loadedPathOptions = kPathOptions
-	// Now at this point what I load might not reflect the associated kubeconfig yet
-	kConfig, err := kPathOptions.GetStartingConfig()
-	if err != nil {
+	} else if err != nil {
 		return err
 	}
-	// Store the kubeconfig object into an airship managed kubeconfig object
-	c.kubeConfig = kConfig
 
-	return nil
+	return util.ReadYAMLFile(airshipConfigPath, c)
+}
+
+func (c *Config) loadKubeConfig(kubeConfigPath string) error {
+	// Will need this for persisting the changes
+	c.kubeConfigPath = kubeConfigPath
+
+	// If I can read from the file, load from it
+	var err error
+	if _, err = os.Stat(kubeConfigPath); os.IsNotExist(err) {
+		c.kubeConfig = clientcmdapi.NewConfig()
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	c.kubeConfig, err = clientcmd.LoadFromFile(kubeConfigPath)
+	return err
 }
 
 // reconcileConfig serves two functions:
@@ -198,6 +206,7 @@ func (c *Config) rmConfigClusterStragglers(persistIt bool) bool {
 	}
 	return rccs
 }
+
 func (c *Config) reconcileContexts(updatedClusterNames map[string]string) {
 	for key, context := range c.kubeConfig.Contexts {
 		// Check if the Cluster name referred to by the context
@@ -254,7 +263,7 @@ func (c *Config) reconcileAuthInfos() {
 func (c *Config) reconcileCurrentContext() {
 	// If the Airship current context is different that the current context in the kubeconfig
 	// then
-	//  - if the airship current context is valid, then updated kubeconfiug CC
+	//  - if the airship current context is valid, then updated kubeconfig CC
 	//  - if the airship currentcontext is invalid, and the kubeconfig CC is valid, then create the reference
 	//  - otherwise , they are both empty. Make sure
 
@@ -326,20 +335,17 @@ func (c *Config) EnsureComplete() error {
 	return nil
 }
 
-// This function is called to update the configuration in the file defined by the
-// ConfigFile name
-// It will completely overwrite the existing file,
-//    If the file specified by ConfigFile exists ts updates with the contents of the Config object
-//    If the file specified by ConfigFile does not exist it will create a new file.
+// PersistConfig updates the airshipctl config and kubeconfig files to match
+// the current Config and KubeConfig objects.
+// If either file did not previously exist, the file will be created.
+// Otherwise, the file will be overwritten
 func (c *Config) PersistConfig() error {
-	// Dont care if the file exists or not, will create if needed
-	// We are 100% overwriting the existing file
-	configyaml, err := c.ToYaml()
+	airshipConfigYaml, err := c.ToYaml()
 	if err != nil {
 		return err
 	}
 
-	// WriteFile doesn't create the directory , create it if needed
+	// WriteFile doesn't create the directory, create it if needed
 	configDir := filepath.Dir(c.loadedConfigPath)
 	err = os.MkdirAll(configDir, 0755)
 	if err != nil {
@@ -347,19 +353,13 @@ func (c *Config) PersistConfig() error {
 	}
 
 	// Write the Airship Config file
-	err = ioutil.WriteFile(c.loadedConfigPath, configyaml, 0644)
+	err = ioutil.WriteFile(c.loadedConfigPath, airshipConfigYaml, 0644)
 	if err != nil {
 		return err
 	}
 
-	// FIXME(howell): if this fails, then the results from the previous
-	// actions will persist, meaning that we might have overwritten our
-	// airshipconfig without updating our kubeconfig. A possible solution
-	// is to generate brand new config files and then write them at the
-	// end. That could still fail, but should be more robust
-
 	// Persist the kubeconfig file referenced
-	if err := clientcmd.ModifyConfig(c.loadedPathOptions, *c.kubeConfig, true); err != nil {
+	if err := clientcmd.WriteToFile(*c.kubeConfig, c.kubeConfigPath); err != nil {
 		return err
 	}
 
@@ -386,14 +386,15 @@ func (c *Config) SetLoadedConfigPath(lcp string) {
 	c.loadedConfigPath = lcp
 }
 
-func (c *Config) LoadedPathOptions() *clientcmd.PathOptions {
-	return c.loadedPathOptions
-}
-func (c *Config) SetLoadedPathOptions(po *clientcmd.PathOptions) {
-	c.loadedPathOptions = po
+func (c *Config) KubeConfigPath() string {
+	return c.kubeConfigPath
 }
 
-func (c *Config) KubeConfig() *kubeconfig.Config {
+func (c *Config) SetKubeConfigPath(kubeConfigPath string) {
+	c.kubeConfigPath = kubeConfigPath
+}
+
+func (c *Config) KubeConfig() *clientcmdapi.Config {
 	return c.kubeConfig
 }
 
@@ -441,7 +442,7 @@ func (c *Config) AddCluster(theCluster *ClusterOptions) (*Cluster, error) {
 	nCluster := NewCluster()
 	c.Clusters[theCluster.Name].ClusterTypes[theCluster.ClusterType] = nCluster
 	// Create a new Kubeconfig Cluster object as well
-	kcluster := kubeconfig.NewCluster()
+	kcluster := clientcmdapi.NewCluster()
 	clusterName := NewClusterComplexName()
 	clusterName.WithType(theCluster.Name, theCluster.ClusterType)
 	nCluster.NameInKubeconf = clusterName.Name()
@@ -541,7 +542,7 @@ func (c *Config) AddContext(theContext *ContextOptions) *Context {
 	nContext := NewContext()
 	c.Contexts[theContext.Name] = nContext
 	// Create a new Kubeconfig Context object as well
-	kContext := kubeconfig.NewContext()
+	kContext := clientcmdapi.NewContext()
 	nContext.NameInKubeconf = theContext.Name
 	contextName := NewClusterComplexName()
 	contextName.WithType(theContext.Name, theContext.ClusterType)
@@ -645,7 +646,7 @@ func (c *Config) AddAuthInfo(theAuthInfo *AuthInfoOptions) *AuthInfo {
 	nAuthInfo := NewAuthInfo()
 	c.AuthInfos[theAuthInfo.Name] = nAuthInfo
 	// Create a new Kubeconfig AuthInfo object as well
-	kAuthInfo := kubeconfig.NewAuthInfo()
+	kAuthInfo := clientcmdapi.NewAuthInfo()
 	nAuthInfo.SetKubeAuthInfo(kAuthInfo)
 	c.KubeConfig().AuthInfos[theAuthInfo.Name] = kAuthInfo
 
@@ -739,10 +740,10 @@ func (c *Cluster) PrettyString() string {
 		clusterName.ClusterName(), clusterName.ClusterType(), c)
 }
 
-func (c *Cluster) KubeCluster() *kubeconfig.Cluster {
+func (c *Cluster) KubeCluster() *clientcmdapi.Cluster {
 	return c.kCluster
 }
-func (c *Cluster) SetKubeCluster(kc *kubeconfig.Cluster) {
+func (c *Cluster) SetKubeCluster(kc *clientcmdapi.Cluster) {
 	c.kCluster = kc
 }
 
@@ -777,11 +778,11 @@ func (c *Context) PrettyString() string {
 		clusterName.ClusterName(), c.String())
 }
 
-func (c *Context) KubeContext() *kubeconfig.Context {
+func (c *Context) KubeContext() *clientcmdapi.Context {
 	return c.kContext
 }
 
-func (c *Context) SetKubeContext(kc *kubeconfig.Context) {
+func (c *Context) SetKubeContext(kc *clientcmdapi.Context) {
 	c.kContext = kc
 }
 
@@ -808,10 +809,10 @@ func (c *AuthInfo) String() string {
 	return string(kyaml)
 }
 
-func (c *AuthInfo) KubeAuthInfo() *kubeconfig.AuthInfo {
+func (c *AuthInfo) KubeAuthInfo() *clientcmdapi.AuthInfo {
 	return c.kAuthInfo
 }
-func (c *AuthInfo) SetKubeAuthInfo(kc *kubeconfig.AuthInfo) {
+func (c *AuthInfo) SetKubeAuthInfo(kc *clientcmdapi.AuthInfo) {
 	c.kAuthInfo = kc
 }
 
@@ -979,7 +980,7 @@ PLACEHOLDER UNTIL I IDENTIFY if CLIENTADM
 HAS SOMETHING LIKE THIS
 */
 
-func KClusterString(kCluster *kubeconfig.Cluster) string {
+func KClusterString(kCluster *clientcmdapi.Cluster) string {
 	yamlData, err := yaml.Marshal(&kCluster)
 	if err != nil {
 		return ""
@@ -987,7 +988,8 @@ func KClusterString(kCluster *kubeconfig.Cluster) string {
 
 	return string(yamlData)
 }
-func KContextString(kContext *kubeconfig.Context) string {
+
+func KContextString(kContext *clientcmdapi.Context) string {
 	yamlData, err := yaml.Marshal(&kContext)
 	if err != nil {
 		return ""
@@ -995,7 +997,8 @@ func KContextString(kContext *kubeconfig.Context) string {
 
 	return string(yamlData)
 }
-func KAuthInfoString(kAuthInfo *kubeconfig.AuthInfo) string {
+
+func KAuthInfoString(kAuthInfo *clientcmdapi.AuthInfo) string {
 	yamlData, err := yaml.Marshal(&kAuthInfo)
 	if err != nil {
 		return ""

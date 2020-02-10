@@ -17,6 +17,7 @@ limitations under the License.
 package environment
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -36,25 +37,107 @@ func TestInitFlags(t *testing.T) {
 	assert.True(t, testCmd.HasPersistentFlags())
 }
 
-func TestSpecifyAirConfigFromEnv(t *testing.T) {
-	fakeConfig := "FakeConfigPath"
-	err := os.Setenv(config.AirshipConfigEnv, fakeConfig)
-	require.NoError(t, err)
+func TestInitConfig(t *testing.T) {
+	t.Run("DefaultToHomeDirectory", func(subTest *testing.T) {
+		// Set up a fake $HOME directory
+		testDir := makeTestDir(t)
+		defer deleteTestDir(t, testDir)
+		defer setHome(testDir)()
 
-	settings := &AirshipCTLSettings{}
-	settings.InitConfig()
+		var testSettings AirshipCTLSettings
+		expectedAirshipConfig := filepath.Join(testDir, config.AirshipConfigDir, config.AirshipConfig)
+		expectedKubeConfig := filepath.Join(testDir, config.AirshipConfigDir, config.AirshipKubeConfig)
 
-	assert.EqualValues(t, fakeConfig, settings.AirshipConfigPath())
+		testSettings.InitConfig()
+		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath())
+		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath())
+	})
+
+	t.Run("PreferEnvToDefault", func(subTest *testing.T) {
+		// Set up a fake $HOME directory
+		testDir := makeTestDir(t)
+		defer deleteTestDir(t, testDir)
+		defer setHome(testDir)()
+
+		var testSettings AirshipCTLSettings
+		expectedAirshipConfig := filepath.Join(testDir, "airshipEnv")
+		expectedKubeConfig := filepath.Join(testDir, "kubeEnv")
+
+		os.Setenv(config.AirshipConfigEnv, expectedAirshipConfig)
+		os.Setenv(config.AirshipKubeConfigEnv, expectedKubeConfig)
+		defer os.Unsetenv(config.AirshipConfigEnv)
+		defer os.Unsetenv(config.AirshipKubeConfigEnv)
+
+		testSettings.InitConfig()
+		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath())
+		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath())
+	})
+
+	t.Run("PreferCmdLineArgToDefault", func(subTest *testing.T) {
+		// Set up a fake $HOME directory
+		testDir := makeTestDir(t)
+		defer deleteTestDir(t, testDir)
+		defer setHome(testDir)()
+
+		var testSettings AirshipCTLSettings
+		expectedAirshipConfig := filepath.Join(testDir, "airshipCmdLine")
+		expectedKubeConfig := filepath.Join(testDir, "kubeCmdLine")
+
+		testSettings.SetAirshipConfigPath(expectedAirshipConfig)
+		testSettings.SetKubeConfigPath(expectedKubeConfig)
+
+		// InitConfig should not change any values
+		testSettings.InitConfig()
+		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath())
+		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath())
+	})
+
+	t.Run("PreferCmdLineArgToEnv", func(subTest *testing.T) {
+		// Set up a fake $HOME directory
+		testDir := makeTestDir(t)
+		defer deleteTestDir(t, testDir)
+		defer setHome(testDir)()
+
+		var testSettings AirshipCTLSettings
+		expectedAirshipConfig := filepath.Join(testDir, "airshipCmdLine")
+		expectedKubeConfig := filepath.Join(testDir, "kubeCmdLine")
+
+		// set up "decoy" environment variables. These should be
+		// ignored, since we're simulating passing in command line
+		// arguments
+		wrongAirshipConfig := filepath.Join(testDir, "wrongAirshipConfig")
+		wrongKubeConfig := filepath.Join(testDir, "wrongKubeConfig")
+		os.Setenv(config.AirshipConfigEnv, wrongAirshipConfig)
+		os.Setenv(config.AirshipKubeConfigEnv, wrongKubeConfig)
+		defer os.Unsetenv(config.AirshipConfigEnv)
+		defer os.Unsetenv(config.AirshipKubeConfigEnv)
+
+		testSettings.SetAirshipConfigPath(expectedAirshipConfig)
+		testSettings.SetKubeConfigPath(expectedKubeConfig)
+
+		testSettings.InitConfig()
+		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath())
+		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath())
+	})
 }
 
-func TestGetSetPaths(t *testing.T) {
-	settings := &AirshipCTLSettings{}
-	settings.InitConfig()
-	airConfigFile := filepath.Join(config.AirshipConfigDir, config.AirshipConfig)
-	kConfigFile := filepath.Join(config.AirshipConfigDir, config.AirshipKubeConfig)
-	settings.SetAirshipConfigPath(airConfigFile)
-	assert.EqualValues(t, airConfigFile, settings.AirshipConfigPath())
+func makeTestDir(t *testing.T) string {
+	testDir, err := ioutil.TempDir("", "airship-test")
+	require.NoError(t, err)
+	return testDir
+}
 
-	settings.SetKubeConfigPath(kConfigFile)
-	assert.EqualValues(t, kConfigFile, settings.KubeConfigPath())
+func deleteTestDir(t *testing.T, path string) {
+	err := os.Remove(path)
+	require.NoError(t, err)
+}
+
+// setHome sets the HOME environment variable to `path`, and returns a function
+// that can be used to reset HOME to its original value
+func setHome(path string) (resetHome func()) {
+	oldHome := os.Getenv("HOME")
+	os.Setenv("HOME", path)
+	return func() {
+		os.Setenv("HOME", oldHome)
+	}
 }

@@ -11,19 +11,22 @@ const (
 	AirshipClusterDefaultType = Target
 )
 
-//Sorted
+// Sorted
 var AllClusterTypes = [2]string{Ephemeral, Target}
 
 // Constants defining default values
 const (
-	AirshipConfigEnv        = "airshipconf"
-	AirshipConfig           = "config"
-	AirshipConfigDir        = ".airship"
-	AirshipConfigKind       = "Config"
-	AirshipConfigVersion    = "v1alpha1"
 	AirshipConfigGroup      = "airshipit.org"
+	AirshipConfigVersion    = "v1alpha1"
 	AirshipConfigApiVersion = AirshipConfigGroup + "/" + AirshipConfigVersion
-	AirshipKubeConfig       = "kubeconfig"
+	AirshipConfigKind       = "Config"
+
+	AirshipConfigDir  = ".airship"
+	AirshipConfig     = "config"
+	AirshipKubeConfig = "kubeconfig"
+
+	AirshipConfigEnv     = "AIRSHIPCONFIG"
+	AirshipKubeConfigEnv = "AIRSHIP_KUBECONFIG"
 )
 
 // Constants defining CLI flags
@@ -37,7 +40,7 @@ const (
 	FlagClusterType      = "cluster-type"
 	FlagContext          = "context"
 	FlagCurrentContext   = "current-context"
-	FlagConfigFilePath   = AirshipConfigEnv
+	FlagConfigFilePath   = "airshipconf"
 	FlagEmbedCerts       = "embed-certs"
 	FlagImpersonate      = "as"
 	FlagImpersonateGroup = "as-group"

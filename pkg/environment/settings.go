@@ -3,7 +3,6 @@ package environment
 import (
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -64,67 +63,64 @@ func (a *AirshipCTLSettings) SetKubeConfigPath(kcp string) {
 func (a *AirshipCTLSettings) InitConfig() {
 	a.SetConfig(config.NewConfig())
 
-	a.setAirshipConfigPath()
+	a.initAirshipConfigPath()
+	a.initKubeConfigPath()
 
-	//Pass the airshipConfigPath and kubeConfig object
-	err := a.Config().LoadConfig(a.AirshipConfigPath(), a.setKubePathOptions())
+	err := a.Config().LoadConfig(a.AirshipConfigPath(), a.KubeConfigPath())
 	if err != nil {
 		// Should stop airshipctl
 		log.Fatal(err)
 	}
 }
 
-func (a *AirshipCTLSettings) setAirshipConfigPath() {
-	// (1) If the airshipConfigPath was received as an argument its already set
-	if a.airshipConfigPath == "" {
-		// (2) If not , we can check if we got the Path via ENVIRONMENT variable,
-		// set the appropriate fields
-		a.setAirshipConfigPathFromEnv()
+func (a *AirshipCTLSettings) initAirshipConfigPath() {
+	// The airshipConfigPath may already have been received as a command line argument
+	if a.airshipConfigPath != "" {
+		return
 	}
-	// (3) Check if the a.airshipConfigPath is empty still at this point , use the defaults
-	acp, home := a.replaceHomePlaceholder(a.airshipConfigPath)
-	a.airshipConfigPath = acp
-	if a.airshipConfigPath == "" {
-		a.airshipConfigPath = filepath.Join(home, config.AirshipConfigDir, config.AirshipConfig)
-	}
-}
 
-// setAirshipConfigPathFromEnv Get AIRSHIP CONFIG from an environment variable if set
-func (a *AirshipCTLSettings) setAirshipConfigPathFromEnv() {
-	// Check if AIRSHIPCONF env variable was set
-	// I have the path and name for the airship config file
+	// Otherwise, we can check if we got the path via ENVIRONMENT variable
 	a.airshipConfigPath = os.Getenv(config.AirshipConfigEnv)
-}
-
-func (a *AirshipCTLSettings) setKubePathOptions() *clientcmd.PathOptions {
-	// USe default expectations for Kubeconfig
-	kubePathOptions := clientcmd.NewDefaultPathOptions()
-	// No need to check the Environment , since we are relying on the kubeconfig defaults
-	// If we did not get an explicit kubeconfig definition on airshipctl
-	// as far as airshipctl is concerned will use the default expectations for the kubeconfig
-	// file location . This avoids messing up someones kubeconfig if they didnt explicitly want
-	// airshipctl to use it.
-	kcp, home := a.replaceHomePlaceholder(a.kubeConfigPath)
-	a.kubeConfigPath = kcp
-	if a.kubeConfigPath == "" {
-		a.kubeConfigPath = filepath.Join(home, config.AirshipConfigDir, config.AirshipKubeConfig)
+	if a.airshipConfigPath != "" {
+		return
 	}
-	//  We will always rely on tha airshipctl cli args or default for where to find kubeconfig
-	kubePathOptions.GlobalFile = a.kubeConfigPath
-	kubePathOptions.GlobalFileSubpath = a.kubeConfigPath
 
-	return kubePathOptions
+	// Otherwise, we'll try putting it in the home directory
+	homeDir := userHomeDir()
+	a.airshipConfigPath = filepath.Join(homeDir, config.AirshipConfigDir, config.AirshipConfig)
 }
 
-func (a *AirshipCTLSettings) replaceHomePlaceholder(configPath string) (string, string) {
-	home, err := os.UserHomeDir()
+func (a *AirshipCTLSettings) initKubeConfigPath() {
+	// NOTE(howell): This function will set the kubeConfigPath to the
+	// default location under the airship directory unless the user
+	// *explicitly* specifies a different location, either by setting the
+	// ENVIRONMENT variable or by passing a command line argument.
+	// This avoids messing up the user's kubeconfig if they didn't
+	// explicitly want airshipctl to use it.
+
+	// The kubeConfigPath may already have been received as a command line argument
+	if a.kubeConfigPath != "" {
+		return
+	}
+
+	// Otherwise, we can check if we got the path via ENVIRONMENT variable
+	a.kubeConfigPath = os.Getenv(config.AirshipKubeConfigEnv)
+	if a.kubeConfigPath != "" {
+		return
+	}
+
+	// Otherwise, we'll try putting it in the home directory
+	homeDir := userHomeDir()
+	a.kubeConfigPath = filepath.Join(homeDir, config.AirshipConfigDir, config.AirshipKubeConfig)
+}
+
+// userHomeDir is a utility function that wraps os.UserHomeDir and returns no
+// errors. If the user has no home directory, the returned value will be the
+// empty string
+func userHomeDir() string {
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		// Use defaults under current directory
-		home = ""
+		homeDir = ""
 	}
-	if configPath == "" {
-		return configPath, home
-	}
-
-	return strings.Replace(configPath, HomePlaceholder, home, 1), home
+	return homeDir
 }

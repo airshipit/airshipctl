@@ -19,7 +19,6 @@ package config
 import (
 	"net/url"
 
-	"k8s.io/client-go/tools/clientcmd"
 	kubeconfig "k8s.io/client-go/tools/clientcmd/api"
 )
 
@@ -57,15 +56,15 @@ type Config struct {
 	// Such as Bootstrap, Workflows, Document, etc
 	ModulesConfig *Modules `json:"modules-config"`
 
-	// Private LoadedConfigPath is the full path to the the location of the config file
-	// from which these config was loaded
+	// loadedConfigPath is the full path to the the location of the config
+	// file from which this config was loaded
 	// +not persisted in file
 	loadedConfigPath string
 
-	// Private loadedPathOptions is the full path to the the location of the kubeconfig file
-	// associated with this airship config instance
+	// kubeConfigPath is the full path to the the location of the
+	// kubeconfig file associated with this airship config instance
 	// +not persisted in file
-	loadedPathOptions *clientcmd.PathOptions
+	kubeConfigPath string
 
 	// Private instance of Kube Config content as an object
 	kubeConfig *kubeconfig.Config

@@ -26,7 +26,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"k8s.io/client-go/tools/clientcmd"
 	kubeconfig "k8s.io/client-go/tools/clientcmd/api"
 
 	"opendev.org/airship/airshipctl/testutil"
@@ -224,10 +223,11 @@ func TestPersistConfig(t *testing.T) {
 	config := InitConfig(t)
 
 	err := config.PersistConfig()
-	assert.NoErrorf(t, err, "Unable to persist configuration expected at %v", config.LoadedConfigPath())
+	require.NoError(t, err)
 
-	kpo := config.LoadedPathOptions()
-	assert.NotNil(t, kpo)
+	// Check that the files were created
+	assert.FileExists(t, config.LoadedConfigPath())
+	assert.FileExists(t, config.KubeConfigPath())
 }
 
 func TestEnsureComplete(t *testing.T) {
@@ -347,11 +347,10 @@ func TestPurge(t *testing.T) {
 	require.NoError(t, err)
 
 	airConfigFile := filepath.Join(tempDir, AirshipConfig)
-	kConfigFile := filepath.Join(tempDir, AirshipKubeConfig)
 	config.SetLoadedConfigPath(airConfigFile)
-	kubePathOptions := clientcmd.NewDefaultPathOptions()
-	kubePathOptions.GlobalFile = kConfigFile
-	config.SetLoadedPathOptions(kubePathOptions)
+
+	kConfigFile := filepath.Join(tempDir, AirshipKubeConfig)
+	config.kubeConfigPath = kConfigFile
 
 	// Store it
 	err = config.PersistConfig()
