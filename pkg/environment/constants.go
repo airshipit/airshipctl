@@ -12,4 +12,4 @@ const (
 	Wide     = "wide"
 )
 
-const HomePlaceholder = "$HOME"
+const HomeEnvVar = "$HOME"
