@@ -2,37 +2,26 @@ package remote
 
 import (
 	"context"
+	"fmt"
+	"net/url"
+	"strings"
 
+	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/environment"
 	alog "opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
+
+	"sigs.k8s.io/kustomize/v3/pkg/fs"
+	"sigs.k8s.io/kustomize/v3/pkg/gvk"
+	"sigs.k8s.io/kustomize/v3/pkg/types"
 )
 
 const (
 	AirshipRemoteTypeRedfish string = "redfish"
 	AirshipRemoteTypeSmash   string = "smash"
+	AirshipHostKind          string = "BareMetalHost"
 )
-
-// This structure defines the common remote direct config
-// for all remote types.
-type RemoteDirectConfig struct {
-	// remote type
-	RemoteType string
-
-	// remote URL
-	RemoteURL string
-
-	// ephemeral Host ID
-	EphemeralNodeId string
-
-	// ISO URL
-	IsoPath string
-
-	// TODO: Ephemeral Node IP
-
-	// TODO: kubeconfig (in object form or raw yaml?) for ephemeral node validation.
-
-	// TODO: More fields can be added on need basis
-}
 
 // Interface to be implemented by remoteDirect implementation
 type RemoteDirectClient interface {
@@ -40,19 +29,31 @@ type RemoteDirectClient interface {
 }
 
 // Get remotedirect client based on config
-func getRemoteDirectClient(remoteConfig RemoteDirectConfig) (RemoteDirectClient, error) {
+func getRemoteDirectClient(remoteConfig *config.RemoteDirect, remoteURL string) (RemoteDirectClient, error) {
 	var client RemoteDirectClient
-	var err error
-
 	switch remoteConfig.RemoteType {
 	case AirshipRemoteTypeRedfish:
 		alog.Debug("Remote type redfish")
 
+		rfURL, err := url.Parse(remoteURL)
+		if err != nil {
+			return nil, err
+		}
+
+		baseURL := fmt.Sprintf("%s://%s", rfURL.Scheme, rfURL.Host)
+		schemeSplit := strings.Split(rfURL.Scheme, redfish.RedfishURLSchemeSeparator)
+		if len(schemeSplit) > 1 {
+			baseURL = fmt.Sprintf("%s://%s", schemeSplit[len(schemeSplit)-1], rfURL.Host)
+		}
+
+		urlPath := strings.Split(rfURL.Path, "/")
+		nodeID := urlPath[len(urlPath)-1]
+
 		client, err = redfish.NewRedfishRemoteDirectClient(
 			context.Background(),
-			remoteConfig.RemoteURL,
-			remoteConfig.EphemeralNodeId,
-			remoteConfig.IsoPath)
+			baseURL,
+			nodeID,
+			remoteConfig.IsoURL)
 		if err != nil {
 			alog.Debugf("redfish remotedirect client creation failed")
 			return nil, err
@@ -65,9 +66,56 @@ func getRemoteDirectClient(remoteConfig RemoteDirectConfig) (RemoteDirectClient,
 	return client, nil
 }
 
+func getRemoteDirectConfig(settings *environment.AirshipCTLSettings) (*config.RemoteDirect, string, error) {
+	cfg := settings.Config()
+	manifest, err := cfg.CurrentContextManifest()
+	if err != nil {
+		return nil, "", err
+	}
+	bootstrapSettings, err := cfg.CurrentContextBootstrapInfo()
+	if err != nil {
+		return nil, "", err
+	}
+
+	// TODO (dukov) replace with the appropriate function once it's available
+	// in document module
+	docBundle, err := document.NewBundle(fs.MakeRealFS(), manifest.TargetPath, "")
+	if err != nil {
+		return nil, "", err
+	}
+
+	filter := types.Selector{
+		Gvk:           gvk.FromKind(AirshipHostKind),
+		LabelSelector: document.EphemeralClusterMarker,
+	}
+	docs, err := docBundle.Select(filter)
+	if err != nil {
+		return nil, "", err
+	}
+	if len(docs) == 0 {
+		return nil, "", document.ErrDocNotFound{
+			Annotation: document.EphemeralClusterMarker,
+			Kind:       AirshipHostKind,
+		}
+	}
+
+	// NOTE If filter returned more than one document chose first
+	remoteURL, err := docs[0].GetString("spec.bmc.address")
+	if err != nil {
+		return nil, "", err
+	}
+
+	return bootstrapSettings.RemoteDirect, remoteURL, nil
+}
+
 // Top level function to execute remote direct based on remote type
-func DoRemoteDirect(remoteConfig RemoteDirectConfig) error {
-	client, err := getRemoteDirectClient(remoteConfig)
+func DoRemoteDirect(settings *environment.AirshipCTLSettings) error {
+	remoteConfig, remoteURL, err := getRemoteDirectConfig(settings)
+	if err != nil {
+		return err
+	}
+
+	client, err := getRemoteDirectClient(remoteConfig, remoteURL)
 	if err != nil {
 		return err
 	}

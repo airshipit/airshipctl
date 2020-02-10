@@ -4,75 +4,69 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/environment"
 
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 )
 
-func TestUnknownRemoteType(t *testing.T) {
-	rdCfg := RemoteDirectConfig{
-		RemoteType:      "new-remote",
-		RemoteURL:       "http://localhost:8000",
-		EphemeralNodeId: "test-node",
-		IsoPath:         "/test.iso",
-	}
+func initSettings(t *testing.T, rd *config.RemoteDirect, testdata string) *environment.AirshipCTLSettings {
+	settings := &environment.AirshipCTLSettings{}
+	settings.SetConfig(config.DummyConfig())
+	bi, err := settings.Config().CurrentContextBootstrapInfo()
+	require.NoError(t, err)
+	bi.RemoteDirect = rd
+	cm, err := settings.Config().CurrentContextManifest()
+	require.NoError(t, err)
+	cm.TargetPath = "testdata/" + testdata
+	return settings
+}
 
-	err := DoRemoteDirect(rdCfg)
+func TestUnknownRemoteType(t *testing.T) {
+	s := initSettings(
+		t,
+		&config.RemoteDirect{
+			RemoteType: "new-remote",
+			IsoURL:     "/test.iso",
+		},
+		"base",
+	)
+
+	err := DoRemoteDirect(s)
 
 	_, ok := err.(*RemoteDirectError)
 	assert.True(t, ok)
 }
 
-func TestRedfishRemoteDirectWithBogusConfig(t *testing.T) {
-	rdCfg := RemoteDirectConfig{
-		RemoteType:      "redfish",
-		RemoteURL:       "http://nolocalhost:8888",
-		EphemeralNodeId: "test-node",
-		IsoPath:         "/test.iso",
-	}
-
-	err := DoRemoteDirect(rdCfg)
-
-	_, ok := err.(*redfish.RedfishClientError)
-	assert.True(t, ok)
-}
-
 func TestRedfishRemoteDirectWithEmptyURL(t *testing.T) {
-	rdCfg := RemoteDirectConfig{
-		RemoteType:      "redfish",
-		RemoteURL:       "",
-		EphemeralNodeId: "test-node",
-		IsoPath:         "/test.iso",
-	}
+	s := initSettings(
+		t,
+		&config.RemoteDirect{
+			RemoteType: "redfish",
+			IsoURL:     "/test.iso",
+		},
+		"emptyurl",
+	)
 
-	err := DoRemoteDirect(rdCfg)
-
-	_, ok := err.(*redfish.RedfishConfigError)
-	assert.True(t, ok)
-}
-
-func TestRedfishRemoteDirectWithEmptyNodeID(t *testing.T) {
-	rdCfg := RemoteDirectConfig{
-		RemoteType:      "redfish",
-		RemoteURL:       "http://nolocalhost:8888",
-		EphemeralNodeId: "",
-		IsoPath:         "/test.iso",
-	}
-
-	err := DoRemoteDirect(rdCfg)
+	err := DoRemoteDirect(s)
 
 	_, ok := err.(*redfish.RedfishConfigError)
 	assert.True(t, ok)
 }
 
 func TestRedfishRemoteDirectWithEmptyIsoPath(t *testing.T) {
-	rdCfg := RemoteDirectConfig{
-		RemoteType:      "redfish",
-		RemoteURL:       "http://nolocalhost:8888",
-		EphemeralNodeId: "123",
-		IsoPath:         "",
-	}
+	s := initSettings(
+		t,
+		&config.RemoteDirect{
+			RemoteType: "redfish",
+			IsoURL:     "",
+		},
+		"base",
+	)
 
-	err := DoRemoteDirect(rdCfg)
+	err := DoRemoteDirect(s)
 
 	_, ok := err.(*redfish.RedfishConfigError)
 	assert.True(t, ok)

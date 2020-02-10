@@ -13,7 +13,8 @@ import (
 )
 
 const (
-	SystemRebootDelay = 2 * time.Second
+	SystemRebootDelay         = 2 * time.Second
+	RedfishURLSchemeSeparator = "+"
 )
 
 // Redfish Id ref is a URI which contains resource Id
