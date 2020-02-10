@@ -23,18 +23,6 @@ func TestCompletion(t *testing.T) {
 			Cmd:     cmd,
 		},
 		{
-			Name:    "completion-no-args",
-			CmdLine: "",
-			Cmd:     cmd,
-			Error:   errors.New("shell not specified"),
-		},
-		{
-			Name:    "completion-too-many-args",
-			CmdLine: "bash zsh",
-			Cmd:     cmd,
-			Error:   errors.New("too many arguments, expected only the shell type"),
-		},
-		{
 			Name:    "completion-unknown-shell",
 			CmdLine: "fish",
 			Cmd:     cmd,
