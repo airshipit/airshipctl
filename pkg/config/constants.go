@@ -27,6 +27,16 @@ const (
 
 	AirshipConfigEnv     = "AIRSHIPCONFIG"
 	AirshipKubeConfigEnv = "AIRSHIP_KUBECONFIG"
+
+	AirshipDefaultContext              = "default"
+	AirshipDefaultManifest             = "default"
+	AirshipDefaultManifestRepo         = "treasuremap"
+	AirshipDefaultManifestRepoLocation = "https://opendev.org/airship/" + AirshipDefaultManifestRepo
+
+	// Modules
+	AirshipDefaultBootstrapImage = "quay.io/airshipit/isogen:latest"
+	AirshipDefaultIsoURL         = "http://localhost:8099/debian-custom.iso"
+	AirshipDefaultRemoteType     = "redfish"
 )
 
 // Constants defining CLI flags

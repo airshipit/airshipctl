@@ -19,13 +19,48 @@ package config
 // NewConfig returns a newly initialized Config object
 func NewConfig() *Config {
 	return &Config{
-		Kind:          AirshipConfigKind,
-		APIVersion:    AirshipConfigApiVersion,
-		Clusters:      make(map[string]*ClusterPurpose),
-		Contexts:      make(map[string]*Context),
-		AuthInfos:     make(map[string]*AuthInfo),
-		Manifests:     make(map[string]*Manifest),
-		ModulesConfig: NewModules(),
+		Kind:       AirshipConfigKind,
+		APIVersion: AirshipConfigApiVersion,
+		Clusters:   make(map[string]*ClusterPurpose),
+		AuthInfos:  make(map[string]*AuthInfo),
+		Contexts: map[string]*Context{
+			AirshipDefaultContext: {
+				Manifest: AirshipDefaultManifest,
+			},
+		},
+		Manifests: map[string]*Manifest{
+			AirshipDefaultManifest: {
+				Repository: &Repository{
+					URLString: AirshipDefaultManifestRepoLocation,
+					CheckoutOptions: &RepoCheckout{
+						CommitHash: "master",
+						Branch:     "master",
+						RemoteRef:  "master",
+					},
+				},
+				TargetPath: "/tmp/" + AirshipDefaultManifest,
+			},
+		},
+		ModulesConfig: &Modules{
+			BootstrapInfo: map[string]*Bootstrap{
+				AirshipDefaultContext: {
+					Container: &Container{
+						Volume:           "/srv/iso:/config",
+						Image:            AirshipDefaultBootstrapImage,
+						ContainerRuntime: "docker",
+					},
+					Builder: &Builder{
+						UserDataFileName:       "user-data",
+						NetworkConfigFileName:  "network-config",
+						OutputMetadataFileName: "output-metadata.yaml",
+					},
+					RemoteDirect: &RemoteDirect{
+						RemoteType: AirshipDefaultRemoteType,
+						IsoURL:     AirshipDefaultIsoURL,
+					},
+				},
+			},
+		},
 	}
 }
 

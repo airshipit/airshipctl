@@ -1,7 +1,7 @@
-Error: Not implemented
+Generate initial configuration files for airshipctl
+
 Usage:
   init [flags]
 
 Flags:
   -h, --help   help for init
-
