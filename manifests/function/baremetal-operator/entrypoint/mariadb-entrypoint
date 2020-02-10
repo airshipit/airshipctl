@@ -1,0 +1,18 @@
+#!/usr/bin/bash
+PATH=$PATH:/usr/sbin/
+DATADIR="/var/lib/mysql"
+MARIADB_CONF_FILE="/etc/my.cnf.d/mariadb-server.cnf"
+
+ln -sf /proc/self/fd/1 /var/log/mariadb/mariadb.log
+
+if [ ! -d "${DATADIR}/mysql" ]; then
+    cp -f /shared/my.cnf $MARIADB_CONF_FILE
+    mysql_install_db --datadir="$DATADIR"
+    chown -R mysql "$DATADIR"
+
+    # mysqld_safe closes stdout/stderr if no bash options are set ($- == '')
+    # turn on tracing to prevent this
+    exec bash -x /usr/bin/mysqld_safe --init-file /shared/configure-mysql.sql
+else
+    exec bash -x /usr/bin/mysqld_safe
+fi

@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -xe
+
+#Configure vars for rendering
+pushd /ironic-vars
+rm -f /shared/sed_commands
+for var_name in $( ls ) ; do
+    echo -n s!\$\($var_name\)! >> /shared/sed_commands
+    cat $var_name >> /shared/sed_commands
+    echo ! >> /shared/sed_commands
+    export $var_name=$(cat $var_name)
+done
+popd
+
+while ! ip -br addr show | grep -q "$PROVISIONING_IP/"; do
+    echo 'Waiting for provisioning ip'
+    sleep 5;
+done
+
+mkdir -p /shared/{tftpboot,ironic_prometheus_exporter,html/{images,pxelinux.cfg},log/{dnsmasq,httpd,ironic,ironic-inspector/ramdisk,mariadb}/}
+
+# Remove log files from last deployment
+rm -rf /shared/log/httpd/*
+rm -rf /shared/log/ironic/*
+rm -rf /shared/log/ironic-inspector/*
+
+# Rendering files to shared mount
+pushd /cfg
+for f in $( ls ); do
+    sed -f /shared/sed_commands $f > /shared/$f
+done
+popd
+
+pushd /shared/html/images
+STATUSCODE=$(curl --silent --insecure --location -O --write-out "%{http_code}" ${IRONIC_PYTHON_AGENT})
+if test $STATUSCODE -ne 200; then
+    echo "Failed to load ${ARTS[${art}]}"
+    exit 1
+fi
+tar -xf ironic-python-agent.tar
+popd
+
+chmod -R 0777 /shared/html
+
+touch /shared/init_finished

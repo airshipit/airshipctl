@@ -1,0 +1,9 @@
+#!/usr/bin/bash
+
+cp -f /tftpboot/undionly.kpxe /tftpboot/ipxe.efi /tftpboot/snponly.efi /shared/tftpboot
+cp -f /shared/inspector.ipxe /shared/html/inspector.ipxe
+cp -f /shared/dualboot.ipxe /shared/html/dualboot.ipxe
+cp -f /tmp/uefi_esp.img /shared/html/uefi_esp.img
+
+/bin/runhealthcheck "dnsmasq" &>/dev/null &
+exec /usr/sbin/dnsmasq -d -q -C /shared/dnsmasq.conf

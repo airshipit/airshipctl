@@ -1,0 +1,12 @@
+generatorOptions:
+ disableNameSuffixHash: true
+
+configMapGenerator:
+- name: ironic-entrypoints
+  files:
+    - dnsmasq-entrypoint
+    - httpd-entrypoint
+    - init-bootstrap
+    - inspector-entrypoint
+    - ironic-entrypoint
+    - mariadb-entrypoint
