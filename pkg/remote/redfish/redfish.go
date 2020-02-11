@@ -2,6 +2,7 @@ package redfish
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 
 	redfishApi "opendev.org/airship/go-redfish/api"
@@ -84,17 +85,23 @@ func NewRedfishRemoteDirectClient(ctx context.Context,
 ) (RedfishRemoteDirect, error) {
 	if remoteURL == "" {
 		return RedfishRemoteDirect{},
-			NewRedfishConfigErrorf("redfish remote url empty")
+			ErrRedfishMissingConfig{
+				What: "redfish remote url empty",
+			}
 	}
 
 	if ephNodeID == "" {
 		return RedfishRemoteDirect{},
-			NewRedfishConfigErrorf("redfish ephemeral node id empty")
+			ErrRedfishMissingConfig{
+				What: "redfish ephemeral node id empty",
+			}
 	}
 
 	if isoPath == "" {
 		return RedfishRemoteDirect{},
-			NewRedfishConfigErrorf("redfish ephemeral node iso Path empty")
+			ErrRedfishMissingConfig{
+				What: "redfish ephemeral node iso Path empty",
+			}
 	}
 
 	cfg := &redfishClient.Configuration{
@@ -107,7 +114,10 @@ func NewRedfishRemoteDirectClient(ctx context.Context,
 
 	parsedUrl, err := url.Parse(remoteURL)
 	if err != nil {
-		return RedfishRemoteDirect{}, NewRedfishConfigErrorf("Invalid URL format: %v", err)
+		return RedfishRemoteDirect{},
+			ErrRedfishMissingConfig{
+				What: fmt.Sprintf("invalid url format: %v", err),
+			}
 	}
 
 	client := RedfishRemoteDirect{

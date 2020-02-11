@@ -52,7 +52,7 @@ func TestRedfishRemoteDirectWithEmptyURL(t *testing.T) {
 
 	err := DoRemoteDirect(s)
 
-	_, ok := err.(*redfish.RedfishConfigError)
+	_, ok := err.(redfish.ErrRedfishMissingConfig)
 	assert.True(t, ok)
 }
 
@@ -68,6 +68,6 @@ func TestRedfishRemoteDirectWithEmptyIsoPath(t *testing.T) {
 
 	err := DoRemoteDirect(s)
 
-	_, ok := err.(*redfish.RedfishConfigError)
+	_, ok := err.(redfish.ErrRedfishMissingConfig)
 	assert.True(t, ok)
 }
