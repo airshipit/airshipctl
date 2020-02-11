@@ -18,7 +18,6 @@ package config
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/spf13/cobra"
 
@@ -48,7 +47,13 @@ func NewCmdConfigGetCluster(rootSettings *environment.AirshipCTLSettings) *cobra
 			if len(args) == 1 {
 				theCluster.Name = args[0]
 			}
-			return runGetCluster(theCluster, cmd.OutOrStdout(), rootSettings)
+
+			err := validate(theCluster)
+			if err != nil {
+				return err
+			}
+
+			return config.RunGetCluster(theCluster, cmd.OutOrStdout(), rootSettings.Config())
 		},
 	}
 
@@ -60,47 +65,6 @@ func NewCmdConfigGetCluster(rootSettings *environment.AirshipCTLSettings) *cobra
 func gcInitFlags(o *config.ClusterOptions, getclustercmd *cobra.Command) {
 	getclustercmd.Flags().StringVar(&o.ClusterType, config.FlagClusterType, "",
 		config.FlagClusterType+" for the cluster entry in airshipctl config")
-}
-
-// runGetCluster performs the execution of 'config get-cluster' sub command
-func runGetCluster(o *config.ClusterOptions, out io.Writer, rootSettings *environment.AirshipCTLSettings) error {
-	err := validate(o)
-	if err != nil {
-		return err
-	}
-
-	if o.Name == "" {
-		return getClusters(out, rootSettings)
-	}
-	return getCluster(o.Name, o.ClusterType, out, rootSettings)
-}
-
-func getCluster(cName, cType string,
-	out io.Writer, rootSettings *environment.AirshipCTLSettings) error {
-	airconfig := rootSettings.Config()
-	cluster, err := airconfig.GetCluster(cName, cType)
-	if err != nil {
-		return err
-	}
-	fmt.Fprintf(out, "%s", cluster.PrettyString())
-	return nil
-}
-
-func getClusters(out io.Writer, rootSettings *environment.AirshipCTLSettings) error {
-	airconfig := rootSettings.Config()
-	clusters, err := airconfig.GetClusters()
-	if err != nil {
-		return err
-	}
-	if len(clusters) == 0 {
-		fmt.Fprintln(out, "No clusters found in the configuration.")
-		return nil
-	}
-
-	for _, cluster := range clusters {
-		fmt.Fprintf(out, "%s\n", cluster.PrettyString())
-	}
-	return nil
 }
 
 func validate(o *config.ClusterOptions) error {

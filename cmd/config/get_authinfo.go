@@ -17,9 +17,6 @@ limitations under the License.
 package config
 
 import (
-	"fmt"
-	"io"
-
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
@@ -49,41 +46,9 @@ func NewCmdConfigGetAuthInfo(rootSettings *environment.AirshipCTLSettings) *cobr
 			if len(args) == 1 {
 				theAuthInfo.Name = args[0]
 			}
-			return runGetAuthInfo(theAuthInfo, cmd.OutOrStdout(), rootSettings.Config())
+			return config.RunGetAuthInfo(theAuthInfo, cmd.OutOrStdout(), rootSettings.Config())
 		},
 	}
 
 	return getauthinfocmd
-}
-
-// runGetAuthInfo performs the execution of 'config get-credentials' sub command
-func runGetAuthInfo(o *config.AuthInfoOptions, out io.Writer, airconfig *config.Config) error {
-	if o.Name == "" {
-		return getAuthInfos(out, airconfig)
-	}
-	return getAuthInfo(o, out, airconfig)
-}
-
-func getAuthInfo(o *config.AuthInfoOptions, out io.Writer, airconfig *config.Config) error {
-	cName := o.Name
-	authinfo, err := airconfig.GetAuthInfo(cName)
-	if err != nil {
-		return err
-	}
-	fmt.Fprintln(out, authinfo)
-	return nil
-}
-
-func getAuthInfos(out io.Writer, airconfig *config.Config) error {
-	authinfos, err := airconfig.GetAuthInfos()
-	if err != nil {
-		return err
-	}
-	if len(authinfos) == 0 {
-		fmt.Fprintln(out, "No User credentials found in the configuration.")
-	}
-	for _, authinfo := range authinfos {
-		fmt.Fprintln(out, authinfo)
-	}
-	return nil
 }

@@ -17,7 +17,6 @@ limitations under the License.
 package config
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -58,7 +57,7 @@ func NewCmdConfigSetContext(rootSettings *environment.AirshipCTLSettings) *cobra
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			theContext.Name = cmd.Flags().Args()[0]
-			modified, err := runSetContext(theContext, rootSettings.Config())
+			modified, err := config.RunSetContext(theContext, rootSettings.Config(), true)
 			if err != nil {
 				return err
 			}
@@ -93,46 +92,4 @@ func sctxInitFlags(o *config.ContextOptions, setcontextcmd *cobra.Command) {
 
 	setcontextcmd.Flags().StringVar(&o.ClusterType, config.FlagClusterType, "",
 		config.FlagClusterType+" for the context entry in airshipctl config")
-}
-
-func runSetContext(o *config.ContextOptions, airconfig *config.Config) (bool, error) {
-	contextWasModified := false
-	err := o.Validate()
-	if err != nil {
-		return contextWasModified, err
-	}
-
-	contextIWant := o.Name
-	context, err := airconfig.GetContext(contextIWant)
-	if err != nil {
-		var cerr config.ErrMissingConfig
-		if !errors.As(err, &cerr) {
-			// An error occurred, but it wasn't a "missing" config error.
-			return contextWasModified, err
-		}
-
-		if o.CurrentContext {
-			return contextWasModified, config.ErrMissingConfig{}
-		}
-		// context didn't exist, create it
-		// ignoring the returned added context
-		airconfig.AddContext(o)
-	} else {
-		// Found the desired Current Context
-		// Lets update it and be done.
-		if o.CurrentContext {
-			airconfig.CurrentContext = o.Name
-		} else {
-			// Context exists, lets update
-			airconfig.ModifyContext(context, o)
-		}
-		contextWasModified = true
-	}
-	// Update configuration file just in time persistence approach
-	if err := airconfig.PersistConfig(); err != nil {
-		// Error that it didnt persist the changes
-		return contextWasModified, config.ErrConfigFailed{}
-	}
-
-	return contextWasModified, nil
 }

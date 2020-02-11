@@ -17,7 +17,6 @@ limitations under the License.
 package config
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -78,7 +77,7 @@ func NewCmdConfigSetAuthInfo(rootSettings *environment.AirshipCTLSettings) *cobr
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			theAuthInfo.Name = args[0]
-			modified, err := runSetAuthInfo(theAuthInfo, rootSettings.Config())
+			modified, err := config.RunSetAuthInfo(theAuthInfo, rootSettings.Config(), true)
 			if err != nil {
 				return err
 			}
@@ -126,37 +125,4 @@ func suInitFlags(o *config.AuthInfoOptions, setauthinfo *cobra.Command) error {
 		"Embed client cert/key for the user entry in airshipctl")
 
 	return nil
-}
-
-func runSetAuthInfo(o *config.AuthInfoOptions, airconfig *config.Config) (bool, error) {
-	authinfoWasModified := false
-	err := o.Validate()
-	if err != nil {
-		return authinfoWasModified, err
-	}
-
-	authinfoIWant := o.Name
-	authinfo, err := airconfig.GetAuthInfo(authinfoIWant)
-	if err != nil {
-		var cerr config.ErrMissingConfig
-		if !errors.As(err, &cerr) {
-			// An error occurred, but it wasn't a "missing" config error.
-			return authinfoWasModified, err
-		}
-
-		// authinfo didn't exist, create it
-		// ignoring the returned added authinfo
-		airconfig.AddAuthInfo(o)
-	} else {
-		// AuthInfo exists, lets update
-		airconfig.ModifyAuthInfo(authinfo, o)
-		authinfoWasModified = true
-	}
-	// Update configuration file just in time persistence approach
-	if err := airconfig.PersistConfig(); err != nil {
-		// Error that it didnt persist the changes
-		return authinfoWasModified, config.ErrConfigFailed{}
-	}
-
-	return authinfoWasModified, nil
 }
