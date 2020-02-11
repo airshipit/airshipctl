@@ -1,4 +1,4 @@
-Error: shell not specified
+Error: accepts 1 arg(s), received 2
 Usage:
   completion SHELL [flags]
 
