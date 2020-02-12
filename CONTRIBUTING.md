@@ -10,8 +10,8 @@ This document outlines the process to help get your contribution accepted.
 Whether you are a user or contributor, official support channels are available
 [here](https://wiki.openstack.org/wiki/Airship#Get_in_Touch).
 
-You can also report [bugs](
-https://airship.atlassian.net/issues/?jql=project%20%3D%20AIR%20AND%20issuetype%20%3D%20Bug%20order%20by%20created%20DESC).
+You can also request features or report bugs
+[here](https://github.com/airshipit/airshipctl/issues/new/choose).
 
 Before opening a new issue or submitting a change, it's helpful to search the
 bug reports above - it's likely that another user has already reported the
@@ -20,20 +20,13 @@ also worth asking on the IRC channels.
 
 ## Story Lifecycle
 
-The airshipctl project uses Jira to track all efforts, whether those are
-contributions to this repository or other community projects. The Jira issues
-are a combination of epics, issues, subtasks, bugs, and milestones.  We use
-epics to define large deliverables and many epics have been created already.
-The project assumes that developers trying to break down epics into manageable
-work will create their own issues/stories and any related subtasks to further
-breakdown their work. Milestones act as human readable goals for the sprint they
-are assigned to.
-
-- [Active Sprints](https://airship.atlassian.net/secure/RapidBoard.jspa?rapidView=1)
-- [Issues](https://airship.atlassian.net/projects/AIR/issues)
-
-The airshipctl project leverages 1-month sprints primarily for the purpose of
-chronologically ordering work in Jira.
+The airshipctl project uses
+[GitHub Issues](https://github.com/airshipit/airshipctl/issues) to track all
+efforts, whether those are contributions to this repository or other
+community projects. The GitHub Issues are a combination of epics, issues,
+bugs, and milestones.  We use epics to define large deliverables that need to
+be broken down into more manageable chunks. Milestones act as human readable
+goals for the sprint they are assigned to.
 
 ### Coding Conventions
 
@@ -43,3 +36,40 @@ to cover all Airship subprojects.
 
 However, airshipctl also has its own specific coding conventions and standards
 in the official airshipctl [developer guide](docs/source/developers.md).
+
+### Submitting Changes
+
+All changes to airshipctl should be submitted to OpenDev's Gerrit. Do not try
+to fork the repository on GitHub to submit changes to the code base.
+
+All issues are tracked via
+[GitHub Issues](https://github.com/airshipit/airshipctl/issues) and are tagged
+with a variety of helpful labels. If you are new to the project, we suggest
+starting with issues tagged with
+"[good first issue](https://github.com/airshipit/airshipctl/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)"
+to help get familiar with the codebase and best practices for the project.
+
+When you find an issue you would like to work on, please comment on the issue
+that you would like to have it assigned to you. A project admin will then
+make sure that it is not currently being addressed and will assign it to you.
+
+As you work on an issue, please be sure to update the labels on it as you work.
+When you start work on an issue, use the "wip" label to indicate that you have
+begun on a change for the issue. When your work is completed, submit a comment
+to the issue with a link to your change on Gerrit and change the "wip" label
+to a "ready for review" label to indicate to the community that you are
+seeking reviews.
+
+In your commit message, be sure to include a bracketed tag for the issue you
+are addressing from GitHub Issues. For example, if you are addressing the issue
+\#17, you would start your commit message with `[#17] <Commit Message>`.
+
+## Reviewing Changes
+
+Another great way to contribute to the project is to review changes made by
+others in the community. To find changes to review, you can filter by ready
+for review on GitHub Issues or you can search Gerrit for open changes.
+Links to both of these can be found below:
+
+* [GitHub Issues "ready for review" Filter](https://github.com/airshipit/airshipctl/issues?q=label%3A%22ready+for+review%22)
+* [Gerrit Review Board for airshipctl](https://review.opendev.org/#/q/status:open+NOT+label:Verified%253D-1+NOT+label:Workflow%253D-1+NOT+message:DNM+NOT+message:WIP+project:airship/airshipctl)
