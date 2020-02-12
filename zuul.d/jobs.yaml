@@ -17,6 +17,16 @@
     nodeset: airship-airshipctl-single-node
 
 - job:
+    name: airship-airshipctl-build-image
+    nodeset: airship-airshipctl-single-node
+    run: playbooks/airship-airshipctl-build-images.yaml
+    roles:
+      - zuul: openstack/openstack-helm-infra
+    irrelevant-files:
+      - ^.*\.md$
+      - ^docs/.*$
+
+- job:
     name: airship-airshipctl-functional-existing-k8s
     pre-run: playbooks/airship-airshipctl-deploy-existing-k8s.yaml
     run: playbooks/airship-airshipctl-functional-existing-k8s.yaml
