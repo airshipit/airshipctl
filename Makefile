@@ -41,7 +41,6 @@ BUILDDIR            = docs/build
 REQUIREMENTSTXT     := docs/requirements.txt
 
 # Godoc server options
-GD_GOROOT           ?= /usr/lib/go  # Godoc has trouble with symbolic links, some may need to use /usr/share/go
 GD_PORT             ?= 8080
 
 .PHONY: depend
@@ -143,10 +142,9 @@ docs:
 
 .PHONY: godoc
 godoc:
-	@go get golang.org/x/tools
 	@go install golang.org/x/tools/cmd/godoc
 	@echo "Follow this link to package documentation: http://localhost:${GD_PORT}/pkg/opendev.org/airship/airshipctl/"
-	@godoc -http=":${GD_PORT}" -goroot ${GD_GOROOT}
+	@godoc -http=":${GD_PORT}"
 
 .PHONY: releasenotes
 releasenotes:
