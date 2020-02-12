@@ -1,0 +1,75 @@
+- name: Get Scheme
+  set_fact:
+    image_scheme: "{{ libvirt_volume.image | urlsplit('scheme') }}"
+  when: "libvirt_volume.image is defined"
+
+- name: Get Scheme
+  set_fact:
+    image_dest: "{{ libvirt_image_cache_path }}/{{ libvirt_volume.image | basename }}"
+  when: "libvirt_volume.image is defined"
+
+- name: Ensure cache directories exist
+  file:
+    path: "{{ libvirt_image_cache_path }}"
+    state: directory
+
+- name: Ensure remote images are downloaded
+  get_url:
+    url: "{{ libvirt_volume.image }}"
+    dest: "{{ image_dest }}"
+    checksum: "{{ libvirt_volume.checksum | default(omit) }}"
+  when:
+    - libvirt_volume.image is defined
+    - image_scheme is defined
+    - image_scheme in libvirt_remote_scheme_list
+
+- name: Ensure local images are copied
+  copy:
+    src: "{{ libvirt_volume.image }}"
+    dest: "{{ image_dest }}"
+  when:
+    - libvirt_volume.image is defined
+    - image_scheme not in libvirt_remote_scheme_list
+
+- name: "Create volume"
+  environment:
+    LIBVIRT_DEFAULT_URI: qemu:///system
+  command: >-
+    virsh vol-create-as \
+    --pool "{{ libvirt_volume.pool }}" \
+    --name "{{ libvirt_volume.name }}" \
+    --capacity "{{ libvirt_volume.size }}" \
+    --format "{{ libvirt_volume.format | default('qcow2') }}"
+  register: libvirt_create_volume
+  failed_when:
+    - "libvirt_create_volume.rc != 0"
+    - "'exists already' not in libvirt_create_volume.stderr"
+    - "'exists already' not in libvirt_create_volume.stdout"
+  changed_when:
+    - "libvirt_create_volume.rc != 1"
+    - "'exists already' not in libvirt_create_volume.stderr"
+    - "'exists already' not in libvirt_create_volume.stdout"
+
+- name: "Upload volume from downloaded image"
+  environment:
+    LIBVIRT_DEFAULT_URI: qemu:///system
+  command: >-
+    virsh vol-upload \
+    --pool "{{ libvirt_volume.pool }}" \
+    --vol "{{ libvirt_volume.name }}" \
+    --file "{{ image_dest }}"
+  when:
+    - "libvirt_volume.image is defined"
+    - "libvirt_create_volume.rc == 0"
+
+- name: "Resize volume after uploading from image"
+  environment:
+    LIBVIRT_DEFAULT_URI: qemu:///system
+  command: >-
+    virsh vol-resize \
+    --vol "{{ libvirt_volume.name }}" \
+    --pool "{{ libvirt_volume.pool }}" \
+    --capacity "{{ libvirt_volume.size }}"
+  when:
+    - "libvirt_create_volume.rc == 0"
+    - "libvirt_volume.image is defined"

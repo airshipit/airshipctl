@@ -1,0 +1,23 @@
+- name: set redfish log dir
+  set_fact:
+    redfish_log_dir: "{{ logs_dir }}/redfish"
+
+- name: ensure directory for redfish logs exists
+  file:
+    state: directory
+    path: "{{ redfish_log_dir }}"
+
+- name: dump sushy-tool logs to directory
+  shell: |-
+    journalctl --unit sushy-tools.service > "{{ redfish_log_dir }}/sushy-tools.log"
+  args:
+    executable: /bin/bash
+  ignore_errors: True
+  become: true
+
+- name: "Downloads logs to executor"
+  synchronize:
+    src: "{{ redfish_log_dir }}"
+    dest: "{{ zuul.executor.log_root }}/{{ inventory_hostname }}"
+    mode: pull
+  ignore_errors: True

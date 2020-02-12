@@ -1,0 +1,4 @@
+- name: Clean up cache directory
+  file:
+    path: "{{ libvirt_image_cache_path }}"
+    state: absent

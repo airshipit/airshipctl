@@ -1,0 +1,14 @@
+libvirt_pool:
+  path: /var/lib/libvirt/airship
+  name: airship
+
+libvirt_volumes:
+  - name: volume-1
+    image: https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2
+    size: 10G
+    pool: "{{ libvirt_pool.name }}"
+    action: create
+  - name: volume-2
+    size: 10G
+    pool: "{{ libvirt_pool.name }}"
+    action: create

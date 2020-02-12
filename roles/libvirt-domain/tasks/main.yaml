@@ -1,0 +1,16 @@
+- include_tasks: autodetect.yml
+
+- include_tasks: domain.yml
+  vars:
+    console_log_enabled: "{{ libvirt_domain.console_log_enabled | default(false) }}"
+    console_log_path: >-
+      {{ libvirt_domain.console_log_path |
+         default(libvirt_vm_default_console_log_dir + '/' +  libvirt_domain.name + '-console.log', true) }}
+    machine_default: "{{ none if libvirt_vm_engine == 'kvm' else 'pc-1.0' }}"
+    machine: "{{ libvirt_domain.machine | default(machine_default, true) }}"
+    cpu_mode: "{{ libvirt_domain.cpu_mode | default(libvirt_cpu_mode_default) }}"
+    volumes: "{{ libvirt_domain.volumes | default([], true) }}"
+    interfaces: "{{ libvirt_domain.interfaces | default([], true) }}"
+    start: "{{ libvirt_domain.start | default(true) }}"
+    autostart: "{{ libvirt_domain.autostart | default(true) }}"
+    enable_vnc: "{{ libvirt_domain.enable_vnc | default(false) }}"

@@ -1,0 +1,30 @@
+- name: Include test variables.
+  include_vars:
+    file: vars.yml
+
+- name: ensure serve directory exists
+  file:
+    path: "{{ http_fileserver_serve_dir }}"
+    state: directory
+    mode: "0755"
+  become: true
+
+- name: install http-fileserver
+  include_role:
+    name: http-fileserver
+
+- name: trigger all saved handlers
+  meta: flush_handlers
+
+- name: copy test file to serve directory
+  become: true
+  copy:
+    content: "{{ http_file_server_test_file_content }}"
+    dest: "{{ http_fileserver_serve_dir }}/{{ http_fileserver_test_file_name }}"
+  register: file_copy_command
+
+- name: download test file
+  get_url:
+    url: "http://localhost:{{ http_fileserver_serve_port }}/{{ http_fileserver_test_file_name }}"
+    dest: "/tmp/{{ http_fileserver_test_file_name }}"
+    checksum: "sha1:{{ file_copy_command.checksum }}"

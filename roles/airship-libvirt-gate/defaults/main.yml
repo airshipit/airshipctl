@@ -1,0 +1,82 @@
+airship_gate_names:
+  provision_network: air_prov
+  provision_network_bridge: "prov_br"
+  nat_network: "air_nat"
+  nat_network_bridge: "nat_br"
+  ephemeral_vm: air-ephemeral
+  target_vm_prefix: "air-target"
+  target_separator: "-"
+  target_volume_prefix: "vol_target"
+  ephemeral_volume: "vol_ephemeral"
+  pool: airship
+
+airship_gate_ipam:
+  nat_network:
+    bridge_ip: "10.23.25.1"
+    dhcp_start: "10.23.25.100"
+    dhcp_end: "10.23.25.199"
+  provision_network:
+    bridge_ip: "10.23.24.1"
+
+airship_gate_redfish:
+  port: 8000
+  bind_address: "127.0.0.1"
+
+airship_gate_flavors:
+  small:
+    target_vm_memory_mb: 1024
+    target_vm_vcpus: 1
+    ephemeral_vm_memory_mb: 1024
+    ephemeral_vm_vcpus: 1
+    ephemeral_disk_size: 20G
+    target_disk_size: 10G
+    disk_format: qcow2
+    target_vms_count: 3
+
+airship_gate_libvirt_pools:
+  - path: /var/lib/libvirt/airship
+    name: "{{ airship_gate_names.pool }}"
+
+airship_gate_libvirt_domain:
+  state: running
+  name: 'vm1'
+  memory_mb: 2048
+  vcpus: 1
+  volumes:
+    - name: 'volume-1'
+      device: 'disk'
+      format: 'qcow2'
+      pool: 'airship'
+  interfaces:
+    - network: "{{ airship_gate_names.nat_network }}"
+    - network: "{{ airship_gate_names.provision_network }}"
+
+airship_gate_libvirt_networks:
+  - network_action: create
+    autostart: false
+    name: "{{ airship_gate_names.nat_network }}"
+    spec:
+      forward:
+        mode: nat
+        nat:
+          port:
+            - start: 1024
+              end: 65535
+      bridge:
+        name: "{{ airship_gate_names.nat_network_bridge }}"
+        stp: 'on'
+        delay: '0'
+      ip:
+        address: "{{ airship_gate_ipam.nat_network.bridge_ip }}"
+        netmask: "255.255.255.0"
+  - network_action: create
+    autostart: false
+    name: "{{ airship_gate_names.provision_network }}"
+    spec:
+      bridge:
+        name: "{{ airship_gate_names.provision_network_bridge }}"
+        stp: 'on'
+        delay: '0'
+      ip:
+        address: "{{ airship_gate_ipam.provision_network.bridge_ip }}"
+        netmask: "255.255.255.0"

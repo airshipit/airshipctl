@@ -1,0 +1,3 @@
+libvirt_pool:
+  path: /var/lib/libvirt/my-pool
+  name: test_pool

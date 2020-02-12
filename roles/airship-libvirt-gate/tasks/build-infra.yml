@@ -1,0 +1,99 @@
+- name: verify that gate flavor is defined
+  assert:
+    that:
+      - gate_flavor is defined
+
+- name: set flavor variables.
+  set_fact:
+    chosen_flavor: "{{ airship_gate_flavors[gate_flavor] }}"
+
+- name: install libvirt
+  include_role:
+    name: libvirt-install
+
+- name: create pool
+  include_role:
+    name: libvirt-pool
+  vars:
+    libvirt_pool: "{{ item }}"
+  with_items: "{{ airship_gate_libvirt_pools }}"
+
+- name: create networks
+  include_role:
+    name: libvirt-network
+  with_items: "{{ airship_gate_libvirt_networks }}"
+  vars:
+    libvirt_network: "{{ item }}"
+    network_action: create
+
+- name: Create ephemeral volume
+  include_role:
+    name: libvirt-volume
+  vars:
+    libvirt_volume:
+      name: "{{ airship_gate_names.ephemeral_volume }}"
+      size: "{{ chosen_flavor.ephemeral_disk_size }}"
+      pool: "{{ airship_gate_names.pool }}"
+    volume_action: create
+- name: Create target volumes
+  include_role:
+    name: libvirt-volume
+  vars:
+    libvirt_volume:
+      name: "{{ airship_gate_names.target_volume_prefix }}-{{ vm_index }}"
+      size: "{{ chosen_flavor.target_disk_size }}"
+      pool: "{{ airship_gate_names.pool }}"
+      format: "{{ chosen_flavor.disk_format }}"
+    volume_action: create
+  loop_control:
+    loop_var: vm_index
+  with_sequence: "start=1 end={{ chosen_flavor.target_vms_count }}"
+
+- name: Create target domains
+  include_role:
+    name: libvirt-domain
+  vars:
+    libvirt_domain:
+      state: shutdown
+      name: "{{ airship_gate_names.target_vm_prefix }}-{{ vm_index }}"
+      memory_mb: "{{ chosen_flavor.target_vm_memory_mb }}"
+      vcpus: "{{ chosen_flavor.target_vm_vcpus }}"
+      volumes:
+        - name: "{{ airship_gate_names.target_volume_prefix }}-{{ vm_index }}"
+          device: "disk"
+          format: "{{ chosen_flavor.disk_format }}"
+          pool: "{{ airship_gate_names.pool }}"
+      interfaces:
+        - network: "{{ airship_gate_names.nat_network }}"
+        - network: "{{ airship_gate_names.provision_network }}"
+  loop_control:
+    loop_var: vm_index
+  with_sequence: "start=1 end={{ chosen_flavor.target_vms_count }}"
+
+- name: Create ephemeral domain
+  include_role:
+    name: libvirt-domain
+  vars:
+    libvirt_domain:
+      enable_vnc: true
+      console_log_enabled: true
+      state: shutdown
+      name: "{{ airship_gate_names.ephemeral_vm }}"
+      memory_mb: "{{ chosen_flavor.ephemeral_vm_memory_mb }}"
+      vcpus: "{{ chosen_flavor.ephemeral_vm_vcpus }}"
+      volumes:
+        - name: "{{ airship_gate_names.ephemeral_volume }}"
+          device: "disk"
+          format: "{{ chosen_flavor.disk_format }}"
+          pool: "{{ airship_gate_names.pool }}"
+      interfaces:
+        - network: "{{ airship_gate_names.nat_network }}"
+        - network: "{{ airship_gate_names.provision_network }}"
+
+- name: install and start redfish emulator
+  include_role:
+    name: redfish-emulator
+  vars:
+    redfish_action: "install"
+    redfish_emulator_bind_ip: "{{ airship_gate_redfish.bind_address }}"
+    redfish_emulator_bind_port: "{{ airship_gate_redfish.port }}"

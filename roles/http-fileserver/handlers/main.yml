@@ -1,0 +1,11 @@
+- name: reload systemd configuration
+  become: yes
+  systemd:
+    daemon_reload: yes
+
+- name: http file server restarted
+  service:
+    name: simple-http-{{ http_fileserver_name | default('default') }}.service
+    state: restarted
+    enabled: true
+  become: true

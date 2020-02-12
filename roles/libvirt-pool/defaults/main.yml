@@ -1,0 +1,14 @@
+libvirt_pool:
+  name: airship
+  path: "/var/lib/airship"
+pool_action: create
+libvirt_pool_template_default: |
+  <pool type="dir">
+    <name>{{ libvirt_pool.name }}</name>
+    {% if 'capacity' in libvirt_pool %}
+    <capacity>{{ libvirt_pool.capacity }}</capacity>
+    {% endif %}
+    <target>
+      <path>{{ libvirt_pool.path | default('placeholder_value') }}</path>
+    </target>
+  </pool>

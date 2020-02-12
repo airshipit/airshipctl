@@ -1,0 +1,37 @@
+- block:
+  - name: Ensuring python3-pip and support packages are present
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+    fail:
+      msg: "CentoOS or RHEL is not currently supported"
+
+  - name: Ensuring python3-pip and support packages are present
+    become: true
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+    apt:
+      name:
+        - python3-pip
+        - python3-libvirt
+        - python-libvirt
+      state: present
+
+  - name: Install sushy-tools
+    pip:
+      name: sushy-tools
+      executable: pip3
+    become: true
+
+- name: install systemd sushy service unit
+  become: true
+  template:
+    src: sushy-tools.service.j2
+    dest: /etc/systemd/system/sushy-tools.service
+  notify:
+    - reload systemd configuration
+    - restart sushy-emulator
+
+- name: start sushy-emulator service
+  become: true
+  service:
+    name: sushy-tools
+    state: started
+    enabled: true

@@ -1,0 +1,40 @@
+- name: Include test variables.
+  include_vars:
+    file: vars.yml
+- name: install libvirt
+  include_role:
+    name: libvirt-install
+- name: create networks
+  include_role:
+    name: libvirt-network
+  vars:
+    network_action: "{{ item.network_action }}"
+    libvirt_network: "{{ item }}"
+  with_items: "{{ libvirt_networks }}"
+- name: create pool
+  include_role:
+    name: libvirt-pool
+- name: Create defined volumes
+  include_role:
+    name: libvirt-volume
+  with_items: "{{ libvirt_volumes }}"
+  vars:
+    libvirt_volume: "{{ vol }}"
+    volume_action: "{{ vol.action }}"
+  loop_control:
+    loop_var: vol
+- name: create libvirt domains
+  include_role:
+    name: libvirt-domain
+- name: save information about domain
+  virt:
+    command: info
+    name: "{{ libvirt_domain.name }}"
+  register: domain_info
+- name: debug domain-info
+  debug:
+    var: domain_info
+- name: make sure that vm is in correct state
+  assert:
+    that:
+      - domain_info[libvirt_domain.name].state == libvirt_domain.state

@@ -1,0 +1,5 @@
+libvirt_remote_scheme_list:
+  - http
+  - https
+libvirt_image_cleanup_cache: false
+libvirt_image_cache_path: /tmp/airship

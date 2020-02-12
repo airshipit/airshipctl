@@ -1,0 +1,28 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# The role is used to copy manifest directory to remote host
+# Durning tests in zuul, zuul copies git repository to target node, however
+# When running outside zuul/opendev ci env, we want to copy manifests from
+# commit to remote machine as well. `local_src_dir` should be set from command
+# line in anisble-playbook -e option,
+# eg: ansible-playbook -e local_src_dir="/home/ubuntu/airshipctl"
+
+
+- name: sync repository
+  synchronize:
+    delete: true
+    dest: "{{ remote_work_dir }}"
+    recursive: true
+# trailing slash "/" is needed to copy contents of the directory not directory itself.
+    src: "{{ local_src_dir }}/"
+  no_log: true

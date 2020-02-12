@@ -1,0 +1,15 @@
+#  This file is part of sushy-emulator (redfish).
+#
+
+[Unit]
+Description=Sushy Libvirt emulator
+After=syslog.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/sushy-emulator -i {{ redfish_emulator_bind_ip }} -p {{ redfish_emulator_bind_port }} --libvirt-uri "qemu:///system"
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

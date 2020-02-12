@@ -1,0 +1,32 @@
+- name: Include test variables.
+  include_vars:
+    file: vars.yml
+- name: install libvirt
+  include_role:
+    name: libvirt-install
+- name: create pool
+  include_role:
+    name: libvirt-pool
+- name: Create defined volumes
+  include_role:
+    name: libvirt-volume
+  with_items: "{{ libvirt_volumes }}"
+  vars:
+    libvirt_volume: "{{ vol }}"
+    volume_action: "{{ vol.action }}"
+  loop_control:
+    loop_var: vol
+- name: save volume list
+  environment:
+    LIBVIRT_DEFAULT_URI: qemu:///system
+  command: virsh vol-list --pool {{ libvirt_pool.name }}
+  register: libvirt_pool_list
+  changed_when: false
+- name: verify volumes exist
+  assert:
+    that:
+      - "vol.name in libvirt_pool_list.stdout"
+  with_items: "{{ libvirt_volumes }}"
+  loop_control:
+    loop_var: vol
+

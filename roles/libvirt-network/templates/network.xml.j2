@@ -1,0 +1,110 @@
+<network>
+  <name>{{ net_yaml.name }}</name>
+  {% if net_yaml.forward is defined %}
+    {% if net_yaml.forward.mode is defined %}
+      <forward mode='{{ net_yaml.forward.mode }}'>
+    {% else %}
+      <forward>
+    {% endif %}
+
+    {% if net_yaml.forward.nat is defined %}
+    <nat>
+      {% if net_yaml.forward.nat.port is defined %}
+        {% for port in net_yaml.forward.nat.port %}
+          <port start='{{ port.start | string }}' end='{{ port.end | string }}'/>
+        {% endfor %}
+      {% endif %}
+    </nat>
+    {% endif %}
+    </forward>
+  {% endif %}
+  {% if net_yaml.bridge is defined %}
+    <bridge
+    {% if net_yaml.bridge.name is defined %}
+      name='{{ net_yaml.bridge.name }}'
+    {% endif %}
+    {% if net_yaml.bridge.stp is defined %}
+      stp='{{ net_yaml.bridge.stp | string }}'
+    {% endif %}
+    {% if net_yaml.bridge.delay is defined %}
+      delay='{{ net_yaml.bridge.delay | string }}'
+    {% endif %}
+    />
+  {% endif %}
+  {% if net_yaml.mac is defined %}
+    <mac
+      {% if net_yaml.mac.address is defined %}
+        address='{{ net_yaml.mac.address }}'
+      {% endif %}
+    />
+  {% endif %}
+  {% if net_yaml.domain is defined %}
+    <domain
+    {% if net_yaml.domain.name is defined %}
+      name='{{ net_yaml.domain.name }}'
+    {% endif %}
+    {% if net_yaml.domain.localOnly is defined %}
+      localOnly='{{ net_yaml.domain.localOnly | string }}'
+    {% endif %}
+    />
+  {% endif %}
+  {% if net_yaml.dns is defined %}
+    <dns>
+    {% if net_yaml.dns | list %}
+    {% for dns_item in net_yaml.dns %}
+      {% if dns_item.forwarder is defined %}
+        <forwarder
+        {% if dns_item.forwarder.domain is defined %}
+          domain='{{ dns_item.forwarder.domain }}'
+        {% endif %}
+        {% if dns_item.forwarder.addr is defined %}
+          addr='{{ dns_item.forwarder.addr }}'
+        {% endif %}
+        />
+      {% endif %}
+    {% endfor %}
+    {% endif %}
+    </dns>
+  {% endif %}
+  {% if net_yaml.ip is defined %}
+    <ip
+    {% if net_yaml.ip.address is defined %}
+      address='{{ net_yaml.ip.address }}'
+    {% endif %}
+    {% if net_yaml.ip.netmask is defined %}
+      netmask='{{ net_yaml.ip.netmask }}'
+    {% endif %}
+    >
+    {% if net_yaml.ip.dhcp is defined %}
+      <dhcp>
+      {% for dhcp_item in net_yaml.ip.dhcp %}
+        {% if dhcp_item.range is defined %}
+          <range
+          {% if dhcp_item.range.start is defined %}
+            start='{{ dhcp_item.range.start }}'
+          {% endif %}
+          {% if dhcp_item.range.end is defined %}
+            end='{{ dhcp_item.range.end }}'
+          {% endif %}
+          />
+        {% endif %}
+        {% if dhcp_item.host is defined %}
+          <host
+          {% if dhcp_item.host.mac is defined %}
+            mac='{{ dhcp_item.host.mac }}'
+          {% endif %}
+          {% if dhcp_item.host.name is defined %}
+            name='{{ dhcp_item.host.name }}'
+          {% endif %}
+          {% if dhcp_item.host.ip is defined %}
+            ip='{{ dhcp_item.host.ip }}'
+          {% endif %}
+          />
+        {% endif %}
+      {% endfor %}
+      </dhcp>
+    {% endif %}
+    </ip>
+  {% endif %}
+</network>
+

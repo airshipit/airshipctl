@@ -1,0 +1,6 @@
+- name: ensure http service is stopped
+  service:
+    name: simple-http-{{ http_fileserver_name | default('default') }}.service
+    state: stopped
+    enabled: false
+  become: true
