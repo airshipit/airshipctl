@@ -1,10 +1,11 @@
 # Plugin Support
 
-##### Table of Contents
-* [Compile-In Plugins](#compile-in)
-* [Fine Tuning a Build](#fine-tuning)
+## Table of Contents
+
+* [Compile-In Plugins](#compile-in-plugins)
+* [Fine Tuning a Build](#fine-tuning-a-build)
   * [Command Selection](#command-selection)
-  * [Accessing `airshipctl` settings](#settings)
+  * [Accessing `airshipctl` settings](#accessing-airshipctl-settings)
 
 Our requirements for `airshipctl` contain two very conflicting concepts. One,
 we'd like to assert that `airshipctl` is a statically linked executable, such
@@ -13,12 +14,10 @@ requirements can't coincide within the same project under the standard
 definition of a plugin. Our solution is to provide a more refined definition of
 what a plugin actually is.
 
-<a name="compile-in" />
-
 ## Compile-In Plugins
 
 In order to support plugins to an independent binary file, we use the concept
-of *compile-in plugins*. A *compile-in plugin* is an add-on that is built into
+of "compile-in plugins". A "compile-in plugin" is an add-on that is built into
 the main application at compile time, as opposed to runtime. This means that
 while `airshipctl` is a standalone application, it also acts as a sort of
 library.  In fact, taking a deeper look at `airshipctl` reveals that the base
@@ -53,18 +52,28 @@ Usage:
   airshipctl [command]
 
 Available Commands:
+  bootstrap   Bootstrap ephemeral Kubernetes cluster
+  completion  Generate autocompletions script for the specified shell (bash or zsh)
+  config      Modify airshipctl config files
+  document    manages deployment documents
   help        Help about any command
+  kubectl     kubectl controls the Kubernetes cluster manager
   version     Show the version number of airshipctl
 
 Flags:
-      --debug   enable verbose output
-  -h, --help    help for airshipctl
+      --airshipconf string   Path to file for airshipctl configuration. (default "$HOME/.airship/config")
+      --debug                enable verbose output
+  -h, --help                 help for airshipctl
+      --kubeconfig string    Path to kubeconfig associated with airshipctl configuration. (default "$HOME/.airship/kubeconfig")
+
+Additional help topics:
+  airshipctl cluster    Control Kubernetes cluster
 
 Use "airshipctl [command] --help" for more information about a command.
 ```
 
 Every other command is treated as a plugin. Changing `main` to the following
-adds the default commands, or "plugins", to the`airshipctl` tool:
+adds the default commands, or "plugins", to the `airshipctl` tool:
 
 ```go
 func main() {
@@ -81,8 +90,12 @@ Compiling and running now provides the following commands:
 
 ```
 Available Commands:
-  bootstrap   bootstraps airshipctl
+  bootstrap   Bootstrap ephemeral Kubernetes cluster
+  completion  Generate autocompletions script for the specified shell (bash or zsh)
+  config      Modify airshipctl config files
+  document    manages deployment documents
   help        Help about any command
+  kubectl     kubectl controls the Kubernetes cluster manager
   version     Show the version number of airshipctl
   ------ more commands TBD ------
 ```
@@ -124,16 +137,12 @@ func main() {
 }
 ```
 
-<a name="fine-tuning" />
-
 ## Fine Tuning a Build
 
 There are a couple of ways in which a plugin author can fine tune their version
 of `airshipctl`. These manifest as an ability to pick and choose various
 plugins (including the defaults), and capabilities for accessing the same
 settings as other `airshipctl` commands.
-
-<a name="command-selection" />
 
 ### Command Selection
 
@@ -168,8 +177,6 @@ have any other builtins.
 This can be particularly useful if a plugin author desires to "override" a
 specific functionality provided by a builtin command. For example, you might
 write your own `bootstrap` command and use it in place of the builtin.
-
-<a name="settings" />
 
 ### Accessing `airshipctl` settings
 

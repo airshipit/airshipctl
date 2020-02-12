@@ -4,14 +4,14 @@
 
 # Documentation
 sphinx>2.1.0
-oslosphinx>=4.7.0 # Apache-2.0
+oslosphinx>=4.7.0  # Apache-2.0
 sphinx_rtd_theme
 
 # UML image generation
 plantuml
 
 # Releasenotes
-reno>=2.5.0 # Apache-2.0
+reno>=2.5.0  # Apache-2.0
 
 # Sphinx markdown extension
 recommonmark
