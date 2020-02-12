@@ -60,9 +60,19 @@ to the issue with a link to your change on Gerrit and change the "wip" label
 to a "ready for review" label to indicate to the community that you are
 seeking reviews.
 
-In your commit message, be sure to include a bracketed tag for the issue you
-are addressing from GitHub Issues. For example, if you are addressing the issue
-\#17, you would start your commit message with `[#17] <Commit Message>`.
+In your commit message, be sure to include a reference for the issue you
+are addressing from GitHub Issues. There are three ways of doing this:
+
+1. Add a statement in your commit message in the format of `Relates-To: #X`.
+This will add a link on issue "#X" to your change.
+2. Add a statement in your commit message in the format of `Closes: #X`.
+This will add a link on issue "#X" to your change and will close the issue when
+your change merges.
+3. Add a bracketed tag at the beginning of your commit message in the format of
+`[#X] <begin commit message>`. This will add a link on issue "#X" to your
+change. This method is considered a fallback in lieu of the other two methods.
+
+Any issue references should be evaluated within 15 minutes of being uploaded.
 
 ## Reviewing Changes
 

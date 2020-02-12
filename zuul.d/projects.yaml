@@ -30,3 +30,4 @@
         - airship-airshipctl-publish-docs
         - airship-airshipctl-publish-image
         - airship-airshipctl-upload-git-mirror
+        - airship-airshipctl-update-github-issues
