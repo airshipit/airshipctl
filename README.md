@@ -75,3 +75,4 @@ submit sitemanage` to introduce those changes to the site.
 
 - Airship Website - [airshipit.org](https://airshipit.org)
 - Airship UI Project - [opendev.org/airship/airshipui](https://opendev.org/airship/airshipui)
+- airshipctl Issue Tracker - [https://github.com/airshipit/airshipctl/issues](https://github.com/airshipit/airshipctl/issues)
