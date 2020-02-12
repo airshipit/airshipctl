@@ -36,6 +36,7 @@ func NewCompletionCommand() *cobra.Command {
 		Use:       "completion SHELL",
 		Short:     "Generate autocompletions script for the specified shell (bash or zsh)",
 		Long:      completionDesc,
+		Args:      cobra.ExactArgs(1),
 		RunE:      runCompletion,
 		ValidArgs: shells,
 	}
@@ -44,12 +45,6 @@ func NewCompletionCommand() *cobra.Command {
 }
 
 func runCompletion(cmd *cobra.Command, args []string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("shell not specified")
-	}
-	if len(args) > 1 {
-		return fmt.Errorf("too many arguments, expected only the shell type")
-	}
 	run, found := completionShells[args[0]]
 	if !found {
 		return fmt.Errorf("unsupported shell type %q", args[0])
