@@ -2,7 +2,7 @@
 name: Bug report
 about: Report a bug or unexpected airshipctl behavior
 title: ''
-labels: bug
+labels: bug, triage
 assignees: ''
 
 ---

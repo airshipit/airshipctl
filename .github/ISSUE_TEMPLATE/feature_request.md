@@ -2,7 +2,7 @@
 name: Feature request
 about: Suggest an airshipctl feature
 title: ''
-labels: enhancement
+labels: enhancement, triage
 assignees: ''
 
 ---
