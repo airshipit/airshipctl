@@ -24,15 +24,27 @@ type AirshipCTLSettings struct {
 // InitFlags adds the default settings flags to cmd
 func (a *AirshipCTLSettings) InitFlags(cmd *cobra.Command) {
 	flags := cmd.PersistentFlags()
-	flags.BoolVar(&a.Debug, "debug", false, "enable verbose output")
+	flags.BoolVar(
+		&a.Debug,
+		"debug",
+		false,
+		"enable verbose output")
 
-	flags.StringVar(&a.airshipConfigPath, config.FlagConfigFilePath,
-		filepath.Join(HomePlaceholder, config.AirshipConfigDir, config.AirshipConfig),
-		"Path to file for airshipctl configuration.")
+	defaultAirshipConfigDir := filepath.Join(HomeEnvVar, config.AirshipConfigDir)
 
-	flags.StringVar(&a.kubeConfigPath, clientcmd.RecommendedConfigPathFlag,
-		filepath.Join(HomePlaceholder, config.AirshipConfigDir, config.AirshipKubeConfig),
-		"Path to kubeconfig associated with airshipctl configuration.")
+	defaultAirshipConfigPath := filepath.Join(defaultAirshipConfigDir, config.AirshipConfig)
+	flags.StringVar(
+		&a.airshipConfigPath,
+		config.FlagConfigFilePath,
+		"",
+		`Path to file for airshipctl configuration. (default "`+defaultAirshipConfigPath+`")`)
+
+	defaultKubeConfigPath := filepath.Join(defaultAirshipConfigDir, config.AirshipKubeConfig)
+	flags.StringVar(
+		&a.kubeConfigPath,
+		clientcmd.RecommendedConfigPathFlag,
+		"",
+		`Path to kubeconfig associated with airshipctl configuration. (default "`+defaultKubeConfigPath+`")`)
 }
 
 func (a *AirshipCTLSettings) Config() *config.Config {

@@ -47,7 +47,7 @@ func TestFlagLoading(t *testing.T) {
 		{
 			name:     "default, no flags",
 			args:     []string{},
-			expected: "$HOME/.airship/config",
+			expected: "",
 		},
 		{
 			name:     "alternate airshipconfig",
