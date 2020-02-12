@@ -18,6 +18,7 @@ package config
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	kubeconfig "k8s.io/client-go/tools/clientcmd/api"
@@ -49,6 +50,18 @@ func TestConfigSetContext(t *testing.T) {
 			Name:    "config-cmd-set-context-with-help",
 			CmdLine: "--help",
 			Cmd:     NewCmdConfigSetContext(nil),
+		},
+		{
+			Name:    "config-cmd-set-context-too-many-args",
+			CmdLine: "arg1 arg2",
+			Cmd:     NewCmdConfigSetContext(nil),
+			Error:   fmt.Errorf("accepts %d arg(s), received %d", 1, 2),
+		},
+		{
+			Name:    "config-cmd-set-context-too-few-args",
+			CmdLine: "",
+			Cmd:     NewCmdConfigSetContext(nil),
+			Error:   fmt.Errorf("accepts %d arg(s), received %d", 1, 0),
 		},
 	}
 

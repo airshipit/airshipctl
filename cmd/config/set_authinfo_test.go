@@ -18,6 +18,7 @@ package config
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	kubeconfig "k8s.io/client-go/tools/clientcmd/api"
@@ -53,6 +54,18 @@ func TestConfigSetAuthInfo(t *testing.T) {
 			Name:    "config-cmd-set-authinfo-with-help",
 			CmdLine: "--help",
 			Cmd:     NewCmdConfigSetAuthInfo(nil),
+		},
+		{
+			Name:    "config-cmd-set-authinfo-too-many-args",
+			CmdLine: "arg1 arg2",
+			Cmd:     NewCmdConfigSetAuthInfo(nil),
+			Error:   fmt.Errorf("accepts %d arg(s), received %d", 1, 2),
+		},
+		{
+			Name:    "config-cmd-set-authinfo-too-few-args",
+			CmdLine: "",
+			Cmd:     NewCmdConfigSetAuthInfo(nil),
+			Error:   fmt.Errorf("accepts %d arg(s), received %d", 1, 0),
 		},
 	}
 

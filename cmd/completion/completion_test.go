@@ -2,6 +2,7 @@ package completion_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"opendev.org/airship/airshipctl/cmd/completion"
@@ -9,24 +10,34 @@ import (
 )
 
 func TestCompletion(t *testing.T) {
-	cmd := completion.NewCompletionCommand()
-
 	cmdTests := []*testutil.CmdTest{
 		{
 			Name:    "completion-bash",
 			CmdLine: "bash",
-			Cmd:     cmd,
+			Cmd:     completion.NewCompletionCommand(),
 		},
 		{
 			Name:    "completion-zsh",
 			CmdLine: "zsh",
-			Cmd:     cmd,
+			Cmd:     completion.NewCompletionCommand(),
 		},
 		{
 			Name:    "completion-unknown-shell",
 			CmdLine: "fish",
-			Cmd:     cmd,
+			Cmd:     completion.NewCompletionCommand(),
 			Error:   errors.New("unsupported shell type \"fish\""),
+		},
+		{
+			Name:    "completion-cmd-too-many-args",
+			CmdLine: "arg1 arg2",
+			Cmd:     completion.NewCompletionCommand(),
+			Error:   fmt.Errorf("accepts %d arg(s), received %d", 1, 2),
+		},
+		{
+			Name:    "completion-cmd-too-few-args",
+			CmdLine: "",
+			Cmd:     completion.NewCompletionCommand(),
+			Error:   fmt.Errorf("accepts %d arg(s), received %d", 1, 0),
 		},
 	}
 

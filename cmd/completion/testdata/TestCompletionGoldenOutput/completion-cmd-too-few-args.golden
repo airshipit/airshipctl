@@ -1,4 +1,4 @@
-Error: too many arguments, expected only the shell type
+Error: accepts 1 arg(s), received 0
 Usage:
   completion SHELL [flags]
 
