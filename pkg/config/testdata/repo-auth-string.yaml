@@ -1,0 +1,2 @@
+ssh-key: testdata/test-key.pem
+type: ssh-key

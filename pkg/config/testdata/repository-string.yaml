@@ -1,12 +1,8 @@
-target-path: dummy_targetpath
-url:
-  ForceQuery: false
-  Fragment: ""
-  Host: dummy.url.com
-  Opaque: ""
-  Path: ""
-  RawPath: ""
-  RawQuery: ""
-  Scheme: http
-  User: null
-username: dummy_user
+auth:
+  ssh-key: testdata/test-key.pem
+  type: ssh-key
+checkout:
+  branch: ""
+  remote-ref: ""
+  tag: v1.0.1
+url: http://dummy.url.com

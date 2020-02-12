@@ -821,36 +821,13 @@ func (m *Manifest) Equal(n *Manifest) bool {
 	if n == nil {
 		return n == m
 	}
-	repositoryEq := reflect.DeepEqual(m.Repositories, n.Repositories)
-	return repositoryEq && m.TargetPath == n.TargetPath
+	repositoryEq := reflect.DeepEqual(m.Repository, n.Repository)
+	extraReposEq := reflect.DeepEqual(m.ExtraRepositories, n.ExtraRepositories)
+	return repositoryEq && extraReposEq && m.TargetPath == n.TargetPath
 }
 
 func (m *Manifest) String() string {
 	yamlData, err := yaml.Marshal(&m)
-	if err != nil {
-		return ""
-	}
-	return string(yamlData)
-}
-
-// Repository functions
-func (r *Repository) Equal(s *Repository) bool {
-	if s == nil {
-		return r == s
-	}
-	var urlMatches bool
-	if r.Url != nil && s.Url != nil {
-		urlMatches = r.Url.String() == s.Url.String()
-	} else {
-		// this catches cases where one or both are nil
-		urlMatches = r.Url == s.Url
-	}
-	return urlMatches &&
-		r.Username == s.Username &&
-		r.TargetPath == s.TargetPath
-}
-func (r *Repository) String() string {
-	yamlData, err := yaml.Marshal(&r)
 	if err != nil {
 		return ""
 	}
