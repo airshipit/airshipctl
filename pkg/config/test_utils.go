@@ -94,7 +94,8 @@ func DummyRepository() *Repository {
 	return &Repository{
 		URLString: "http://dummy.url.com",
 		CheckoutOptions: &RepoCheckout{
-			Tag: "v1.0.1",
+			Tag:           "v1.0.1",
+			ForceCheckout: false,
 		},
 		Auth: &RepoAuth{
 			Type:    "ssh-key",
@@ -112,7 +113,8 @@ func DummyRepoAuth() *RepoAuth {
 
 func DummyRepoCheckout() *RepoCheckout {
 	return &RepoCheckout{
-		Tag: "v1.0.1",
+		Tag:           "v1.0.1",
+		ForceCheckout: false,
 	}
 }
 
