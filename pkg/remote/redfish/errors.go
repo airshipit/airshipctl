@@ -17,14 +17,12 @@ func NewRedfishClientErrorf(format string, v ...interface{}) error {
 	return e
 }
 
-type RedfishConfigError struct {
-	aerror.AirshipError
+type ErrRedfishMissingConfig struct {
+	What string
 }
 
-func NewRedfishConfigErrorf(format string, v ...interface{}) error {
-	e := &RedfishConfigError{}
-	e.Message = fmt.Sprintf(format, v...)
-	return e
+func (e ErrRedfishMissingConfig) Error() string {
+	return "missing configuration: " + e.What
 }
 
 // Redfish client return error if response has no body.
