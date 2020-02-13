@@ -19,6 +19,7 @@
     - gather-host-logs
     - airship-gather-sushy-logs
     - airship-gather-libvirt-logs
+    - airship-airshipctl-gather-configs
   environment:
     LIBVIRT_DEFAULT_URI: qemu:///system
 
