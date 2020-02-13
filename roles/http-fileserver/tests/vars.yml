@@ -1,0 +1,4 @@
+http_fileserver_serve_dir: /srv/test-dir
+http_fileserver_serve_port: 8095
+http_file_server_test_file_content: "something to test"
+http_fileserver_test_file_name: "test-file"

@@ -1,0 +1,41 @@
+- name: Include test variables.
+  include_vars:
+    file: vars.yml
+
+- name: deploy-gate
+  include_role:
+    name: airship-libvirt-gate
+  vars:
+    gate_flavor: small
+    gate_action: build-infra
+
+- name: query redfish to make sure it has runnig domains
+  uri:
+    url: http://{{ airship_gate_redfish.bind_address }}:{{ airship_gate_redfish.port }}/redfish/v1/Systems?format=json
+    method: GET
+    return_content: yes
+  register: redfish_response
+
+- name: debug redfish machines
+  debug:
+    var: redfish_response
+
+- name: save ids to list
+  uri:
+    url: "http://{{ airship_gate_redfish.bind_address }}:{{ airship_gate_redfish.port }}{{ item.value }}?format=json"
+    method: GET
+    return_content: yes
+  with_dict: "{{ redfish_response.json.Members }}"
+  register: systems_details
+
+- name: deploy ephemeral host
+  set_fact:
+    ephemeral_domain_id: "{{ systems_details | json_query(query_string) | join('') }}"
+  vars:
+    query_string: "results[?json.Name=='{{ airship_gate_names.ephemeral_vm }}'].json.Id"
+
+- name: verify that id is not empty
+  assert:
+    that:
+      - ephemeral_domain_id is defined
+      - (ephemeral_domain_id | length) > 1

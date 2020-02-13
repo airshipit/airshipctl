@@ -1,0 +1,33 @@
+- name: install simplehttpserver package
+  apt:
+    name:
+      - python3
+    state: present
+  become: true
+
+- name: set http server systemd unit content
+  set_fact:
+    http_fileserver_unit_content: |
+      [Unit]
+      Description=Simple http server
+      After=syslog.target
+
+      [Service]
+      Type=simple
+      ExecStart=/usr/bin/python3 -m http.server {{ http_fileserver_serve_port }}
+      StandardOutput=syslog
+      StandardError=syslog
+      WorkingDirectory={{ http_fileserver_serve_dir }}
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Create systemd unit
+  copy:
+    content: "{{ http_fileserver_unit_content }}"
+    dest: /etc/systemd/system/simple-http-{{ http_fileserver_name | default('default') }}.service
+  notify:
+    - reload systemd configuration
+    - http file server restarted
+  become: true
+

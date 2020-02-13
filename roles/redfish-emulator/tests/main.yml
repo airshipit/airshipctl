@@ -1,0 +1,37 @@
+- name: Include test variables.
+  include_vars:
+    file: vars.yml
+- name: install libvirt
+  include_role:
+    name: libvirt-install
+- name: create pool
+  include_role:
+    name: libvirt-pool
+- name: Create defined volumes
+  include_role:
+    name: libvirt-volume
+  with_items: "{{ libvirt_volumes }}"
+  vars:
+    libvirt_volume: "{{ vol }}"
+    volume_action: "{{ vol.action }}"
+  loop_control:
+    loop_var: vol
+- name: create libvirt domains
+  include_role:
+    name: libvirt-domain
+- name: install sushy-tools
+  include_role:
+    name: redfish-emulator
+- name: query redfish to make sure it has runnig domains
+  uri:
+    url: http://localhost:8000/redfish/v1/Systems?format=json
+    method: GET
+    return_content: yes
+  register: sushy_response
+- name: debug redfish machines
+  debug:
+    var: sushy_response
+- name: verify that virtual machine is present in sushy tools
+  assert:
+    that:
+      - sushy_response.json["Members@odata.count"] == 1

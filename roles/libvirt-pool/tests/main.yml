@@ -1,0 +1,19 @@
+- name: Include test variables.
+  include_vars:
+    file: vars.yml
+- name: install libvirt
+  include_role:
+    name: libvirt-install
+- name: create pool
+  include_role:
+    name: libvirt-pool
+- name: get pool information
+  virt_pool:
+    command: info
+  register: storage_pools
+
+- name: check if pool is available and is at given directory
+  assert:
+    that:
+      - "storage_pools.pools.test_pool.path == '/var/lib/libvirt/my-pool'"
+      - "storage_pools.pools.test_pool.status == 'running'"

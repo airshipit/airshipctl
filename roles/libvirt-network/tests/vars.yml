@@ -1,0 +1,32 @@
+libvirt_networks:
+  - network_action: create
+    autostart: false
+    name: oob-net
+    spec:
+      bridge:
+        name: oob-net
+        stp: 'on'
+        delay: '0'
+      ip:
+        address: "10.23.22.1"
+        netmask: "255.255.255.0"
+        dhcp:
+          - range:
+              start: 10.23.22.100
+              end: 10.23.22.199
+  - network_action: create
+    name: provision-network
+    spec:
+      forward:
+        mode: nat
+        nat:
+          port:
+            - start: 1024
+              end: 65535
+      bridge:
+        name: "prov-net-br"
+        stp: 'on'
+        delay: '0'
+      ip:
+        address: "172.22.0.1"
+        netmask: "255.255.255.0"

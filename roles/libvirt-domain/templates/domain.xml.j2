@@ -1,0 +1,91 @@
+<domain type='{{ libvirt_vm_engine }}'>
+  <name>{{ libvirt_domain.name }}</name>
+  <memory>{{ libvirt_domain.memory_mb | int * 1024 }}</memory>
+  <vcpu>{{ libvirt_domain.vcpus }}</vcpu>
+  {% if libvirt_domain.clock_offset |default( libvirt_vm_clock_offset ) %}
+  <clock offset="{{ libvirt_domain.clock_offset }}"/>
+  {% else %}
+  <clock sync="localtime"/>
+  {% endif %}
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>destroy</on_crash>
+  <os>
+    <type arch='{{ libvirt_vm_arch }}'{% if machine is not none %} machine='{{ machine }}'{% endif %}>hvm</type>
+    <bootmenu enable='no'/>
+    <boot dev='hd'/>
+    <boot dev='cdrom'/>
+    <boot dev='network'/>
+    <bios useserial='yes'/>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+    <pae/>
+  </features>
+  {% if cpu_mode %}
+  <cpu mode='{{ cpu_mode }}'>
+    <model fallback='allow'/>
+  </cpu>
+  {% endif %}
+  <devices>
+    <emulator>{{ libvirt_vm_emulator }}</emulator>
+{% for volume in volumes %}
+    <disk type='{{ volume.type | default(libvirt_volume_default_type) }}' device='{{ volume.device | default(libvirt_volume_default_device) }}'>
+      <driver name='qemu' type='{{ volume.format | default(libvirt_volume_default_format) }}'/>
+      {% if volume.type | default(libvirt_volume_default_type) == 'file' %}
+      <source file='{{ volume.file_path |default(libvirt_volume_default_images_path) }}/{{ volume.name}}'/>
+      {% else %}
+      <source pool='{{ volume.pool }}' volume='{{ volume.name }}'/>
+      {% endif %}
+      {% if volume.target is undefined %}
+      <target dev='vd{{ 'abcdefghijklmnopqrstuvwxyz'[loop.index - 1] }}'/>
+      {% else %}
+      <target dev='{{ volume.target }}' />
+      {% endif %}
+    </disk>
+{% endfor %}
+{% for interface in interfaces %}
+{% if interface.type is defined and interface.type == 'direct' %}
+    <interface type='direct'>
+      <source dev='{{ interface.source.dev }}' mode='{{ interface.source.mode | default('vepa') }}'/>
+{% elif interface.type is defined and interface.type == 'bridge' %}
+    <interface type='bridge'>
+      <source bridge='{{ interface.source.dev }}'/>
+{% elif interface.type is not defined or interface.type == 'network' %}
+    <interface type='network'>
+      <source network='{{ interface.network }}'/>
+{% endif %}
+      {% if interface.mac is defined %}
+      <mac address='{{ interface.mac }}'/>
+      {% endif %}
+      {# if the network configuration is invalid this can still appear in the xml #}
+      {# (say you enter 'bond' instead of 'bridge' in your variables) #}
+      <model type='virtio'/>
+    </interface>
+{% endfor %}
+{% if console_log_enabled | bool %}
+    <serial type='file'>
+      <source path='{{ console_log_path }}'/>
+    </serial>
+    <serial type='pty'/>
+    <console type='file'>
+      <source path='{{ console_log_path }}'/>
+      <target type='serial'/>
+    </console>
+{% else %}
+    <serial type='pty'>
+      <target port='0'/>
+    </serial>
+    <console type='pty'>
+      <target type='serial' port='0'/>
+    </console>
+{% endif %}
+{% if enable_vnc |bool %}
+    <graphics type='vnc' autoport='yes' listen='127.0.0.1'>
+      <listen type='address' address='127.0.0.1'/>
+    </graphics>
+{% endif %}
+    <rng model="virtio"><backend model="random">/dev/urandom</backend></rng>
+  </devices>
+</domain>

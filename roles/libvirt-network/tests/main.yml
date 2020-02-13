@@ -1,0 +1,137 @@
+- name: Include test variables.
+  include_vars:
+    file: vars.yml
+- name: install libvirt
+  include_role:
+    name: libvirt-install
+- name: create networks
+  include_role:
+    name: libvirt-network
+  with_items: "{{ libvirt_networks }}"
+  loop_control:
+    loop_var: libvirt_network
+  vars:
+    network_action: "{{ libvirt_network.network_action }}"
+- name: install required packages
+  apt:
+    name:
+      - bridge-utils
+    state: present
+  become: true
+- name: gather network info
+  virt_net:
+    command: info
+  register: libvirt_networks_info
+
+- name: debug network list
+  debug:
+    var: libvirt_networks_info
+
+- name: check if network is present
+  assert:
+    that:
+      - "'oob-net' in libvirt_networks_info.networks"
+      - "'provision-network' in libvirt_networks_info.networks"
+
+## this is needed because dashes '-', are not proccessed in expected way to ansible
+- name: Assign networks to separate variables
+  set_fact:
+    oob_net: "{{ libvirt_networks_info.networks['oob-net'] }}"
+    provision_network: "{{ libvirt_networks_info.networks['provision-network'] }}"
+
+- name: Verify oob network is in correct state
+  assert:
+    that:
+      - "oob_net.autostart == 'no'"
+      - "oob_net.bridge == 'oob-net'"
+      - "oob_net.state == 'active'"
+
+- name: register ip address of the oob-net interface
+  command: ip -4 a show dev oob-net
+  register: oob_net_device
+  changed_when: false
+
+- name: debug oob-net interface
+  debug:
+    var: oob_net_device.stdout
+
+- name: verify oob-net bridge has correct address
+  assert:
+    that: "'10.23.22.1/24' in oob_net_device.stdout"
+
+- name: Verify provision-network is in correct state
+  assert:
+    that:
+      - "provision_network.autostart == 'yes'"
+      - "provision_network.bridge == 'prov-net-br'"
+      - "provision_network.state == 'active'"
+      - "provision_network.forward_mode == 'nat'"
+
+- name: register ip address of the oob-net interface
+  command: ip -4 a show dev prov-net-br
+  register: prov_net_br_device
+  changed_when: false
+
+- name: debug prov-net-br interface
+  debug:
+    var: prov_net_br_device.stdout
+
+- name: verify provision-network bridge has correct address
+  assert:
+    that: "'172.22.0.1/24' in prov_net_br_device.stdout"
+
+- name: Create virtual ethernet interface
+  command: ip link add name air02 type veth peer name air01
+  become: true
+  changed_when:
+    - "create_veth_command.rc != 2"
+    - "'RTNETLINK answers: File exists' not in (create_veth_command.stderr | default(''))"
+  register: create_veth_command
+  failed_when:
+    - "create_veth_command.rc != 0"
+    - "'RTNETLINK answers: File exists' not in (create_veth_command.stderr | default(''))"
+- name: set interface up
+  become: true
+  command: ip link set up dev air02
+  # This makes task never report to be changed, it is a workaround
+  # because if device is already up there is no command output or different RC
+  changed_when: false
+
+- name: set interface up
+  become: true
+  command: ip link set up dev air01
+  # This makes task never report to be changed, it is a workaround
+  # because if device is already up there is no command output or different RC
+  changed_when: false
+
+- name: set interface already in bridge variable
+  set_fact:
+    already_in_bridge: device air02 is already a member of a bridge; can't enslave it to bridge oob-net.
+
+- name: Add interface to libvirt managed linux bridge with dhcp
+  become: true
+  command: brctl addif oob-net air02
+  changed_when:
+    - add_if_command.rc != 1
+    - already_in_bridge not in (add_if_command.stderr | default(''))
+  failed_when:
+    - add_if_command.rc != 0
+    - already_in_bridge not in add_if_command.stderr | default('')
+  register: add_if_command
+
+- name: send dhcp request over the interface
+  become: true
+  command: timeout 20s dhclient air01
+  changed_when: false
+
+- name: register ip address of the air01 interface
+  command: ip -4 a show dev air01
+  register: air01_device
+  changed_when: false
+
+## this simple test checks if ip address is present in interface description
+## TODO filter out the address, derive subnet and compare to expected subnet
+- name: verify air02 interface has address in correct network
+  assert:
+    that:
+      - "'10.23.22.' in air01_device.stdout"

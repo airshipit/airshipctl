@@ -1,0 +1,73 @@
+# Description:
+#   Creates a libvirt network. libvirt_network are
+#   exactly converted to XML from YAML so there
+#   is no validation whether the arguments are
+#   correct or not. Caller must ensure that yaml
+#   is formulated correctly.
+#
+# Inputs:
+#   network_action: "create"
+#   libvirt_network:
+#     name: <name of network>
+#     persistent: <boolean>
+#     autostart: <boolean>
+#     recreate: <boolean>
+#     spec:
+#       forward:
+#         mode:
+#         nat:
+#           port:
+#             - start:
+#               end:
+#       bridge:
+#         name:
+#         stp:
+#         delay:
+#       domain:
+#         name:
+#         localOnly:
+#       dns:
+#         forwarder:
+#           domain:
+#           addr:
+#       mac:
+#         address:
+#       ip:
+#         address:
+#         netmask:
+#         dhcp:
+#           - range:
+#               start:
+#               end:
+
+- name: Validate input
+  assert:
+    that:
+      - "libvirt_network is defined"
+      - "libvirt_network.name is defined"
+      - "libvirt_network.spec is defined"
+
+- name: Create yaml for template
+  set_fact:
+    net_yaml: >-
+      {{
+        libvirt_network.spec
+        | combine({'name': libvirt_network.name}, recursive=True)
+      }}
+
+- name: "Define network"
+  virt_net:
+    command: define
+# If libvirt_network.xml is defined, spec will be ignored.
+    xml: "{{ libvirt_network.xml | default(libvirt_network_template_default) }}"
+    name: "{{ libvirt_network.name }}"
+
+- name: "Start network"
+  virt_net:
+    state: active
+    name: "{{ libvirt_network.name }}"
+
+- name: "Autostart network"
+  virt_net:
+    name: "{{ libvirt_network.name }}"
+    autostart: "{{ libvirt_network.autostart |default(true) }}"

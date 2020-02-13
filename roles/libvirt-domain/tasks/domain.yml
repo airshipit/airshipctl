@@ -1,0 +1,27 @@
+---
+- name: Ensure the VM console log directory exists
+  file:
+    path: "{{ console_log_path | dirname}}"
+    state: directory
+    recurse: true
+    mode: 0770
+  become: true
+  when: "libvirt_domain.console_log_enabled | default(false)"
+
+- name: Validate VM interfaces
+  include_tasks: check-interface.yml
+  vars:
+    interface: "{{ item }}"
+  with_items: "{{ libvirt_domain.interfaces }}"
+
+- name: Ensure the VM is defined
+  virt:
+    name: "{{ libvirt_domain.name }}"
+    command: define
+    xml: "{{ libvirt_domain.xml | default(libvirt_domain_template_default) }}"
+
+- name: Ensure the VM is started at boot
+  virt:
+    name: "{{ libvirt_domain.name }}"
+    autostart: "{{ libvirt_domain.autostart | default(false) }}"
+    state: "{{ libvirt_domain.state | default('running') }}"

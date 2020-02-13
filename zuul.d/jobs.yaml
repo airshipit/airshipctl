@@ -39,7 +39,6 @@
     attempts: 1
     timeout: 3600
     roles:
-      - zuul: airship/zuul-airship-roles
       - zuul: openstack/openstack-helm-infra
     pre-run:
       - playbooks/airship-airshipctl-deploy-docker.yaml

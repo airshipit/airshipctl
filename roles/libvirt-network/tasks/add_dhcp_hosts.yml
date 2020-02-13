@@ -1,0 +1,34 @@
+# Description:
+#   Add given hosts to existing libvirt network
+#
+# Inputs:
+#   network_action: "add_dhcp_hosts"
+#   network_args:
+#     name: <name of network>
+#     hosts:
+#       - name:
+#         mac:
+#         ip:
+#       - name:
+#         mac:
+#         ip:
+
+- name: Validate input
+  assert:
+    that:
+      - "network_args is defined"
+      - "network_args.name is defined"
+      - "network_args.hosts is defined"
+      - "network_args.hosts | list"
+
+- name: add dhcp hosts to network
+  environment:
+    LIBVIRT_DEFAULT_URI: qemu:///system
+  shell: >-
+    virsh net-update {{ network_args.name }} \
+      add --section ip-dhcp-host \
+      --xml "<host mac='{{ single_dhcp_host.mac}}' ip='{{ single_dhcp_host.name }}'/>" \
+      --config --live
+  loop: "{{ network_args.hosts }}"
+  loop_control:
+    loop_var: single_dhcp_host

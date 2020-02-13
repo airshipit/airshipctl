@@ -1,0 +1,98 @@
+- name: set libvirt log dir
+  set_fact:
+    libvirt_log_dir: "{{ logs_dir }}/libvirt"
+
+- name: ensure directory for libvirt logs exists
+  file:
+    state: directory
+    path: "{{ libvirt_log_dir }}"
+
+- name: collect all libvirt logs and resources
+  ignore_errors: True
+  block:
+
+    - name: copy hypervisor logs to tmp directory
+      command: "cp -r /var/log/libvirt {{ libvirt_log_dir }}/libvirt-hypervisor"
+      become: true
+
+    - name: copy console logs to tmp directory
+      command: "cp -r /var/log/libvirt-consoles/ {{ libvirt_log_dir }}/libvirt-consoles"
+      become: true
+
+    - name: ensure libvirt resource dump directories exist
+      file:
+        state: directory
+        path: "{{ libvirt_log_dir }}/{{ xml_dir }}"
+      with_items:
+        - xmls/domains
+        - xmls/pools
+        - xmls/vols
+        - xmls/networks
+      loop_control:
+        loop_var: xml_dir
+
+    - name: dump libvirt domain xmls
+      shell: |-
+        for dom in $(virsh list --all --name); do
+          virsh dumpxml "${dom}" | tee "{{ libvirt_log_dir }}/xmls/domains/${dom}.xml"
+        done
+      args:
+        executable: /bin/bash
+
+    - name: dump list of defined domains
+      shell: |-
+        virsh list --all | tee "{{ libvirt_log_dir }}/xmls/domains/list"
+      args:
+        executable: /bin/bash
+
+    - name: dump list of defined pools
+      shell: |-
+        virsh pool-list --all | tee "{{ libvirt_log_dir }}/xmls/pools/list"
+      args:
+        executable: /bin/bash
+
+    - name: dump libvirt pools xmls
+      shell: |-
+        for pool in $(virsh pool-list --all --name); do
+          virsh dumpxml "${pool}" | tee "{{ libvirt_log_dir }}/xmls/pools/${pool}.xml"
+        done
+      args:
+        executable: /bin/bash
+
+    - name: dump list of defined volumes
+      shell: |-
+        for pool in $(virsh pool-list --all --name); do
+          virsh vol-list --all --pool "${pool}" | tee "{{ libvirt_log_dir }}/xmls/vol/pool-${pool}-list"
+          for vol in $(virsh vol-list --pool "${pool}" | awk 'NR>2 {print $1}'); do
+            virsh vol-dumpxml ${vol} --pool ${pool} | tee "{{ libvirt_log_dir }}/xmls/vols/pool-${pool}-${vol}.xml"
+          done
+        done
+      args:
+        executable: /bin/bash
+
+    - name: dump libvirt network xmls
+      shell: |-
+        for net in $(virsh net-list --all --name); do
+          virsh net-dumpxml "${net}" | tee "{{ libvirt_log_dir }}/xmls/networks/${net}.xml"
+        done
+      args:
+        executable: /bin/bash
+
+    - name: dump list of defined networks
+      shell: |-
+        virsh -d 0 net-list --all | tee "{{ libvirt_log_dir }}/xmls/networks/list"
+      args:
+        executable: /bin/bash
+
+    - name: Change ownership of the logs dir
+      file:
+        state: directory
+        recurse: true
+        owner: "{{ ansible_user }}"
+      become: true
+
+    - name: Downloads logs to executor
+      synchronize:
+        src: "{{ libvirt_log_dir }}"
+        dest: "{{ zuul.executor.log_root }}/{{ inventory_hostname }}"
+        mode: pull

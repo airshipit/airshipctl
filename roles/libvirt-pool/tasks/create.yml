@@ -1,0 +1,23 @@
+---
+- name: Ensure libvirt storage pools are defined
+  virt_pool:
+    name: "{{ libvirt_pool.name }}"
+    command: define
+    xml: "{{ libvirt_pool.xml | default(libvirt_pool_template_default) }}"
+  register: pool_info
+
+- name: Ensure libvirt storage pools are built
+  virt_pool:
+    name: "{{ libvirt_pool.name }}"
+    command: build
+  when: pool_info.changed
+
+- name: Ensure libvirt storage pools are active
+  virt_pool:
+    name: "{{ libvirt_pool.name }}"
+    state: active
+
+- name: Ensure libvirt storage pools are started on boot
+  virt_pool:
+    name: "{{ libvirt_pool.name }}"
+    autostart: yes

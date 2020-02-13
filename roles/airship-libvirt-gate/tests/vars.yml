@@ -1,0 +1,15 @@
+airship_gate_redfish:
+  port: 8000
+  bind_address: "127.0.0.1"
+
+airship_gate_names:
+  provision_network: air_prov
+  provision_network_bridge: "prov_br"
+  nat_network: "air_nat"
+  nat_network_bridge: "nat_br"
+  ephemeral_vm: air-ephemeral
+  target_vm_prefix: "air-target"
+  target_separator: "-"
+  target_volume_prefix: "vol_target"
+  ephemeral_volume: "vol_ephemeral"
+  pool: airship

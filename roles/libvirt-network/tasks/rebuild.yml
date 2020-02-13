@@ -1,0 +1,17 @@
+- name: "Remove network"
+  virt_net:
+    state: absent
+    name: "{{ libvirt_network.name }}"
+
+- name: Create yaml for template
+  set_fact:
+    net_yaml: >-
+      {{
+        libvirt_network.spec
+        | combine({'name': libvirt_network.name}, recursive=True)
+      }}
+
+- name: "create network"
+  include_tasks: "{{ network_action }}.yml"
+  vars:
+    network_action: create
