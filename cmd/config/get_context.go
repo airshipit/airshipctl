@@ -18,7 +18,6 @@ package config
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/spf13/cobra"
 
@@ -55,7 +54,7 @@ func NewCmdConfigGetContext(rootSettings *environment.AirshipCTLSettings) *cobra
 			if len(args) == 1 {
 				theContext.Name = args[0]
 			}
-			return runGetContext(theContext, cmd.OutOrStdout(), rootSettings.Config())
+			return config.RunGetContext(theContext, cmd.OutOrStdout(), rootSettings.Config())
 		},
 	}
 
@@ -67,39 +66,4 @@ func NewCmdConfigGetContext(rootSettings *environment.AirshipCTLSettings) *cobra
 func gctxInitFlags(o *config.ContextOptions, getcontextcmd *cobra.Command) {
 	getcontextcmd.Flags().BoolVar(&o.CurrentContext, config.FlagCurrentContext, false,
 		config.FlagCurrentContext+" to retrieve the current context entry in airshipctl config")
-}
-
-// runGetContext performs the execution of 'config get-Context' sub command
-func runGetContext(o *config.ContextOptions, out io.Writer, airconfig *config.Config) error {
-	if o.Name == "" && !o.CurrentContext {
-		return getContexts(out, airconfig)
-	}
-	return getContext(o, out, airconfig)
-}
-
-func getContext(o *config.ContextOptions, out io.Writer, airconfig *config.Config) error {
-	cName := o.Name
-	if o.CurrentContext {
-		cName = airconfig.CurrentContext
-	}
-	context, err := airconfig.GetContext(cName)
-	if err != nil {
-		return err
-	}
-	fmt.Fprintf(out, "%s", context.PrettyString())
-	return nil
-}
-
-func getContexts(out io.Writer, airconfig *config.Config) error {
-	contexts, err := airconfig.GetContexts()
-	if err != nil {
-		return err
-	}
-	if len(contexts) == 0 {
-		fmt.Fprintln(out, "No Contexts found in the configuration.")
-	}
-	for _, context := range contexts {
-		fmt.Fprintf(out, "%s", context.PrettyString())
-	}
-	return nil
 }

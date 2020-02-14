@@ -17,7 +17,6 @@ limitations under the License.
 package config
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -68,7 +67,7 @@ func NewCmdConfigSetCluster(rootSettings *environment.AirshipCTLSettings) *cobra
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			theCluster.Name = cmd.Flags().Args()[0]
-			modified, err := runSetCluster(theCluster, rootSettings)
+			modified, err := config.RunSetCluster(theCluster, rootSettings.Config(), true)
 			if err != nil {
 				return err
 			}
@@ -106,47 +105,4 @@ func scInitFlags(o *config.ClusterOptions, setclustercmd *cobra.Command) {
 
 	setclustercmd.Flags().BoolVar(&o.EmbedCAData, config.FlagEmbedCerts, false,
 		config.FlagEmbedCerts+" for the cluster entry in airshipctl config")
-}
-
-func runSetCluster(o *config.ClusterOptions, rootSettings *environment.AirshipCTLSettings) (bool, error) {
-	clusterWasModified := false
-	err := o.Validate()
-	if err != nil {
-		return clusterWasModified, err
-	}
-
-	airconfig := rootSettings.Config()
-	cluster, err := airconfig.GetCluster(o.Name, o.ClusterType)
-	if err != nil {
-		var cerr config.ErrMissingConfig
-		if !errors.As(err, &cerr) {
-			// An error occurred, but it wasn't a "missing" config error.
-			return clusterWasModified, err
-		}
-
-		// Cluster didn't exist, create it
-		_, err := airconfig.AddCluster(o)
-		if err != nil {
-			return clusterWasModified, err
-		}
-		clusterWasModified = false
-	} else {
-		// Cluster exists, lets update
-		_, err := airconfig.ModifyCluster(cluster, o)
-		if err != nil {
-			return clusterWasModified, err
-		}
-		clusterWasModified = true
-	}
-
-	// Update configuration file
-	// Just in time persistence approach
-	if err := airconfig.PersistConfig(); err != nil {
-		// Some warning here , that it didnt persist the changes because of this
-		// Or should we float this up
-		// What would it mean? No value.
-		return clusterWasModified, err
-	}
-
-	return clusterWasModified, nil
 }

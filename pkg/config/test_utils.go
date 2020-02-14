@@ -168,7 +168,7 @@ func InitConfig(t *testing.T) *Config {
 
 func DummyClusterOptions() *ClusterOptions {
 	co := &ClusterOptions{}
-	co.Name = "dummy_Cluster"
+	co.Name = "dummy_cluster"
 	co.ClusterType = Ephemeral
 	co.Server = "http://1.1.1.1"
 	co.InsecureSkipTLSVerify = false
