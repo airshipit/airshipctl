@@ -128,7 +128,7 @@ func makeTestDir(t *testing.T) string {
 }
 
 func deleteTestDir(t *testing.T, path string) {
-	err := os.Remove(path)
+	err := os.RemoveAll(path)
 	require.NoError(t, err)
 }
 
