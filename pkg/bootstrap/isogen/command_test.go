@@ -49,7 +49,10 @@ func TestBootstrapIso(t *testing.T) {
 	bundle, err := document.NewBundle(fSys, "/", "/")
 	require.NoError(t, err, "Building Bundle Failed")
 
-	volBind := "/tmp:/dst"
+	tempVol, cleanup := testutil.TempDir(t, "bootstrap-test")
+	defer cleanup(t)
+
+	volBind := tempVol + ":/dst"
 	testErr := fmt.Errorf("TestErr")
 	testCfg := &config.Bootstrap{
 		Container: &config.Container{
@@ -123,6 +126,9 @@ func TestBootstrapIso(t *testing.T) {
 }
 
 func TestVerifyInputs(t *testing.T) {
+	tempVol, cleanup := testutil.TempDir(t, "bootstrap-test")
+	defer cleanup(t)
+
 	tests := []struct {
 		cfg         *config.Bootstrap
 		args        []string
@@ -137,7 +143,7 @@ func TestVerifyInputs(t *testing.T) {
 		{
 			cfg: &config.Bootstrap{
 				Container: &config.Container{
-					Volume: "/tmp:/dst",
+					Volume: tempVol + ":/dst",
 				},
 				Builder: &config.Builder{},
 			},
@@ -146,7 +152,7 @@ func TestVerifyInputs(t *testing.T) {
 		{
 			cfg: &config.Bootstrap{
 				Container: &config.Container{
-					Volume: "/tmp",
+					Volume: tempVol,
 				},
 				Builder: &config.Builder{
 					UserDataFileName:      "user-data",
@@ -158,7 +164,7 @@ func TestVerifyInputs(t *testing.T) {
 		{
 			cfg: &config.Bootstrap{
 				Container: &config.Container{
-					Volume: "/tmp:/dst:/dst1",
+					Volume: tempVol + ":/dst:/dst1",
 				},
 				Builder: &config.Builder{
 					UserDataFileName:      "user-data",

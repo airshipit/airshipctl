@@ -2,10 +2,12 @@ package testutil
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	fixtures "gopkg.in/src-d/go-git-fixtures.v3"
 	"sigs.k8s.io/kustomize/v3/pkg/fs"
 
 	"opendev.org/airship/airshipctl/pkg/document"
@@ -40,4 +42,27 @@ func NewTestBundle(t *testing.T, fixtureDir string) document.Bundle {
 	b, err := document.NewBundle(SetupTestFs(t, fixtureDir), "/", "/")
 	require.NoError(t, err, "Failed to build a bundle, setting up TestBundle failed")
 	return b
+}
+
+// CleanUpGitFixtures removes any temp directories created by the go-git test fixtures
+func CleanUpGitFixtures(t *testing.T) {
+	if err := fixtures.Clean(); err != nil {
+		t.Logf("Could not clean up git fixtures: %v", err)
+	}
+}
+
+// TempDir creates a new temporary directory in the system's temporary file
+// storage with a name beginning with prefix.
+// It returns the path of the new directory and a function that can be used to
+// easily clean up that directory
+func TempDir(t *testing.T, prefix string) (path string, cleanup func(*testing.T)) {
+	path, err := ioutil.TempDir("", prefix)
+	require.NoError(t, err, "Failed to create a temporary directory")
+
+	return path, func(tt *testing.T) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			t.Logf("Could not clean up temp directory %q: %v", path, err)
+		}
+	}
 }

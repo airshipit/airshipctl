@@ -18,6 +18,7 @@ package config
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -32,10 +33,10 @@ import (
 
 type setClusterTest struct {
 	description    string
-	config         *config.Config
+	givenConfig    *config.Config
 	args           []string
 	flags          []string
-	expected       string
+	expectedOutput string
 	expectedConfig *config.Config
 }
 
@@ -44,27 +45,31 @@ const (
 )
 
 func TestSetClusterWithCAFile(t *testing.T) {
-	conf := config.InitConfig(t)
+	given, cleanupGiven := config.InitConfig(t)
+	defer cleanupGiven(t)
+
 	certFile := "../../pkg/config/testdata/ca.crt"
 
 	tname := testCluster
 	tctype := config.Ephemeral
 
-	expconf := config.InitConfig(t)
-	expconf.Clusters[tname] = config.NewClusterPurpose()
-	expconf.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
+	expected, cleanupExpected := config.InitConfig(t)
+	defer cleanupExpected(t)
+
+	expected.Clusters[tname] = config.NewClusterPurpose()
+	expected.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
 	clusterName := config.NewClusterComplexName()
 	clusterName.WithType(tname, tctype)
-	expconf.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.Name()
+	expected.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.Name()
 
 	expkCluster := kubeconfig.NewCluster()
 	expkCluster.CertificateAuthority = certFile
 	expkCluster.InsecureSkipTLSVerify = false
-	expconf.KubeConfig().Clusters[clusterName.Name()] = expkCluster
+	expected.KubeConfig().Clusters[clusterName.Name()] = expkCluster
 
 	test := setClusterTest{
 		description: "Testing 'airshipctl config set-cluster' with a new cluster",
-		config:      conf,
+		givenConfig: given,
 		args:        []string{tname},
 		flags: []string{
 			"--" + config.FlagClusterType + "=" + config.Ephemeral,
@@ -72,24 +77,28 @@ func TestSetClusterWithCAFile(t *testing.T) {
 			"--" + config.FlagCAFile + "=" + certFile,
 			"--" + config.FlagInsecure + "=false",
 		},
-		expected:       `Cluster "` + tname + `" of type "` + config.Ephemeral + `" created.` + "\n",
-		expectedConfig: expconf,
+		expectedOutput: fmt.Sprintf("Cluster %q of type %q created.\n", testCluster, config.Ephemeral),
+		expectedConfig: expected,
 	}
 	test.run(t)
 }
 func TestSetClusterWithCAFileData(t *testing.T) {
-	conf := config.InitConfig(t)
+	given, cleanupGiven := config.InitConfig(t)
+	defer cleanupGiven(t)
+
 	certFile := "../../pkg/config/testdata/ca.crt"
 
 	tname := testCluster
 	tctype := config.Ephemeral
 
-	expconf := config.InitConfig(t)
-	expconf.Clusters[tname] = config.NewClusterPurpose()
-	expconf.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
+	expected, cleanupExpected := config.InitConfig(t)
+	defer cleanupExpected(t)
+
+	expected.Clusters[tname] = config.NewClusterPurpose()
+	expected.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
 	clusterName := config.NewClusterComplexName()
 	clusterName.WithType(tname, tctype)
-	expconf.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.Name()
+	expected.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.Name()
 
 	expkCluster := kubeconfig.NewCluster()
 	readData, err := ioutil.ReadFile(certFile)
@@ -97,11 +106,11 @@ func TestSetClusterWithCAFileData(t *testing.T) {
 
 	expkCluster.CertificateAuthorityData = readData
 	expkCluster.InsecureSkipTLSVerify = false
-	expconf.KubeConfig().Clusters[clusterName.Name()] = expkCluster
+	expected.KubeConfig().Clusters[clusterName.Name()] = expkCluster
 
 	test := setClusterTest{
 		description: "Testing 'airshipctl config set-cluster' with a new cluster",
-		config:      conf,
+		givenConfig: given,
 		args:        []string{tname},
 		flags: []string{
 			"--" + config.FlagClusterType + "=" + config.Ephemeral,
@@ -109,41 +118,44 @@ func TestSetClusterWithCAFileData(t *testing.T) {
 			"--" + config.FlagCAFile + "=" + certFile,
 			"--" + config.FlagInsecure + "=false",
 		},
-		expected:       `Cluster "` + tname + `" of type "` + config.Ephemeral + `" created.` + "\n",
-		expectedConfig: expconf,
+		expectedOutput: fmt.Sprintf("Cluster %q of type %q created.\n", tname, config.Ephemeral),
+		expectedConfig: expected,
 	}
 	test.run(t)
 }
 
 func TestSetCluster(t *testing.T) {
-	conf := config.InitConfig(t)
+	given, cleanupGiven := config.InitConfig(t)
+	defer cleanupGiven(t)
 
 	tname := testCluster
 	tctype := config.Ephemeral
 
-	expconf := config.InitConfig(t)
-	expconf.Clusters[tname] = config.NewClusterPurpose()
-	expconf.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
+	expected, cleanupExpected := config.InitConfig(t)
+	defer cleanupExpected(t)
+
+	expected.Clusters[tname] = config.NewClusterPurpose()
+	expected.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
 	clusterName := config.NewClusterComplexName()
 	clusterName.WithType(tname, tctype)
-	expconf.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.Name()
+	expected.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.Name()
 
 	expkCluster := kubeconfig.NewCluster()
 	expkCluster.Server = "https://192.168.0.11"
 	expkCluster.InsecureSkipTLSVerify = false
-	expconf.KubeConfig().Clusters[clusterName.Name()] = expkCluster
+	expected.KubeConfig().Clusters[clusterName.Name()] = expkCluster
 
 	test := setClusterTest{
 		description: "Testing 'airshipctl config set-cluster' with a new cluster",
-		config:      conf,
+		givenConfig: given,
 		args:        []string{tname},
 		flags: []string{
 			"--" + config.FlagClusterType + "=" + config.Ephemeral,
 			"--" + config.FlagAPIServer + "=https://192.168.0.11",
 			"--" + config.FlagInsecure + "=false",
 		},
-		expected:       `Cluster "` + tname + `" of type "` + config.Ephemeral + `" created.` + "\n",
-		expectedConfig: expconf,
+		expectedOutput: fmt.Sprintf("Cluster %q of type %q created.\n", tname, config.Ephemeral),
+		expectedConfig: expected,
 	}
 	test.run(t)
 }
@@ -152,36 +164,40 @@ func TestModifyCluster(t *testing.T) {
 	tname := testClusterName
 	tctype := config.Ephemeral
 
-	conf := config.InitConfig(t)
-	conf.Clusters[tname] = config.NewClusterPurpose()
+	given, cleanupGiven := config.InitConfig(t)
+	defer cleanupGiven(t)
+
+	given.Clusters[tname] = config.NewClusterPurpose()
 	clusterName := config.NewClusterComplexName()
 	clusterName.WithType(tname, tctype)
-	conf.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
-	conf.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.Name()
+	given.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
+	given.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.Name()
 	kCluster := kubeconfig.NewCluster()
 	kCluster.Server = "https://192.168.0.10"
-	conf.KubeConfig().Clusters[clusterName.Name()] = kCluster
-	conf.Clusters[tname].ClusterTypes[tctype].SetKubeCluster(kCluster)
+	given.KubeConfig().Clusters[clusterName.Name()] = kCluster
+	given.Clusters[tname].ClusterTypes[tctype].SetKubeCluster(kCluster)
 
-	expconf := config.InitConfig(t)
-	expconf.Clusters[tname] = config.NewClusterPurpose()
-	expconf.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
-	expconf.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.Name()
+	expected, cleanupExpected := config.InitConfig(t)
+	defer cleanupExpected(t)
+
+	expected.Clusters[tname] = config.NewClusterPurpose()
+	expected.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
+	expected.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.Name()
 	expkCluster := kubeconfig.NewCluster()
 	expkCluster.Server = "https://192.168.0.10"
-	expconf.KubeConfig().Clusters[clusterName.Name()] = expkCluster
-	expconf.Clusters[tname].ClusterTypes[tctype].SetKubeCluster(expkCluster)
+	expected.KubeConfig().Clusters[clusterName.Name()] = expkCluster
+	expected.Clusters[tname].ClusterTypes[tctype].SetKubeCluster(expkCluster)
 
 	test := setClusterTest{
 		description: "Testing 'airshipctl config set-cluster' with an existing cluster",
-		config:      conf,
+		givenConfig: given,
 		args:        []string{tname},
 		flags: []string{
 			"--" + config.FlagClusterType + "=" + config.Ephemeral,
 			"--" + config.FlagAPIServer + "=https://192.168.0.99",
 		},
-		expected:       `Cluster "` + tname + `" of type "` + tctype + `" modified.` + "\n",
-		expectedConfig: expconf,
+		expectedOutput: fmt.Sprintf("Cluster %q of type %q modified.\n", tname, tctype),
+		expectedConfig: expected,
 	}
 	test.run(t)
 }
@@ -189,7 +205,7 @@ func TestModifyCluster(t *testing.T) {
 func (test setClusterTest) run(t *testing.T) {
 	// Get the Environment
 	settings := &environment.AirshipCTLSettings{}
-	settings.SetConfig(test.config)
+	settings.SetConfig(test.givenConfig)
 
 	buf := bytes.NewBuffer([]byte{})
 
@@ -219,13 +235,13 @@ func (test setClusterTest) run(t *testing.T) {
 	afterKcluster := afterRunCluster.KubeCluster()
 	require.NotNil(t, afterKcluster)
 
-	testKcluster := test.config.KubeConfig().
-		Clusters[test.config.Clusters[test.args[0]].ClusterTypes[tctype].NameInKubeconf]
+	testKcluster := test.givenConfig.KubeConfig().
+		Clusters[test.givenConfig.Clusters[test.args[0]].ClusterTypes[tctype].NameInKubeconf]
 
 	assert.EqualValues(t, afterKcluster.Server, testKcluster.Server)
 
 	// Test that the Return Message looks correct
-	if len(test.expected) != 0 {
-		assert.EqualValues(t, test.expected, buf.String())
+	if len(test.expectedOutput) != 0 {
+		assert.EqualValues(t, test.expectedOutput, buf.String())
 	}
 }

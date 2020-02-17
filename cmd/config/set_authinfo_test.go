@@ -41,10 +41,10 @@ const (
 
 type setAuthInfoTest struct {
 	description    string
-	config         *config.Config
+	givenConfig    *config.Config
 	args           []string
 	flags          []string
-	expected       string
+	expectedOutput string
 	expectedConfig *config.Config
 }
 
@@ -74,58 +74,68 @@ func TestConfigSetAuthInfo(t *testing.T) {
 	}
 }
 
-func initConfig(t *testing.T, withUser bool, testname string) (*config.Config, *config.Config) {
-	conf := config.InitConfig(t)
+// initConfig creates an input config and an associated expected config
+// Each of these config objects are associated with real files. Those files can be
+// cleaned up by calling cleanup
+func initConfig(t *testing.T, withUser bool, testname string) (
+	given, expected *config.Config, cleanup func(*testing.T)) {
+	given, givenCleanup := config.InitConfig(t)
 	if withUser {
 		kAuthInfo := kubeconfig.NewAuthInfo()
 		kAuthInfo.Username = testUsername
 		kAuthInfo.Password = testPassword
-		conf.KubeConfig().AuthInfos[testname] = kAuthInfo
-		conf.AuthInfos[testname].SetKubeAuthInfo(kAuthInfo)
+		given.KubeConfig().AuthInfos[testname] = kAuthInfo
+		given.AuthInfos[testname].SetKubeAuthInfo(kAuthInfo)
 	}
 
-	expconf := config.InitConfig(t)
-	expconf.AuthInfos[testname] = config.NewAuthInfo()
+	expected, expectedCleanup := config.InitConfig(t)
+	expected.AuthInfos[testname] = config.NewAuthInfo()
 
 	expkAuthInfo := kubeconfig.NewAuthInfo()
 	expkAuthInfo.Username = testUsername
 	expkAuthInfo.Password = testPassword
-	expconf.KubeConfig().AuthInfos[testname] = expkAuthInfo
-	expconf.AuthInfos[testname].SetKubeAuthInfo(expkAuthInfo)
+	expected.KubeConfig().AuthInfos[testname] = expkAuthInfo
+	expected.AuthInfos[testname].SetKubeAuthInfo(expkAuthInfo)
 
-	return conf, expconf
+	return given, expected, func(tt *testing.T) {
+		givenCleanup(tt)
+		expectedCleanup(tt)
+	}
 }
 
 func TestSetAuthInfo(t *testing.T) {
-	conf, expconf := initConfig(t, false, testNewname)
+	given, expected, cleanup := initConfig(t, false, testNewname)
+	defer cleanup(t)
 
 	test := setAuthInfoTest{
 		description: "Testing 'airshipctl config set-credential' with a new user",
-		config:      conf,
+		givenConfig: given,
 		args:        []string{testNewname},
 		flags: []string{
 			"--" + config.FlagUsername + "=" + testUsername,
 			"--" + config.FlagPassword + "=" + testPassword,
 		},
-		expected:       `User information "` + testNewname + `" created.` + "\n",
-		expectedConfig: expconf,
+		expectedOutput: fmt.Sprintf("User information %q created.\n", testNewname),
+		expectedConfig: expected,
 	}
 	test.run(t)
 }
 
 func TestModifyAuthInfo(t *testing.T) {
-	conf, expconf := initConfig(t, true, testOldname)
-	expconf.AuthInfos[testOldname].KubeAuthInfo().Password = testPassword + pwdDelta
+	given, expected, cleanup := initConfig(t, true, testOldname)
+	defer cleanup(t)
+
+	expected.AuthInfos[testOldname].KubeAuthInfo().Password = testPassword + pwdDelta
 
 	test := setAuthInfoTest{
 		description: "Testing 'airshipctl config set-credential' with an existing user",
-		config:      conf,
+		givenConfig: given,
 		args:        []string{testOldname},
 		flags: []string{
 			"--" + config.FlagPassword + "=" + testPassword + pwdDelta,
 		},
-		expected:       `User information "` + testOldname + `" modified.` + "\n",
-		expectedConfig: expconf,
+		expectedOutput: fmt.Sprintf("User information %q modified.\n", testOldname),
+		expectedConfig: expected,
 	}
 	test.run(t)
 }
@@ -133,7 +143,7 @@ func TestModifyAuthInfo(t *testing.T) {
 func (test setAuthInfoTest) run(t *testing.T) {
 	// Get the Environment
 	settings := &environment.AirshipCTLSettings{}
-	settings.SetConfig(test.config)
+	settings.SetConfig(test.givenConfig)
 
 	buf := bytes.NewBuffer([]byte{})
 
@@ -165,7 +175,7 @@ func (test setAuthInfoTest) run(t *testing.T) {
 	assert.EqualValues(t, testKauthinfo.Password, afterKauthinfo.Password)
 
 	// Test that the Return Message looks correct
-	if len(test.expected) != 0 {
-		assert.EqualValues(t, test.expected, buf.String())
+	if len(test.expectedOutput) != 0 {
+		assert.EqualValues(t, test.expectedOutput, buf.String())
 	}
 }

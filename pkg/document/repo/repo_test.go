@@ -11,6 +11,8 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
 	"gopkg.in/src-d/go-git.v4/storage/memory"
+
+	"opendev.org/airship/airshipctl/testutil"
 )
 
 type mockBuilder struct {
@@ -39,6 +41,8 @@ func (md mockBuilder) URL() string { return md.URLString }
 func TestNewRepositoryNegative(t *testing.T) {
 	err := fixtures.Init()
 	require.NoError(t, err)
+	defer testutil.CleanUpGitFixtures(t)
+
 	builder := &mockBuilder{
 		URLString: "",
 	}
@@ -50,6 +54,8 @@ func TestNewRepositoryNegative(t *testing.T) {
 func TestDownload(t *testing.T) {
 	err := fixtures.Init()
 	require.NoError(t, err)
+	defer testutil.CleanUpGitFixtures(t)
+
 	fx := fixtures.Basic().One()
 	builder := &mockBuilder{
 		CheckoutOptions: &git.CheckoutOptions{
@@ -87,6 +93,8 @@ func TestDownload(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	err := fixtures.Init()
 	require.NoError(t, err)
+	defer testutil.CleanUpGitFixtures(t)
+
 	fx := fixtures.Basic().One()
 
 	checkout := &git.CheckoutOptions{
@@ -149,6 +157,8 @@ func TestUpdate(t *testing.T) {
 func TestOpen(t *testing.T) {
 	err := fixtures.Init()
 	require.NoError(t, err)
+	defer testutil.CleanUpGitFixtures(t)
+
 	fx := fixtures.Basic().One()
 	url := fx.DotGit().Root()
 	checkout := &git.CheckoutOptions{Branch: plumbing.Master}
@@ -190,6 +200,8 @@ func TestOpen(t *testing.T) {
 func TestCheckout(t *testing.T) {
 	err := fixtures.Init()
 	require.NoError(t, err)
+	defer testutil.CleanUpGitFixtures(t)
+
 	fx := fixtures.Basic().One()
 	url := fx.DotGit().Root()
 	checkout := &git.CheckoutOptions{Branch: plumbing.Master}

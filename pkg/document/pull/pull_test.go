@@ -16,6 +16,7 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/testutil"
 )
 
 func getDummyPullSettings() *Settings {
@@ -52,8 +53,9 @@ func TestPull(t *testing.T) {
 			},
 		}
 
-		tmpDir, err := ioutil.TempDir("", "airshipctlPullTest-")
-		require.NoError(err)
+		tmpDir, cleanup := testutil.TempDir(t, "airshipctlPullTest-")
+		defer cleanup(t)
+
 		currentManifest.TargetPath = tmpDir
 
 		_, err = repo2.NewRepository(".", currentManifest.Repository)
@@ -92,8 +94,9 @@ func TestPull(t *testing.T) {
 		}
 		dummyPullSettings.SetConfig(conf)
 
-		tmpDir, err := ioutil.TempDir("", "airshipctlPullTest-")
-		require.NoError(err)
+		tmpDir, cleanup := testutil.TempDir(t, "airshipctlPullTest-")
+		defer cleanup(t)
+
 		mfst.TargetPath = tmpDir
 		require.NoError(err)
 
@@ -107,4 +110,6 @@ func TestPull(t *testing.T) {
 		require.NoError(err)
 		assert.Equal("ref: refs/heads/master", strings.TrimRight(string(contents), "\t \n"))
 	})
+
+	testutil.CleanUpGitFixtures(t)
 }

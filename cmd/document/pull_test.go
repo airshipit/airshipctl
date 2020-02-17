@@ -3,6 +3,7 @@ package document
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	fixtures "gopkg.in/src-d/go-git-fixtures.v3"
 
 	"opendev.org/airship/airshipctl/pkg/config"
@@ -11,15 +12,14 @@ import (
 	"opendev.org/airship/airshipctl/testutil"
 )
 
-func getDummyAirshipSettings() *environment.AirshipCTLSettings {
+func getDummyAirshipSettings(t *testing.T) *environment.AirshipCTLSettings {
 	settings := new(environment.AirshipCTLSettings)
 	conf := config.DummyConfig()
 	mfst := conf.Manifests["dummy_manifest"]
 
 	err := fixtures.Init()
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
+
 	fx := fixtures.Basic().One()
 
 	mfst.Repository = &config.Repository{
@@ -41,7 +41,7 @@ func TestPull(t *testing.T) {
 		{
 			Name:    "document-pull-cmd-with-defaults",
 			CmdLine: "",
-			Cmd:     NewDocumentPullCommand(getDummyAirshipSettings()),
+			Cmd:     NewDocumentPullCommand(getDummyAirshipSettings(t)),
 		},
 		{
 			Name:    "document-pull-cmd-with-help",
@@ -53,4 +53,6 @@ func TestPull(t *testing.T) {
 	for _, tt := range cmdTests {
 		testutil.RunTest(t, tt)
 	}
+
+	testutil.CleanUpGitFixtures(t)
 }

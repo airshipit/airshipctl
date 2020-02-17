@@ -37,10 +37,10 @@ const (
 
 type setContextTest struct {
 	description    string
-	config         *config.Config
+	givenConfig    *config.Config
 	args           []string
 	flags          []string
-	expected       string
+	expectedOutput string
 	expectedConfig *config.Config
 }
 
@@ -71,26 +71,29 @@ func TestConfigSetContext(t *testing.T) {
 }
 
 func TestSetContext(t *testing.T) {
-	conf := config.InitConfig(t)
+	given, cleanupGiven := config.InitConfig(t)
+	defer cleanupGiven(t)
 
 	tname := "dummycontext"
 	tctype := config.Ephemeral
 
-	expconf := config.InitConfig(t)
-	expconf.Contexts[tname] = config.NewContext()
+	expected, cleanupExpected := config.InitConfig(t)
+	defer cleanupExpected(t)
+
+	expected.Contexts[tname] = config.NewContext()
 	clusterName := config.NewClusterComplexName()
 	clusterName.WithType(tname, tctype)
-	expconf.Contexts[tname].NameInKubeconf = clusterName.Name()
-	expconf.Contexts[tname].Manifest = "edge_cloud"
+	expected.Contexts[tname].NameInKubeconf = clusterName.Name()
+	expected.Contexts[tname].Manifest = "edge_cloud"
 
 	expkContext := kubeconfig.NewContext()
 	expkContext.AuthInfo = testUser
 	expkContext.Namespace = "kube-system"
-	expconf.KubeConfig().Contexts[expconf.Contexts[tname].NameInKubeconf] = expkContext
+	expected.KubeConfig().Contexts[expected.Contexts[tname].NameInKubeconf] = expkContext
 
 	test := setContextTest{
 		description: "Testing 'airshipctl config set-context' with a new context",
-		config:      conf,
+		givenConfig: given,
 		args:        []string{tname},
 		flags: []string{
 			"--" + config.FlagClusterType + "=" + config.Target,
@@ -98,60 +101,68 @@ func TestSetContext(t *testing.T) {
 			"--" + config.FlagManifest + "=edge_cloud",
 			"--" + config.FlagNamespace + "=kube-system",
 		},
-		expected:       `Context "` + tname + `" created.` + "\n",
-		expectedConfig: expconf,
+		expectedOutput: fmt.Sprintf("Context %q created.\n", tname),
+		expectedConfig: expected,
 	}
 	test.run(t)
 }
 
 func TestSetCurrentContext(t *testing.T) {
 	tname := "def_target"
-	conf := config.InitConfig(t)
+	given, cleanupGiven := config.InitConfig(t)
+	defer cleanupGiven(t)
 
-	expconf := config.InitConfig(t)
-	expconf.CurrentContext = "def_target"
+	expected, cleanupExpected := config.InitConfig(t)
+	defer cleanupExpected(t)
+
+	expected.CurrentContext = "def_target"
 
 	test := setContextTest{
 		description:    "Testing 'airshipctl config set-context' with a new current context",
-		config:         conf,
+		givenConfig:    given,
 		args:           []string{tname},
-		expected:       `Context "` + tname + `" modified.` + "\n",
-		expectedConfig: expconf,
+		expectedOutput: fmt.Sprintf("Context %q modified.\n", tname),
+		expectedConfig: expected,
 	}
 	test.run(t)
 }
+
 func TestModifyContext(t *testing.T) {
 	tname := testCluster
 	tctype := config.Ephemeral
 
-	conf := config.InitConfig(t)
-	conf.Contexts[tname] = config.NewContext()
+	given, cleanupGiven := config.InitConfig(t)
+	defer cleanupGiven(t)
+
+	given.Contexts[testCluster] = config.NewContext()
 
 	clusterName := config.NewClusterComplexName()
 	clusterName.WithType(tname, tctype)
-	conf.Contexts[tname].NameInKubeconf = clusterName.Name()
+	given.Contexts[tname].NameInKubeconf = clusterName.Name()
 	kContext := kubeconfig.NewContext()
 	kContext.AuthInfo = testUser
-	conf.KubeConfig().Contexts[clusterName.Name()] = kContext
-	conf.Contexts[tname].SetKubeContext(kContext)
+	given.KubeConfig().Contexts[clusterName.Name()] = kContext
+	given.Contexts[tname].SetKubeContext(kContext)
 
-	expconf := config.InitConfig(t)
-	expconf.Contexts[tname] = config.NewContext()
-	expconf.Contexts[tname].NameInKubeconf = clusterName.Name()
+	expected, cleanupExpected := config.InitConfig(t)
+	defer cleanupExpected(t)
+
+	expected.Contexts[tname] = config.NewContext()
+	expected.Contexts[tname].NameInKubeconf = clusterName.Name()
 	expkContext := kubeconfig.NewContext()
 	expkContext.AuthInfo = testUser
-	expconf.KubeConfig().Contexts[clusterName.Name()] = expkContext
-	expconf.Contexts[tname].SetKubeContext(expkContext)
+	expected.KubeConfig().Contexts[clusterName.Name()] = expkContext
+	expected.Contexts[tname].SetKubeContext(expkContext)
 
 	test := setContextTest{
 		description: "Testing 'airshipctl config set-context' with an existing context",
-		config:      conf,
+		givenConfig: given,
 		args:        []string{tname},
 		flags: []string{
 			"--" + config.FlagAuthInfoName + "=" + testUser,
 		},
-		expected:       `Context "` + tname + `" modified.` + "\n",
-		expectedConfig: expconf,
+		expectedOutput: fmt.Sprintf("Context %q modified.\n", tname),
+		expectedConfig: expected,
 	}
 	test.run(t)
 }
@@ -159,7 +170,7 @@ func TestModifyContext(t *testing.T) {
 func (test setContextTest) run(t *testing.T) {
 	// Get the Environment
 	settings := &environment.AirshipCTLSettings{}
-	settings.SetConfig(test.config)
+	settings.SetConfig(test.givenConfig)
 
 	buf := bytes.NewBuffer([]byte{})
 
@@ -190,7 +201,7 @@ func (test setContextTest) run(t *testing.T) {
 	assert.EqualValues(t, afterKcontext.AuthInfo, testKcontext.AuthInfo)
 
 	// Test that the Return Message looks correct
-	if len(test.expected) != 0 {
-		assert.EqualValuesf(t, buf.String(), test.expected, "expected %v, but got %v", test.expected, buf.String())
+	if len(test.expectedOutput) != 0 {
+		assert.EqualValues(t, test.expectedOutput, buf.String())
 	}
 }

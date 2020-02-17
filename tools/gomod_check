@@ -2,6 +2,7 @@
 set -e
 
 backup_dir=$(mktemp -d)
+trap 'rm -rf "$backup_dir"' EXIT
 
 revert() {
   cp "$backup_dir/go.mod" "go.mod"

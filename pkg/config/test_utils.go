@@ -24,6 +24,8 @@ import (
 	kubeconfig "k8s.io/client-go/tools/clientcmd/api"
 
 	"github.com/stretchr/testify/require"
+
+	"opendev.org/airship/airshipctl/testutil"
 )
 
 // DummyConfig used by tests, to initialize min set of data
@@ -145,25 +147,29 @@ func DummyClusterPurpose() *ClusterPurpose {
 	return cp
 }
 
-func InitConfig(t *testing.T) *Config {
+// InitConfig creates a Config object meant for testing.
+//
+// The returned config object will be associated with real files stored in a
+// directory in the user's temporary file storage
+// This directory can be cleaned up by calling the returned "cleanup" function
+func InitConfig(t *testing.T) (conf *Config, cleanup func(*testing.T)) {
 	t.Helper()
-	testDir, err := ioutil.TempDir("", "airship-test")
-	require.NoError(t, err)
+	testDir, cleanup := testutil.TempDir(t, "airship-test")
 
 	configPath := filepath.Join(testDir, "config")
-	err = ioutil.WriteFile(configPath, []byte(testConfigYAML), 0666)
+	err := ioutil.WriteFile(configPath, []byte(testConfigYAML), 0666)
 	require.NoError(t, err)
 
 	kubeConfigPath := filepath.Join(testDir, "kubeconfig")
 	err = ioutil.WriteFile(kubeConfigPath, []byte(testKubeConfigYAML), 0666)
 	require.NoError(t, err)
 
-	conf := NewConfig()
+	conf = NewConfig()
 
 	err = conf.LoadConfig(configPath, kubeConfigPath)
 	require.NoError(t, err)
 
-	return conf
+	return conf, cleanup
 }
 
 func DummyClusterOptions() *ClusterOptions {

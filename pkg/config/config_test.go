@@ -18,9 +18,7 @@ package config_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -232,8 +230,8 @@ func TestEqual(t *testing.T) {
 }
 
 func TestLoadConfig(t *testing.T) {
-	conf := config.InitConfig(t)
-	require.NotEmpty(t, conf.String())
+	conf, cleanup := config.InitConfig(t)
+	defer cleanup(t)
 
 	assert.Len(t, conf.Clusters, 5)
 	require.Contains(t, conf.Clusters, "def")
@@ -243,22 +241,23 @@ func TestLoadConfig(t *testing.T) {
 }
 
 func TestPersistConfig(t *testing.T) {
-	cfg := config.InitConfig(t)
+	conf, cleanup := config.InitConfig(t)
+	defer cleanup(t)
 
-	err := cfg.PersistConfig()
+	err := conf.PersistConfig()
 	require.NoError(t, err)
 
 	// Check that the files were created
-	assert.FileExists(t, cfg.LoadedConfigPath())
-	assert.FileExists(t, cfg.KubeConfigPath())
+	assert.FileExists(t, conf.LoadedConfigPath())
+	assert.FileExists(t, conf.KubeConfigPath())
 	// Check that the invalid name was changed to a valid one
-	assert.Contains(t, cfg.KubeConfig().Clusters, "invalidName_target")
+	assert.Contains(t, conf.KubeConfig().Clusters, "invalidName_target")
 
 	// Check that the missing cluster was added to the airshipconfig
-	assert.Contains(t, cfg.Clusters, "onlyinkubeconf")
+	assert.Contains(t, conf.Clusters, "onlyinkubeconf")
 
 	// Check that the "stragglers" were removed from the airshipconfig
-	assert.NotContains(t, cfg.Clusters, "straggler")
+	assert.NotContains(t, conf.Clusters, "straggler")
 }
 
 func TestEnsureComplete(t *testing.T) {
@@ -371,38 +370,31 @@ func TestEnsureComplete(t *testing.T) {
 }
 
 func TestPurge(t *testing.T) {
-	cfg := config.InitConfig(t)
-
-	// Point the config objects at a temporary directory
-	tempDir, err := ioutil.TempDir("", "airship-test-purge")
-	require.NoError(t, err)
-
-	airConfigFile := filepath.Join(tempDir, config.AirshipConfig)
-	cfg.SetLoadedConfigPath(airConfigFile)
-
-	kConfigFile := filepath.Join(tempDir, config.AirshipKubeConfig)
-	cfg.SetKubeConfigPath(kConfigFile)
+	conf, cleanup := config.InitConfig(t)
+	defer cleanup(t)
 
 	// Store it
-	err = cfg.PersistConfig()
-	assert.NoErrorf(t, err, "Unable to persist configuration expected at %v", cfg.LoadedConfigPath())
+	err := conf.PersistConfig()
+	assert.NoErrorf(t, err, "Unable to persist configuration expected at %v", conf.LoadedConfigPath())
 
 	// Verify that the file is there
-	_, err = os.Stat(cfg.LoadedConfigPath())
+	_, err = os.Stat(conf.LoadedConfigPath())
 	assert.Falsef(t, os.IsNotExist(err), "Test config was not persisted at %v, cannot validate Purge",
-		cfg.LoadedConfigPath())
+		conf.LoadedConfigPath())
 
 	// Delete it
-	err = cfg.Purge()
-	assert.NoErrorf(t, err, "Unable to Purge file at %v", cfg.LoadedConfigPath())
+	err = conf.Purge()
+	assert.NoErrorf(t, err, "Unable to Purge file at %v", conf.LoadedConfigPath())
 
 	// Verify its gone
-	_, err = os.Stat(cfg.LoadedConfigPath())
-	assert.Falsef(t, os.IsExist(err), "Purge failed to remove file at %v", cfg.LoadedConfigPath())
+	_, err = os.Stat(conf.LoadedConfigPath())
+	assert.Falsef(t, os.IsExist(err), "Purge failed to remove file at %v", conf.LoadedConfigPath())
 }
 
 func TestKClusterString(t *testing.T) {
-	conf := config.InitConfig(t)
+	conf, cleanup := config.InitConfig(t)
+	defer cleanup(t)
+
 	kClusters := conf.KubeConfig().Clusters
 	for kClust := range kClusters {
 		assert.NotEmpty(t, config.KClusterString(kClusters[kClust]))
@@ -410,7 +402,9 @@ func TestKClusterString(t *testing.T) {
 	assert.EqualValues(t, config.KClusterString(nil), "null\n")
 }
 func TestKContextString(t *testing.T) {
-	conf := config.InitConfig(t)
+	conf, cleanup := config.InitConfig(t)
+	defer cleanup(t)
+
 	kContexts := conf.KubeConfig().Contexts
 	for kCtx := range kContexts {
 		assert.NotEmpty(t, config.KContextString(kContexts[kCtx]))
@@ -418,7 +412,9 @@ func TestKContextString(t *testing.T) {
 	assert.EqualValues(t, config.KClusterString(nil), "null\n")
 }
 func TestKAuthInfoString(t *testing.T) {
-	conf := config.InitConfig(t)
+	conf, cleanup := config.InitConfig(t)
+	defer cleanup(t)
+
 	kAuthInfos := conf.KubeConfig().AuthInfos
 	for kAi := range kAuthInfos {
 		assert.NotEmpty(t, config.KAuthInfoString(kAuthInfos[kAi]))
@@ -449,7 +445,9 @@ func TestValidClusterTypeFail(t *testing.T) {
 	assert.Error(t, err)
 }
 func TestGetCluster(t *testing.T) {
-	conf := config.InitConfig(t)
+	conf, cleanup := config.InitConfig(t)
+	defer cleanup(t)
+
 	cluster, err := conf.GetCluster("def", config.Ephemeral)
 	require.NoError(t, err)
 
@@ -467,8 +465,10 @@ func TestGetCluster(t *testing.T) {
 }
 
 func TestAddCluster(t *testing.T) {
+	conf, cleanup := config.InitConfig(t)
+	defer cleanup(t)
+
 	co := config.DummyClusterOptions()
-	conf := config.InitConfig(t)
 	cluster, err := conf.AddCluster(co)
 	require.NoError(t, err)
 
@@ -476,8 +476,10 @@ func TestAddCluster(t *testing.T) {
 }
 
 func TestModifyCluster(t *testing.T) {
+	conf, cleanup := config.InitConfig(t)
+	defer cleanup(t)
+
 	co := config.DummyClusterOptions()
-	conf := config.InitConfig(t)
 	cluster, err := conf.AddCluster(co)
 	require.NoError(t, err)
 
@@ -496,19 +498,25 @@ func TestModifyCluster(t *testing.T) {
 }
 
 func TestGetClusters(t *testing.T) {
-	conf := config.InitConfig(t)
+	conf, cleanup := config.InitConfig(t)
+	defer cleanup(t)
+
 	clusters := conf.GetClusters()
 	assert.Len(t, clusters, 5)
 }
 
 func TestGetContexts(t *testing.T) {
-	conf := config.InitConfig(t)
+	conf, cleanup := config.InitConfig(t)
+	defer cleanup(t)
+
 	contexts := conf.GetContexts()
 	assert.Len(t, contexts, 3)
 }
 
 func TestGetContext(t *testing.T) {
-	conf := config.InitConfig(t)
+	conf, cleanup := config.InitConfig(t)
+	defer cleanup(t)
+
 	context, err := conf.GetContext("def_ephemeral")
 	require.NoError(t, err)
 
@@ -522,15 +530,19 @@ func TestGetContext(t *testing.T) {
 }
 
 func TestAddContext(t *testing.T) {
+	conf, cleanup := config.InitConfig(t)
+	defer cleanup(t)
+
 	co := config.DummyContextOptions()
-	conf := config.InitConfig(t)
 	context := conf.AddContext(co)
 	assert.EqualValues(t, conf.Contexts[co.Name], context)
 }
 
 func TestModifyContext(t *testing.T) {
+	conf, cleanup := config.InitConfig(t)
+	defer cleanup(t)
+
 	co := config.DummyContextOptions()
-	conf := config.InitConfig(t)
 	context := conf.AddContext(co)
 
 	co.Namespace += stringDelta
@@ -548,13 +560,17 @@ func TestModifyContext(t *testing.T) {
 // AuthInfo Related
 
 func TestGetAuthInfos(t *testing.T) {
-	conf := config.InitConfig(t)
+	conf, cleanup := config.InitConfig(t)
+	defer cleanup(t)
+
 	authinfos := conf.GetAuthInfos()
 	assert.Len(t, authinfos, 3)
 }
 
 func TestGetAuthInfo(t *testing.T) {
-	conf := config.InitConfig(t)
+	conf, cleanup := config.InitConfig(t)
+	defer cleanup(t)
+
 	authinfo, err := conf.GetAuthInfo("def-user")
 	require.NoError(t, err)
 
@@ -567,15 +583,19 @@ func TestGetAuthInfo(t *testing.T) {
 }
 
 func TestAddAuthInfo(t *testing.T) {
+	conf, cleanup := config.InitConfig(t)
+	defer cleanup(t)
+
 	co := config.DummyAuthInfoOptions()
-	conf := config.InitConfig(t)
 	authinfo := conf.AddAuthInfo(co)
 	assert.EqualValues(t, conf.AuthInfos[co.Name], authinfo)
 }
 
 func TestModifyAuthInfo(t *testing.T) {
+	conf, cleanup := config.InitConfig(t)
+	defer cleanup(t)
+
 	co := config.DummyAuthInfoOptions()
-	conf := config.InitConfig(t)
 	authinfo := conf.AddAuthInfo(co)
 
 	co.Username += stringDelta

@@ -17,16 +17,15 @@ limitations under the License.
 package environment
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/testutil"
 )
 
 func TestInitFlags(t *testing.T) {
@@ -40,8 +39,8 @@ func TestInitFlags(t *testing.T) {
 func TestInitConfig(t *testing.T) {
 	t.Run("DefaultToHomeDirectory", func(subTest *testing.T) {
 		// Set up a fake $HOME directory
-		testDir := makeTestDir(t)
-		defer deleteTestDir(t, testDir)
+		testDir, cleanup := testutil.TempDir(t, "test-home")
+		defer cleanup(t)
 		defer setHome(testDir)()
 
 		var testSettings AirshipCTLSettings
@@ -55,8 +54,8 @@ func TestInitConfig(t *testing.T) {
 
 	t.Run("PreferEnvToDefault", func(subTest *testing.T) {
 		// Set up a fake $HOME directory
-		testDir := makeTestDir(t)
-		defer deleteTestDir(t, testDir)
+		testDir, cleanup := testutil.TempDir(t, "test-home")
+		defer cleanup(t)
 		defer setHome(testDir)()
 
 		var testSettings AirshipCTLSettings
@@ -75,8 +74,8 @@ func TestInitConfig(t *testing.T) {
 
 	t.Run("PreferCmdLineArgToDefault", func(subTest *testing.T) {
 		// Set up a fake $HOME directory
-		testDir := makeTestDir(t)
-		defer deleteTestDir(t, testDir)
+		testDir, cleanup := testutil.TempDir(t, "test-home")
+		defer cleanup(t)
 		defer setHome(testDir)()
 
 		var testSettings AirshipCTLSettings
@@ -94,8 +93,8 @@ func TestInitConfig(t *testing.T) {
 
 	t.Run("PreferCmdLineArgToEnv", func(subTest *testing.T) {
 		// Set up a fake $HOME directory
-		testDir := makeTestDir(t)
-		defer deleteTestDir(t, testDir)
+		testDir, cleanup := testutil.TempDir(t, "test-home")
+		defer cleanup(t)
 		defer setHome(testDir)()
 
 		var testSettings AirshipCTLSettings
@@ -119,17 +118,6 @@ func TestInitConfig(t *testing.T) {
 		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath())
 		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath())
 	})
-}
-
-func makeTestDir(t *testing.T) string {
-	testDir, err := ioutil.TempDir("", "airship-test")
-	require.NoError(t, err)
-	return testDir
-}
-
-func deleteTestDir(t *testing.T, path string) {
-	err := os.RemoveAll(path)
-	require.NoError(t, err)
 }
 
 // setHome sets the HOME environment variable to `path`, and returns a function
