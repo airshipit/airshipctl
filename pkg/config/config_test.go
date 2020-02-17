@@ -255,10 +255,10 @@ func TestPersistConfig(t *testing.T) {
 	assert.Contains(t, cfg.KubeConfig().Clusters, "invalidName_target")
 
 	// Check that the missing cluster was added to the airshipconfig
-	assert.Contains(t, cfg.ClusterNames(), "onlyinkubeconf")
+	assert.Contains(t, cfg.Clusters, "onlyinkubeconf")
 
 	// Check that the "stragglers" were removed from the airshipconfig
-	assert.NotContains(t, cfg.ClusterNames(), "straggler")
+	assert.NotContains(t, cfg.Clusters, "straggler")
 }
 
 func TestEnsureComplete(t *testing.T) {
@@ -497,15 +497,13 @@ func TestModifyCluster(t *testing.T) {
 
 func TestGetClusters(t *testing.T) {
 	conf := config.InitConfig(t)
-	clusters, err := conf.GetClusters()
-	require.NoError(t, err)
+	clusters := conf.GetClusters()
 	assert.Len(t, clusters, 5)
 }
 
 func TestGetContexts(t *testing.T) {
 	conf := config.InitConfig(t)
-	contexts, err := conf.GetContexts()
-	require.NoError(t, err)
+	contexts := conf.GetContexts()
 	assert.Len(t, contexts, 3)
 }
 
@@ -551,8 +549,7 @@ func TestModifyContext(t *testing.T) {
 
 func TestGetAuthInfos(t *testing.T) {
 	conf := config.InitConfig(t)
-	authinfos, err := conf.GetAuthInfos()
-	require.NoError(t, err)
+	authinfos := conf.GetAuthInfos()
 	assert.Len(t, authinfos, 3)
 }
 

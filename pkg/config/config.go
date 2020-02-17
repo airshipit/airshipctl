@@ -398,24 +398,6 @@ func (c *Config) KubeConfig() *clientcmdapi.Config {
 	return c.kubeConfig
 }
 
-func (c *Config) ClusterNames() []string {
-	names := make([]string, 0, len(c.Clusters))
-	for c := range c.Clusters {
-		names = append(names, c)
-	}
-	sort.Strings(names)
-	return names
-}
-
-func (c *Config) ContextNames() []string {
-	names := make([]string, 0, len(c.Contexts))
-	for c := range c.Contexts {
-		names = append(names, c)
-	}
-	sort.Strings(names)
-	return names
-}
-
 // Get A Cluster
 func (c *Config) GetCluster(cName, cType string) (*Cluster, error) {
 	_, exists := c.Clusters[cName]
@@ -498,20 +480,27 @@ func (c *Config) ModifyCluster(cluster *Cluster, theCluster *ClusterOptions) (*C
 	return cluster, nil
 }
 
-func (c *Config) GetClusters() ([]*Cluster, error) {
-	clusters := make([]*Cluster, 0, len(c.ClusterNames()))
-	for _, cName := range c.ClusterNames() {
-		for _, ctName := range AllClusterTypes {
-			cluster, err := c.GetCluster(cName, ctName)
-			// Err simple means something that does not exists
-			// Which is possible  since I am iterating thorugh both possible
-			// cluster types
-			if err == nil {
+// GetClusters returns all of the clusters associated with the Config sorted by name
+func (c *Config) GetClusters() []*Cluster {
+	keys := make([]string, 0, len(c.Clusters))
+	for name := range c.Clusters {
+		keys = append(keys, name)
+	}
+	sort.Strings(keys)
+
+	clusters := make([]*Cluster, 0, len(c.Clusters))
+	for _, name := range keys {
+		for _, clusterType := range AllClusterTypes {
+			cluster, exists := c.Clusters[name].ClusterTypes[clusterType]
+			if exists {
+				// If it doesn't exist, then there must not be
+				// a cluster with this name/type combination.
+				// This is expected behavior
 				clusters = append(clusters, cluster)
 			}
 		}
 	}
-	return clusters, nil
+	return clusters
 }
 
 // Context Operations from Config point of view
@@ -524,17 +513,19 @@ func (c *Config) GetContext(cName string) (*Context, error) {
 	return context, nil
 }
 
-func (c *Config) GetContexts() ([]*Context, error) {
-	contexts := make([]*Context, 0, len(c.ContextNames()))
-	// Given that we change the testing metholdogy
-	// The ordered names are no longer required
-	for _, cName := range c.ContextNames() {
-		context, err := c.GetContext(cName)
-		if err == nil {
-			contexts = append(contexts, context)
-		}
+// GetContexts returns all of the contexts associated with the Config sorted by name
+func (c *Config) GetContexts() []*Context {
+	keys := make([]string, 0, len(c.Contexts))
+	for name := range c.Contexts {
+		keys = append(keys, name)
 	}
-	return contexts, nil
+	sort.Strings(keys)
+
+	contexts := make([]*Context, 0, len(c.Contexts))
+	for _, name := range keys {
+		contexts = append(contexts, c.Contexts[name])
+	}
+	return contexts
 }
 
 func (c *Config) AddContext(theContext *ContextOptions) *Context {
@@ -630,15 +621,20 @@ func (c *Config) GetAuthInfo(aiName string) (*AuthInfo, error) {
 	return authinfo, nil
 }
 
-func (c *Config) GetAuthInfos() ([]*AuthInfo, error) {
-	authinfos := make([]*AuthInfo, 0, len(c.AuthInfos))
-	for cName := range c.AuthInfos {
-		authinfo, err := c.GetAuthInfo(cName)
-		if err == nil {
-			authinfos = append(authinfos, authinfo)
-		}
+// GetAuthInfos returns a slice containing all the AuthInfos associated with
+// the Config sorted by name
+func (c *Config) GetAuthInfos() []*AuthInfo {
+	keys := make([]string, 0, len(c.AuthInfos))
+	for name := range c.AuthInfos {
+		keys = append(keys, name)
 	}
-	return authinfos, nil
+	sort.Strings(keys)
+
+	authInfos := make([]*AuthInfo, 0, len(c.AuthInfos))
+	for _, name := range keys {
+		authInfos = append(authInfos, c.AuthInfos[name])
+	}
+	return authInfos
 }
 
 func (c *Config) AddAuthInfo(theAuthInfo *AuthInfoOptions) *AuthInfo {

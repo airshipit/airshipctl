@@ -92,14 +92,14 @@ func (o *AuthInfoOptions) Validate() error {
 // runGetAuthInfo performs the execution of 'config get-credentials' sub command
 func RunGetAuthInfo(o *AuthInfoOptions, out io.Writer, airconfig *Config) error {
 	if o.Name == "" {
-		return getAuthInfos(out, airconfig)
+		getAuthInfos(out, airconfig)
+		return nil
 	}
 	return getAuthInfo(o, out, airconfig)
 }
 
 func getAuthInfo(o *AuthInfoOptions, out io.Writer, airconfig *Config) error {
-	cName := o.Name
-	authinfo, err := airconfig.GetAuthInfo(cName)
+	authinfo, err := airconfig.GetAuthInfo(o.Name)
 	if err != nil {
 		return err
 	}
@@ -107,24 +107,21 @@ func getAuthInfo(o *AuthInfoOptions, out io.Writer, airconfig *Config) error {
 	return nil
 }
 
-func getAuthInfos(out io.Writer, airconfig *Config) error {
-	authinfos, err := airconfig.GetAuthInfos()
-	if err != nil {
-		return err
-	}
+func getAuthInfos(out io.Writer, airconfig *Config) {
+	authinfos := airconfig.GetAuthInfos()
 	if len(authinfos) == 0 {
 		fmt.Fprintln(out, "No User credentials found in the configuration.")
 	}
 	for _, authinfo := range authinfos {
 		fmt.Fprintln(out, authinfo)
 	}
-	return nil
 }
 
 // runGetCluster performs the execution of 'config get-cluster' sub command
 func RunGetCluster(o *ClusterOptions, out io.Writer, airconfig *Config) error {
 	if o.Name == "" {
-		return getClusters(out, airconfig)
+		getClusters(out, airconfig)
+		return nil
 	}
 	return getCluster(o.Name, o.ClusterType, out, airconfig)
 }
@@ -139,26 +136,22 @@ func getCluster(cName, cType string,
 	return nil
 }
 
-func getClusters(out io.Writer, airconfig *Config) error {
-	clusters, err := airconfig.GetClusters()
-	if err != nil {
-		return err
-	}
+func getClusters(out io.Writer, airconfig *Config) {
+	clusters := airconfig.GetClusters()
 	if len(clusters) == 0 {
 		fmt.Fprintln(out, "No clusters found in the configuration.")
-		return nil
 	}
 
 	for _, cluster := range clusters {
 		fmt.Fprintf(out, "%s\n", cluster.PrettyString())
 	}
-	return nil
 }
 
 // runGetContext performs the execution of 'config get-Context' sub command
 func RunGetContext(o *ContextOptions, out io.Writer, airconfig *Config) error {
 	if o.Name == "" && !o.CurrentContext {
-		return getContexts(out, airconfig)
+		getContexts(out, airconfig)
+		return nil
 	}
 	return getContext(o, out, airconfig)
 }
@@ -176,18 +169,14 @@ func getContext(o *ContextOptions, out io.Writer, airconfig *Config) error {
 	return nil
 }
 
-func getContexts(out io.Writer, airconfig *Config) error {
-	contexts, err := airconfig.GetContexts()
-	if err != nil {
-		return err
-	}
+func getContexts(out io.Writer, airconfig *Config) {
+	contexts := airconfig.GetContexts()
 	if len(contexts) == 0 {
 		fmt.Fprintln(out, "No Contexts found in the configuration.")
 	}
 	for _, context := range contexts {
 		fmt.Fprintf(out, "%s", context.PrettyString())
 	}
-	return nil
 }
 
 func RunSetAuthInfo(o *AuthInfoOptions, airconfig *Config, writeToStorage bool) (bool, error) {
