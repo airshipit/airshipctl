@@ -3,6 +3,8 @@ package document
 import (
 	"testing"
 
+	fixtures "gopkg.in/src-d/go-git-fixtures.v3"
+
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
 
@@ -13,8 +15,15 @@ func getDummyAirshipSettings() *environment.AirshipCTLSettings {
 	settings := new(environment.AirshipCTLSettings)
 	conf := config.DummyConfig()
 	mfst := conf.Manifests["dummy_manifest"]
+
+	err := fixtures.Init()
+	if err != nil {
+		panic(err)
+	}
+	fx := fixtures.Basic().One()
+
 	mfst.Repository = &config.Repository{
-		URLString: "https://opendev.org/airship/treasuremap.git",
+		URLString: fx.DotGit().Root(),
 		CheckoutOptions: &config.RepoCheckout{
 			Branch:        "master",
 			ForceCheckout: false,
