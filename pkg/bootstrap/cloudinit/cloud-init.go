@@ -43,11 +43,11 @@ func getDataFromSecret(cfg document.Document, key string) ([]byte, error) {
 }
 
 // GetCloudData reads YAML document input and generates cloud-init data for
-// node (i.e. Cluster API Machine) with bootstrap annotation.
-func GetCloudData(docBundle document.Bundle, bsAnnotation string) ([]byte, []byte, error) {
+// node (i.e. Cluster API Machine) with bootstrap label.
+func GetCloudData(docBundle document.Bundle, bsSelector string) ([]byte, []byte, error) {
 	var userData []byte
 	var netConf []byte
-	docs, err := docBundle.GetByAnnotation(bsAnnotation)
+	docs, err := docBundle.GetByLabel(bsSelector)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -60,8 +60,8 @@ func GetCloudData(docBundle document.Bundle, bsAnnotation string) ([]byte, []byt
 	}
 	if ephemeralCfg == nil {
 		return nil, nil, document.ErrDocNotFound{
-			Annotation: bsAnnotation,
-			Kind:       EphemeralClusterConfKind,
+			Selector: bsSelector,
+			Kind:     EphemeralClusterConfKind,
 		}
 	}
 

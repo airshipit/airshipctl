@@ -84,9 +84,10 @@ func getRemoteDirectConfig(settings *environment.AirshipCTLSettings) (*config.Re
 		return nil, "", err
 	}
 
+	label := document.EphemeralClusterSelector
 	filter := types.Selector{
 		Gvk:           gvk.FromKind(AirshipHostKind),
-		LabelSelector: document.EphemeralClusterMarker,
+		LabelSelector: label,
 	}
 	docs, err := docBundle.Select(filter)
 	if err != nil {
@@ -94,8 +95,8 @@ func getRemoteDirectConfig(settings *environment.AirshipCTLSettings) (*config.Re
 	}
 	if len(docs) == 0 {
 		return nil, "", document.ErrDocNotFound{
-			Annotation: document.EphemeralClusterMarker,
-			Kind:       AirshipHostKind,
+			Selector: label,
+			Kind:     AirshipHostKind,
 		}
 	}
 
