@@ -1,4 +1,4 @@
-/*l
+/*
 Copyright 2014 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/environment"
-	"opendev.org/airship/airshipctl/pkg/errors"
 )
 
 var (
@@ -33,7 +32,14 @@ func NewCmdConfigInit(rootSettings *environment.AirshipCTLSettings) *cobra.Comma
 		Use:   "init",
 		Short: configInitLong,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return errors.ErrNotImplemented{}
+			c := rootSettings.Config()
+
+			err := c.PersistConfig()
+			if err != nil {
+				return err
+			}
+
+			return nil
 		},
 	}
 

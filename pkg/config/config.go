@@ -82,7 +82,25 @@ func (c *Config) loadKubeConfig(kubeConfigPath string) error {
 	// If I can read from the file, load from it
 	var err error
 	if _, err = os.Stat(kubeConfigPath); os.IsNotExist(err) {
-		c.kubeConfig = clientcmdapi.NewConfig()
+		// Default kubeconfig matching Airship target cluster
+		c.kubeConfig = &clientcmdapi.Config{
+			Clusters: map[string]*clientcmdapi.Cluster{
+				AirshipDefaultContext: {
+					Server: "https://172.17.0.1:6443",
+				},
+			},
+			AuthInfos: map[string]*clientcmdapi.AuthInfo{
+				"admin": {
+					Username: "airship-admin",
+				},
+			},
+			Contexts: map[string]*clientcmdapi.Context{
+				AirshipDefaultContext: {
+					Cluster:  AirshipDefaultContext,
+					AuthInfo: "admin",
+				},
+			},
+		}
 		return nil
 	} else if err != nil {
 		return err

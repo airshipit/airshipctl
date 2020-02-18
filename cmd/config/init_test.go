@@ -19,17 +19,15 @@ package config
 import (
 	"testing"
 
-	"opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
 func TestConfigInit(t *testing.T) {
 	cmdTests := []*testutil.CmdTest{
 		{
-			Name:    "config-init",
-			CmdLine: "",
+			Name:    "config-init-help",
+			CmdLine: "-h",
 			Cmd:     NewCmdConfigInit(nil),
-			Error:   errors.ErrNotImplemented{},
 		},
 	}
 

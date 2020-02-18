@@ -8,6 +8,7 @@ bin/
 
 # Test binary, build wiith `go test -c`
 *.test
+*.example
 
 # Output of the go coverage tool
 *.out
