@@ -112,12 +112,9 @@ func TestSetCurrentContext(t *testing.T) {
 	expconf.CurrentContext = "def_target"
 
 	test := setContextTest{
-		description: "Testing 'airshipctl config set-context' with a new current context",
-		config:      conf,
-		args:        []string{tname},
-		flags: []string{
-			"--" + config.FlagCurrentContext + "=true",
-		},
+		description:    "Testing 'airshipctl config set-context' with a new current context",
+		config:         conf,
+		args:           []string{tname},
 		expected:       `Context "` + tname + `" modified.` + "\n",
 		expectedConfig: expconf,
 	}
