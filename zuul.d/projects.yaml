@@ -13,12 +13,14 @@
 - project:
     check:
       jobs:
+        - airship-airshipctl-build-docs
         - airship-airshipctl-lint-unit
         - airship-airshipctl-build-image
         - airship-airshipctl-functional-existing-k8s
         - airship-airshipctl-gate-test
     gate:
       jobs:
+        - airship-airshipctl-build-docs
         - airship-airshipctl-lint-unit
         - airship-airshipctl-build-image
         - airship-airshipctl-functional-existing-k8s
