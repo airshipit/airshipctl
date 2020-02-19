@@ -62,10 +62,6 @@ output:
 # all available settings of specific linters
 linters-settings:
 
-  dupl:
-    # tokens count to trigger issue, 150 by default if not set here
-    threshold: 150
-
   errcheck:
     # report about not checking of errors in type assertions: `a := b.(MyStruct)`;
     # default is false: such cases aren't reported by default.
@@ -183,7 +179,6 @@ linters-settings:
 linters:
   disable-all: true
   enable:
-    - dupl                 # Tool for code clone detection
     - errcheck             # Errcheck is a program for checking for unchecked errors in go programs. These unchecked errors can be critical bugs in some cases
     - goconst              # Finds repeated strings that could be replaced by a constant
     - gocritic             # The most opinionated Go source code linter
