@@ -35,13 +35,12 @@ Specifying a name that already exists will merge new fields on top of existing v
 airshipctl config set-context e2e --%v=kube-system --%v=manifest --%v=auth-info --%v=%v
 
 # Update the current-context to e2e
-airshipctl config set-context e2e --%v=true`,
+airshipctl config set-context e2e`,
 		config.FlagNamespace,
 		config.FlagManifest,
 		config.FlagAuthInfoName,
 		config.FlagClusterType,
-		config.Target,
-		config.FlagCurrentContext)
+		config.Target)
 )
 
 // NewCmdConfigSetContext creates a command object for the "set-context" action, which
@@ -51,13 +50,19 @@ func NewCmdConfigSetContext(rootSettings *environment.AirshipCTLSettings) *cobra
 
 	setcontextcmd := &cobra.Command{
 		Use:     "set-context NAME",
-		Short:   "Sets a context entry or updates current-context in the airshipctl config",
+		Short:   "Switch to a new context or update context values in the airshipctl config",
 		Long:    setContextLong,
 		Example: setContextExample,
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			nFlags := cmd.Flags().NFlag()
+			if nFlags == 0 {
+				// Change the current context to the provided context name if no flags are provided
+				theContext.CurrentContext = true
+			}
 			theContext.Name = cmd.Flags().Args()[0]
 			modified, err := config.RunSetContext(theContext, rootSettings.Config(), true)
+
 			if err != nil {
 				return err
 			}
@@ -75,9 +80,6 @@ func NewCmdConfigSetContext(rootSettings *environment.AirshipCTLSettings) *cobra
 }
 
 func sctxInitFlags(o *config.ContextOptions, setcontextcmd *cobra.Command) {
-	setcontextcmd.Flags().BoolVar(&o.CurrentContext, config.FlagCurrentContext, false,
-		config.FlagCurrentContext+" for the context entry in airshipctl config")
-
 	setcontextcmd.Flags().StringVar(&o.Cluster, config.FlagClusterName, o.Cluster,
 		config.FlagClusterName+" for the context entry in airshipctl config")
 

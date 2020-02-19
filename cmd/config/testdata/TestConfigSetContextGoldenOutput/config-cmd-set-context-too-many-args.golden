@@ -8,12 +8,11 @@ Examples:
 airshipctl config set-context e2e --namespace=kube-system --manifest=manifest --user=auth-info --cluster-type=target
 
 # Update the current-context to e2e
-airshipctl config set-context e2e --current-context=true
+airshipctl config set-context e2e
 
 Flags:
       --cluster string        cluster for the context entry in airshipctl config
       --cluster-type string   cluster-type for the context entry in airshipctl config
-      --current-context       current-context for the context entry in airshipctl config
   -h, --help                  help for set-context
       --manifest string       manifest for the context entry in airshipctl config
       --namespace string      namespace for the context entry in airshipctl config
