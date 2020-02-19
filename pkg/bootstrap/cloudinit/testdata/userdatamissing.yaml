@@ -1,0 +1,11 @@
+# in this document set, we lack a document that contains our ephemeral
+# iso generation userdata
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    test: userdatamissing
+  name: userdatamissing-somesecret
+type: Opaque
+stringData:
+  userData: "this secret lacks the label airshipit.org/ephemeral-user-data: true"

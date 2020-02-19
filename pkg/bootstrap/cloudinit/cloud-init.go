@@ -7,72 +7,137 @@ import (
 )
 
 const (
-	// TODO (dukov) This should depend on cluster api version once it is
-	// fully available for Metal3. In other words:
-	// - Secret for v1alpha1
-	// - KubeAdmConfig for v1alpha2
-	EphemeralClusterConfKind = "Secret"
+	UserDataKind           = "Secret"
+	NetworkDataKind        = "Secret"
+	BareMetalHostKind      = "BareMetalHost"
+	EphemeralHostLabel     = "airshipit.org/ephemeral-node=true"
+	EphemeralUserDataLabel = "airshipit.org/ephemeral-user-data=true"
+	networkDataKey         = "networkData"
+	userDataKey            = "userData"
 )
 
-func decodeData(cfg document.Document, key string) ([]byte, error) {
-	data, err := cfg.GetStringMap("data")
+// GetCloudData reads YAML document input and generates cloud-init data for
+// ephemeral node.
+func GetCloudData(docBundle document.Bundle) (userData []byte, netConf []byte, err error) {
+	userData, err = getUserData(docBundle)
+
 	if err != nil {
-		return nil, ErrDataNotSupplied{DocName: cfg.GetName(), Key: key}
+		return nil, nil, err
 	}
 
-	res, ok := data[key]
-	if !ok {
-		return nil, ErrDataNotSupplied{DocName: cfg.GetName(), Key: key}
+	netConf, err = getNetworkData(docBundle)
+
+	if err != nil {
+		return nil, nil, err
 	}
 
-	return b64.StdEncoding.DecodeString(res)
+	return userData, netConf, err
 }
 
-// getDataFromSecret extracts data from Secret with respect to overrides
-func getDataFromSecret(cfg document.Document, key string) ([]byte, error) {
-	data, err := cfg.GetStringMap("stringData")
+func getUserData(docBundle document.Bundle) ([]byte, error) {
+	// find the user-data document
+	selector := document.NewSelector().ByKind(UserDataKind).ByLabel(EphemeralUserDataLabel)
+	docs, err := docBundle.Select(selector)
 	if err != nil {
-		return decodeData(cfg, key)
+		return nil, err
+	}
+	var userDataDoc document.Document = &document.Factory{}
+	switch numDocsFound := len(docs); {
+	case numDocsFound == 0:
+		return nil, document.ErrDocNotFound{Selector: selector}
+	case numDocsFound > 1:
+		return nil, document.ErrMultipleDocsFound{Selector: selector}
+	case numDocsFound == 1:
+		userDataDoc = docs[0]
+	}
+
+	// finally, try and retrieve the data we want from the document
+	userData, err := decodeData(userDataDoc, userDataKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return userData, nil
+}
+
+func getNetworkData(docBundle document.Bundle) ([]byte, error) {
+	// find the baremetal host indicated as the ephemeral node
+	selector := document.NewSelector().ByKind(BareMetalHostKind).ByLabel(EphemeralHostLabel)
+	docs, err := docBundle.Select(selector)
+	if err != nil {
+		return nil, err
+	}
+
+	var bmhDoc document.Document = &document.Factory{}
+	switch numDocsFound := len(docs); {
+	case numDocsFound == 0:
+		return nil, document.ErrDocNotFound{Selector: selector}
+	case numDocsFound > 1:
+		return nil, document.ErrMultipleDocsFound{Selector: selector}
+	case numDocsFound == 1:
+		bmhDoc = docs[0]
+	}
+
+	// extract the network data document pointer from the bmh document
+	netConfDocName, err := bmhDoc.GetString("spec.networkData.name")
+	if err != nil {
+		return nil, err
+	}
+	netConfDocNamespace, err := bmhDoc.GetString("spec.networkData.namespace")
+	if err != nil {
+		return nil, err
+	}
+
+	// try and find these documents in our bundle
+	selector = document.NewSelector().ByKind(NetworkDataKind).ByNamespace(netConfDocNamespace).ByName(netConfDocName)
+	docs, err = docBundle.Select(selector)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var networkDataDoc document.Document = &document.Factory{}
+	switch numDocsFound := len(docs); {
+	case numDocsFound == 0:
+		return nil, document.ErrDocNotFound{Selector: selector}
+	case numDocsFound > 1:
+		return nil, document.ErrMultipleDocsFound{Selector: selector}
+	case numDocsFound == 1:
+		networkDataDoc = docs[0]
+	}
+
+	// finally, try and retrieve the data we want from the document
+	netData, err := decodeData(networkDataDoc, networkDataKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return netData, nil
+}
+
+func decodeData(cfg document.Document, key string) ([]byte, error) {
+	var needsBase64Decode = false
+
+	// TODO(alanmeadows): distinguish between missing net-data key
+	// and missing data/stringData keys in the Secret
+	data, err := cfg.GetStringMap("data")
+	if err == nil {
+		needsBase64Decode = true
+	} else {
+		// we'll catch any error below
+		data, err = cfg.GetStringMap("stringData")
+		if err != nil {
+			return nil, ErrDataNotSupplied{DocName: cfg.GetName(), Key: "data or stringData"}
+		}
 	}
 
 	res, ok := data[key]
 	if !ok {
-		return decodeData(cfg, key)
+		return nil, ErrDataNotSupplied{DocName: cfg.GetName(), Key: key}
+	}
+
+	if needsBase64Decode {
+		return b64.StdEncoding.DecodeString(res)
 	}
 	return []byte(res), nil
-}
-
-// GetCloudData reads YAML document input and generates cloud-init data for
-// node (i.e. Cluster API Machine) with bootstrap label.
-func GetCloudData(docBundle document.Bundle, bsSelector string) ([]byte, []byte, error) {
-	var userData []byte
-	var netConf []byte
-	docs, err := docBundle.GetByLabel(bsSelector)
-	if err != nil {
-		return nil, nil, err
-	}
-	var ephemeralCfg document.Document
-	for _, doc := range docs {
-		if doc.GetKind() == EphemeralClusterConfKind {
-			ephemeralCfg = doc
-			break
-		}
-	}
-	if ephemeralCfg == nil {
-		return nil, nil, document.ErrDocNotFound{
-			Selector: bsSelector,
-			Kind:     EphemeralClusterConfKind,
-		}
-	}
-
-	netConf, err = getDataFromSecret(ephemeralCfg, "netconfig")
-	if err != nil {
-		return nil, nil, err
-	}
-
-	userData, err = getDataFromSecret(ephemeralCfg, "userdata")
-	if err != nil {
-		return nil, nil, err
-	}
-	return userData, netConf, nil
 }

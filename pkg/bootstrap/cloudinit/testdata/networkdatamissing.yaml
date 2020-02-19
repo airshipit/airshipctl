@@ -1,0 +1,46 @@
+# in this document set, we have an ephemeral node with
+# but it lacks a networkData clause
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    test: networkdatamissing
+  name: networkdatamissing-master-1-bmc
+type: Opaque
+stringData:
+  username: foobar
+  password: goober
+---
+apiVersion: v1
+kind: Secret
+namespace: missing
+metadata:
+  labels:
+    test: missing
+  name: networkdatamissing-missing
+type: Opaque
+stringData:
+  networkData: there is network data here, but we have no reference to it
+---
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  labels:
+    airshipit.org/ephemeral-node: 'true'
+    test: networkdatamissing
+  name: networkdatamissing-master-1
+spec:
+  bmc:
+    address: ipmi://127.0.0.1
+    credentialsName: networkdatamissing-master-1-bmc
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    airshipit.org/ephemeral-user-data: 'true'
+    test: networkdatamissing
+  name: networkdatamissing-airship-isogen-userdata
+type: Opaque
+stringData:
+  userData: cloud-init

@@ -1,0 +1,12 @@
+# in this document set, we have a secret that contains a label for our
+# iso generation userdata, but it is malformed lacking a user-data key
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    airshipit.org/ephemeral-user-data: 'true'
+    test: userdatamalformed
+  name: userdatamalformed-somesecret
+type: Opaque
+stringData:
+  no-user-data: this secret has the right label but is missing the 'user-data' key

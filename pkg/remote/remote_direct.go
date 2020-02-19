@@ -95,8 +95,7 @@ func getRemoteDirectConfig(settings *environment.AirshipCTLSettings) (*config.Re
 	}
 	if len(docs) == 0 {
 		return nil, "", document.ErrDocNotFound{
-			Selector: ls,
-			Kind:     AirshipHostKind,
+			Selector: selector,
 		}
 	}
 
