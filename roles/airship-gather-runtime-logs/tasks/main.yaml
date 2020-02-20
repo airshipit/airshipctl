@@ -1,0 +1,33 @@
+- name: populate service facts
+  service_facts:
+
+- name: set runtime logs dir
+  set_fact:
+    runtime_logs_dir: "{{ logs_dir }}/runtime"
+
+- name: ensure directory for runtime logs exists
+  file:
+    state: directory
+    path: "{{ runtime_logs_dir }}"
+
+- name: dump docker logs
+  shell: |-
+    journalctl --unit "docker" --no-pager > "{{ runtime_logs_dir }}/docker.log"
+  when: ansible_facts.services['docker'] is defined
+  args:
+    executable: /bin/bash
+  become: true
+
+- name: dump containerd logs
+  shell: |-
+    journalctl --unit "containerd" --no-pager > "{{ runtime_logs_dir }}/containerd.log"
+  when: ansible_facts.services['containerd'] is defined
+  args:
+    executable: /bin/bash
+  become: true
+
+- name: "Downloads logs to executor"
+  synchronize:
+    src: "{{ runtime_logs_dir }}"
+    dest: "{{ zuul.executor.log_root }}/{{ inventory_hostname }}"
+    mode: pull
