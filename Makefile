@@ -34,7 +34,7 @@ NO_PROXY            ?= localhost,127.0.0.1,.svc.cluster.local
 USE_PROXY           ?= false
 
 # Sphinx document options
-PYTHON_EXECUTABLE   := python
+PYTHON_EXECUTABLE   := python3
 SPHINXBUILD         ?= sphinx-build
 SOURCEDIR           = docs/source
 BUILDDIR            = docs/build
