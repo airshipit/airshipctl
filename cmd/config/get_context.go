@@ -45,25 +45,29 @@ airshipctl config get-context e2e`,
 
 // NewCmdConfigGetContext returns a Command instance for 'config -Context' sub command
 func NewCmdConfigGetContext(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
-	theContext := &config.ContextOptions{}
-	getcontextcmd := &cobra.Command{
+	o := &config.ContextOptions{}
+	cmd := &cobra.Command{
 		Use:     "get-context NAME",
 		Short:   getContextLong,
 		Example: getContextExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 1 {
-				theContext.Name = args[0]
+				o.Name = args[0]
 			}
-			return config.RunGetContext(theContext, cmd.OutOrStdout(), rootSettings.Config())
+			return config.RunGetContext(o, cmd.OutOrStdout(), rootSettings.Config())
 		},
 	}
 
-	gctxInitFlags(theContext, getcontextcmd)
-
-	return getcontextcmd
+	addGetContextFlags(o, cmd)
+	return cmd
 }
 
-func gctxInitFlags(o *config.ContextOptions, getcontextcmd *cobra.Command) {
-	getcontextcmd.Flags().BoolVar(&o.CurrentContext, config.FlagCurrentContext, false,
-		config.FlagCurrentContext+" to retrieve the current context entry in airshipctl config")
+func addGetContextFlags(o *config.ContextOptions, cmd *cobra.Command) {
+	flags := cmd.Flags()
+
+	flags.BoolVar(
+		&o.CurrentContext,
+		config.FlagCurrentContext,
+		false,
+		"retrieve the current context entry in airshipctl config")
 }

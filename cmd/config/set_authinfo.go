@@ -23,7 +23,6 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
-	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 var (
@@ -67,62 +66,69 @@ airshipctl config set-credentials cluster-admin --%v=~/.kube/admin.crt --%v=true
 // NewCmdConfigSetAuthInfo creates a command object for the "set-credentials" action, which
 // defines a new AuthInfo airship config.
 func NewCmdConfigSetAuthInfo(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
-	theAuthInfo := &config.AuthInfoOptions{}
+	o := &config.AuthInfoOptions{}
 
-	setauthinfo := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "set-credentials NAME",
 		Short:   "Sets a user entry in the airshipctl config",
 		Long:    setAuthInfoLong,
 		Example: setAuthInfoExample,
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			theAuthInfo.Name = args[0]
-			modified, err := config.RunSetAuthInfo(theAuthInfo, rootSettings.Config(), true)
+			o.Name = args[0]
+			modified, err := config.RunSetAuthInfo(o, rootSettings.Config(), true)
 			if err != nil {
 				return err
 			}
 			if modified {
-				fmt.Fprintf(cmd.OutOrStdout(), "User information %q modified.\n", theAuthInfo.Name)
+				fmt.Fprintf(cmd.OutOrStdout(), "User information %q modified.\n", o.Name)
 			} else {
-				fmt.Fprintf(cmd.OutOrStdout(), "User information %q created.\n", theAuthInfo.Name)
+				fmt.Fprintf(cmd.OutOrStdout(), "User information %q created.\n", o.Name)
 			}
 			return nil
 		},
 	}
 
-	err := suInitFlags(theAuthInfo, setauthinfo)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return setauthinfo
+	addSetAuthInfoFlags(o, cmd)
+	return cmd
 }
 
-func suInitFlags(o *config.AuthInfoOptions, setauthinfo *cobra.Command) error {
-	setauthinfo.Flags().StringVar(&o.ClientCertificate, config.FlagCertFile, o.ClientCertificate,
+func addSetAuthInfoFlags(o *config.AuthInfoOptions, cmd *cobra.Command) {
+	flags := cmd.Flags()
+
+	flags.StringVar(
+		&o.ClientCertificate,
+		config.FlagCertFile,
+		"",
 		"Path to "+config.FlagCertFile+" file for the user entry in airshipctl")
-	err := setauthinfo.MarkFlagFilename(config.FlagCertFile)
-	if err != nil {
-		return err
-	}
 
-	setauthinfo.Flags().StringVar(&o.ClientKey, config.FlagKeyFile, o.ClientKey,
+	flags.StringVar(
+		&o.ClientKey,
+		config.FlagKeyFile,
+		"",
 		"Path to "+config.FlagKeyFile+" file for the user entry in airshipctl")
-	err = setauthinfo.MarkFlagFilename(config.FlagKeyFile)
-	if err != nil {
-		return err
-	}
 
-	setauthinfo.Flags().StringVar(&o.Token, config.FlagBearerToken, o.Token,
+	flags.StringVar(
+		&o.Token,
+		config.FlagBearerToken,
+		"",
 		config.FlagBearerToken+" for the user entry in airshipctl")
 
-	setauthinfo.Flags().StringVar(&o.Username, config.FlagUsername, o.Username,
+	flags.StringVar(
+		&o.Username,
+		config.FlagUsername,
+		"",
 		config.FlagUsername+" for the user entry in airshipctl")
 
-	setauthinfo.Flags().StringVar(&o.Password, config.FlagPassword, o.Password,
+	flags.StringVar(
+		&o.Password,
+		config.FlagPassword,
+		"",
 		config.FlagPassword+" for the user entry in airshipctl")
 
-	setauthinfo.Flags().BoolVar(&o.EmbedCertData, config.FlagEmbedCerts, false,
+	flags.BoolVar(
+		&o.EmbedCertData,
+		config.FlagEmbedCerts,
+		false,
 		"Embed client cert/key for the user entry in airshipctl")
-
-	return nil
 }

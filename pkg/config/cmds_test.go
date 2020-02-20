@@ -23,65 +23,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestValidateCluster(t *testing.T) {
-	co := DummyClusterOptions()
-
-	// Assert that the initial dummy config is valid
-	err := co.Validate()
-	assert.NoError(t, err)
-
-	// Validate with Embedded Data
-	// Empty CA
-	co.EmbedCAData = true
-	co.CertificateAuthority = ""
-	err = co.Validate()
-	assert.Error(t, err)
-
-	// Lets add a CA
-	co.CertificateAuthority = "testdata/ca.crt"
-	err = co.Validate()
-	assert.NoError(t, err)
-
-	// Lets add a CA but garbage
-	co.CertificateAuthority = "garbage"
-	err = co.Validate()
-	assert.Error(t, err)
-
-	// Lets change the Insecure mode
-	co.InsecureSkipTLSVerify = true
-	err = co.Validate()
-	assert.Error(t, err)
-
-	// Invalid Cluster Type
-	co.ClusterType = "Invalid"
-	err = co.Validate()
-	assert.Error(t, err)
-
-	// Empty Cluster Name case
-	co.Name = ""
-	err = co.Validate()
-	assert.Error(t, err)
-}
-
-func TestValidateContext(t *testing.T) {
-	co := DummyContextOptions()
-	// Valid Data case
-	err := co.Validate()
-	assert.NoError(t, err)
-}
-
-func TestValidateAuthInfo(t *testing.T) {
-	co := DummyAuthInfoOptions()
-	// Token and cert error case
-	err := co.Validate()
-	assert.Error(t, err)
-
-	// Valid Data case
-	co.Token = ""
-	err = co.Validate()
-	assert.NoError(t, err)
-}
-
 func TestRunGetAuthInfo(t *testing.T) {
 	t.Run("testNonExistentAuthInfo", func(t *testing.T) {
 		conf := DummyConfig()

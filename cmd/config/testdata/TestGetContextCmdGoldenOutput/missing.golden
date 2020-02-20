@@ -13,6 +13,6 @@ airshipctl config get-context --current-context
 airshipctl config get-context e2e
 
 Flags:
-      --current-context   current-context to retrieve the current context entry in airshipctl config
+      --current-context   retrieve the current context entry in airshipctl config
   -h, --help              help for get-context
 

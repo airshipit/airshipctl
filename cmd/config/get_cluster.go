@@ -38,32 +38,35 @@ airshipctl config get-cluster e2e --%v=ephemeral`, config.FlagClusterType)
 
 // NewCmdConfigGetCluster returns a Command instance for 'config -Cluster' sub command
 func NewCmdConfigGetCluster(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
-	theCluster := &config.ClusterOptions{}
-	getclustercmd := &cobra.Command{
+	o := &config.ClusterOptions{}
+	cmd := &cobra.Command{
 		Use:     "get-cluster NAME",
 		Short:   getClusterLong,
 		Example: getClusterExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 1 {
-				theCluster.Name = args[0]
+				o.Name = args[0]
 			}
 
-			err := validate(theCluster)
+			err := validate(o)
 			if err != nil {
 				return err
 			}
 
-			return config.RunGetCluster(theCluster, cmd.OutOrStdout(), rootSettings.Config())
+			return config.RunGetCluster(o, cmd.OutOrStdout(), rootSettings.Config())
 		},
 	}
 
-	gcInitFlags(theCluster, getclustercmd)
-
-	return getclustercmd
+	addGetClusterFlags(o, cmd)
+	return cmd
 }
 
-func gcInitFlags(o *config.ClusterOptions, getclustercmd *cobra.Command) {
-	getclustercmd.Flags().StringVar(&o.ClusterType, config.FlagClusterType, "",
+func addGetClusterFlags(o *config.ClusterOptions, cmd *cobra.Command) {
+	flags := cmd.Flags()
+	flags.StringVar(
+		&o.ClusterType,
+		config.FlagClusterType,
+		"",
 		config.FlagClusterType+" for the cluster entry in airshipctl config")
 }
 

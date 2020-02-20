@@ -57,52 +57,69 @@ airshipctl config set-cluster e2e --%v=target --%v=true --%v=".airship/cert_file
 // NewCmdConfigSetCluster creates a command object for the "set-cluster" action, which
 // defines a new cluster airshipctl config.
 func NewCmdConfigSetCluster(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
-	theCluster := &config.ClusterOptions{}
-
-	setclustercmd := &cobra.Command{
+	o := &config.ClusterOptions{}
+	cmd := &cobra.Command{
 		Use:     "set-cluster NAME",
 		Short:   "Sets a cluster entry in the airshipctl config",
 		Long:    setClusterLong,
 		Example: setClusterExample,
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			theCluster.Name = cmd.Flags().Args()[0]
-			modified, err := config.RunSetCluster(theCluster, rootSettings.Config(), true)
+			o.Name = args[0]
+			modified, err := config.RunSetCluster(o, rootSettings.Config(), true)
 			if err != nil {
 				return err
 			}
 			if modified {
 				fmt.Fprintf(cmd.OutOrStdout(), "Cluster %q of type %q modified.\n",
-					theCluster.Name, theCluster.ClusterType)
+					o.Name, o.ClusterType)
 			} else {
 				fmt.Fprintf(cmd.OutOrStdout(), "Cluster %q of type %q created.\n",
-					theCluster.Name, theCluster.ClusterType)
+					o.Name, o.ClusterType)
 			}
 			return nil
 		},
 	}
 
-	scInitFlags(theCluster, setclustercmd)
-	return setclustercmd
+	addSetClusterFlags(o, cmd)
+	return cmd
 }
 
-func scInitFlags(o *config.ClusterOptions, setclustercmd *cobra.Command) {
-	setclustercmd.Flags().StringVar(&o.Server, config.FlagAPIServer, o.Server,
+func addSetClusterFlags(o *config.ClusterOptions, cmd *cobra.Command) {
+	flags := cmd.Flags()
+
+	flags.StringVar(
+		&o.Server,
+		config.FlagAPIServer,
+		"",
 		config.FlagAPIServer+" for the cluster entry in airshipctl config")
 
-	setclustercmd.Flags().StringVar(&o.ClusterType, config.FlagClusterType, o.ClusterType,
+	flags.StringVar(
+		&o.ClusterType,
+		config.FlagClusterType,
+		"",
 		config.FlagClusterType+" for the cluster entry in airshipctl config")
 
-	setclustercmd.Flags().BoolVar(&o.InsecureSkipTLSVerify, config.FlagInsecure, true,
-		config.FlagInsecure+" for the cluster entry in airshipctl config")
-
-	setclustercmd.Flags().StringVar(&o.CertificateAuthority, config.FlagCAFile, o.CertificateAuthority,
-		"Path to "+config.FlagCAFile+" file for the cluster entry in airshipctl config")
-	err := setclustercmd.MarkFlagFilename(config.FlagCAFile)
+	err := cmd.MarkFlagRequired(config.FlagClusterType)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	setclustercmd.Flags().BoolVar(&o.EmbedCAData, config.FlagEmbedCerts, false,
+	flags.BoolVar(
+		&o.InsecureSkipTLSVerify,
+		config.FlagInsecure,
+		true,
+		config.FlagInsecure+" for the cluster entry in airshipctl config")
+
+	flags.StringVar(
+		&o.CertificateAuthority,
+		config.FlagCAFile,
+		"",
+		"Path to "+config.FlagCAFile+" file for the cluster entry in airshipctl config")
+
+	flags.BoolVar(
+		&o.EmbedCAData,
+		config.FlagEmbedCerts,
+		false,
 		config.FlagEmbedCerts+" for the cluster entry in airshipctl config")
 }

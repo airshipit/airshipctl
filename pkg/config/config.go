@@ -971,11 +971,13 @@ func (c *ClusterComplexName) SetDefaultType() {
 func (c *ClusterComplexName) String() string {
 	return fmt.Sprintf("clusterName:%s, clusterType:%s", c.clusterName, c.clusterType)
 }
-func ValidClusterType(ctype string) error {
-	if ctype == Ephemeral || ctype == Target {
-		return nil
+func ValidClusterType(clusterType string) error {
+	for _, validType := range AllClusterTypes {
+		if clusterType == validType {
+			return nil
+		}
 	}
-	return errors.New("Cluster Type must be specified. Valid values are :" + Ephemeral + " or " + Target + ".")
+	return fmt.Errorf("Cluster Type must be one of %v", AllClusterTypes)
 }
 
 /* ______________________________
