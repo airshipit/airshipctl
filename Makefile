@@ -37,7 +37,7 @@ USE_PROXY           ?= false
 PYTHON_EXECUTABLE   := python3
 SPHINXBUILD         ?= sphinx-build
 SOURCEDIR           = docs/source
-BUILDDIR            = docs/build
+BUILDDIR            = docs/build/html
 REQUIREMENTSTXT     := docs/requirements.txt
 
 # Godoc server options
