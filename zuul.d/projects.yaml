@@ -27,4 +27,5 @@
         - airship-airshipctl-gate-test
     post:
       jobs:
+        - airship-airshipctl-publish-docs
         - airship-airshipctl-upload-git-mirror
