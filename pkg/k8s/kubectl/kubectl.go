@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	"k8s.io/kubectl/pkg/cmd/apply"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 	"sigs.k8s.io/kustomize/v3/pkg/fs"
 
@@ -24,7 +23,7 @@ type Kubectl struct {
 	bufferDir string
 }
 
-// NewKubectlFromKubeconfigPath builds an instance
+// NewKubectl builds an instance
 // of Kubectl struct from Path to kubeconfig file
 func NewKubectl(f cmdutil.Factory) *Kubectl {
 	return &Kubectl{
@@ -44,7 +43,7 @@ func (kubectl *Kubectl) WithBufferDir(bd string) *Kubectl {
 }
 
 // Apply is abstraction to kubectl apply command
-func (kubectl *Kubectl) Apply(docs []document.Document, ao *apply.ApplyOptions) error {
+func (kubectl *Kubectl) Apply(docs []document.Document, ao *ApplyOptions) error {
 	tf, err := kubectl.TempFile(kubectl.bufferDir, "initinfra")
 	if err != nil {
 		return err
@@ -65,12 +64,12 @@ func (kubectl *Kubectl) Apply(docs []document.Document, ao *apply.ApplyOptions) 
 			return err
 		}
 	}
-	ao.DeleteOptions.Filenames = []string{tf.Name()}
+	ao.SetSourceFiles([]string{tf.Name()})
 	return ao.Run()
 }
 
 // ApplyOptions is a wrapper over kubectl ApplyOptions, used to build
 // new options from the factory and iostreams defined in Kubectl container
-func (kubectl *Kubectl) ApplyOptions() (*apply.ApplyOptions, error) {
+func (kubectl *Kubectl) ApplyOptions() (*ApplyOptions, error) {
 	return NewApplyOptions(kubectl.Factory, kubectl.IOStreams)
 }

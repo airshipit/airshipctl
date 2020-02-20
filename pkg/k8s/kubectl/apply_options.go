@@ -7,12 +7,40 @@ import (
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 )
 
+// ApplyOptions is a abstraction layer
+// to ApplyOptions of kubectl/apply package
+type ApplyOptions struct {
+	ApplyOptions *apply.ApplyOptions
+}
+
+func (ao *ApplyOptions) SetDryRun(dryRun bool) {
+	ao.ApplyOptions.DryRun = dryRun
+}
+
+func (ao *ApplyOptions) SetPrune(label string) {
+	if label != "" {
+		ao.ApplyOptions.Prune = true
+		ao.ApplyOptions.Selector = label
+	} else {
+		ao.ApplyOptions.Prune = false
+	}
+}
+
+// SetSourceFiles sets files to read for kubectl apply command
+func (ao *ApplyOptions) SetSourceFiles(fileNames []string) {
+	ao.ApplyOptions.DeleteOptions.Filenames = fileNames
+}
+
+func (ao *ApplyOptions) Run() error {
+	return ao.ApplyOptions.Run()
+}
+
 // NewApplyOptions is a helper function that Creates ApplyOptions of kubectl apply module
 // Values set here, are default, and do not conflict with each other, can be used if you
 // need `kubectl apply` functionality without calling executing command in shell
 // To function properly, you may need to specify files from where to read the resources:
-// DeleteOptions.Filenames of returned object has to be set for that
-func NewApplyOptions(f cmdutil.Factory, streams genericclioptions.IOStreams) (*apply.ApplyOptions, error) {
+// SetSourceFiles of returned object has to be used for that
+func NewApplyOptions(f cmdutil.Factory, streams genericclioptions.IOStreams) (*ApplyOptions, error) {
 	o := apply.NewApplyOptions(streams)
 	o.ServerSideApply = false
 	o.ForceConflicts = false
@@ -74,5 +102,5 @@ func NewApplyOptions(f cmdutil.Factory, streams genericclioptions.IOStreams) (*a
 	if err != nil {
 		return nil, err
 	}
-	return o, nil
+	return &ApplyOptions{ApplyOptions: o}, nil
 }

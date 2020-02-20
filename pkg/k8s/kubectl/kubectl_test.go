@@ -60,7 +60,7 @@ func TestApply(t *testing.T) {
 	kctl.Factory = f
 	ao, err := kctl.ApplyOptions()
 	require.NoError(t, err, "failed to get documents from bundle")
-	ao.DryRun = true
+	ao.SetDryRun(true)
 
 	b := testutil.NewTestBundle(t, fixtureDir)
 	docs, err := b.GetByAnnotation("airshipit.org/initinfra")
