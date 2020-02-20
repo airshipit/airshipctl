@@ -13,7 +13,7 @@ func NewConfigCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comma
 		DisableFlagsInUseLine: true,
 		Short:                 "Modify airshipctl config files",
 		Long: `Modify airshipctl config files using subcommands
-like "airshipctl config set-context --current-context my-context" `,
+like "airshipctl config set-context my-context" `,
 	}
 	configRootCmd.AddCommand(NewCmdConfigSetCluster(rootSettings))
 	configRootCmd.AddCommand(NewCmdConfigGetCluster(rootSettings))
