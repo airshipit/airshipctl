@@ -1,0 +1,12 @@
+Error: Missing configuration: Context with name 'foo'
+Usage:
+  use-context NAME [flags]
+
+Examples:
+
+# Switch to a context named "e2e"
+airshipctl config use-context e2e
+
+Flags:
+  -h, --help   help for use-context
+

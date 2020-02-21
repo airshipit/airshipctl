@@ -1,0 +1,12 @@
+Error: accepts 1 arg(s), received 0
+Usage:
+  use-context NAME [flags]
+
+Examples:
+
+# Switch to a context named "e2e"
+airshipctl config use-context e2e
+
+Flags:
+  -h, --help   help for use-context
+

@@ -13,6 +13,7 @@ Available Commands:
   set-cluster     Sets a cluster entry in the airshipctl config
   set-context     Switch to a new context or update context values in the airshipctl config
   set-credentials Sets a user entry in the airshipctl config
+  use-context     Switch to a different airshipctl context.
 
 Flags:
   -h, --help   help for config

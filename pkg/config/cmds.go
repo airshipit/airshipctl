@@ -237,3 +237,18 @@ func RunSetContext(o *ContextOptions, airconfig *Config, writeToStorage bool) (b
 
 	return modified, nil
 }
+
+func RunUseContext(desiredContext string, airconfig *Config) error {
+	if _, err := airconfig.GetContext(desiredContext); err != nil {
+		return err
+	}
+
+	if airconfig.CurrentContext != desiredContext {
+		airconfig.CurrentContext = desiredContext
+		if err := airconfig.PersistConfig(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
