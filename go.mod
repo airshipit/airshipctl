@@ -26,8 +26,11 @@ require (
 	gopkg.in/src-d/go-billy.v4 v4.3.2
 	gopkg.in/src-d/go-git-fixtures.v3 v3.5.0
 	gopkg.in/src-d/go-git.v4 v4.13.1
+	k8s.io/api v0.0.0
 	k8s.io/apimachinery v0.0.0
+	k8s.io/cli-runtime v0.0.0
 	k8s.io/client-go v11.0.0+incompatible
+	k8s.io/kubectl v0.0.0
 	k8s.io/kubernetes v1.16.3
 	opendev.org/airship/go-redfish v0.0.0-20200110185254-3ab47e28bae8
 	opendev.org/airship/go-redfish/client v0.0.0-20200110185254-3ab47e28bae8
