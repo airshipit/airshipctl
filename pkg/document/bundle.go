@@ -8,13 +8,11 @@ import (
 	"sigs.k8s.io/kustomize/v3/k8sdeps/transformer"
 	"sigs.k8s.io/kustomize/v3/k8sdeps/validator"
 	"sigs.k8s.io/kustomize/v3/pkg/fs"
-	"sigs.k8s.io/kustomize/v3/pkg/gvk"
 	"sigs.k8s.io/kustomize/v3/pkg/loader"
 	"sigs.k8s.io/kustomize/v3/pkg/plugins"
 	"sigs.k8s.io/kustomize/v3/pkg/resmap"
 	"sigs.k8s.io/kustomize/v3/pkg/resource"
 	"sigs.k8s.io/kustomize/v3/pkg/target"
-	"sigs.k8s.io/kustomize/v3/pkg/types"
 
 	docplugins "opendev.org/airship/airshipctl/pkg/document/plugins"
 	"opendev.org/airship/airshipctl/pkg/log"
@@ -51,11 +49,11 @@ type Bundle interface {
 	SetKustomizeBuildOptions(KustomizeBuildOptions) error
 	SetFileSystem(fs.FileSystem) error
 	GetFileSystem() fs.FileSystem
-	Select(selector types.Selector) ([]Document, error)
+	Select(selector Selector) ([]Document, error)
 	GetByGvk(string, string, string) ([]Document, error)
 	GetByName(string) (Document, error)
-	GetByAnnotation(string) ([]Document, error)
-	GetByLabel(string) ([]Document, error)
+	GetByAnnotation(annotationSelector string) ([]Document, error)
+	GetByLabel(labelSelector string) ([]Document, error)
 	GetAllDocuments() ([]Document, error)
 }
 
@@ -188,11 +186,11 @@ func (b *BundleFactory) GetByName(name string) (Document, error) {
 	}
 }
 
-// Select offers a direct interface to pass a Kustomize Selector to the bundle
-// returning Documents that match the criteria
-func (b *BundleFactory) Select(selector types.Selector) ([]Document, error) {
+// Select offers an interface to pass a Selector, built on top of kustomize Selector
+// to the bundle returning Documents that match the criteria
+func (b *BundleFactory) Select(selector Selector) ([]Document, error) {
 	// use the kustomize select method
-	resources, err := b.ResMap.Select(selector)
+	resources, err := b.ResMap.Select(selector.Selector)
 	if err != nil {
 		return []Document{}, err
 	}
@@ -211,19 +209,17 @@ func (b *BundleFactory) Select(selector types.Selector) ([]Document, error) {
 }
 
 // GetByAnnotation is a convenience method to get documents for a particular annotation
-func (b *BundleFactory) GetByAnnotation(annotation string) ([]Document, error) {
+func (b *BundleFactory) GetByAnnotation(annotationSelector string) ([]Document, error) {
 	// Construct kustomize annotation selector
-	selector := types.Selector{AnnotationSelector: annotation}
-
+	selector := NewSelector().ByAnnotation(annotationSelector)
 	// pass it to the selector
 	return b.Select(selector)
 }
 
 // GetByLabel is a convenience method to get documents for a particular label
-func (b *BundleFactory) GetByLabel(label string) ([]Document, error) {
-	// Construct kustomize annotation selector
-	selector := types.Selector{LabelSelector: label}
-
+func (b *BundleFactory) GetByLabel(labelSelector string) ([]Document, error) {
+	// Construct kustomize label selector
+	selector := NewSelector().ByLabel(labelSelector)
 	// pass it to the selector
 	return b.Select(selector)
 }
@@ -231,10 +227,8 @@ func (b *BundleFactory) GetByLabel(label string) ([]Document, error) {
 // GetByGvk is a convenience method to get documents for a particular Gvk tuple
 func (b *BundleFactory) GetByGvk(group, version, kind string) ([]Document, error) {
 	// Construct kustomize gvk object
-	g := gvk.Gvk{Group: group, Version: version, Kind: kind}
-
+	selector := NewSelector().ByGvk(group, version, kind)
 	// pass it to the selector
-	selector := types.Selector{Gvk: g}
 	return b.Select(selector)
 }
 

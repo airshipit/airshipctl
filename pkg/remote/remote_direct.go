@@ -13,8 +13,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 
 	"sigs.k8s.io/kustomize/v3/pkg/fs"
-	"sigs.k8s.io/kustomize/v3/pkg/gvk"
-	"sigs.k8s.io/kustomize/v3/pkg/types"
 )
 
 const (
@@ -89,18 +87,17 @@ func getRemoteDirectConfig(settings *environment.AirshipCTLSettings) (*config.Re
 		return nil, "", err
 	}
 
-	label := document.EphemeralClusterSelector
-	filter := types.Selector{
-		Gvk:           gvk.FromKind(AirshipHostKind),
-		LabelSelector: label,
-	}
-	docs, err := docBundle.Select(filter)
+	ls := document.EphemeralClusterSelector
+	selector := document.NewSelector().
+		ByGvk("", "", AirshipHostKind).
+		ByLabel(ls)
+	docs, err := docBundle.Select(selector)
 	if err != nil {
 		return nil, "", err
 	}
 	if len(docs) == 0 {
 		return nil, "", document.ErrDocNotFound{
-			Selector: label,
+			Selector: ls,
 			Kind:     AirshipHostKind,
 		}
 	}

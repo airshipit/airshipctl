@@ -232,6 +232,7 @@ kind: Deployment
 metadata:
   annotations:
     airshipit.org/clustertype: target
+    airshipit.org/random-payload: random
   name: argo-ui
 spec:
   selector:
@@ -266,6 +267,7 @@ metadata:
     airshipit.org/clustertype: target
   labels:
     app: workflow-controller
+    arbitrary-label: some-label
   name: workflow-controller
 spec:
   selector:
