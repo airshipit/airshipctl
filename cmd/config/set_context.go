@@ -60,11 +60,13 @@ func NewCmdConfigSetContext(rootSettings *environment.AirshipCTLSettings) *cobra
 		Example: setContextExample,
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			o.Name = args[0]
 			nFlags := cmd.Flags().NFlag()
 			if nFlags == 0 {
-				// Change the current context to the provided context name if no flags are provided
-				o.CurrentContext = true
+				fmt.Fprintf(cmd.OutOrStdout(), "Context %q not modified. No new options provided.\n", o.Name)
+				return nil
 			}
+
 			if len(args) == 1 {
 				//context name is made optional with --current flag added
 				o.Name = args[0]

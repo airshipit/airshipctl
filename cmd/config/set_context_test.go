@@ -52,6 +52,11 @@ func TestConfigSetContext(t *testing.T) {
 			Cmd:     NewCmdConfigSetContext(nil),
 		},
 		{
+			Name:    "config-cmd-set-context-no-flags",
+			CmdLine: "context",
+			Cmd:     NewCmdConfigSetContext(nil),
+		},
+		{
 			Name:    "config-cmd-set-context-too-many-args",
 			CmdLine: "arg1 arg2",
 			Cmd:     NewCmdConfigSetContext(nil),
@@ -101,7 +106,7 @@ func TestSetContext(t *testing.T) {
 	test.run(t)
 }
 
-func TestSetCurrentContext(t *testing.T) {
+func TestSetCurrentContextNoOptions(t *testing.T) {
 	tname := "def_target"
 	given, cleanupGiven := config.InitConfig(t)
 	defer cleanupGiven(t)
@@ -112,10 +117,9 @@ func TestSetCurrentContext(t *testing.T) {
 	expected.CurrentContext = "def_target"
 
 	test := setContextTest{
-		description:    "Testing 'airshipctl config set-context' with a new current context",
 		givenConfig:    given,
 		args:           []string{tname},
-		expectedOutput: fmt.Sprintf("Context %q modified.\n", tname),
+		expectedOutput: fmt.Sprintf("Context %q not modified. No new options provided.\n", tname),
 		expectedConfig: expected,
 	}
 	test.run(t)
