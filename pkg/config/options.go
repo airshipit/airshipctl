@@ -42,6 +42,7 @@ type ContextOptions struct {
 	AuthInfo       string
 	Manifest       string
 	Namespace      string
+	Current        bool
 }
 
 type ClusterOptions struct {
@@ -75,8 +76,12 @@ func (o *AuthInfoOptions) Validate() error {
 }
 
 func (o *ContextOptions) Validate() error {
-	if o.Name == "" {
+	if !o.Current && o.Name == "" {
 		return errors.New("you must specify a non-empty context name")
+	}
+
+	if o.Current && o.Name != "" {
+		return fmt.Errorf("you cannot specify context and --%s Flag at the same time", FlagCurrent)
 	}
 
 	// If the user simply wants to change the current context, no further validation is needed

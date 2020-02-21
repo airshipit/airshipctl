@@ -84,3 +84,11 @@ type ErrConfigFailed struct {
 func (e ErrConfigFailed) Error() string {
 	return "Configuration failed to complete."
 }
+
+// ErrMissingCurrentContext returned in case --current used without setting current-context
+type ErrMissingCurrentContext struct {
+}
+
+func (e ErrMissingCurrentContext) Error() string {
+	return "Current context must be set before using --current flag"
+}

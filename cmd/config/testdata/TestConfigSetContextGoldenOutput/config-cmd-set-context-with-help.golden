@@ -13,9 +13,13 @@ airshipctl config set-context e2e --namespace=kube-system --manifest=manifest --
 # Update the current-context to e2e
 airshipctl config set-context e2e
 
+# Update attributes of the current-context
+airshipctl config set-context --current --manifest=manifest
+
 Flags:
       --cluster string        sets the cluster for the specified context in the airshipctl config
       --cluster-type string   sets the cluster-type for the specified context in the airshipctl config
+      --current               use current context from airshipctl config
   -h, --help                  help for set-context
       --manifest string       sets the manifest for the specified context in the airshipctl config
       --namespace string      sets the namespace for the specified context in the airshipctl config

@@ -61,4 +61,5 @@ const (
 	FlagPassword         = "password"
 	FlagTimeout          = "request-timeout"
 	FlagUsername         = "username"
+	FlagCurrent          = "current"
 )

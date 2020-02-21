@@ -194,6 +194,13 @@ func RunSetContext(o *ContextOptions, airconfig *Config, writeToStorage bool) (b
 	if err != nil {
 		return modified, err
 	}
+	if o.Current {
+		if airconfig.CurrentContext == "" {
+			return modified, ErrMissingCurrentContext{}
+		}
+		// when --current flag is passed, use current context
+		o.Name = airconfig.CurrentContext
+	}
 
 	context, err := airconfig.GetContext(o.Name)
 	if err != nil {
