@@ -71,13 +71,15 @@ func GenerateBootstrapIso(settings *environment.AirshipCTLSettings, args []strin
 
 func verifyInputs(cfg *config.Bootstrap) error {
 	if cfg.Container.Volume == "" {
-		log.Print("Specify volume bind for ISO builder container")
-		return config.ErrWrongConfig{}
+		return config.ErrMissingConfig{
+			What: "Must specify volume bind for ISO builder container",
+		}
 	}
 
 	if (cfg.Builder.UserDataFileName == "") || (cfg.Builder.NetworkConfigFileName == "") {
-		log.Print("UserDataFileName or NetworkConfigFileName are not specified in ISO builder config")
-		return config.ErrWrongConfig{}
+		return config.ErrMissingConfig{
+			What: "UserDataFileName or NetworkConfigFileName are not specified in ISO builder config",
+		}
 	}
 
 	vols := strings.Split(cfg.Container.Volume, ":")
@@ -85,8 +87,9 @@ func verifyInputs(cfg *config.Bootstrap) error {
 	case len(vols) == 1:
 		cfg.Container.Volume = fmt.Sprintf("%s:%s", vols[0], vols[0])
 	case len(vols) > 2:
-		log.Print("Bad container volume format. Use hostPath:contPath")
-		return config.ErrWrongConfig{}
+		return config.ErrInvalidConfig{
+			What: "Bad container volume format. Use hostPath:contPath",
+		}
 	}
 	return nil
 }

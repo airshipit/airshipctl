@@ -60,12 +60,13 @@ func (e ErrBootstrapInfoNotFound) Error() string {
 	return fmt.Sprintf("Bootstrap info %q not found", e.Name)
 }
 
-// ErrWrongConfig returned in case of incorrect configuration
-type ErrWrongConfig struct {
+// ErrInvalidConfig returned in case of incorrect configuration
+type ErrInvalidConfig struct {
+	What string
 }
 
-func (e ErrWrongConfig) Error() string {
-	return "Wrong configuration"
+func (e ErrInvalidConfig) Error() string {
+	return fmt.Sprintf("Invalid configuration: %s", e.What)
 }
 
 // ErrMissingConfig returned in case of missing configuration
