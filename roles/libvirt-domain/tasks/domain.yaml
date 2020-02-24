@@ -9,7 +9,7 @@
   when: "libvirt_domain.console_log_enabled | default(false)"
 
 - name: Validate VM interfaces
-  include_tasks: check-interface.yml
+  include_tasks: check-interface.yaml
   vars:
     interface: "{{ item }}"
   with_items: "{{ libvirt_domain.interfaces }}"

@@ -1,6 +1,6 @@
-- include_tasks: autodetect.yml
+- include_tasks: autodetect.yaml
 
-- include_tasks: domain.yml
+- include_tasks: domain.yaml
   vars:
     console_log_enabled: "{{ libvirt_domain.console_log_enabled | default(false) }}"
     console_log_path: >-

@@ -1,1 +1,1 @@
-- include_tasks: "{{ network_action }}.yml"
+- include_tasks: "{{ network_action }}.yaml"

@@ -60,14 +60,14 @@
       - zuul: openstack/openstack-helm-infra
     pre-run:
       - playbooks/airship-airshipctl-deploy-docker.yaml
-    run: playbooks/airship-airshipctl-test-runner.yml
-    post-run: playbooks/airship-collect-logs.yml
+    run: playbooks/airship-airshipctl-test-runner.yaml
+    post-run: playbooks/airship-collect-logs.yaml
     nodeset: airship-airshipctl-single-node
     vars:
       site_name: test-bootstrap
 ## var files are the files that are located at playbooks/vars directory
       var_files:
-        - airship-ipam.yml
+        - airship-ipam.yaml
         - test-config.yaml
       test_roles:
         - airshipctl-systemwide-executable

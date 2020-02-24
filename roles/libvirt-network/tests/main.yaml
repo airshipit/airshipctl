@@ -1,6 +1,6 @@
 - name: Include test variables.
   include_vars:
-    file: vars.yml
+    file: vars.yaml
 - name: install libvirt
   include_role:
     name: libvirt-install

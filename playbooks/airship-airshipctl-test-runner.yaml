@@ -19,8 +19,8 @@
           - airshipctl-systemwide-executable
           - airshipctl-test-configs
         var_files_default:
-          - local-dev.yml
-          - airship-ipam.yml
+          - local-dev.yaml
+          - airship-ipam.yaml
           - test-config.yaml
 
     - name: read test variables

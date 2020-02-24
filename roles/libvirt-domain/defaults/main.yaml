@@ -35,7 +35,7 @@ libvirt_vm_clock_offset: False
 # A list of specifications of VMs to be created.
 # For backwards compatibility, libvirt_vms defaults to a singleton list using
 # the values of the deprecated variables below.
-# See README.md or tasks/main.yml for these attributes' defaults.
+# See README.md or tasks/main.yaml for these attributes' defaults.
 libvirt_domain:
       # State of the VM. May be 'present' or 'absent'.
       state: "{{ libvirt_vm_state }}"

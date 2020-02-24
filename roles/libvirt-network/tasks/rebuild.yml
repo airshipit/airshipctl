@@ -12,6 +12,6 @@
       }}
 
 - name: "create network"
-  include_tasks: "{{ network_action }}.yml"
+  include_tasks: "{{ network_action }}.yaml"
   vars:
     network_action: create
