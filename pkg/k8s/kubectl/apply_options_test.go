@@ -32,8 +32,8 @@ func TestApplyOptionsRun(t *testing.T) {
 
 	aa, err := kubectl.NewApplyOptions(f, streams)
 	require.NoError(t, err, "Could not build ApplyAdapter")
-	aa.DryRun = true
-	aa.DeleteOptions.Filenames = []string{filenameRC}
+	aa.SetDryRun(true)
+	aa.SetSourceFiles([]string{filenameRC})
 	assert.NoError(t, aa.Run())
 }
 
