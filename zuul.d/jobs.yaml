@@ -78,8 +78,8 @@
 - job:
     name: airship-airshipctl-publish-docs
     nodeset: airship-airshipctl-single-node
-    parent: airship-airshipctl-build-docs
-    run: playbooks/airship-airshipctl-publish-docs.yaml
+    parent: trigger-readthedocs-webhook
+    run: playbooks/airship-airshipctl-build-docs.yaml
     vars:
       rtd_project_name: airship-airshipctl
       rtd_webhook_id: 112688
