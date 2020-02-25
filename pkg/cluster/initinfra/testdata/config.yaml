@@ -1,0 +1,43 @@
+apiVersion: airshipit.org/v1alpha1
+clusters:
+  dummycluster:
+    cluster-type:
+      ephemeral:
+        bootstrap-info: dummy_bootstrap_config
+        cluster-kubeconf: dummycluster_ephemeral
+contexts:
+  dummy_cluster:
+    context-kubeconf: dummy_cluster
+    manifest: dummy_manifest
+current-context: dummy_cluster
+kind: Config
+manifests:
+  dummy_manifest:
+    repositories:
+      dummy:
+        target-path: dummy_targetpath
+        url:
+          ForceQuery: false
+          Fragment: ""
+          Host: dummy.url.com
+          Opaque: ""
+          Path: ""
+          RawPath: ""
+          RawQuery: ""
+          Scheme: http
+          User: null
+        username: dummy_user
+    target-path: testdata
+modules-config:
+  bootstrapInfo:
+    dummy_bootstrap_config:
+      container:
+        volume: /tmp/airship:/config
+        image: quay.io/airshipit/isogen:latest
+        containerRuntime: docker
+      builder:
+        userDataFileName: user-data
+        networkConfigFileName: network-config
+        outputMetadataFileName: output-metadata.yaml
+users:
+  dummy_user: {}

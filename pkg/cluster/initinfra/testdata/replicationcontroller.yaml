@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: test-rc
+  namespace: test
+  labels:
+    airshipit.org/ephemeral: "true"
+    name: test-rc
+    airship-component: "initinfra"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: test-rc
+    spec:
+      containers:
+        - name: test-rc
+          image: nginx
+          ports:
+          - containerPort: 80

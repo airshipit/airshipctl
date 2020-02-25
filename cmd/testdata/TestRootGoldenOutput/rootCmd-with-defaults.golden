@@ -5,6 +5,7 @@ Usage:
 
 Available Commands:
   bootstrap   Bootstrap ephemeral Kubernetes cluster
+  cluster     Control Kubernetes cluster
   completion  Generate autocompletions script for the specified shell (bash or zsh)
   config      Modify airshipctl config files
   document    manages deployment documents
@@ -17,8 +18,5 @@ Flags:
       --debug                enable verbose output
   -h, --help                 help for airshipctl
       --kubeconfig string    Path to kubeconfig associated with airshipctl configuration. (default "$HOME/.airship/kubeconfig")
-
-Additional help topics:
-  airshipctl cluster    Control Kubernetes cluster
 
 Use "airshipctl [command] --help" for more information about a command.
