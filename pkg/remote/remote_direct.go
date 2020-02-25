@@ -11,8 +11,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/environment"
 	alog "opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
-
-	"sigs.k8s.io/kustomize/v3/pkg/fs"
 )
 
 const (
@@ -82,7 +80,7 @@ func getRemoteDirectConfig(settings *environment.AirshipCTLSettings) (*config.Re
 
 	// TODO (dukov) replace with the appropriate function once it's available
 	// in document module
-	docBundle, err := document.NewBundle(fs.MakeRealFS(), manifest.TargetPath, "")
+	docBundle, err := document.NewBundle(document.NewDocumentFs(), manifest.TargetPath, "")
 	if err != nil {
 		return nil, "", err
 	}

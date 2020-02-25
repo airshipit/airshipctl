@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"sigs.k8s.io/kustomize/v3/pkg/fs"
 
+	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubectl"
 	k8sutils "opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/testutil"
@@ -24,17 +24,17 @@ var (
 
 type MockFileSystem struct {
 	MockRemoveAll func() error
-	MockTempFile  func() (kubectl.File, error)
-	fs.FileSystem
+	MockTempFile  func() (document.File, error)
+	document.FileSystem
 }
 
 func (fsys MockFileSystem) RemoveAll(name string) error { return fsys.MockRemoveAll() }
-func (fsys MockFileSystem) TempFile(bufferDir string, prefix string) (kubectl.File, error) {
+func (fsys MockFileSystem) TempFile(bufferDir string, prefix string) (document.File, error) {
 	return fsys.MockTempFile()
 }
 
 type TestFile struct {
-	kubectl.File
+	document.File
 	MockName  func() string
 	MockWrite func() (int, error)
 	MockClose func() error
@@ -69,13 +69,13 @@ func TestApply(t *testing.T) {
 	tests := []struct {
 		name        string
 		expectedErr error
-		fs          kubectl.FileSystem
+		fs          document.FileSystem
 	}{
 		{
 			expectedErr: nil,
 			fs: MockFileSystem{
 				MockRemoveAll: func() error { return nil },
-				MockTempFile: func() (kubectl.File, error) {
+				MockTempFile: func() (document.File, error) {
 					return TestFile{
 						MockName:  func() string { return filenameRC },
 						MockWrite: func() (int, error) { return 0, nil },
@@ -87,13 +87,13 @@ func TestApply(t *testing.T) {
 		{
 			expectedErr: writeOutError,
 			fs: MockFileSystem{
-				MockTempFile: func() (kubectl.File, error) { return nil, writeOutError }},
+				MockTempFile: func() (document.File, error) { return nil, writeOutError }},
 		},
 		{
 			expectedErr: TempFileError,
 			fs: MockFileSystem{
 				MockRemoveAll: func() error { return nil },
-				MockTempFile: func() (kubectl.File, error) {
+				MockTempFile: func() (document.File, error) {
 					return TestFile{
 						MockWrite: func() (int, error) { return 0, TempFileError },
 						MockName:  func() string { return filenameRC },

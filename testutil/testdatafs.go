@@ -17,10 +17,10 @@ import (
 // will iterate over the files in fixtureDir, which is a directory relative
 // to the tests themselves, and will write each of those files (preserving
 // names) to an in-memory file system and return that fs
-func SetupTestFs(t *testing.T, fixtureDir string) fs.FileSystem {
+func SetupTestFs(t *testing.T, fixtureDir string) document.FileSystem {
 	t.Helper()
 
-	x := fs.MakeFakeFS()
+	x := &document.DocumentFs{FileSystem: fs.MakeFakeFS()}
 
 	files, err := ioutil.ReadDir(fixtureDir)
 	require.NoErrorf(t, err, "Failed to read fixture directory %s", fixtureDir)
