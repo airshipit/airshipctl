@@ -57,7 +57,7 @@ type ErrBootstrapInfoNotFound struct {
 }
 
 func (e ErrBootstrapInfoNotFound) Error() string {
-	return fmt.Sprintf("Bootstrap info %s not found", e.Name)
+	return fmt.Sprintf("Bootstrap info %q not found", e.Name)
 }
 
 // ErrWrongConfig returned in case of incorrect configuration

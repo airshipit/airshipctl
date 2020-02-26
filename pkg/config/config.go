@@ -697,6 +697,12 @@ func (c *Config) CurrentContextBootstrapInfo() (*Bootstrap, error) {
 		return nil, err
 	}
 
+	if currentCluster.Bootstrap == "" {
+		return nil, ErrMissingConfig{
+			What: fmt.Sprintf("No bootstrap-info defined for context %q", c.CurrentContext),
+		}
+	}
+
 	bootstrap, exists := c.ModulesConfig.BootstrapInfo[currentCluster.Bootstrap]
 	if !exists {
 		return nil, ErrBootstrapInfoNotFound{Name: currentCluster.Bootstrap}
