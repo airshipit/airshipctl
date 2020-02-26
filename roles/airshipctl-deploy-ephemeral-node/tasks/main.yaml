@@ -16,9 +16,9 @@
 
 - name: check airshipctl kubectl version
   command: >-
-    timeout 20 airshipctl \
+    timeout 20 kubectl \
     --kubeconfig {{ airshipctl_config_dir_default | default(ansible_env.HOME) }}/.airship/kubeconfig \
-    kubectl version
+    version
   register: airship_kubecofig_version
   retries: 50
   delay: 20
