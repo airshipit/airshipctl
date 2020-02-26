@@ -71,3 +71,16 @@ func TestRedfishRemoteDirectWithEmptyIsoPath(t *testing.T) {
 	_, ok := err.(redfish.ErrRedfishMissingConfig)
 	assert.True(t, ok)
 }
+
+func TestBootstrapRemoteDirectMissingConfigOpts(t *testing.T) {
+	s := initSettings(
+		t,
+		nil,
+		"base",
+	)
+
+	err := DoRemoteDirect(s)
+
+	_, ok := err.(config.ErrMissingConfig)
+	assert.True(t, ok)
+}

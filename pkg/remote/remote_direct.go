@@ -77,6 +77,11 @@ func getRemoteDirectConfig(settings *environment.AirshipCTLSettings) (*config.Re
 		return nil, "", err
 	}
 
+	remoteConfig := bootstrapSettings.RemoteDirect
+	if remoteConfig == nil {
+		return nil, "", config.ErrMissingConfig{What: "RemoteDirect options not defined in bootstrap config"}
+	}
+
 	// TODO (dukov) replace with the appropriate function once it's available
 	// in document module
 	docBundle, err := document.NewBundle(fs.MakeRealFS(), manifest.TargetPath, "")
@@ -106,7 +111,7 @@ func getRemoteDirectConfig(settings *environment.AirshipCTLSettings) (*config.Re
 		return nil, "", err
 	}
 
-	return bootstrapSettings.RemoteDirect, remoteURL, nil
+	return remoteConfig, remoteURL, nil
 }
 
 // Top level function to execute remote direct based on remote type
