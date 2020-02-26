@@ -22,6 +22,7 @@ like "airshipctl config set-context my-context" `,
 	configRootCmd.AddCommand(NewCmdConfigInit(rootSettings))
 	configRootCmd.AddCommand(NewCmdConfigSetAuthInfo(rootSettings))
 	configRootCmd.AddCommand(NewCmdConfigGetAuthInfo(rootSettings))
+	configRootCmd.AddCommand(NewCmdConfigUseContext(rootSettings))
 
 	return configRootCmd
 }

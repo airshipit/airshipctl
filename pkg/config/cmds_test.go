@@ -247,3 +247,17 @@ func TestRunSetContext(t *testing.T) {
 		assert.Equal(t, "new_namespace", conf.Contexts["dummy_context"].kContext.Namespace)
 	})
 }
+
+func TestRunUseContext(t *testing.T) {
+	t.Run("testUseContext", func(t *testing.T) {
+		conf := DummyConfig()
+		err := RunUseContext("dummy_context", conf)
+		assert.Nil(t, err)
+	})
+
+	t.Run("testUseContextDoesNotExist", func(t *testing.T) {
+		conf := NewConfig()
+		err := RunUseContext("foo", conf)
+		assert.Error(t, err)
+	})
+}
