@@ -1,0 +1,5 @@
+resources:
+  - clusters.cluster.x-k8s.io.yaml
+  - machinedeployments.cluster.x-k8s.io.yaml
+  - machines.cluster.x-k8s.io.yaml
+  - machinesets.cluster.x-k8s.io.yaml

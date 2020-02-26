@@ -1,0 +1,5 @@
+resources:
+  - capi-leader-election-rolebinding.yaml
+  - capi-leader-election-role.yaml
+  - capi-manager-rolebinding.yaml
+  - capi-manager-role.yaml
