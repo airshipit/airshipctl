@@ -20,6 +20,7 @@ DOCKER_IMAGE_PREFIX ?= airshipit
 DOCKER_IMAGE_TAG    ?= dev
 DOCKER_IMAGE        ?= $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
 DOCKER_TARGET_STAGE ?= release
+PUBLISH             ?= false
 
 # go options
 PKG                 ?= ./...
@@ -110,6 +111,9 @@ else
 	    --build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET) \
 	    --tag $(DOCKER_IMAGE) \
 	    --target $(DOCKER_TARGET_STAGE)
+endif
+ifeq ($(PUBLISH), true)
+	@docker push $(DOCKER_IMAGE)
 endif
 
 
