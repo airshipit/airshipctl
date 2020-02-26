@@ -3,11 +3,7 @@ package cmd
 import (
 	"io"
 
-	//argo "github.com/argoproj/argo/cmd/argo/commands"
 	"github.com/spf13/cobra"
-
-	//kubeadm "k8s.io/kubernetes/cmd/kubeadm/app/cmd"
-	kubectl "k8s.io/kubernetes/pkg/kubectl/cmd"
 
 	// Import to initialize client auth plugins.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -59,10 +55,6 @@ func AddDefaultAirshipCTLCommands(cmd *cobra.Command, settings *environment.Airs
 	cmd.AddCommand(completion.NewCompletionCommand())
 	cmd.AddCommand(document.NewDocumentCommand(settings))
 	cmd.AddCommand(config.NewConfigCommand(settings))
-
-	cmd.AddCommand(kubectl.NewDefaultKubectlCommand())
-	// Should we use cmd.OutOrStdout?
-	//cmd.AddCommand(kubeadm.NewKubeadmCommand(os.Stdin, os.Stdout, os.Stderr))
 
 	return cmd
 }
