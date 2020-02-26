@@ -130,26 +130,49 @@ func TestVerifyInputs(t *testing.T) {
 	defer cleanup(t)
 
 	tests := []struct {
+		name        string
 		cfg         *config.Bootstrap
 		args        []string
 		expectedErr error
 	}{
 		{
+			name: "missing-container-field",
 			cfg: &config.Bootstrap{
 				Container: &config.Container{},
 			},
-			expectedErr: config.ErrWrongConfig{},
+			expectedErr: config.ErrMissingConfig{
+				What: "Must specify volume bind for ISO builder container",
+			},
 		},
 		{
+			name: "missing-filenames",
 			cfg: &config.Bootstrap{
 				Container: &config.Container{
 					Volume: tempVol + ":/dst",
 				},
 				Builder: &config.Builder{},
 			},
-			expectedErr: config.ErrWrongConfig{},
+			expectedErr: config.ErrMissingConfig{
+				What: "UserDataFileName or NetworkConfigFileName are not specified in ISO builder config",
+			},
 		},
 		{
+			name: "invalid-host-path",
+			cfg: &config.Bootstrap{
+				Container: &config.Container{
+					Volume: tempVol + ":/dst:/dst1",
+				},
+				Builder: &config.Builder{
+					UserDataFileName:      "user-data",
+					NetworkConfigFileName: "net-conf",
+				},
+			},
+			expectedErr: config.ErrInvalidConfig{
+				What: "Bad container volume format. Use hostPath:contPath",
+			},
+		},
+		{
+			name: "success",
 			cfg: &config.Bootstrap{
 				Container: &config.Container{
 					Volume: tempVol,
@@ -161,22 +184,13 @@ func TestVerifyInputs(t *testing.T) {
 			},
 			expectedErr: nil,
 		},
-		{
-			cfg: &config.Bootstrap{
-				Container: &config.Container{
-					Volume: tempVol + ":/dst:/dst1",
-				},
-				Builder: &config.Builder{
-					UserDataFileName:      "user-data",
-					NetworkConfigFileName: "net-conf",
-				},
-			},
-			expectedErr: config.ErrWrongConfig{},
-		},
 	}
 
 	for _, tt := range tests {
-		actualErr := verifyInputs(tt.cfg)
-		assert.Equal(t, tt.expectedErr, actualErr)
+		tt := tt
+		t.Run(tt.name, func(subTest *testing.T) {
+			actualErr := verifyInputs(tt.cfg)
+			assert.Equal(subTest, tt.expectedErr, actualErr)
+		})
 	}
 }
