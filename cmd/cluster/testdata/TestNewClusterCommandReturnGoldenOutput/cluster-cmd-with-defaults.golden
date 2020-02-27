@@ -1,2 +1,13 @@
 Interactions with Kubernetes cluster, such as get status, deploy initial infrastructure
 
+Usage:
+  cluster [command]
+
+Available Commands:
+  help        Help about any command
+  initinfra   deploy initinfra components to cluster
+
+Flags:
+  -h, --help   help for cluster
+
+Use "cluster [command] --help" for more information about a command.

@@ -20,5 +20,7 @@ func NewClusterCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comm
 		Long:  "Interactions with Kubernetes cluster, such as get status, deploy initial infrastructure",
 	}
 
+	clusterRootCmd.AddCommand(NewCmdInitInfra(rootSettings))
+
 	return clusterRootCmd
 }
