@@ -11,8 +11,3 @@ commonLabels:
   airshipit.org/target: "true"
 
 namespace: capbk
-
-#vars:
-# $(IMAGE_PULL_POLICY)
-# The image pull policy by default should be "IfNotPresent",
-# it should be globally defined for all images
