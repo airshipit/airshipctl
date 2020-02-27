@@ -36,7 +36,7 @@ spec:
       - command:
         - /manager
         image: "gcr.io/k8s-staging-cluster-api/cluster-api-controller:release-0.2"
-        imagePullPolicy: $(IMAGE_PULL_POLICY)
+        imagePullPolicy: Always
         name: manager
         resources:
           limits:

@@ -83,7 +83,7 @@ spec:
         - name: SECRET_NAME
           value: capbm-webhook-server-secret
         image: "quay.io/metal3-io/cluster-api-provider-baremetal:v1alpha2"
-        imagePullPolicy: $(IMAGE_PULL_POLICY)
+        imagePullPolicy: Always
         name: manager
         ports:
         - containerPort: 9876

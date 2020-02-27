@@ -40,7 +40,7 @@ spec:
         - --logtostderr=true
         - --v=10
         image: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.0
-        imagePullPolicy: $(IMAGE_PULL_POLICY)
+        imagePullPolicy: Always
         name: kube-rbac-proxy
         ports:
         - containerPort: 8443
@@ -50,7 +50,7 @@ spec:
         - --v=4
         - --enable-leader-election
         image: gcr.io/k8s-staging-capi-kubeadm/cluster-api-kubeadm-controller:latest
-        imagePullPolicy: $(IMAGE_PULL_POLICY)
+        imagePullPolicy: Always
         name: manager
       terminationGracePeriodSeconds: 10
       tolerations:
