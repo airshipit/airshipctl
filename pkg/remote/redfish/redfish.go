@@ -36,39 +36,39 @@ func (cfg RedfishRemoteDirect) DoRemoteDirect() error {
 	/* TODO: Add Authentication when redfish library supports it. */
 
 	/* Get system details */
-	systemId := cfg.EphemeralNodeId
-	system, _, err := cfg.Api.GetSystem(cfg.Context, systemId)
+	systemID := cfg.EphemeralNodeId
+	system, _, err := cfg.Api.GetSystem(cfg.Context, systemID)
 	if err != nil {
-		return NewRedfishClientErrorf("Get System[%s] failed with err: %s", systemId, err.Error())
+		return NewRedfishClientErrorf("Get System[%s] failed with err: %s", systemID, err.Error())
 	}
-	alog.Debugf("Ephemeral Node System ID: '%s'", systemId)
+	alog.Debugf("Ephemeral Node System ID: '%s'", systemID)
 
 	/* get manager for system */
-	managerId := GetResourceIDFromURL(system.Links.ManagedBy[0].OdataId)
-	alog.Debugf("Ephemeral node managerId: '%s'", managerId)
+	managerID := GetResourceIDFromURL(system.Links.ManagedBy[0].OdataId)
+	alog.Debugf("Ephemeral node managerID: '%s'", managerID)
 
 	/* Get manager's Cd or DVD virtual media ID */
-	vMediaId, vMediaType, err := GetVirtualMediaId(cfg.Context, cfg.Api, managerId)
+	vMediaID, vMediaType, err := GetVirtualMediaId(cfg.Context, cfg.Api, managerID)
 	if err != nil {
 		return err
 	}
-	alog.Debugf("Ephemeral Node Virtual Media Id: '%s'", vMediaId)
+	alog.Debugf("Ephemeral Node Virtual Media Id: '%s'", vMediaID)
 
 	/* Load ISO in manager's virtual media */
-	err = SetVirtualMedia(cfg.Context, cfg.Api, managerId, vMediaId, cfg.IsoPath)
+	err = SetVirtualMedia(cfg.Context, cfg.Api, managerID, vMediaID, cfg.IsoPath)
 	if err != nil {
 		return err
 	}
 	alog.Debugf("Successfully loaded virtual media: '%s'", cfg.IsoPath)
 
 	/* Set system's bootsource to selected media */
-	err = SetSystemBootSourceForMediaType(cfg.Context, cfg.Api, systemId, vMediaType)
+	err = SetSystemBootSourceForMediaType(cfg.Context, cfg.Api, systemID, vMediaType)
 	if err != nil {
 		return err
 	}
 
 	/* Reboot system */
-	err = RebootSystem(cfg.Context, cfg.Api, systemId)
+	err = RebootSystem(cfg.Context, cfg.Api, systemID)
 	if err != nil {
 		return err
 	}
@@ -112,7 +112,7 @@ func NewRedfishRemoteDirectClient(ctx context.Context,
 
 	var api redfishApi.RedfishAPI = redfishClient.NewAPIClient(cfg).DefaultApi
 
-	parsedUrl, err := url.Parse(remoteURL)
+	parsedURL, err := url.Parse(remoteURL)
 	if err != nil {
 		return RedfishRemoteDirect{},
 			ErrRedfishMissingConfig{
@@ -122,7 +122,7 @@ func NewRedfishRemoteDirectClient(ctx context.Context,
 
 	client := RedfishRemoteDirect{
 		Context:         ctx,
-		RemoteURL:       *parsedUrl,
+		RemoteURL:       *parsedURL,
 		EphemeralNodeId: ephNodeID,
 		IsoPath:         isoPath,
 		Api:             api,

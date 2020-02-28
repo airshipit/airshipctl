@@ -551,13 +551,13 @@ func (c *Config) AddContext(theContext *ContextOptions) *Context {
 	nContext := NewContext()
 	c.Contexts[theContext.Name] = nContext
 	// Create a new Kubeconfig Context object as well
-	kContext := clientcmdapi.NewContext()
+	context := clientcmdapi.NewContext()
 	nContext.NameInKubeconf = theContext.Name
 	contextName := NewClusterComplexName()
 	contextName.WithType(theContext.Name, theContext.ClusterType)
 
-	nContext.SetKubeContext(kContext)
-	c.KubeConfig().Contexts[theContext.Name] = kContext
+	nContext.SetKubeContext(context)
+	c.KubeConfig().Contexts[theContext.Name] = context
 
 	// Ok , I have initialized structs for the Context information
 	// We can use Modify to populate the correct information
@@ -566,21 +566,21 @@ func (c *Config) AddContext(theContext *ContextOptions) *Context {
 }
 
 func (c *Config) ModifyContext(context *Context, theContext *ContextOptions) {
-	kContext := context.KubeContext()
-	if kContext == nil {
+	kubeContext := context.KubeContext()
+	if kubeContext == nil {
 		return
 	}
 	if theContext.Cluster != "" {
-		kContext.Cluster = theContext.Cluster
+		kubeContext.Cluster = theContext.Cluster
 	}
 	if theContext.AuthInfo != "" {
-		kContext.AuthInfo = theContext.AuthInfo
+		kubeContext.AuthInfo = theContext.AuthInfo
 	}
 	if theContext.Manifest != "" {
 		context.Manifest = theContext.Manifest
 	}
 	if theContext.Namespace != "" {
-		kContext.Namespace = theContext.Namespace
+		kubeContext.Namespace = theContext.Namespace
 	}
 }
 
@@ -660,33 +660,33 @@ func (c *Config) AddAuthInfo(theAuthInfo *AuthInfoOptions) *AuthInfo {
 	nAuthInfo := NewAuthInfo()
 	c.AuthInfos[theAuthInfo.Name] = nAuthInfo
 	// Create a new Kubeconfig AuthInfo object as well
-	kAuthInfo := clientcmdapi.NewAuthInfo()
-	nAuthInfo.SetKubeAuthInfo(kAuthInfo)
-	c.KubeConfig().AuthInfos[theAuthInfo.Name] = kAuthInfo
+	authInfo := clientcmdapi.NewAuthInfo()
+	nAuthInfo.SetKubeAuthInfo(authInfo)
+	c.KubeConfig().AuthInfos[theAuthInfo.Name] = authInfo
 
 	c.ModifyAuthInfo(nAuthInfo, theAuthInfo)
 	return nAuthInfo
 }
 
 func (c *Config) ModifyAuthInfo(authinfo *AuthInfo, theAuthInfo *AuthInfoOptions) {
-	kAuthInfo := authinfo.KubeAuthInfo()
-	if kAuthInfo == nil {
+	kubeAuthInfo := authinfo.KubeAuthInfo()
+	if kubeAuthInfo == nil {
 		return
 	}
 	if theAuthInfo.ClientCertificate != "" {
-		kAuthInfo.ClientCertificate = theAuthInfo.ClientCertificate
+		kubeAuthInfo.ClientCertificate = theAuthInfo.ClientCertificate
 	}
 	if theAuthInfo.Token != "" {
-		kAuthInfo.Token = theAuthInfo.Token
+		kubeAuthInfo.Token = theAuthInfo.Token
 	}
 	if theAuthInfo.Username != "" {
-		kAuthInfo.Username = theAuthInfo.Username
+		kubeAuthInfo.Username = theAuthInfo.Username
 	}
 	if theAuthInfo.Password != "" {
-		kAuthInfo.Password = theAuthInfo.Password
+		kubeAuthInfo.Password = theAuthInfo.Password
 	}
 	if theAuthInfo.ClientKey != "" {
-		kAuthInfo.ClientKey = theAuthInfo.ClientKey
+		kubeAuthInfo.ClientKey = theAuthInfo.ClientKey
 	}
 }
 

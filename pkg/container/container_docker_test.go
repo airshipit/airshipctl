@@ -242,9 +242,9 @@ func TestGetId(t *testing.T) {
 	cnt := getDockerContainerMock(mockDockerClient{})
 	err := cnt.RunCommand([]string{"testCmd"}, nil, nil, []string{}, false)
 	require.NoError(t, err)
-	actualId := cnt.GetId()
+	actualID := cnt.GetId()
 
-	assert.Equal(t, "testID", actualId)
+	assert.Equal(t, "testID", actualID)
 }
 
 func TestRunCommand(t *testing.T) {

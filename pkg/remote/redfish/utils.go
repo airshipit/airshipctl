@@ -26,8 +26,8 @@ func GetResourceIDFromURL(refURL string) string {
 		log.Fatal(err)
 	}
 
-	trimmedUrl := strings.TrimSuffix(u.Path, "/")
-	elems := strings.Split(trimmedUrl, "/")
+	trimmedURL := strings.TrimSuffix(u.Path, "/")
+	elems := strings.Split(trimmedURL, "/")
 
 	id := elems[len(elems)-1]
 	return id
@@ -36,8 +36,8 @@ func GetResourceIDFromURL(refURL string) string {
 // Checks whether an ID exists in Redfish IDref collection
 func IsIDInList(idRefList []redfishClient.IdRef, id string) bool {
 	for _, r := range idRefList {
-		rId := GetResourceIDFromURL(r.OdataId)
-		if rId == id {
+		rID := GetResourceIDFromURL(r.OdataId)
+		if rID == id {
 			return true
 		}
 	}

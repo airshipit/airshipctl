@@ -172,10 +172,10 @@ func TestModifyCluster(t *testing.T) {
 	clusterName.WithType(tname, tctype)
 	given.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
 	given.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.Name()
-	kCluster := kubeconfig.NewCluster()
-	kCluster.Server = "https://192.168.0.10"
-	given.KubeConfig().Clusters[clusterName.Name()] = kCluster
-	given.Clusters[tname].ClusterTypes[tctype].SetKubeCluster(kCluster)
+	cluster := kubeconfig.NewCluster()
+	cluster.Server = "https://192.168.0.10"
+	given.KubeConfig().Clusters[clusterName.Name()] = cluster
+	given.Clusters[tname].ClusterTypes[tctype].SetKubeCluster(cluster)
 
 	expected, cleanupExpected := config.InitConfig(t)
 	defer cleanupExpected(t)

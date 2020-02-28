@@ -28,7 +28,7 @@ const (
 var (
 	ErrNoOpenRepo              = errors.New("no open repository is stored")
 	ErrRemoteRefNotImplemented = errors.New("remoteref is not yet implemented")
-	ErrCantParseUrl            = errors.New("could not get target directory from url")
+	ErrCantParseURL            = errors.New("could not get target directory from url")
 )
 
 type OptionsBuilder interface {
@@ -52,7 +52,7 @@ type Repository struct {
 func NewRepository(basePath string, builder OptionsBuilder) (*Repository, error) {
 	dirName := nameFromURL(builder.URL())
 	if dirName == "" {
-		return nil, fmt.Errorf("URL: %s, original error: %w", builder.URL(), ErrCantParseUrl)
+		return nil, fmt.Errorf("URL: %s, original error: %w", builder.URL(), ErrCantParseURL)
 	}
 	fs := osfs.New(filepath.Join(basePath, dirName))
 
