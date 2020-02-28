@@ -26,9 +26,9 @@ const (
 )
 
 var (
-	ErrNoOpenRepo              = errors.New("No open repository is stored")
-	ErrRemoteRefNotImplemented = errors.New("RemoteRef is not yet implemented")
-	ErrCantParseUrl            = errors.New("Couldn't get target directory from URL")
+	ErrNoOpenRepo              = errors.New("no open repository is stored")
+	ErrRemoteRefNotImplemented = errors.New("remoteref is not yet implemented")
+	ErrCantParseUrl            = errors.New("could not get target directory from url")
 )
 
 type OptionsBuilder interface {
@@ -94,7 +94,7 @@ func (repo *Repository) Update(force bool) error {
 	}
 	err = repo.Driver.Fetch(repo.ToFetchOptions(auth))
 	if err != nil && err != git.NoErrAlreadyUpToDate {
-		return fmt.Errorf("Failed to fetch refs for repository %v: %w", repo.Name, err)
+		return fmt.Errorf("failed to fetch refs for repository %v: %w", repo.Name, err)
 	}
 	return repo.Checkout(force)
 }
@@ -108,7 +108,7 @@ func (repo *Repository) Checkout(enforce bool) error {
 	co := repo.ToCheckoutOptions(enforce)
 	tree, err := repo.Driver.Worktree()
 	if err != nil {
-		return fmt.Errorf("Cloud not get worktree from the repo, %w", err)
+		return fmt.Errorf("could not get worktree from the repo, %w", err)
 	}
 	return tree.Checkout(co)
 }
@@ -124,7 +124,7 @@ func (repo *Repository) Clone() error {
 	log.Debugf("Attempting to clone the repository %s", repo.Name)
 	auth, err := repo.ToAuth()
 	if err != nil {
-		return fmt.Errorf("Failed to build Auth options for repository %v: %w", repo.Name, err)
+		return fmt.Errorf("failed to build auth options for repository %v: %w", repo.Name, err)
 	}
 
 	return repo.Driver.Clone(repo.ToCloneOptions(auth))

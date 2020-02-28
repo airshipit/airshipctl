@@ -84,7 +84,7 @@ func TestRedfishRemoteDirectGetSystemNetworkError(t *testing.T) {
 	defer m.AssertExpectations(t)
 
 	systemID := computerSystemID
-	realErr := fmt.Errorf("Server request timeout")
+	realErr := fmt.Errorf("server request timeout")
 	httpResp := &http.Response{
 		StatusCode: 408,
 	}
@@ -109,7 +109,7 @@ func TestRedfishRemoteDirectInvalidIsoPath(t *testing.T) {
 	localRDCfg := rDCfg
 	localRDCfg.IsoPath = "bogus/path/to.iso"
 
-	errStr := "Invalid remote boot path"
+	errStr := "invalid remote boot path"
 	realErr := fmt.Errorf(errStr)
 	httpResp := &http.Response{
 		StatusCode: 500,
@@ -163,7 +163,7 @@ func TestRedfishRemoteDirectSetSystemBootSourceFailed(t *testing.T) {
 	m.On("InsertVirtualMedia", context.Background(), "manager-1", "Cd", mock.Anything).
 		Return(redfishClient.RedfishError{}, nil, nil)
 
-	realErr := fmt.Errorf("Unauthorized")
+	realErr := fmt.Errorf("unauthorized")
 	httpResp := &http.Response{
 		StatusCode: 401,
 	}
@@ -195,7 +195,7 @@ func TestRedfishRemoteDirectSystemRebootFailed(t *testing.T) {
 		Times(1).
 		Return(redfishClient.ComputerSystem{}, nil, nil)
 
-	realErr := fmt.Errorf("Unauthorized")
+	realErr := fmt.Errorf("unauthorized")
 	httpResp := &http.Response{
 		StatusCode: 401,
 	}

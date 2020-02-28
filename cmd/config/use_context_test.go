@@ -48,7 +48,7 @@ func TestConfigUseContext(t *testing.T) {
 			Name:    "config-use-context-does-not-exist",
 			CmdLine: "foo",
 			Cmd:     cmd.NewCmdConfigUseContext(settings),
-			Error:   errors.New("Missing configuration: Context with name 'foo'"),
+			Error:   errors.New("missing configuration: context with name 'foo'"),
 		},
 	}
 

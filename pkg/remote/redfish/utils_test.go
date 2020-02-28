@@ -22,7 +22,7 @@ func TestRedfishErrorNoError(t *testing.T) {
 }
 
 func TestRedfishErrorNonNilErrorWithoutHttpResp(t *testing.T) {
-	realErr := fmt.Errorf("Sample error")
+	realErr := fmt.Errorf("sample error")
 	err := ScreenRedfishError(nil, realErr)
 	assert.Error(t, err)
 	_, ok := err.(*RedfishClientError)
@@ -30,7 +30,7 @@ func TestRedfishErrorNonNilErrorWithoutHttpResp(t *testing.T) {
 }
 
 func TestRedfishErrorNonNilErrorWithHttpRespError(t *testing.T) {
-	realErr := fmt.Errorf("Sample error")
+	realErr := fmt.Errorf("sample error")
 
 	httpResp := &http.Response{StatusCode: 408}
 	err := ScreenRedfishError(httpResp, realErr)
@@ -46,7 +46,7 @@ func TestRedfishErrorNonNilErrorWithHttpRespError(t *testing.T) {
 }
 
 func TestRedfishErrorNonNilErrorWithHttpRespOK(t *testing.T) {
-	realErr := fmt.Errorf("Sample error")
+	realErr := fmt.Errorf("sample error")
 
 	httpResp := &http.Response{StatusCode: 204}
 	err := ScreenRedfishError(httpResp, realErr)
@@ -122,7 +122,7 @@ func TestRedfishUtilRebootSystemForceOffError2(t *testing.T) {
 	defer m.AssertExpectations(t)
 
 	ctx := context.Background()
-	realErr := fmt.Errorf("Unauthorized")
+	realErr := fmt.Errorf("unauthorized")
 	httpResp := &http.Response{
 		StatusCode: 401,
 	}
@@ -142,7 +142,7 @@ func TestRedfishUtilRebootSystemForceOffError(t *testing.T) {
 	defer m.AssertExpectations(t)
 
 	ctx := context.Background()
-	realErr := fmt.Errorf("Unauthorized")
+	realErr := fmt.Errorf("unauthorized")
 	httpResp := &http.Response{
 		StatusCode: 401,
 	}
@@ -167,7 +167,7 @@ func TestRedfishUtilRebootSystemTurningOnError(t *testing.T) {
 		Times(1).
 		Return(redfishClient.RedfishError{}, nil, nil)
 
-	realErr := fmt.Errorf("Unauthorized")
+	realErr := fmt.Errorf("unauthorized")
 	httpResp := &http.Response{
 		StatusCode: 401,
 	}

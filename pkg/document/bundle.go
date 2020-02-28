@@ -180,9 +180,9 @@ func (b *BundleFactory) GetByName(name string) (Document, error) {
 	// by adding strongly typed errors
 	switch found := len(resSet); {
 	case found == 0:
-		return &DocumentFactory{}, fmt.Errorf("No documents found with name %s", name)
+		return &DocumentFactory{}, fmt.Errorf("no documents found with name %s", name)
 	case found > 1:
-		return &DocumentFactory{}, fmt.Errorf("More than one document found with name %s", name)
+		return &DocumentFactory{}, fmt.Errorf("more than one document found with name %s", name)
 	default:
 		return NewDocument(resSet[0])
 	}

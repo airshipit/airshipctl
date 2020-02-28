@@ -115,7 +115,7 @@ func getDockerContainerMock(mdc mockDockerClient) *DockerContainer {
 }
 
 func TestGetCmd(t *testing.T) {
-	testError := fmt.Errorf("Inspect error")
+	testError := fmt.Errorf("inspect error")
 	tests := []struct {
 		cmd              []string
 		mockDockerClient mockDockerClient
@@ -170,7 +170,7 @@ func TestGetCmd(t *testing.T) {
 }
 
 func TestGetImageId(t *testing.T) {
-	testError := fmt.Errorf("Img List Error")
+	testError := fmt.Errorf("img list error")
 	tests := []struct {
 		url              string
 		mockDockerClient mockDockerClient
@@ -208,7 +208,7 @@ func TestGetImageId(t *testing.T) {
 }
 
 func TestImagePull(t *testing.T) {
-	testError := fmt.Errorf("Image Pull Error")
+	testError := fmt.Errorf("image pull rror")
 	tests := []struct {
 		mockDockerClient mockDockerClient
 		expectedErr      error
@@ -248,10 +248,10 @@ func TestGetId(t *testing.T) {
 }
 
 func TestRunCommand(t *testing.T) {
-	imageListError := fmt.Errorf("Image List Error")
-	attachError := fmt.Errorf("Attach error")
-	containerStartError := fmt.Errorf("Container Start error")
-	containerWaitError := fmt.Errorf("Container Wait Error")
+	imageListError := fmt.Errorf("image list error")
+	attachError := fmt.Errorf("attach error")
+	containerStartError := fmt.Errorf("container start error")
+	containerWaitError := fmt.Errorf("container wait error")
 	tests := []struct {
 		cmd              []string
 		containerInput   io.Reader
@@ -371,7 +371,7 @@ func TestRunCommand(t *testing.T) {
 }
 
 func TestRunCommandOutput(t *testing.T) {
-	testError := fmt.Errorf("Img List Error")
+	testError := fmt.Errorf("img list error")
 	tests := []struct {
 		cmd              []string
 		containerInput   io.Reader
@@ -421,7 +421,7 @@ func TestRunCommandOutput(t *testing.T) {
 }
 
 func TestNewDockerContainer(t *testing.T) {
-	testError := fmt.Errorf("Image Pull Error")
+	testError := fmt.Errorf("image pull error")
 	type resultStruct struct {
 		tag      string
 		imageUrl string

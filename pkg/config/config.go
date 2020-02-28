@@ -59,7 +59,7 @@ func (c *Config) LoadConfig(airshipConfigPath, kubeConfigPath string) error {
 // * the file at airshipConfigPath cannot be marshaled into Config
 func (c *Config) loadFromAirConfig(airshipConfigPath string) error {
 	if airshipConfigPath == "" {
-		return errors.New("Configuration file location was not provided.")
+		return errors.New("configuration file location was not provided")
 	}
 
 	// Remember where I loaded the Config from
@@ -983,7 +983,7 @@ func ValidClusterType(clusterType string) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("Cluster Type must be one of %v", AllClusterTypes)
+	return fmt.Errorf("cluster type must be one of %v", AllClusterTypes)
 }
 
 /* ______________________________
