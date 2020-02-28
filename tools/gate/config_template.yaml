@@ -1,0 +1,14 @@
+---
+serve_dir: /srv/iso
+serve_port: 8099
+local_src_dir: "$AIRSHIPCTL_WS"
+ansible_user: root
+site_name: test-bootstrap
+remote_work_dir: "$AIRSHIPCTL_WS"
+sphinx_build_dir: docs/build
+python_version: 3.7
+zuul:
+ executor:
+   log_root: "$TMP_DIR"
+ project:
+   src_dir: "$AIRSHIPCTL_WS"
