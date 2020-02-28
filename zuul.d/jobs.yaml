@@ -77,15 +77,6 @@
       serve_port: 8099
 
 - job:
-    name: airship-airshipctl-publish-docs
-    nodeset: airship-airshipctl-single-node
-    parent: trigger-readthedocs-webhook
-    run: playbooks/airship-airshipctl-build-docs.yaml
-    vars:
-      rtd_project_name: airship-airshipctl
-      rtd_webhook_id: 112688
-
-- job:
     name: airship-airshipctl-publish-image
     parent: airship-airshipctl-build-image
     post-run: playbooks/airship-airshipctl-publish-images.yaml
