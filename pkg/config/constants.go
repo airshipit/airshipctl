@@ -18,7 +18,7 @@ var AllClusterTypes = [2]string{Ephemeral, Target}
 const (
 	AirshipConfigGroup      = "airshipit.org"
 	AirshipConfigVersion    = "v1alpha1"
-	AirshipConfigApiVersion = AirshipConfigGroup + "/" + AirshipConfigVersion
+	AirshipConfigAPIVersion = AirshipConfigGroup + "/" + AirshipConfigVersion
 	AirshipConfigKind       = "Config"
 
 	AirshipConfigDir  = ".airship"
