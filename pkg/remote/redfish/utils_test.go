@@ -25,7 +25,7 @@ func TestRedfishErrorNonNilErrorWithoutHttpResp(t *testing.T) {
 	realErr := fmt.Errorf("sample error")
 	err := ScreenRedfishError(nil, realErr)
 	assert.Error(t, err)
-	_, ok := err.(*RedfishClientError)
+	_, ok := err.(*ClientError)
 	assert.True(t, ok)
 }
 

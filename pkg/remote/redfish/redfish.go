@@ -11,7 +11,7 @@ import (
 	alog "opendev.org/airship/airshipctl/pkg/log"
 )
 
-type RedfishRemoteDirect struct {
+type RemoteDirect struct {
 
 	// Context
 	Context context.Context
@@ -30,7 +30,7 @@ type RedfishRemoteDirect struct {
 }
 
 // Top level function to handle Redfish remote direct
-func (cfg RedfishRemoteDirect) DoRemoteDirect() error {
+func (cfg RemoteDirect) DoRemoteDirect() error {
 	alog.Debugf("Using Redfish Endpoint: '%s'", cfg.RemoteURL.String())
 
 	/* TODO: Add Authentication when redfish library supports it. */
@@ -82,23 +82,23 @@ func NewRedfishRemoteDirectClient(ctx context.Context,
 	remoteURL string,
 	ephNodeID string,
 	isoPath string,
-) (RedfishRemoteDirect, error) {
+) (RemoteDirect, error) {
 	if remoteURL == "" {
-		return RedfishRemoteDirect{},
+		return RemoteDirect{},
 			ErrRedfishMissingConfig{
 				What: "redfish remote url empty",
 			}
 	}
 
 	if ephNodeID == "" {
-		return RedfishRemoteDirect{},
+		return RemoteDirect{},
 			ErrRedfishMissingConfig{
 				What: "redfish ephemeral node id empty",
 			}
 	}
 
 	if isoPath == "" {
-		return RedfishRemoteDirect{},
+		return RemoteDirect{},
 			ErrRedfishMissingConfig{
 				What: "redfish ephemeral node iso Path empty",
 			}
@@ -114,13 +114,13 @@ func NewRedfishRemoteDirectClient(ctx context.Context,
 
 	parsedURL, err := url.Parse(remoteURL)
 	if err != nil {
-		return RedfishRemoteDirect{},
+		return RemoteDirect{},
 			ErrRedfishMissingConfig{
 				What: fmt.Sprintf("invalid url format: %v", err),
 			}
 	}
 
-	client := RedfishRemoteDirect{
+	client := RemoteDirect{
 		Context:         ctx,
 		RemoteURL:       *parsedURL,
 		EphemeralNodeID: ephNodeID,

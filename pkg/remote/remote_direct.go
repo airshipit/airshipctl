@@ -24,13 +24,13 @@ const (
 )
 
 // Interface to be implemented by remoteDirect implementation
-type RemoteDirectClient interface {
+type Client interface {
 	DoRemoteDirect() error
 }
 
 // Get remotedirect client based on config
-func getRemoteDirectClient(remoteConfig *config.RemoteDirect, remoteURL string) (RemoteDirectClient, error) {
-	var client RemoteDirectClient
+func getRemoteDirectClient(remoteConfig *config.RemoteDirect, remoteURL string) (Client, error) {
+	var client Client
 	switch remoteConfig.RemoteType {
 	case AirshipRemoteTypeRedfish:
 		alog.Debug("Remote type redfish")

@@ -7,12 +7,12 @@ import (
 	aerror "opendev.org/airship/airshipctl/pkg/errors"
 )
 
-type RedfishClientError struct {
+type ClientError struct {
 	aerror.AirshipError
 }
 
 func NewRedfishClientErrorf(format string, v ...interface{}) error {
-	e := &RedfishClientError{}
+	e := &ClientError{}
 	e.Message = fmt.Sprintf(format, v...)
 	return e
 }

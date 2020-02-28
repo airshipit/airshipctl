@@ -6,12 +6,12 @@ import (
 	aerror "opendev.org/airship/airshipctl/pkg/errors"
 )
 
-type RemoteDirectError struct {
+type GenericError struct {
 	aerror.AirshipError
 }
 
 func NewRemoteDirectErrorf(format string, v ...interface{}) error {
-	e := &RemoteDirectError{}
+	e := &GenericError{}
 	e.Message = fmt.Sprintf(format, v...)
 	return e
 }

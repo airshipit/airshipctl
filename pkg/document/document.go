@@ -4,8 +4,8 @@ import (
 	"sigs.k8s.io/kustomize/v3/pkg/resource"
 )
 
-// DocumentFactory holds document data
-type DocumentFactory struct {
+// Factory holds document data
+type Factory struct {
 	resource.Resource
 }
 
@@ -29,90 +29,90 @@ type Document interface {
 }
 
 // GetNamespace returns the namespace the resource thinks it's in.
-func (d *DocumentFactory) GetNamespace() string {
+func (d *Factory) GetNamespace() string {
 	r := d.GetKustomizeResource()
 	return r.GetNamespace()
 }
 
 // GetString returns the string value at path.
-func (d *DocumentFactory) GetString(path string) (string, error) {
+func (d *Factory) GetString(path string) (string, error) {
 	r := d.GetKustomizeResource()
 	return r.GetString(path)
 }
 
 // GetStringSlice returns a string slice at path.
-func (d *DocumentFactory) GetStringSlice(path string) ([]string, error) {
+func (d *Factory) GetStringSlice(path string) ([]string, error) {
 	r := d.GetKustomizeResource()
 	return r.GetStringSlice(path)
 }
 
 // GetBool returns a bool at path.
-func (d *DocumentFactory) GetBool(path string) (bool, error) {
+func (d *Factory) GetBool(path string) (bool, error) {
 	r := d.GetKustomizeResource()
 	return r.GetBool(path)
 }
 
 // GetFloat64 returns a float64 at path.
-func (d *DocumentFactory) GetFloat64(path string) (float64, error) {
+func (d *Factory) GetFloat64(path string) (float64, error) {
 	r := d.GetKustomizeResource()
 	return r.GetFloat64(path)
 }
 
 // GetInt64 returns an int64 at path.
-func (d *DocumentFactory) GetInt64(path string) (int64, error) {
+func (d *Factory) GetInt64(path string) (int64, error) {
 	r := d.GetKustomizeResource()
 	return r.GetInt64(path)
 }
 
 // GetSlice returns a slice at path.
-func (d *DocumentFactory) GetSlice(path string) ([]interface{}, error) {
+func (d *Factory) GetSlice(path string) ([]interface{}, error) {
 	r := d.GetKustomizeResource()
 	return r.GetSlice(path)
 }
 
 // GetStringMap returns a string map at path.
-func (d *DocumentFactory) GetStringMap(path string) (map[string]string, error) {
+func (d *Factory) GetStringMap(path string) (map[string]string, error) {
 	r := d.GetKustomizeResource()
 	return r.GetStringMap(path)
 }
 
 // GetMap returns a map at path.
-func (d *DocumentFactory) GetMap(path string) (map[string]interface{}, error) {
+func (d *Factory) GetMap(path string) (map[string]interface{}, error) {
 	r := d.GetKustomizeResource()
 	return r.GetMap(path)
 }
 
 // AsYAML returns the document as a YAML byte stream.
-func (d *DocumentFactory) AsYAML() ([]byte, error) {
+func (d *Factory) AsYAML() ([]byte, error) {
 	r := d.GetKustomizeResource()
 	return r.AsYAML()
 }
 
 // MarshalJSON returns the document as JSON.
-func (d *DocumentFactory) MarshalJSON() ([]byte, error) {
+func (d *Factory) MarshalJSON() ([]byte, error) {
 	r := d.GetKustomizeResource()
 	return r.MarshalJSON()
 }
 
 // GetName returns the name: field from the document.
-func (d *DocumentFactory) GetName() string {
+func (d *Factory) GetName() string {
 	r := d.GetKustomizeResource()
 	return r.GetName()
 }
 
 // GetKind returns the Kind: field from the document.
-func (d *DocumentFactory) GetKind() string {
+func (d *Factory) GetKind() string {
 	r := d.GetKustomizeResource()
 	return r.GetKind()
 }
 
 // GetKustomizeResource returns a Kustomize Resource object for this document.
-func (d *DocumentFactory) GetKustomizeResource() resource.Resource {
+func (d *Factory) GetKustomizeResource() resource.Resource {
 	return d.Resource
 }
 
 // SetKustomizeResource sets a Kustomize Resource object for this document.
-func (d *DocumentFactory) SetKustomizeResource(r *resource.Resource) error {
+func (d *Factory) SetKustomizeResource(r *resource.Resource) error {
 	d.Resource = *r
 	return nil
 }
@@ -124,7 +124,7 @@ func (d *DocumentFactory) SetKustomizeResource(r *resource.Resource) error {
 // documents - e.g. in the future all documents require an airship
 // annotation X
 func NewDocument(r *resource.Resource) (Document, error) {
-	var doc Document = &DocumentFactory{}
+	var doc Document = &Factory{}
 	err := doc.SetKustomizeResource(r)
 	return doc, err
 }

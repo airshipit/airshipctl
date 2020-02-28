@@ -36,7 +36,7 @@ func TestUnknownRemoteType(t *testing.T) {
 
 	err := DoRemoteDirect(s)
 
-	_, ok := err.(*RemoteDirectError)
+	_, ok := err.(*GenericError)
 	assert.True(t, ok)
 }
 
