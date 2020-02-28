@@ -991,8 +991,8 @@ PLACEHOLDER UNTIL I IDENTIFY if CLIENTADM
 HAS SOMETHING LIKE THIS
 */
 
-func KClusterString(kCluster *clientcmdapi.Cluster) string {
-	yamlData, err := yaml.Marshal(&kCluster)
+func KClusterString(cluster *clientcmdapi.Cluster) string {
+	yamlData, err := yaml.Marshal(&cluster)
 	if err != nil {
 		return ""
 	}
@@ -1000,8 +1000,8 @@ func KClusterString(kCluster *clientcmdapi.Cluster) string {
 	return string(yamlData)
 }
 
-func KContextString(kContext *clientcmdapi.Context) string {
-	yamlData, err := yaml.Marshal(&kContext)
+func KContextString(context *clientcmdapi.Context) string {
+	yamlData, err := yaml.Marshal(&context)
 	if err != nil {
 		return ""
 	}
@@ -1009,8 +1009,8 @@ func KContextString(kContext *clientcmdapi.Context) string {
 	return string(yamlData)
 }
 
-func KAuthInfoString(kAuthInfo *clientcmdapi.AuthInfo) string {
-	yamlData, err := yaml.Marshal(&kAuthInfo)
+func KAuthInfoString(authInfo *clientcmdapi.AuthInfo) string {
+	yamlData, err := yaml.Marshal(&authInfo)
 	if err != nil {
 		return ""
 	}

@@ -46,9 +46,9 @@ func IsIDInList(idRefList []redfishClient.IdRef, id string) bool {
 
 // This function walks through the list of manager's virtual media resources
 // and gets the ID of virtualmedia which has type "CD" or "DVD"
-func GetVirtualMediaId(ctx context.Context,
+func GetVirtualMediaID(ctx context.Context,
 	api redfishApi.RedfishAPI,
-	managerId string,
+	managerID string,
 ) (string, string, error) {
 	// TODO: Sushy emulator has a bug which sends 'virtualMedia.inserted' field as
 	//       string instead of a boolean which causes the redfish client to fail
@@ -61,12 +61,12 @@ func GetVirtualMediaId(ctx context.Context,
 // which is compatible with the given media type.
 func SetSystemBootSourceForMediaType(ctx context.Context,
 	api redfishApi.RedfishAPI,
-	systemId string,
+	systemID string,
 	mediaType string) error {
 	/* Check available boot sources for system */
-	system, _, err := api.GetSystem(ctx, systemId)
+	system, _, err := api.GetSystem(ctx, systemID)
 	if err != nil {
-		return NewRedfishClientErrorf("Get System[%s] failed with err: %s", systemId, err.Error())
+		return NewRedfishClientErrorf("Get System[%s] failed with err: %s", systemID, err.Error())
 	}
 
 	allowableValues := system.Boot.BootSourceOverrideTargetRedfishAllowableValues
@@ -75,19 +75,19 @@ func SetSystemBootSourceForMediaType(ctx context.Context,
 			/* set boot source */
 			systemReq := redfishClient.ComputerSystem{}
 			systemReq.Boot.BootSourceOverrideTarget = bootSource
-			_, httpResp, err := api.SetSystem(ctx, systemId, systemReq)
+			_, httpResp, err := api.SetSystem(ctx, systemID, systemReq)
 			return ScreenRedfishError(httpResp, err)
 		}
 	}
 
-	return NewRedfishClientErrorf("failed to set system[%s] boot source", systemId)
+	return NewRedfishClientErrorf("failed to set system[%s] boot source", systemID)
 }
 
 // Reboots a system by force shutoff and turning on.
-func RebootSystem(ctx context.Context, api redfishApi.RedfishAPI, systemId string) error {
+func RebootSystem(ctx context.Context, api redfishApi.RedfishAPI, systemID string) error {
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
-	_, httpResp, err := api.ResetSystem(ctx, systemId, resetReq)
+	_, httpResp, err := api.ResetSystem(ctx, systemID, resetReq)
 	if err = ScreenRedfishError(httpResp, err); err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func RebootSystem(ctx context.Context, api redfishApi.RedfishAPI, systemId strin
 	time.Sleep(SystemRebootDelay)
 
 	resetReq.ResetType = redfishClient.RESETTYPE_ON
-	_, httpResp, err = api.ResetSystem(ctx, systemId, resetReq)
+	_, httpResp, err = api.ResetSystem(ctx, systemID, resetReq)
 
 	return ScreenRedfishError(httpResp, err)
 }
@@ -105,12 +105,12 @@ func RebootSystem(ctx context.Context, api redfishApi.RedfishAPI, systemId strin
 // virtualMedia device is either of type CD or DVD.
 func SetVirtualMedia(ctx context.Context,
 	api redfishApi.RedfishAPI,
-	managerId string,
-	vMediaId string,
+	managerID string,
+	vMediaID string,
 	isoPath string) error {
 	vMediaReq := redfishClient.InsertMediaRequestBody{}
 	vMediaReq.Image = isoPath
 	vMediaReq.Inserted = true
-	_, httpResp, err := api.InsertVirtualMedia(ctx, managerId, vMediaId, vMediaReq)
+	_, httpResp, err := api.InsertVirtualMedia(ctx, managerID, vMediaID, vMediaReq)
 	return ScreenRedfishError(httpResp, err)
 }
