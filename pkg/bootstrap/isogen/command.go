@@ -151,6 +151,6 @@ func generateBootstrapIso(
 		return builder.RmContainer()
 	}
 
-	log.Debugf("Debug flag is set. Container %s stopped but not deleted.", builder.GetId())
+	log.Debugf("Debug flag is set. Container %s stopped but not deleted.", builder.GetID())
 	return nil
 }

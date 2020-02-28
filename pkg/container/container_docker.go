@@ -134,7 +134,7 @@ func (c *DockerContainer) getCmd(cmd []string) ([]string, error) {
 		return cmd, nil
 	}
 
-	id, err := c.getImageId(c.imageURL)
+	id, err := c.getImageID(c.imageURL)
 	if err != nil {
 		return nil, err
 	}
@@ -166,9 +166,9 @@ func (c *DockerContainer) getConfig(
 	return cCfg, hCfg
 }
 
-// getImageId return ID of container image specified by URL. Method executes
+// getImageID return ID of container image specified by URL. Method executes
 // ImageList function supplied with "reference" filter
-func (c *DockerContainer) getImageId(url string) (string, error) {
+func (c *DockerContainer) getImageID(url string) (string, error) {
 	kv := filters.KeyValuePair{
 		Key:   "reference",
 		Value: url,
@@ -190,7 +190,7 @@ func (c *DockerContainer) getImageId(url string) (string, error) {
 	return img[0].ID, nil
 }
 
-func (c *DockerContainer) GetId() string {
+func (c *DockerContainer) GetID() string {
 	return c.id
 }
 

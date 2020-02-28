@@ -40,7 +40,7 @@ func (mc *mockContainer) RmContainer() error {
 	return mc.rmContainer()
 }
 
-func (mc *mockContainer) GetId() string {
+func (mc *mockContainer) GetID() string {
 	return mc.getID()
 }
 

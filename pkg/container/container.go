@@ -13,7 +13,7 @@ type Container interface {
 	RunCommand([]string, io.Reader, []string, []string, bool) error
 	RunCommandOutput([]string, io.Reader, []string, []string) (io.ReadCloser, error)
 	RmContainer() error
-	GetId() string
+	GetID() string
 }
 
 // NewContainer returns instance of Container interface implemented by particular driver

@@ -200,7 +200,7 @@ func TestGetImageId(t *testing.T) {
 	}
 	for _, tt := range tests {
 		cnt := getDockerContainerMock(tt.mockDockerClient)
-		actualRes, actualErr := cnt.getImageId(tt.url)
+		actualRes, actualErr := cnt.getImageID(tt.url)
 
 		assert.Equal(t, tt.expectedErr, actualErr)
 		assert.Equal(t, tt.expectedResult, actualRes)
@@ -242,7 +242,7 @@ func TestGetId(t *testing.T) {
 	cnt := getDockerContainerMock(mockDockerClient{})
 	err := cnt.RunCommand([]string{"testCmd"}, nil, nil, []string{}, false)
 	require.NoError(t, err)
-	actualID := cnt.GetId()
+	actualID := cnt.GetID()
 
 	assert.Equal(t, "testID", actualID)
 }
