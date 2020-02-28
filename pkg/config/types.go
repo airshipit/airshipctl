@@ -80,7 +80,7 @@ type Cluster struct {
 	NameInKubeconf string `json:"cluster-kubeconf"`
 
 	// Kubeconfig Cluster Object
-	kCluster *kubeconfig.Cluster
+	cluster *kubeconfig.Cluster
 
 	// Bootstrap configuration this clusters ephemeral hosts will rely on
 	Bootstrap string `json:"bootstrap-info"`
@@ -105,12 +105,12 @@ type Context struct {
 	Manifest string `json:"manifest,omitempty"`
 
 	// Kubeconfig Context Object
-	kContext *kubeconfig.Context
+	context *kubeconfig.Context
 }
 
 type AuthInfo struct {
 	// Kubeconfig AuthInfo Object
-	kAuthInfo *kubeconfig.AuthInfo
+	authInfo *kubeconfig.AuthInfo
 }
 
 // Manifests is a tuple of references to a Manifest (how do Identify, collect ,

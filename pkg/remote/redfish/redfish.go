@@ -20,13 +20,13 @@ type RedfishRemoteDirect struct {
 	RemoteURL url.URL
 
 	// ephemeral Host ID
-	EphemeralNodeId string
+	EphemeralNodeID string
 
 	// ISO URL
 	IsoPath string
 
 	// Redfish Client implementation
-	Api redfishApi.RedfishAPI
+	RedfishAPI redfishApi.RedfishAPI
 }
 
 // Top level function to handle Redfish remote direct
@@ -36,8 +36,8 @@ func (cfg RedfishRemoteDirect) DoRemoteDirect() error {
 	/* TODO: Add Authentication when redfish library supports it. */
 
 	/* Get system details */
-	systemID := cfg.EphemeralNodeId
-	system, _, err := cfg.Api.GetSystem(cfg.Context, systemID)
+	systemID := cfg.EphemeralNodeID
+	system, _, err := cfg.RedfishAPI.GetSystem(cfg.Context, systemID)
 	if err != nil {
 		return NewRedfishClientErrorf("Get System[%s] failed with err: %s", systemID, err.Error())
 	}
@@ -48,27 +48,27 @@ func (cfg RedfishRemoteDirect) DoRemoteDirect() error {
 	alog.Debugf("Ephemeral node managerID: '%s'", managerID)
 
 	/* Get manager's Cd or DVD virtual media ID */
-	vMediaID, vMediaType, err := GetVirtualMediaID(cfg.Context, cfg.Api, managerID)
+	vMediaID, vMediaType, err := GetVirtualMediaID(cfg.Context, cfg.RedfishAPI, managerID)
 	if err != nil {
 		return err
 	}
 	alog.Debugf("Ephemeral Node Virtual Media Id: '%s'", vMediaID)
 
 	/* Load ISO in manager's virtual media */
-	err = SetVirtualMedia(cfg.Context, cfg.Api, managerID, vMediaID, cfg.IsoPath)
+	err = SetVirtualMedia(cfg.Context, cfg.RedfishAPI, managerID, vMediaID, cfg.IsoPath)
 	if err != nil {
 		return err
 	}
 	alog.Debugf("Successfully loaded virtual media: '%s'", cfg.IsoPath)
 
 	/* Set system's bootsource to selected media */
-	err = SetSystemBootSourceForMediaType(cfg.Context, cfg.Api, systemID, vMediaType)
+	err = SetSystemBootSourceForMediaType(cfg.Context, cfg.RedfishAPI, systemID, vMediaType)
 	if err != nil {
 		return err
 	}
 
 	/* Reboot system */
-	err = RebootSystem(cfg.Context, cfg.Api, systemID)
+	err = RebootSystem(cfg.Context, cfg.RedfishAPI, systemID)
 	if err != nil {
 		return err
 	}
@@ -123,9 +123,9 @@ func NewRedfishRemoteDirectClient(ctx context.Context,
 	client := RedfishRemoteDirect{
 		Context:         ctx,
 		RemoteURL:       *parsedURL,
-		EphemeralNodeId: ephNodeID,
+		EphemeralNodeID: ephNodeID,
 		IsoPath:         isoPath,
-		Api:             api,
+		RedfishAPI:      api,
 	}
 
 	return client, nil

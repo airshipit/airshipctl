@@ -424,7 +424,7 @@ func TestNewDockerContainer(t *testing.T) {
 	testError := fmt.Errorf("image pull error")
 	type resultStruct struct {
 		tag      string
-		imageUrl string
+		imageURL string
 		id       string
 	}
 
@@ -446,7 +446,7 @@ func TestNewDockerContainer(t *testing.T) {
 			expectedErr: nil,
 			expectedResult: resultStruct{
 				tag:      "testTag",
-				imageUrl: "testPrefix/testImage:testTag",
+				imageURL: "testPrefix/testImage:testTag",
 				id:       "",
 			},
 		},
@@ -473,7 +473,7 @@ func TestNewDockerContainer(t *testing.T) {
 		} else {
 			actualResStruct = resultStruct{
 				tag:      actualRes.tag,
-				imageUrl: actualRes.imageUrl,
+				imageURL: actualRes.imageURL,
 				id:       actualRes.id,
 			}
 		}

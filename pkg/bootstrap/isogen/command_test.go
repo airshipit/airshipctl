@@ -21,7 +21,7 @@ type mockContainer struct {
 	runCommand       func() error
 	runCommandOutput func() (io.ReadCloser, error)
 	rmContainer      func() error
-	getId            func() string
+	getID            func() string
 }
 
 func (mc *mockContainer) ImagePull() error {
@@ -41,7 +41,7 @@ func (mc *mockContainer) RmContainer() error {
 }
 
 func (mc *mockContainer) GetId() string {
-	return mc.getId()
+	return mc.getID()
 }
 
 func TestBootstrapIso(t *testing.T) {
@@ -91,7 +91,7 @@ func TestBootstrapIso(t *testing.T) {
 		{
 			builder: &mockContainer{
 				runCommand: func() error { return nil },
-				getId:      func() string { return "TESTID" },
+				getID:      func() string { return "TESTID" },
 			},
 			cfg:         testCfg,
 			debug:       true,
@@ -101,7 +101,7 @@ func TestBootstrapIso(t *testing.T) {
 		{
 			builder: &mockContainer{
 				runCommand:  func() error { return nil },
-				getId:       func() string { return "TESTID" },
+				getID:       func() string { return "TESTID" },
 				rmContainer: func() error { return testErr },
 			},
 			cfg:         testCfg,

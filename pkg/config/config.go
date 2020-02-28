@@ -761,10 +761,10 @@ func (c *Cluster) PrettyString() string {
 }
 
 func (c *Cluster) KubeCluster() *clientcmdapi.Cluster {
-	return c.kCluster
+	return c.cluster
 }
 func (c *Cluster) SetKubeCluster(kc *clientcmdapi.Cluster) {
-	c.kCluster = kc
+	c.cluster = kc
 }
 
 // Context functions
@@ -774,7 +774,7 @@ func (c *Context) Equal(d *Context) bool {
 	}
 	return c.NameInKubeconf == d.NameInKubeconf &&
 		c.Manifest == d.Manifest &&
-		c.kContext == d.kContext
+		c.context == d.context
 }
 
 func (c *Context) String() string {
@@ -799,11 +799,11 @@ func (c *Context) PrettyString() string {
 }
 
 func (c *Context) KubeContext() *clientcmdapi.Context {
-	return c.kContext
+	return c.context
 }
 
 func (c *Context) SetKubeContext(kc *clientcmdapi.Context) {
-	c.kContext = kc
+	c.context = kc
 }
 
 func (c *Context) ClusterType() string {
@@ -817,7 +817,7 @@ func (c *AuthInfo) Equal(d *AuthInfo) bool {
 	if d == nil {
 		return c == d
 	}
-	return c.kAuthInfo == d.kAuthInfo
+	return c.authInfo == d.authInfo
 }
 
 func (c *AuthInfo) String() string {
@@ -830,10 +830,10 @@ func (c *AuthInfo) String() string {
 }
 
 func (c *AuthInfo) KubeAuthInfo() *clientcmdapi.AuthInfo {
-	return c.kAuthInfo
+	return c.authInfo
 }
 func (c *AuthInfo) SetKubeAuthInfo(kc *clientcmdapi.AuthInfo) {
-	c.kAuthInfo = kc
+	c.authInfo = kc
 }
 
 // Manifest functions

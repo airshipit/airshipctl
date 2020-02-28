@@ -66,7 +66,7 @@ func TestRedfishRemoteDirectInvalidSystemId(t *testing.T) {
 	systemID := "invalid-server"
 	localRDCfg := getDefaultRedfishRemoteDirectObj(t, m)
 
-	localRDCfg.EphemeralNodeId = systemID
+	localRDCfg.EphemeralNodeID = systemID
 
 	realErr := fmt.Errorf("%s system do not exist", systemID)
 	m.On("GetSystem", context.Background(), systemID).
@@ -252,7 +252,7 @@ func getDefaultRedfishRemoteDirectObj(t *testing.T, api redfishAPI.RedfishAPI) R
 
 	require.NoError(t, err)
 
-	rDCfg.Api = api
+	rDCfg.RedfishAPI = api
 
 	return rDCfg
 }

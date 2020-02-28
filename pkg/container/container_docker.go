@@ -76,7 +76,7 @@ type DockerClient interface {
 // DockerContainer docker container object wrapper
 type DockerContainer struct {
 	tag          string
-	imageUrl     string
+	imageURL     string
 	id           string
 	dockerClient DockerClient
 	ctx          *context.Context
@@ -108,7 +108,7 @@ func NewDockerContainer(ctx *context.Context, url string, cli DockerClient) (*Do
 
 	cnt := &DockerContainer{
 		tag:          t,
-		imageUrl:     url,
+		imageURL:     url,
 		id:           "",
 		dockerClient: cli,
 		ctx:          ctx,
@@ -134,7 +134,7 @@ func (c *DockerContainer) getCmd(cmd []string) ([]string, error) {
 		return cmd, nil
 	}
 
-	id, err := c.getImageId(c.imageUrl)
+	id, err := c.getImageId(c.imageURL)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +154,7 @@ func (c *DockerContainer) getConfig(
 	envVars []string,
 ) (container.Config, container.HostConfig) {
 	cCfg := container.Config{
-		Image:       c.imageUrl,
+		Image:       c.imageURL,
 		Cmd:         cmd,
 		AttachStdin: true,
 		OpenStdin:   true,
@@ -198,7 +198,7 @@ func (c *DockerContainer) GetId() string {
 func (c *DockerContainer) ImagePull() error {
 	// TODO (D. Ukov) add logic for searching among local images
 	// to avoid image download on each execution
-	resp, err := c.dockerClient.ImagePull(*c.ctx, c.imageUrl, types.ImagePullOptions{})
+	resp, err := c.dockerClient.ImagePull(*c.ctx, c.imageURL, types.ImagePullOptions{})
 	if err != nil {
 		return err
 	}

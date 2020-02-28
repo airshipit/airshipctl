@@ -47,7 +47,7 @@ func TestRunGetAuthInfo(t *testing.T) {
 		conf := DummyConfig()
 		secondAuthInfo := DummyAuthInfo()
 		secondUserName := "second_user"
-		secondAuthInfo.kAuthInfo.Username = secondUserName
+		secondAuthInfo.authInfo.Username = secondUserName
 		conf.AuthInfos[secondUserName] = secondAuthInfo
 
 		dummyAuthInfoOptions := DummyAuthInfoOptions()
@@ -194,7 +194,7 @@ func TestRunSetAuthInfo(t *testing.T) {
 		modified, err := RunSetAuthInfo(dummyAuthInfoOptions, conf, false)
 		assert.NoError(t, err)
 		assert.True(t, modified)
-		assert.Equal(t, dummyAuthInfoOptions.Password, conf.AuthInfos["dummy_user"].kAuthInfo.Password)
+		assert.Equal(t, dummyAuthInfoOptions.Password, conf.AuthInfos["dummy_user"].authInfo.Password)
 	})
 }
 
@@ -220,7 +220,7 @@ func TestRunSetCluster(t *testing.T) {
 		assert.True(t, modified)
 		assert.Equal(
 			t, "http://123.45.67.890",
-			conf.Clusters["dummy_cluster"].ClusterTypes["ephemeral"].kCluster.Server)
+			conf.Clusters["dummy_cluster"].ClusterTypes["ephemeral"].cluster.Server)
 	})
 }
 
@@ -244,7 +244,7 @@ func TestRunSetContext(t *testing.T) {
 		modified, err := RunSetContext(dummyContextOptions, conf, false)
 		assert.NoError(t, err)
 		assert.True(t, modified)
-		assert.Equal(t, "new_namespace", conf.Contexts["dummy_context"].kContext.Namespace)
+		assert.Equal(t, "new_namespace", conf.Contexts["dummy_context"].context.Namespace)
 	})
 }
 
