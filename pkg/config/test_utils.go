@@ -32,7 +32,7 @@ import (
 func DummyConfig() *Config {
 	conf := &Config{
 		Kind:       AirshipConfigKind,
-		APIVersion: AirshipConfigApiVersion,
+		APIVersion: AirshipConfigAPIVersion,
 		Clusters: map[string]*ClusterPurpose{
 			"dummy_cluster": DummyClusterPurpose(),
 		},

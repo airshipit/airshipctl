@@ -20,7 +20,7 @@ package config
 func NewConfig() *Config {
 	return &Config{
 		Kind:       AirshipConfigKind,
-		APIVersion: AirshipConfigApiVersion,
+		APIVersion: AirshipConfigAPIVersion,
 		Clusters:   make(map[string]*ClusterPurpose),
 		AuthInfos:  make(map[string]*AuthInfo),
 		Contexts: map[string]*Context{
