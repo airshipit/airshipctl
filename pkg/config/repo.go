@@ -32,8 +32,8 @@ func (c *RepoCheckout) Equal(s *RepoCheckout) bool {
 		c.RemoteRef == s.RemoteRef
 }
 
-func (r *RepoCheckout) String() string {
-	yaml, err := yaml.Marshal(&r)
+func (c *RepoCheckout) String() string {
+	yaml, err := yaml.Marshal(&c)
 	if err != nil {
 		return ""
 	}
@@ -73,8 +73,8 @@ func (auth *RepoAuth) Equal(s *RepoAuth) bool {
 		auth.Username == s.Username
 }
 
-func (r *RepoAuth) String() string {
-	yaml, err := yaml.Marshal(&r)
+func (auth *RepoAuth) String() string {
+	yaml, err := yaml.Marshal(&auth)
 	if err != nil {
 		return ""
 	}
@@ -124,28 +124,28 @@ func (repo *Repository) Equal(s *Repository) bool {
 		reflect.DeepEqual(s.CheckoutOptions, repo.CheckoutOptions)
 }
 
-func (r *Repository) String() string {
-	yaml, err := yaml.Marshal(&r)
+func (repo *Repository) String() string {
+	yaml, err := yaml.Marshal(&repo)
 	if err != nil {
 		return ""
 	}
 	return string(yaml)
 }
 
-func (spec *Repository) Validate() error {
-	if spec.URLString == "" {
+func (repo *Repository) Validate() error {
+	if repo.URLString == "" {
 		return ErrRepoSpecRequiresURL{}
 	}
 
-	if spec.Auth != nil {
-		err := spec.Auth.Validate()
+	if repo.Auth != nil {
+		err := repo.Auth.Validate()
 		if err != nil {
 			return err
 		}
 	}
 
-	if spec.CheckoutOptions != nil {
-		err := spec.CheckoutOptions.Validate()
+	if repo.CheckoutOptions != nil {
+		err := repo.CheckoutOptions.Validate()
 		if err != nil {
 			return err
 		}
