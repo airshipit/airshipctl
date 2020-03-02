@@ -10,6 +10,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- hosts: primary
-  roles:
-    - install-kubectl
+- name: install kubectl binary
+  shell: |
+    curl -sSLo /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.16.2/bin/linux/amd64/kubectl
+    chmod +x /usr/local/bin/kubectl
+  become: yes
+  args:
+    warn: false

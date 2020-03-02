@@ -86,6 +86,7 @@
         - airshipctl-systemwide-executable
         - airshipctl-test-configs
         - airshipctl-build-ephemeral-iso
+        - install-kubectl
         - airshipctl-deploy-ephemeral-node
       serve_dir: /srv/iso
       serve_port: 8099
