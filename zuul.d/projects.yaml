@@ -11,6 +11,9 @@
 # limitations under the License.
 
 - project:
+    vars:
+      rtd_project_name: airship-airshipctl
+      rtd_webhook_id: 112688
     check:
       jobs:
         - airship-airshipctl-build-docs
@@ -27,6 +30,6 @@
         - airship-airshipctl-gate-test
     post:
       jobs:
-        - airship-airshipctl-publish-docs
+        - trigger-readthedocs-webhook
         - airship-airshipctl-publish-image
         - airship-airshipctl-upload-git-mirror
