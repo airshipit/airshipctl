@@ -127,6 +127,11 @@ endif
 print-docker-image-tag:
 	@echo "$(DOCKER_IMAGE)"
 
+.PHONY: docker-image-test-suite
+docker-image-test-suite: DOCKER_MAKE_TARGET = "lint cover update-golden check-git-diff"
+docker-image-test-suite: DOCKER_TARGET_STAGE = builder
+docker-image-test-suite: docker-image
+
 .PHONY: docker-image-unit-tests
 docker-image-unit-tests: DOCKER_MAKE_TARGET = cover
 docker-image-unit-tests: DOCKER_TARGET_STAGE = builder
@@ -176,3 +181,8 @@ update-golden: unit-tests
 .PHONY: delete-golden
 delete-golden:
 	@find . -type f -name "*.golden" -delete
+
+# Used by gates after unit-tests and update-golden targets to ensure no files are deleted.
+.PHONY: check-git-diff
+check-git-diff:
+	@./tools/git_diff_check

@@ -1,0 +1,34 @@
+#!/bin/bash
+
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
+# Update git index
+git update-index -q --ignore-submodules --refresh
+
+# Evaluate git files for difference, if found print message and fail.
+git diff-files --quiet --ignore-submodules
+if [ $? -ne 0 ]
+then
+    echo "git diff found modified test cases, please run make update-golden"
+    exit 1
+fi
+
+# Evaluate git index for differences, if found print message and fail.
+git diff-index --cached --quiet --ignore-submodules HEAD --
+if [ $? -ne 0 ]
+then
+    echo "git diff found modified test cases, please run make update-golden"
+    exit 1
+fi
+
+echo "no git diff detected, make target completed successfully"

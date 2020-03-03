@@ -11,7 +11,7 @@ RUN go mod download
 
 COPY . /usr/src/airshipctl/
 ARG MAKE_TARGET=build
-RUN make ${MAKE_TARGET}
+RUN for target in $MAKE_TARGET; do make $target; done
 
 FROM ${RELEASE_IMAGE} as release
 COPY --from=builder /usr/src/airshipctl/bin/airshipctl /usr/local/bin/airshipctl

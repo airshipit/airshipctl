@@ -12,16 +12,9 @@
 
 - hosts: primary
   tasks:
-    - name: Run Linter
+    - name: Run Linter, Unit Tests, Verify Golden Testdata
       block:
-        - name: "make docker-image-lint"
+        - name: "make docker-image-test-suite"
           make:
             chdir: "{{ zuul.project.src_dir }}"
-            target: docker-image-lint
-
-    - name: Run Unit Tests
-      block:
-        - name: "make docker-image-unit-tests"
-          make:
-            chdir: "{{ zuul.project.src_dir }}"
-            target: docker-image-unit-tests
+            target: docker-image-test-suite
