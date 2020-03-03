@@ -38,6 +38,7 @@
       append: yes
   - name: Reset ssh connection to allow user changes to affect "{{ ansible_user }}"
     meta: reset_connection
+    ignore_errors: true
   - name: Start libvirtd
     service:
       name: libvirtd
