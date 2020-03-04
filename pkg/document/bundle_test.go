@@ -6,9 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"sigs.k8s.io/kustomize/v3/pkg/gvk"
-	"sigs.k8s.io/kustomize/v3/pkg/types"
 
+	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
@@ -57,8 +56,7 @@ func TestBundleDocumentFiltering(t *testing.T) {
 		// Select* tests test the Kustomize selector, which requires we build Kustomize
 		// selector objects which is useful for advanced searches that
 		// need to stack filters
-		g := gvk.Gvk{Group: "apps", Version: "v1", Kind: "Deployment"}
-		selector := types.Selector{Gvk: g}
+		selector := document.NewSelector().ByGvk("apps", "v1", "Deployment")
 		docs, err := bundle.Select(selector)
 		require.NoError(err, "Error trying to select resources")
 
@@ -67,7 +65,7 @@ func TestBundleDocumentFiltering(t *testing.T) {
 
 	t.Run("SelectAnnotations", func(t *testing.T) {
 		// Find documents with a particular annotation, namely airshipit.org/clustertype=ephemeral
-		selector := types.Selector{AnnotationSelector: "airshipit.org/clustertype=ephemeral"}
+		selector := document.NewSelector().ByAnnotation("airshipit.org/clustertype=ephemeral")
 		docs, err := bundle.Select(selector)
 		require.NoError(err, "Error trying to select annotated resources")
 
@@ -78,10 +76,46 @@ func TestBundleDocumentFiltering(t *testing.T) {
 		// Find documents with a particular label, namely app=workflow-controller
 		// note how this will only find resources labeled at the top most level (metadata.labels)
 		// and not spec templates with this label (spec.template.metadata.labels)
-		selector := types.Selector{LabelSelector: "app=workflow-controller"}
+		selector := document.NewSelector().ByLabel("app=workflow-controller")
 		docs, err := bundle.Select(selector)
 		require.NoError(err, "Error trying to select labeled resources")
+
 		assert.Len(docs, 1, "SelectLabels returned wrong number of resources")
+	})
+
+	t.Run("SelectByLabelAndName", func(t *testing.T) {
+		// Find documents with a particular label and name,
+		// namely app=workflow-controller and name workflow-controller
+		selector := document.NewSelector().ByName("workflow-controller").ByLabel("app=workflow-controller")
+		docs, err := bundle.Select(selector)
+		require.NoError(err, "Error trying to select labeled with name resources")
+
+		assert.Len(docs, 1, "SelectByLabelAndName returned wrong number of resources")
+	})
+
+	t.Run("SelectByTwoLabels", func(t *testing.T) {
+		// Find documents with two particular label, namely app=workflow-controller arbitrary-label=some-label
+		selector := document.NewSelector().
+			ByLabel("app=workflow-controller").
+			ByLabel("arbitrary-label=some-label")
+		docs, err := bundle.Select(selector)
+		require.NoError(err, "Error trying to select by two labels")
+
+		assert.Len(docs, 1, "SelectByTwoLabels returned wrong number of resources")
+		assert.Equal("workflow-controller", docs[0].GetName())
+	})
+
+	t.Run("SelectByTwoAnnotations", func(t *testing.T) {
+		// Find documents with two particular annotations,
+		// namely app=workflow-controller and name workflow-controller
+		selector := document.NewSelector().
+			ByAnnotation("airshipit.org/clustertype=target").
+			ByAnnotation("airshipit.org/random-payload=random")
+		docs, err := bundle.Select(selector)
+		require.NoError(err, "Error trying to select by two annotations")
+
+		assert.Len(docs, 1, "SelectByTwoAnnotations returned wrong number of resources")
+		assert.Equal("argo-ui", docs[0].GetName())
 	})
 
 	t.Run("Write", func(t *testing.T) {

@@ -2,7 +2,6 @@ package initinfra
 
 import (
 	"sigs.k8s.io/kustomize/v3/pkg/fs"
-	"sigs.k8s.io/kustomize/v3/pkg/types"
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
@@ -71,14 +70,18 @@ func (infra *Infra) Deploy() error {
 		return err
 	}
 
-	filterSelector := types.Selector{
-		LabelSelector: document.EphemeralClusterSelector,
-	}
+	ls := document.EphemeralClusterSelector
+	selector := document.NewSelector().ByLabel(ls)
 
 	// Get documents that are annotated to belong to initinfra
-	docs, err := b.Select(filterSelector)
+	docs, err := b.Select(selector)
 	if err != nil {
 		return err
+	}
+	if len(docs) == 0 {
+		return document.ErrDocNotFound{
+			Selector: ls,
+		}
 	}
 
 	// Label every document indicating that it was deployed by initinfra module for further reference
