@@ -12,6 +12,8 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
+
+	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 // DockerClient interface that represents abstract Docker client object
@@ -196,8 +198,14 @@ func (c *DockerContainer) GetID() string {
 
 // ImagePull downloads image for container
 func (c *DockerContainer) ImagePull() error {
-	// TODO (D. Ukov) add logic for searching among local images
-	// to avoid image download on each execution
+	// skip image download if already downloaded
+	// ImageInspectWithRaw returns err when image not found local and
+	//     in this case it will proceed for ImagePull.
+	_, _, err := c.dockerClient.ImageInspectWithRaw(*c.ctx, c.imageURL)
+	if err == nil {
+		log.Debug("Image Already exists, skip download")
+		return nil
+	}
 	resp, err := c.dockerClient.ImagePull(*c.ctx, c.imageURL, types.ImagePullOptions{})
 	if err != nil {
 		return err
