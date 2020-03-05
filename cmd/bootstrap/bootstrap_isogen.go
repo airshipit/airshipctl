@@ -8,12 +8,12 @@ import (
 )
 
 // NewISOGenCommand creates a new command for ISO image creation
-func NewISOGenCommand(parent *cobra.Command, rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewISOGenCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	imageGen := &cobra.Command{
 		Use:   "isogen",
 		Short: "Generate bootstrap ISO image",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return isogen.GenerateBootstrapIso(rootSettings, args)
+			return isogen.GenerateBootstrapIso(rootSettings)
 		},
 	}
 

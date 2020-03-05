@@ -218,7 +218,7 @@ func (c *DockerContainer) RunCommand(
 	volumeMounts []string,
 	envVars []string,
 	// TODO (D. Ukov) add debug logic
-	debug bool,
+	_ bool,
 ) error {
 	realCmd, err := c.getCmd(cmd)
 	if err != nil {

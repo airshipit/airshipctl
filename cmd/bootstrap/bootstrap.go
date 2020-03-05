@@ -13,7 +13,7 @@ func NewBootstrapCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Co
 		Short: "Bootstrap ephemeral Kubernetes cluster",
 	}
 
-	isoGenCmd := NewISOGenCommand(bootstrapRootCmd, rootSettings)
+	isoGenCmd := NewISOGenCommand(rootSettings)
 	bootstrapRootCmd.AddCommand(isoGenCmd)
 
 	remoteDirectCmd := NewRemoteDirectCommand(rootSettings)

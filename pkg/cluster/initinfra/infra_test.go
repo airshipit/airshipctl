@@ -26,18 +26,6 @@ type TestClient struct {
 func (tc TestClient) ClientSet() kubernetes.Interface { return tc.MockClientset() }
 func (tc TestClient) Kubectl() kubectl.Interface      { return tc.MockKubectl() }
 
-type TestKubectl struct {
-	MockApply        func() error
-	MockApplyOptions func() (*kubectl.ApplyOptions, error)
-}
-
-func (tk TestKubectl) Apply(docs []document.Document, ao *kubectl.ApplyOptions) error {
-	return tk.MockApply()
-}
-func (tk TestKubectl) ApplyOptions() (*kubectl.ApplyOptions, error) {
-	return tk.MockApplyOptions()
-}
-
 const (
 	kubeconfigPath    = "testdata/kubeconfig.yaml"
 	filenameRC        = "testdata/replicationcontroller.yaml"

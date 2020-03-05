@@ -46,10 +46,7 @@ func IsIDInList(idRefList []redfishClient.IdRef, id string) bool {
 
 // This function walks through the list of manager's virtual media resources
 // and gets the ID of virtualmedia which has type "CD" or "DVD"
-func GetVirtualMediaID(ctx context.Context,
-	api redfishApi.RedfishAPI,
-	managerID string,
-) (string, string, error) {
+func GetVirtualMediaID() (string, string, error) {
 	// TODO: Sushy emulator has a bug which sends 'virtualMedia.inserted' field as
 	//       string instead of a boolean which causes the redfish client to fail
 	//       while unmarshalling this field.

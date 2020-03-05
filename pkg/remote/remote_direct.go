@@ -15,7 +15,6 @@ import (
 
 const (
 	AirshipRemoteTypeRedfish string = "redfish"
-	AirshipRemoteTypeSmash   string = "smash"
 	AirshipHostKind          string = "BareMetalHost"
 )
 

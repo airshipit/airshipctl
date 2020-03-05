@@ -21,7 +21,7 @@ const (
 )
 
 // GenerateBootstrapIso will generate data for cloud init and start ISO builder container
-func GenerateBootstrapIso(settings *environment.AirshipCTLSettings, args []string) error {
+func GenerateBootstrapIso(settings *environment.AirshipCTLSettings) error {
 	ctx := context.Background()
 
 	globalConf := settings.Config()

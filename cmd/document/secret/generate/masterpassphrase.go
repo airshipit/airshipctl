@@ -5,12 +5,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/secret"
 )
 
 // NewGenerateMasterPassphraseCommand creates a new command for generating secret information
-func NewGenerateMasterPassphraseCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewGenerateMasterPassphraseCommand() *cobra.Command {
 	masterPassphraseCmd := &cobra.Command{
 		Use: "masterpassphrase",
 		// TODO(howell): Make this more expressive

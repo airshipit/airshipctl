@@ -63,20 +63,6 @@ func RunTest(t *testing.T, test *CmdTest) {
 	}
 }
 
-// ReadFixtureBytes is a convenience function for opening a test fixture
-func ReadFixtureBytes(t *testing.T, filename string) []byte {
-	t.Helper()
-	fixtureData, err := ioutil.ReadFile(filename)
-	require.NoErrorf(t, err, "Unexpected error while reading fixture at %s", filename)
-	return fixtureData
-}
-
-// ReadFixtureString is a convenience function for opening a test fixture
-func ReadFixtureString(t *testing.T, filename string) string {
-	t.Helper()
-	return string(ReadFixtureBytes(t, filename))
-}
-
 func updateGolden(t *testing.T, test *CmdTest, actual []byte) {
 	t.Helper()
 	goldenDir := filepath.Join(testdataDir, t.Name()+goldenDirSuffix)

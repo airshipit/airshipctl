@@ -27,12 +27,12 @@ func (mc mockConn) Write(b []byte) (n int, err error) {
 	copy(mc.WData, b)
 	return len(b), nil
 }
-func (mc mockConn) Close() error                       { return nil }
-func (mc mockConn) LocalAddr() net.Addr                { return nil }
-func (mc mockConn) RemoteAddr() net.Addr               { return nil }
-func (mc mockConn) SetDeadline(t time.Time) error      { return nil }
-func (mc mockConn) SetReadDeadline(t time.Time) error  { return nil }
-func (mc mockConn) SetWriteDeadline(t time.Time) error { return nil }
+func (mc mockConn) Close() error                     { return nil }
+func (mc mockConn) LocalAddr() net.Addr              { return nil }
+func (mc mockConn) RemoteAddr() net.Addr             { return nil }
+func (mc mockConn) SetDeadline(time.Time) error      { return nil }
+func (mc mockConn) SetReadDeadline(time.Time) error  { return nil }
+func (mc mockConn) SetWriteDeadline(time.Time) error { return nil }
 
 type mockDockerClient struct {
 	imageInspectWithRaw func() (types.ImageInspect, []byte, error)

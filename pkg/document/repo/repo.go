@@ -17,18 +17,9 @@ import (
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
-const (
-	SSHAuth   = "ssh-key"
-	SSHPass   = "ssh-pass"
-	HTTPBasic = "http-basic"
-
-	DefaultRemoteName = "origin"
-)
-
 var (
-	ErrNoOpenRepo              = errors.New("no open repository is stored")
-	ErrRemoteRefNotImplemented = errors.New("remoteref is not yet implemented")
-	ErrCantParseURL            = errors.New("could not get target directory from url")
+	ErrNoOpenRepo   = errors.New("no open repository is stored")
+	ErrCantParseURL = errors.New("could not get target directory from url")
 )
 
 type OptionsBuilder interface {

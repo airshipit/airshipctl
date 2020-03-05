@@ -48,7 +48,7 @@ func (cfg RemoteDirect) DoRemoteDirect() error {
 	alog.Debugf("Ephemeral node managerID: '%s'", managerID)
 
 	/* Get manager's Cd or DVD virtual media ID */
-	vMediaID, vMediaType, err := GetVirtualMediaID(cfg.Context, cfg.RedfishAPI, managerID)
+	vMediaID, vMediaType, err := GetVirtualMediaID()
 	if err != nil {
 		return err
 	}

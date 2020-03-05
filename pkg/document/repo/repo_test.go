@@ -27,13 +27,13 @@ type mockBuilder struct {
 func (md mockBuilder) ToAuth() (transport.AuthMethod, error) {
 	return md.AuthMethod, md.AuthError
 }
-func (md mockBuilder) ToCloneOptions(auth transport.AuthMethod) *git.CloneOptions {
+func (md mockBuilder) ToCloneOptions(transport.AuthMethod) *git.CloneOptions {
 	return md.CloneOptions
 }
-func (md mockBuilder) ToCheckoutOptions(force bool) *git.CheckoutOptions {
+func (md mockBuilder) ToCheckoutOptions(bool) *git.CheckoutOptions {
 	return md.CheckoutOptions
 }
-func (md mockBuilder) ToFetchOptions(auth transport.AuthMethod) *git.FetchOptions {
+func (md mockBuilder) ToFetchOptions(transport.AuthMethod) *git.FetchOptions {
 	return md.FetchOptions
 }
 func (md mockBuilder) URL() string { return md.URLString }

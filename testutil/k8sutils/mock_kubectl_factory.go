@@ -49,7 +49,7 @@ func (f *MockKubectlFactory) ToDiscoveryClient() (discovery.CachedDiscoveryInter
 }
 func (f *MockKubectlFactory) DynamicClient() (dynamic.Interface, error) { return f.MockDynamicClient() }
 func (f *MockKubectlFactory) OpenAPISchema() (openapi.Resources, error) { return f.MockOpenAPISchema() }
-func (f *MockKubectlFactory) Validator(validate bool) (validation.Schema, error) {
+func (f *MockKubectlFactory) Validator(bool) (validation.Schema, error) {
 	return f.MockValidator()
 }
 func (f *MockKubectlFactory) ToRESTMapper() (meta.RESTMapper, error) { return f.MockToRESTMapper() }

@@ -28,8 +28,8 @@ type MockFileSystem struct {
 	document.FileSystem
 }
 
-func (fsys MockFileSystem) RemoveAll(name string) error { return fsys.MockRemoveAll() }
-func (fsys MockFileSystem) TempFile(bufferDir string, prefix string) (document.File, error) {
+func (fsys MockFileSystem) RemoveAll(string) error { return fsys.MockRemoveAll() }
+func (fsys MockFileSystem) TempFile(string, string) (document.File, error) {
 	return fsys.MockTempFile()
 }
 
