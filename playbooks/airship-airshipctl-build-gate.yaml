@@ -18,6 +18,11 @@
     - name: read ip map
       include_vars:
         file: vars/airship-ipam.yaml
+
+    - name: docker install
+      include_role:
+        name: docker-install
+
     - name: deploy-gate
       include_role:
         name: airship-libvirt-gate
