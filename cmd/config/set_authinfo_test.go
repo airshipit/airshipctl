@@ -86,6 +86,25 @@ func initInputConfig(t *testing.T) (given *config.Config, cleanup func(*testing.
 	return given, givenCleanup
 }
 
+func (test setAuthInfoTest) run(t *testing.T) {
+	settings := &environment.AirshipCTLSettings{}
+	settings.SetConfig(test.inputConfig)
+	test.cmdTest.Cmd = NewCmdConfigSetAuthInfo(settings)
+	testutil.RunTest(t, test.cmdTest)
+
+	afterRunConf := settings.Config()
+	// Find the AuthInfo Created or Modified
+	afterRunAuthInfo, err := afterRunConf.GetAuthInfo(test.userName)
+	require.NoError(t, err)
+	require.NotNil(t, afterRunAuthInfo)
+
+	afterKauthinfo := afterRunAuthInfo.KubeAuthInfo()
+	require.NotNil(t, afterKauthinfo)
+
+	assert.EqualValues(t, afterKauthinfo.Username, testUsername)
+	assert.EqualValues(t, afterKauthinfo.Password, test.userPassword)
+}
+
 func TestSetAuthInfo(t *testing.T) {
 	given, cleanup := config.InitConfig(t)
 	defer cleanup(t)
@@ -134,23 +153,4 @@ func TestSetAuthInfo(t *testing.T) {
 		}
 		test.run(t)
 	}
-}
-
-func (test setAuthInfoTest) run(t *testing.T) {
-	settings := &environment.AirshipCTLSettings{}
-	settings.SetConfig(test.inputConfig)
-	test.cmdTest.Cmd = NewCmdConfigSetAuthInfo(settings)
-	testutil.RunTest(t, test.cmdTest)
-
-	afterRunConf := settings.Config()
-	// Find the AuthInfo Created or Modified
-	afterRunAuthInfo, err := afterRunConf.GetAuthInfo(test.userName)
-	require.NoError(t, err)
-	require.NotNil(t, afterRunAuthInfo)
-
-	afterKauthinfo := afterRunAuthInfo.KubeAuthInfo()
-	require.NotNil(t, afterKauthinfo)
-
-	assert.EqualValues(t, afterKauthinfo.Username, testUsername)
-	assert.EqualValues(t, afterKauthinfo.Password, test.userPassword)
 }
