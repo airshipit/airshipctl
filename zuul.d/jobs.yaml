@@ -11,6 +11,11 @@
 # limitations under the License.
 
 - job:
+    name: airship-airshipctl-roles-test
+    run: tests/ansible/role-test-runner.yaml
+    nodeset: airship-airshipctl-single-node
+
+- job:
     name: airship-airshipctl-build-docs
     nodeset: airship-airshipctl-single-node
     run: playbooks/airship-airshipctl-build-docs.yaml

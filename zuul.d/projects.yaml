@@ -16,6 +16,9 @@
       rtd_webhook_id: 112688
     check:
       jobs:
+        - airship-airshipctl-roles-test:
+            files:
+              - "roles/*"
         - airship-airshipctl-build-docs
         - airship-airshipctl-lint-unit
         - airship-airshipctl-build-image
