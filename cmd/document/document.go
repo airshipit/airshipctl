@@ -3,7 +3,6 @@ package document
 import (
 	"github.com/spf13/cobra"
 
-	"opendev.org/airship/airshipctl/cmd/document/secret"
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
@@ -15,7 +14,6 @@ func NewDocumentCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Com
 	}
 
 	documentRootCmd.AddCommand(NewDocumentPullCommand(rootSettings))
-	documentRootCmd.AddCommand(secret.NewSecretCommand())
 	documentRootCmd.AddCommand(NewRenderCommand(rootSettings))
 
 	return documentRootCmd

@@ -7,7 +7,6 @@ Available Commands:
   help        Help about any command
   pull        pulls documents from remote git repository
   render      Render documents from model
-  secret      manages secrets
 
 Flags:
   -h, --help   help for document

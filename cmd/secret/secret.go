@@ -3,7 +3,7 @@ package secret
 import (
 	"github.com/spf13/cobra"
 
-	"opendev.org/airship/airshipctl/cmd/document/secret/generate"
+	"opendev.org/airship/airshipctl/cmd/secret/generate"
 )
 
 // NewSecretCommand creates a new command for managing airshipctl secrets
