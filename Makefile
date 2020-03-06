@@ -82,6 +82,12 @@ lint: $(LINTER)
 	@echo "Performing linting step..."
 	@./tools/whitespace_linter
 	@./$(LINTER) run --config $(LINTER_CONFIG)
+	@# NOTE(howell): golangci-lint uses and embedded golint, but if we use it, it
+	@# will cause gate failures. For now, we'll install golint alongside
+	@# golangci-lint. Once all of golint's suggestions have been fulfilled, we'll
+	@# remove this and simply use the golint that's embedded in golangci-lint.
+	@go install golang.org/x/lint/golint
+	@golint ./...
 	@echo "Linting completed successfully"
 
 .PHONY: tidy
