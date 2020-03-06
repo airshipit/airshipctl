@@ -7,7 +7,6 @@ import (
 	"sigs.k8s.io/kustomize/v3/k8sdeps/kunstruct"
 	"sigs.k8s.io/kustomize/v3/k8sdeps/transformer"
 	"sigs.k8s.io/kustomize/v3/k8sdeps/validator"
-	"sigs.k8s.io/kustomize/v3/pkg/fs"
 	"sigs.k8s.io/kustomize/v3/pkg/loader"
 	"sigs.k8s.io/kustomize/v3/pkg/plugins"
 	"sigs.k8s.io/kustomize/v3/pkg/resmap"
@@ -37,7 +36,7 @@ type KustomizeBuildOptions struct {
 type BundleFactory struct {
 	KustomizeBuildOptions
 	resmap.ResMap
-	fs.FileSystem
+	FileSystem
 }
 
 // Bundle interface provides the specification for a bundle implementation
@@ -47,8 +46,8 @@ type Bundle interface {
 	SetKustomizeResourceMap(resmap.ResMap) error
 	GetKustomizeBuildOptions() KustomizeBuildOptions
 	SetKustomizeBuildOptions(KustomizeBuildOptions) error
-	SetFileSystem(fs.FileSystem) error
-	GetFileSystem() fs.FileSystem
+	SetFileSystem(FileSystem) error
+	GetFileSystem() FileSystem
 	Select(selector Selector) ([]Document, error)
 	GetByGvk(string, string, string) ([]Document, error)
 	GetByName(string) (Document, error)
@@ -60,7 +59,7 @@ type Bundle interface {
 // NewBundle is a convenience function to create a new bundle
 // Over time, it will evolve to support allowing more control
 // for kustomize plugins
-func NewBundle(fSys fs.FileSystem, kustomizePath string, outputPath string) (bundle Bundle, err error) {
+func NewBundle(fSys FileSystem, kustomizePath string, outputPath string) (bundle Bundle, err error) {
 	var options = KustomizeBuildOptions{
 		KustomizationPath: kustomizePath,
 		OutputPath:        outputPath,
@@ -141,13 +140,13 @@ func (b *BundleFactory) SetKustomizeBuildOptions(k KustomizeBuildOptions) error 
 }
 
 // SetFileSystem sets the filesystem that will be used by this bundle
-func (b *BundleFactory) SetFileSystem(fSys fs.FileSystem) error {
+func (b *BundleFactory) SetFileSystem(fSys FileSystem) error {
 	b.FileSystem = fSys
 	return nil
 }
 
 // GetFileSystem gets the filesystem that will be used by this bundle
-func (b *BundleFactory) GetFileSystem() fs.FileSystem {
+func (b *BundleFactory) GetFileSystem() FileSystem {
 	return b.FileSystem
 }
 

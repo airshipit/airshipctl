@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"k8s.io/client-go/kubernetes"
-	"sigs.k8s.io/kustomize/v3/pkg/fs"
 
 	"opendev.org/airship/airshipctl/pkg/cluster/initinfra"
 	"opendev.org/airship/airshipctl/pkg/document"
@@ -65,7 +64,7 @@ func TestDeploy(t *testing.T) {
 	infra.ClusterType = "ephemeral"
 	infra.DryRun = true
 
-	infra.FileSystem = kubectl.Buffer{FileSystem: fs.MakeRealFS()}
+	infra.FileSystem = document.NewDocumentFs()
 
 	kctl := kubectl.NewKubectl(tf)
 	tc := TestClient{

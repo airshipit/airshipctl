@@ -5,7 +5,6 @@ import (
 
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
-	"sigs.k8s.io/kustomize/v3/pkg/fs"
 
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/log"
@@ -17,7 +16,7 @@ import (
 type Kubectl struct {
 	cmdutil.Factory
 	genericclioptions.IOStreams
-	FileSystem
+	document.FileSystem
 	// Directory to buffer documents before passing them to kubectl commands
 	// default is empty, this means that /tmp dir will be used
 	bufferDir string
@@ -33,7 +32,7 @@ func NewKubectl(f cmdutil.Factory) *Kubectl {
 			Out:    os.Stdout,
 			ErrOut: os.Stderr,
 		},
-		FileSystem: Buffer{FileSystem: fs.MakeRealFS()},
+		FileSystem: document.NewDocumentFs(),
 	}
 }
 
@@ -49,7 +48,7 @@ func (kubectl *Kubectl) Apply(docs []document.Document, ao *ApplyOptions) error 
 		return err
 	}
 
-	defer func(f File) {
+	defer func(f document.File) {
 		fName := f.Name()
 		dErr := kubectl.RemoveAll(fName)
 		if dErr != nil {

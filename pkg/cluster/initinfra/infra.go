@@ -1,18 +1,15 @@
 package initinfra
 
 import (
-	"sigs.k8s.io/kustomize/v3/pkg/fs"
-
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/k8s/client"
-	"opendev.org/airship/airshipctl/pkg/k8s/kubectl"
 )
 
 // Infra is an abstraction used to initialize base infrastructure
 type Infra struct {
-	FileSystem   fs.FileSystem
+	FileSystem   document.FileSystem
 	RootSettings *environment.AirshipCTLSettings
 	Client       client.Interface
 
@@ -30,7 +27,7 @@ func NewInfra(rs *environment.AirshipCTLSettings) *Infra {
 
 // Run intinfra subcommand logic
 func (infra *Infra) Run() error {
-	infra.FileSystem = kubectl.Buffer{FileSystem: fs.MakeRealFS()}
+	infra.FileSystem = document.NewDocumentFs()
 	var err error
 	infra.Client, err = client.NewClient(infra.RootSettings)
 	if err != nil {

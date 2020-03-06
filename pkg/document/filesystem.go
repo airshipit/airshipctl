@@ -1,4 +1,4 @@
-package kubectl
+package document
 
 import (
 	"io/ioutil"
@@ -18,12 +18,17 @@ type FileSystem interface {
 	TempFile(string, string) (File, error)
 }
 
-// Buffer is adaptor to TempFile
-type Buffer struct {
+// DocumentFs is adaptor to TempFile
+type DocumentFs struct {
 	fs.FileSystem
 }
 
+// NewDocumentFs returns an instalce of DocumentFs
+func NewDocumentFs() FileSystem {
+	return &DocumentFs{FileSystem: fs.MakeRealFS()}
+}
+
 // TempFile creates file in temporary filesystem, at default os.TempDir
-func (b Buffer) TempFile(tmpDir string, prefix string) (File, error) {
+func (dfs DocumentFs) TempFile(tmpDir string, prefix string) (File, error) {
 	return ioutil.TempFile(tmpDir, prefix)
 }
