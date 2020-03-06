@@ -39,7 +39,6 @@ func (infra *Infra) Run() error {
 // Deploy method deploys documents
 func (infra *Infra) Deploy() error {
 	kctl := infra.Client.Kubectl()
-	var err error
 	ao, err := kctl.ApplyOptions()
 	if err != nil {
 		return err
@@ -56,29 +55,23 @@ func (infra *Infra) Deploy() error {
 		return err
 	}
 
-	var manifest *config.Manifest
-	manifest, err = globalConf.CurrentContextManifest()
+	kustomizePath, err := globalConf.CurrentContextEntryPoint(infra.ClusterType, config.Initinfra)
 	if err != nil {
 		return err
 	}
 
-	b, err := document.NewBundle(infra.FileSystem, manifest.TargetPath, "")
+	b, err := document.NewBundleByPath(kustomizePath)
 	if err != nil {
 		return err
 	}
 
-	ls := document.EphemeralClusterSelector
-	selector := document.NewSelector().ByLabel(ls)
-
-	// Get documents that are annotated to belong to initinfra
-	docs, err := b.Select(selector)
+	// TODO (kkalynovskyi) Add Selector that would filter by label indicating wether to deploy it to k8s
+	docs, err := b.GetAllDocuments()
 	if err != nil {
 		return err
 	}
 	if len(docs) == 0 {
-		return document.ErrDocNotFound{
-			Selector: selector,
-		}
+		return document.ErrDocNotFound{}
 	}
 
 	// Label every document indicating that it was deployed by initinfra module for further reference

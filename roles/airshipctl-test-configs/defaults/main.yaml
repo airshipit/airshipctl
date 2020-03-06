@@ -1,8 +1,6 @@
 airship_config_iso_gen_target_path: /srv/iso
 airship_config_manifest_directory: /tmp/airship
 airship_config_primary_repo_url: dummy.url.com
-airship_config_primary_repo_auth_type: ssh-key
-airship_config_primary_repo_key_path: ""
 airship_config_ephemeral_ip: "10.23.25.101"
 airship_config_iso_builder_docker_image: quay.io/airshipit/isogen:latest
 airship_config_iso_port: 8099

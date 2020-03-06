@@ -90,15 +90,17 @@ func DummyCluster() *config.Cluster {
 func DummyManifest() *config.Manifest {
 	m := config.NewManifest()
 	// Repositories is the map of repository adddressable by a name
-	m.Repository = DummyRepository()
+	m.Repositories = map[string]*config.Repository{"primary": DummyRepository()}
+	m.PrimaryRepositoryName = "primary"
 	m.TargetPath = "/var/tmp/"
+	m.SubPath = "manifests/site/test-site"
 	return m
 }
 
 // DummyRepository, utility function used for tests
 func DummyRepository() *config.Repository {
 	return &config.Repository{
-		URLString: "http://dummy.url.com",
+		URLString: "http://dummy.url.com/manifests.git",
 		CheckoutOptions: &config.RepoCheckout{
 			Tag:           "v1.0.1",
 			ForceCheckout: false,

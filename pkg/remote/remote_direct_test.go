@@ -14,6 +14,7 @@ import (
 )
 
 func initSettings(t *testing.T, rd *config.RemoteDirect, testdata string) *environment.AirshipCTLSettings {
+	t.Helper()
 	settings := &environment.AirshipCTLSettings{}
 	settings.SetConfig(testutil.DummyConfig())
 	bi, err := settings.Config().CurrentContextBootstrapInfo()
@@ -36,7 +37,6 @@ func TestUnknownRemoteType(t *testing.T) {
 	)
 
 	err := DoRemoteDirect(s)
-
 	_, ok := err.(*GenericError)
 	assert.True(t, ok)
 }
@@ -52,7 +52,6 @@ func TestRedfishRemoteDirectWithEmptyURL(t *testing.T) {
 	)
 
 	err := DoRemoteDirect(s)
-
 	_, ok := err.(redfish.ErrRedfishMissingConfig)
 	assert.True(t, ok)
 }

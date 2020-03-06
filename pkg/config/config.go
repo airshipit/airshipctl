@@ -21,15 +21,15 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
 
-	"sigs.k8s.io/yaml"
-
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+	"sigs.k8s.io/yaml"
 
 	"opendev.org/airship/airshipctl/pkg/util"
 )
@@ -634,6 +634,28 @@ func (c *Config) CurrentContextManifest() (*Manifest, error) {
 	return c.Manifests[currentContext.Manifest], nil
 }
 
+// CurrentContextEntryPoint returns path to build bundle based on clusterType and phase
+// example CurrentContextEntryPoint("ephemeral", "initinfra")
+func (c *Config) CurrentContextEntryPoint(clusterType string, phase string) (string, error) {
+	err := ValidClusterType(clusterType)
+	if err != nil {
+		return "", err
+	}
+	ccm, err := c.CurrentContextManifest()
+	if err != nil {
+		return "", err
+	}
+	_, exists := ccm.Repositories[ccm.PrimaryRepositoryName]
+	if !exists {
+		return "", ErrMissingPrimaryRepo{}
+	}
+	return path.Join(
+		ccm.TargetPath,
+		ccm.SubPath,
+		clusterType,
+		phase), nil
+}
+
 // Credential or AuthInfo related methods
 func (c *Config) GetAuthInfo(aiName string) (*AuthInfo, error) {
 	authinfo, exists := c.AuthInfos[aiName]
@@ -845,9 +867,8 @@ func (m *Manifest) Equal(n *Manifest) bool {
 	if n == nil {
 		return n == m
 	}
-	repositoryEq := reflect.DeepEqual(m.Repository, n.Repository)
-	extraReposEq := reflect.DeepEqual(m.ExtraRepositories, n.ExtraRepositories)
-	return repositoryEq && extraReposEq && m.TargetPath == n.TargetPath
+	reposEq := reflect.DeepEqual(m.Repositories, n.Repositories)
+	return reposEq && m.TargetPath == n.TargetPath && m.SubPath == n.SubPath
 }
 
 func (m *Manifest) String() string {

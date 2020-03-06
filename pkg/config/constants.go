@@ -11,6 +11,11 @@ const (
 	AirshipClusterDefaultType = Target
 )
 
+// Constants related to Phases
+const (
+	Initinfra = "initinfra"
+)
+
 // Sorted
 var AllClusterTypes = [2]string{Ephemeral, Target}
 
@@ -57,4 +62,9 @@ const (
 
 	FlagUsername = "username"
 	FlagCurrent  = "current"
+)
+
+// Constants related to filesystem
+const (
+	SiteDirectory = "site"
 )

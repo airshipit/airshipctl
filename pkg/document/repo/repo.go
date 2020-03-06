@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"strings"
 
 	"gopkg.in/src-d/go-billy.v4"
 	"gopkg.in/src-d/go-billy.v4/osfs"
@@ -15,6 +14,7 @@ import (
 	"gopkg.in/src-d/go-git.v4/storage/filesystem"
 
 	"opendev.org/airship/airshipctl/pkg/log"
+	"opendev.org/airship/airshipctl/pkg/util"
 )
 
 var (
@@ -41,7 +41,7 @@ type Repository struct {
 // NewRepository create repository object, with real filesystem on disk
 // basePath is used to calculate final path where to clone/open the repository
 func NewRepository(basePath string, builder OptionsBuilder) (*Repository, error) {
-	dirName := nameFromURL(builder.URL())
+	dirName := util.GitDirNameFromURL(builder.URL())
 	if dirName == "" {
 		return nil, fmt.Errorf("URL: %s, original error: %w", builder.URL(), ErrCantParseURL)
 	}
@@ -58,11 +58,6 @@ func NewRepository(basePath string, builder OptionsBuilder) (*Repository, error)
 		Driver:         NewGitDriver(fs, s),
 		OptionsBuilder: builder,
 	}, nil
-}
-
-func nameFromURL(urlString string) string {
-	_, fileName := filepath.Split(urlString)
-	return strings.TrimSuffix(fileName, ".git")
 }
 
 func storerFromFs(fs billy.Filesystem) (storage.Storer, error) {

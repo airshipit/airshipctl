@@ -22,7 +22,7 @@ func getDummyAirshipSettings(t *testing.T) *environment.AirshipCTLSettings {
 
 	fx := fixtures.Basic().One()
 
-	mfst.Repository = &config.Repository{
+	mfst.Repositories = map[string]*config.Repository{"primary": {
 		URLString: fx.DotGit().Root(),
 		CheckoutOptions: &config.RepoCheckout{
 			Branch:        "master",
@@ -31,6 +31,7 @@ func getDummyAirshipSettings(t *testing.T) *environment.AirshipCTLSettings {
 		Auth: &config.RepoAuth{
 			Type: "http-basic",
 		},
+	},
 	}
 	settings.SetConfig(conf)
 	return settings
