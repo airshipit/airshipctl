@@ -31,9 +31,9 @@
 
     - name: "Run functional test cases against pre-existing k8s cluster"
       block:
-      - name: "airshipctl kubectl version"
-        shell: |
-          set -ex
-          kubectl version
-        args:
-          chdir: "{{ zuul.project.src_dir }}"
+        - name: "airshipctl kubectl version"
+          shell: |
+            set -ex
+            kubectl version
+          args:
+            chdir: "{{ zuul.project.src_dir }}"
