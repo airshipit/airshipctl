@@ -1,4 +1,4 @@
-Deploy initial infrastructure to kubernetes cluster such asmetal3.io, argo, tiller and other manifest documents with appropriate labels
+Deploy initial infrastructure to kubernetes cluster such as metal3.io, argo, tiller and other manifest documents with appropriate labels
 
 Usage:
   initinfra [flags]

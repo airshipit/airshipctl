@@ -25,7 +25,7 @@ import (
 
 const (
 	// TODO add labels in description, when we have them designed
-	getInitInfraLong = `Deploy initial infrastructure to kubernetes cluster such as` +
+	getInitInfraLong = `Deploy initial infrastructure to kubernetes cluster such as ` +
 		`metal3.io, argo, tiller and other manifest documents with appropriate labels`
 	getInitInfraExample = `#deploy infra to cluster
 	airshipctl cluster initinfra`
