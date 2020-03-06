@@ -2,6 +2,10 @@
   make:
     chdir: "{{ remote_work_dir | default(zuul.project.src_dir) }}"
     target: docker-image
+    params:
+      USE_PROXY: "{{ proxy.enabled }}"
+      PROXY: "{{ proxy.http }}"
+      NO_PROXY: "{{ proxy.noproxy }}"
 
 - name: "copy airshipctl binary to host"
   shell: |
