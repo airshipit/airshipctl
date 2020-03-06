@@ -75,7 +75,7 @@
       - playbooks/airship-airshipctl-build-gate.yaml
     post-run: playbooks/airship-collect-logs.yaml
     run: playbooks/airship-airshipctl-test-runner.yaml
-    nodeset: airship-airshipctl-single-16GB-bionic-node
+    nodeset: airship-airshipctl-single-32GB-bionic-node
     vars:
       site_name: test-bootstrap
 ## var files are the files that are located at playbooks/vars directory

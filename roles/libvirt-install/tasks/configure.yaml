@@ -1,0 +1,13 @@
+- name: configure libvirt
+  become: true
+  block:
+  - name: Set libvirt security driver
+    lineinfile:
+      path: "{{ libvirt_qemu_config_file }}"
+      state: present
+      regexp: '^\s*security_driver\s*=.*$'
+      line: "security_driver = \"{{ libvirt_security_driver | default('none') }}\""
+  - name: libvirtd restarted
+    service:
+      name: libvirtd
+      state: restarted
