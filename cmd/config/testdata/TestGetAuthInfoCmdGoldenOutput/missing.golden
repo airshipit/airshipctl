@@ -4,10 +4,10 @@ Usage:
 
 Examples:
 # List all the users airshipctl knows about
-airshipctl config get-credential
+airshipctl config get-credentials
 
 # Display a specific user information
-airshipctl config get-credential e2e
+airshipctl config get-credentials e2e
 
 Flags:
   -h, --help   help for get-credentials

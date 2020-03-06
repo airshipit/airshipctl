@@ -24,3 +24,4 @@ airshipctl Documentation
    developers
    plugins
    testing-guidelines
+   cli/cli

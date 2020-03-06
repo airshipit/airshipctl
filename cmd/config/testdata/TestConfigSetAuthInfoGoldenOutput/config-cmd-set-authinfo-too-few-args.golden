@@ -19,7 +19,7 @@ Flags:
       --client-key string           Path to client-key file for the user entry in airshipctl
       --embed-certs                 Embed client cert/key for the user entry in airshipctl
   -h, --help                        help for set-credentials
-      --password string             password for the user entry in airshipctl
-      --token string                token for the user entry in airshipctl
-      --username string             username for the user entry in airshipctl
+      --password string             password for the user entry in airshipctl. Mutually exclusive with token flag.
+      --token string                token for the user entry in airshipctl. Mutually exclusive with username and password flags.
+      --username string             username for the user entry in airshipctl. Mutually exclusive with token flag.
 

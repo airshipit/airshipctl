@@ -53,7 +53,7 @@ func addInitinfraFlags(i *initinfra.Infra, cmd *cobra.Command) {
 		&i.DryRun,
 		"dry-run",
 		false,
-		"Don't deliver documents to the cluster, see the changes instead")
+		"Don't deliver documents to the cluster, simulate the changes instead")
 
 	flags.BoolVar(
 		&i.Prune,
@@ -66,6 +66,6 @@ func addInitinfraFlags(i *initinfra.Infra, cmd *cobra.Command) {
 		&i.ClusterType,
 		"cluster-type",
 		"ephemeral",
-		`Select cluster type to be deploy initial infastructure to,`+
+		`Select cluster type to deploy initial infastructure to;`+
 			` currently only ephemeral is supported`)
 }

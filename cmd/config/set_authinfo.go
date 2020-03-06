@@ -27,23 +27,8 @@ import (
 
 var (
 	setAuthInfoLong = fmt.Sprintf(`Sets a user entry in airshipctl config
-Specifying a name that already exists will merge new fields on top of existing values.
-
-Client-certificate flags:
---%v=certfile --%v=keyfile
-
-Bearer token flags:
---%v=bearer_token
-
-Basic auth flags:
---%v=basic_user --%v=basic_password
-
-Bearer token and basic auth are mutually exclusive.`,
-		config.FlagCertFile,
-		config.FlagKeyFile,
-		config.FlagBearerToken,
-		config.FlagUsername,
-		config.FlagPassword)
+Specifying a name that already exists will merge new fields on top of existing values.`,
+	)
 
 	setAuthInfoExample = fmt.Sprintf(`
 # Set only the "client-key" field on the "cluster-admin"
@@ -112,19 +97,19 @@ func addSetAuthInfoFlags(o *config.AuthInfoOptions, cmd *cobra.Command) {
 		&o.Token,
 		config.FlagBearerToken,
 		"",
-		config.FlagBearerToken+" for the user entry in airshipctl")
+		config.FlagBearerToken+" for the user entry in airshipctl. Mutually exclusive with username and password flags.")
 
 	flags.StringVar(
 		&o.Username,
 		config.FlagUsername,
 		"",
-		config.FlagUsername+" for the user entry in airshipctl")
+		config.FlagUsername+" for the user entry in airshipctl. Mutually exclusive with token flag.")
 
 	flags.StringVar(
 		&o.Password,
 		config.FlagPassword,
 		"",
-		config.FlagPassword+" for the user entry in airshipctl")
+		config.FlagPassword+" for the user entry in airshipctl. Mutually exclusive with token flag.")
 
 	flags.BoolVar(
 		&o.EmbedCertData,

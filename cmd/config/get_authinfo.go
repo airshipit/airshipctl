@@ -24,13 +24,13 @@ import (
 )
 
 var (
-	getAuthInfoLong = `Display a specific user information, or all defined users if no name is provided`
+	getAuthInfoLong = `Display a specific user's information, or all defined users if no name is provided`
 
 	getAuthInfoExample = `# List all the users airshipctl knows about
-airshipctl config get-credential
+airshipctl config get-credentials
 
 # Display a specific user information
-airshipctl config get-credential e2e`
+airshipctl config get-credentials e2e`
 )
 
 // An AuthInfo refers to a particular user for a cluster

@@ -8,7 +8,7 @@ Examples:
 	airshipctl cluster initinfra
 
 Flags:
-      --cluster-type string   Select cluster type to be deploy initial infastructure to, currently only ephemeral is supported (default "ephemeral")
-      --dry-run               Don't deliver documents to the cluster, see the changes instead
+      --cluster-type string   Select cluster type to deploy initial infastructure to; currently only ephemeral is supported (default "ephemeral")
+      --dry-run               Don't deliver documents to the cluster, simulate the changes instead
   -h, --help                  help for initinfra
       --prune                 If set to true, command will delete all kubernetes resources that are not defined in airship documents and have airshipit.org/deployed=initinfra label

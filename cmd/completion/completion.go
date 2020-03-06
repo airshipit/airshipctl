@@ -8,9 +8,9 @@ import (
 )
 
 const completionDesc = `
-Generate autocompletions script for airshipctl for the specified shell (bash or zsh).
+Generate autocompletion script for airshipctl for the specified shell (bash or zsh).
 
-This command can generate shell autocompletions. e.g.
+This command can generate shell autocompletion. e.g.
 
 	$ airshipctl completion bash
 
