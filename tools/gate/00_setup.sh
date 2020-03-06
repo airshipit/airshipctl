@@ -38,7 +38,7 @@ sudo apt-add-repository --yes --update ppa:ansible/ansible
 sudo apt-get -y update
 sudo apt-get -y --no-install-recommends install docker.io ansible make
 
-echo "primary ansible_host=localhost" > "$ANSIBLE_HOSTS"
+echo "primary ansible_host=localhost ansible_connection=local" > "$ANSIBLE_HOSTS"
 printf "[defaults]\nroles_path = %s/roles:%s/roles\n" "$AIRSHIPCTL_WS" "$OSH_INFRA_DIR" > "$ANSIBLE_CFG"
 rm -rf "$OSH_INFRA_DIR"
 git clone https://review.opendev.org/openstack/openstack-helm-infra.git "$OSH_INFRA_DIR"
