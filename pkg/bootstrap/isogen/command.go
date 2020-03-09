@@ -137,7 +137,14 @@ func generateBootstrapIso(
 		[]string{},
 		nil,
 		vols,
-		[]string{fmt.Sprintf("BUILDER_CONFIG=%s", builderCfgLocation)},
+		[]string{
+			fmt.Sprintf("BUILDER_CONFIG=%s", builderCfgLocation),
+			fmt.Sprintf("http_proxy=%s", os.Getenv("http_proxy")),
+			fmt.Sprintf("https_proxy=%s", os.Getenv("https_proxy")),
+			fmt.Sprintf("HTTP_PROXY=%s", os.Getenv("HTTP_PROXY")),
+			fmt.Sprintf("HTTPS_PROXY=%s", os.Getenv("HTTPS_PROXY")),
+			fmt.Sprintf("NO_PROXY=%s", os.Getenv("NO_PROXY")),
+		},
 		debug,
 	); err != nil {
 		return err
