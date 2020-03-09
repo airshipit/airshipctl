@@ -26,9 +26,6 @@ the following `make` targets:
 ```
 # Runs all unit tests, then computes and reports the coverage
 make cover
-
-# Same as above, but in the same dockerized container as the CI gates
-make docker-image-unit-tests
 ```
 
 Good practice is to assert that the changed packages have not decreased in
@@ -37,6 +34,31 @@ such as the following.
 ```
 make cover PKG=./pkg/foo
 ```
+
+Additional testing should be done to ensure that the proposed change meets an
+expected level of quality. These tests include:
+
+```
+# Tidy, to ensure go.mod is up to date
+make tidy
+
+# Lint, to ensure code meets linting requirements
+make lint
+
+# Update-golden, to ensure the golden test data reflects the current test cases
+make update-golden
+```
+
+When the above are done, if you would like to perform the same dockerized container
+testing as the CI gates you can do so via:
+
+```
+make docker-image-test-suite
+```
+
+**NOTE**: If test cases are deleted you must first run make update-golden, and
+commit your changes prior to running the ``docker-image-test-suite`` make target.
+Otherwise the ``docker-image-test-suite`` make target (and the CI job) will fail.
 
 ## Test directory structure
 
