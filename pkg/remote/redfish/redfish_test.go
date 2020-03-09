@@ -27,10 +27,11 @@ func TestRedfishRemoteDirectNormal(t *testing.T) {
 	defer m.AssertExpectations(t)
 
 	systemID := computerSystemID
+	httpResp := &http.Response{StatusCode: 200}
 	m.On("GetSystem", context.Background(), systemID).
-		Return(getTestSystem(), nil, nil)
+		Return(getTestSystem(), httpResp, nil)
 	m.On("InsertVirtualMedia", context.Background(), "manager-1", "Cd", mock.Anything).
-		Return(redfishClient.RedfishError{}, nil, nil)
+		Return(redfishClient.RedfishError{}, httpResp, nil)
 
 	systemReq := redfishClient.ComputerSystem{
 		Boot: redfishClient.Boot{
@@ -39,18 +40,18 @@ func TestRedfishRemoteDirectNormal(t *testing.T) {
 	}
 	m.On("SetSystem", context.Background(), systemID, systemReq).
 		Times(1).
-		Return(redfishClient.ComputerSystem{}, nil, nil)
+		Return(redfishClient.ComputerSystem{}, httpResp, nil)
 
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 	m.On("ResetSystem", context.Background(), systemID, resetReq).
 		Times(1).
-		Return(redfishClient.RedfishError{}, nil, nil)
+		Return(redfishClient.RedfishError{}, httpResp, nil)
 
 	resetReq.ResetType = redfishClient.RESETTYPE_ON
 	m.On("ResetSystem", context.Background(), systemID, resetReq).
 		Times(1).
-		Return(redfishClient.RedfishError{}, nil, nil)
+		Return(redfishClient.RedfishError{}, httpResp, nil)
 
 	rDCfg := getDefaultRedfishRemoteDirectObj(t, m)
 
@@ -85,9 +86,7 @@ func TestRedfishRemoteDirectGetSystemNetworkError(t *testing.T) {
 
 	systemID := computerSystemID
 	realErr := fmt.Errorf("server request timeout")
-	httpResp := &http.Response{
-		StatusCode: 408,
-	}
+	httpResp := &http.Response{StatusCode: 408}
 	m.On("GetSystem", context.Background(), systemID).
 		Times(1).
 		Return(redfishClient.ComputerSystem{}, httpResp, realErr)
@@ -109,11 +108,8 @@ func TestRedfishRemoteDirectInvalidIsoPath(t *testing.T) {
 	localRDCfg := rDCfg
 	localRDCfg.IsoPath = "bogus/path/to.iso"
 
-	errStr := "invalid remote boot path"
-	realErr := fmt.Errorf(errStr)
-	httpResp := &http.Response{
-		StatusCode: 500,
-	}
+	realErr := redfishClient.GenericOpenAPIError{}
+	httpResp := &http.Response{StatusCode: 500}
 	m.On("GetSystem", context.Background(), systemID).
 		Times(1).
 		Return(getTestSystem(), nil, nil)
@@ -157,19 +153,17 @@ func TestRedfishRemoteDirectSetSystemBootSourceFailed(t *testing.T) {
 	defer m.AssertExpectations(t)
 
 	systemID := computerSystemID
+	httpSuccResp := &http.Response{StatusCode: 200}
 	m.On("GetSystem", context.Background(), systemID).
-		Return(getTestSystem(), nil, nil)
+		Return(getTestSystem(), httpSuccResp, nil)
 
 	m.On("InsertVirtualMedia", context.Background(), "manager-1", "Cd", mock.Anything).
-		Return(redfishClient.RedfishError{}, nil, nil)
+		Return(redfishClient.RedfishError{}, httpSuccResp, nil)
 
-	realErr := fmt.Errorf("unauthorized")
-	httpResp := &http.Response{
-		StatusCode: 401,
-	}
 	m.On("SetSystem", context.Background(), systemID, mock.Anything).
 		Times(1).
-		Return(redfishClient.ComputerSystem{}, httpResp, realErr)
+		Return(redfishClient.ComputerSystem{}, &http.Response{StatusCode: 401},
+			redfishClient.GenericOpenAPIError{})
 
 	rDCfg := getDefaultRedfishRemoteDirectObj(t, m)
 
@@ -184,26 +178,23 @@ func TestRedfishRemoteDirectSystemRebootFailed(t *testing.T) {
 	defer m.AssertExpectations(t)
 
 	systemID := computerSystemID
-
+	httpSuccResp := &http.Response{StatusCode: 200}
 	m.On("GetSystem", context.Background(), systemID).
-		Return(getTestSystem(), nil, nil)
+		Return(getTestSystem(), httpSuccResp, nil)
 
 	m.On("InsertVirtualMedia", context.Background(), mock.Anything, mock.Anything, mock.Anything).
-		Return(redfishClient.RedfishError{}, nil, nil)
+		Return(redfishClient.RedfishError{}, httpSuccResp, nil)
 
 	m.On("SetSystem", context.Background(), systemID, mock.Anything).
 		Times(1).
-		Return(redfishClient.ComputerSystem{}, nil, nil)
+		Return(redfishClient.ComputerSystem{}, httpSuccResp, nil)
 
-	realErr := fmt.Errorf("unauthorized")
-	httpResp := &http.Response{
-		StatusCode: 401,
-	}
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 	m.On("ResetSystem", context.Background(), systemID, resetReq).
 		Times(1).
-		Return(redfishClient.RedfishError{}, httpResp, realErr)
+		Return(redfishClient.RedfishError{}, &http.Response{StatusCode: 401},
+			redfishClient.GenericOpenAPIError{})
 
 	rDCfg := getDefaultRedfishRemoteDirectObj(t, m)
 
