@@ -16,7 +16,7 @@
 git update-index -q --ignore-submodules --refresh
 
 # Evaluate git files for difference, if found print message and fail.
-git diff-files --quiet --ignore-submodules
+git diff-files --quiet --ignore-submodules **/*.golden
 if [ $? -ne 0 ]
 then
     echo "git diff found modified test cases, please run make update-golden"
@@ -24,7 +24,7 @@ then
 fi
 
 # Evaluate git index for differences, if found print message and fail.
-git diff-index --cached --quiet --ignore-submodules HEAD --
+git diff-index --cached --quiet --ignore-submodules HEAD -- **/*.golden
 if [ $? -ne 0 ]
 then
     echo "git diff found modified test cases, please run make update-golden"
