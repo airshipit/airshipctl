@@ -14,7 +14,7 @@
   command: >-
     airshipctl bootstrap remotedirect
 
-- name: check airshipctl kubectl version
+- name: check kubectl version
   command: >-
     timeout 20 kubectl \
     --kubeconfig {{ airshipctl_config_dir_default | default(ansible_env.HOME) }}/.airship/kubeconfig \
@@ -24,6 +24,6 @@
   delay: 20
   until: airship_kubecofig_version.rc == 0
 
-- name: debug airshipctl kubectl version
+- name: debug kubectl version
   debug:
     var: airship_kubecofig_version.stdout
