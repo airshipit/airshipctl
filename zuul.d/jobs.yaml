@@ -42,6 +42,7 @@
     name: airship-airshipctl-build-image
     nodeset: airship-airshipctl-single-node
     run: playbooks/airship-airshipctl-build-images.yaml
+    post-run: playbooks/airship-collect-container-logs.yaml
     irrelevant-files:
       - ^.*\.md$
       - ^docs/.*$
@@ -50,6 +51,7 @@
     name: airship-airshipctl-functional-existing-k8s
     pre-run: playbooks/airship-airshipctl-deploy-existing-k8s.yaml
     run: playbooks/airship-airshipctl-functional-existing-k8s.yaml
+    post-run: playbooks/airship-collect-container-logs.yaml
     nodeset: airship-airshipctl-single-node
 
 - job:
@@ -73,7 +75,9 @@
     pre-run:
       - playbooks/airship-airshipctl-deploy-docker.yaml
       - playbooks/airship-airshipctl-build-gate.yaml
-    post-run: playbooks/airship-collect-logs.yaml
+    post-run:
+      - playbooks/airship-collect-logs.yaml
+      - playbooks/airship-collect-container-logs.yaml
     run: playbooks/airship-airshipctl-test-runner.yaml
     nodeset: airship-airshipctl-single-32GB-bionic-node
     vars:
