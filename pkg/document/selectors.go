@@ -26,9 +26,21 @@ func (s Selector) ByName(name string) Selector {
 	return s
 }
 
+// ByNamespace select by namepace
+func (s Selector) ByNamespace(namespace string) Selector {
+	s.Namespace = namespace
+	return s
+}
+
 // ByGvk select by gvk
 func (s Selector) ByGvk(group, version, kind string) Selector {
 	s.Gvk = gvk.Gvk{Group: group, Version: version, Kind: kind}
+	return s
+}
+
+// ByKind select by Kind
+func (s Selector) ByKind(kind string) Selector {
+	s.Gvk = gvk.Gvk{Kind: kind}
 	return s
 }
 

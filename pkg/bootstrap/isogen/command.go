@@ -119,8 +119,7 @@ func generateBootstrapIso(
 ) error {
 	cntVol := strings.Split(cfg.Container.Volume, ":")[1]
 	log.Print("Creating cloud-init for ephemeral K8s")
-	label := document.EphemeralClusterSelector
-	userData, netConf, err := cloudinit.GetCloudData(docBundle, label)
+	userData, netConf, err := cloudinit.GetCloudData(docBundle)
 	if err != nil {
 		return err
 	}

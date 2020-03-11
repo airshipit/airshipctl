@@ -77,7 +77,7 @@ func (infra *Infra) Deploy() error {
 	}
 	if len(docs) == 0 {
 		return document.ErrDocNotFound{
-			Selector: ls,
+			Selector: selector,
 		}
 	}
 

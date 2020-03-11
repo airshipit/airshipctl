@@ -49,6 +49,7 @@ type Bundle interface {
 	SetFileSystem(FileSystem) error
 	GetFileSystem() FileSystem
 	Select(selector Selector) ([]Document, error)
+	SelectBundle(selector Selector) (Bundle, error)
 	GetByGvk(string, string, string) ([]Document, error)
 	GetByName(string) (Document, error)
 	GetByAnnotation(annotationSelector string) ([]Document, error)
@@ -205,6 +206,37 @@ func (b *BundleFactory) Select(selector Selector) ([]Document, error) {
 		docSet[i] = doc
 	}
 	return docSet, err
+}
+
+// SelectBundle offers an interface to pass a Selector, built on top of kustomize Selector
+// to the bundle returning a new Bundle that matches the criteria.  This is useful
+// where you want to actually prune the underlying bundle you are working with
+// rather then getting back the matching documents for scenarios like
+// test cases where you want to pass in custom "filtered" bundles
+// specific to the test case
+func (b *BundleFactory) SelectBundle(selector Selector) (Bundle, error) {
+	// use the kustomize select method
+	resources, err := b.ResMap.Select(selector.Selector)
+	if err != nil {
+		return nil, err
+	}
+
+	// create a blank resourcemap and append the found resources
+	// into the new resource map
+	resourceMap := resmap.New()
+	for _, res := range resources {
+		if err = resourceMap.Append(res); err != nil {
+			return nil, err
+		}
+	}
+
+	// return a new bundle with the same options and filesystem
+	// as this one but with a reduced resourceMap
+	return &BundleFactory{
+		KustomizeBuildOptions: b.KustomizeBuildOptions,
+		ResMap:                resourceMap,
+		FileSystem:            b.FileSystem,
+	}, nil
 }
 
 // GetByAnnotation is a convenience method to get documents for a particular annotation

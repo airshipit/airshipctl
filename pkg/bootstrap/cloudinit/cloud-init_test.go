@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"sigs.k8s.io/kustomize/v3/pkg/types"
 
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/testutil"
@@ -16,54 +17,90 @@ func TestGetCloudData(t *testing.T) {
 	require.NoError(t, err, "Building Bundle Failed")
 
 	tests := []struct {
-		selector         string
+		labelFilter      string
 		expectedUserData []byte
 		expectedNetData  []byte
 		expectedErr      error
 	}{
 		{
-			selector:         "test=test",
+			labelFilter:      "test=validdocset",
+			expectedUserData: []byte("cloud-init"),
+			expectedNetData:  []byte("net-config"),
+			expectedErr:      nil,
+		},
+		{
+			labelFilter:      "test=ephemeralmissing",
 			expectedUserData: nil,
 			expectedNetData:  nil,
 			expectedErr: document.ErrDocNotFound{
-				Selector: "test=test",
-				Kind:     "Secret",
+				Selector: document.NewSelector().
+					ByLabel("airshipit.org/ephemeral-node=true").
+					ByKind("BareMetalHost"),
 			},
 		},
 		{
-			selector:         "airshipit.org/ephemeral=false",
+			labelFilter:      "test=ephemeralduplicate",
 			expectedUserData: nil,
 			expectedNetData:  nil,
-			expectedErr: ErrDataNotSupplied{
-				DocName: "node1-bmc-secret1",
-				Key:     "netconfig",
+			expectedErr: document.ErrMultipleDocsFound{
+				Selector: document.NewSelector().
+					ByLabel("airshipit.org/ephemeral-node=true").
+					ByKind("BareMetalHost"),
 			},
 		},
 		{
-			selector:         "test=nodataforcfg",
+			labelFilter:      "test=networkdatabadpointer",
 			expectedUserData: nil,
 			expectedNetData:  nil,
-			expectedErr: ErrDataNotSupplied{
-				DocName: "node1-bmc-secret2",
-				Key:     "netconfig",
+			expectedErr: document.ErrDocNotFound{
+				Selector: document.NewSelector().
+					ByKind("Secret").
+					ByNamespace("networkdatabadpointer-missing").
+					ByName("networkdatabadpointer-missing"),
 			},
 		},
 		{
-			selector:         "airshipit.org/ephemeral=true",
-			expectedUserData: []byte("cloud-init"),
-			expectedNetData:  []byte("netconfig\n"),
-			expectedErr:      nil,
+			labelFilter:      "test=networkdatamalformed",
+			expectedUserData: nil,
+			expectedNetData:  nil,
+			expectedErr:      ErrDataNotSupplied{DocName: "networkdatamalformed-malformed", Key: networkDataKey},
 		},
 		{
-			selector:         "some-data in (true, True)",
-			expectedUserData: []byte("cloud-init"),
-			expectedNetData:  []byte("netconfig\n"),
-			expectedErr:      nil,
+			labelFilter:      "test=networkdatamissing",
+			expectedUserData: nil,
+			expectedNetData:  nil,
+			expectedErr:      types.NoFieldError{Field: "spec.networkData.name"},
+		},
+		{
+			labelFilter:      "test=userdatamalformed",
+			expectedUserData: nil,
+			expectedNetData:  nil,
+			expectedErr:      ErrDataNotSupplied{DocName: "userdatamalformed-somesecret", Key: userDataKey},
+		},
+		{
+			labelFilter:      "test=userdatamissing",
+			expectedUserData: nil,
+			expectedNetData:  nil,
+			expectedErr: document.ErrDocNotFound{
+				Selector: document.NewSelector().
+					ByKind("Secret").
+					ByLabel("airshipit.org/ephemeral-user-data=true"),
+			},
 		},
 	}
 
 	for _, tt := range tests {
-		actualUserData, actualNetData, actualErr := GetCloudData(bundle, tt.selector)
+		// prune the bundle down using the label filter for the specific test
+		selector := document.NewSelector().ByLabel(tt.labelFilter)
+		filteredBundle, err := bundle.SelectBundle(selector)
+		require.NoError(t, err, "Building filtered bundle for %s failed", tt.labelFilter)
+
+		// ensure each test case filter has at least one document
+		docs, err := filteredBundle.GetAllDocuments()
+		require.NoError(t, err, "GetAllDocuments failed")
+		require.NotZero(t, docs)
+
+		actualUserData, actualNetData, actualErr := GetCloudData(filteredBundle)
 
 		assert.Equal(t, tt.expectedUserData, actualUserData)
 		assert.Equal(t, tt.expectedNetData, actualNetData)
