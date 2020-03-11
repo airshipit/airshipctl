@@ -11,6 +11,6 @@
 # limitations under the License.
 
 - name: Buid airshipctl Docs
-  shell: "make docs"
-  args:
+  make:
     chdir: "{{ zuul.project.src_dir }}"
+    target: docs
