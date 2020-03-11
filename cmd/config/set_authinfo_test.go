@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package config
+package config_test
 
 import (
 	"fmt"
@@ -26,6 +26,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	cmd "opendev.org/airship/airshipctl/cmd/config"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/testutil"
@@ -51,18 +52,18 @@ func TestConfigSetAuthInfo(t *testing.T) {
 		{
 			Name:    "config-cmd-set-authinfo-with-help",
 			CmdLine: "--help",
-			Cmd:     NewCmdConfigSetAuthInfo(nil),
+			Cmd:     cmd.NewCmdConfigSetAuthInfo(nil),
 		},
 		{
 			Name:    "config-cmd-set-authinfo-too-many-args",
 			CmdLine: "arg1 arg2",
-			Cmd:     NewCmdConfigSetAuthInfo(nil),
+			Cmd:     cmd.NewCmdConfigSetAuthInfo(nil),
 			Error:   fmt.Errorf("accepts %d arg(s), received %d", 1, 2),
 		},
 		{
 			Name:    "config-cmd-set-authinfo-too-few-args",
 			CmdLine: "",
-			Cmd:     NewCmdConfigSetAuthInfo(nil),
+			Cmd:     cmd.NewCmdConfigSetAuthInfo(nil),
 			Error:   fmt.Errorf("accepts %d arg(s), received %d", 1, 0),
 		},
 	}
@@ -76,7 +77,7 @@ func TestConfigSetAuthInfo(t *testing.T) {
 // Each of these config objects are associated with real files. Those files can be
 // cleaned up by calling cleanup
 func initInputConfig(t *testing.T) (given *config.Config, cleanup func(*testing.T)) {
-	given, givenCleanup := config.InitConfig(t)
+	given, givenCleanup := testutil.InitConfig(t)
 	kubeAuthInfo := kubeconfig.NewAuthInfo()
 	kubeAuthInfo.Username = testUsername
 	kubeAuthInfo.Password = testPassword
@@ -89,7 +90,7 @@ func initInputConfig(t *testing.T) (given *config.Config, cleanup func(*testing.
 func (test setAuthInfoTest) run(t *testing.T) {
 	settings := &environment.AirshipCTLSettings{}
 	settings.SetConfig(test.inputConfig)
-	test.cmdTest.Cmd = NewCmdConfigSetAuthInfo(settings)
+	test.cmdTest.Cmd = cmd.NewCmdConfigSetAuthInfo(settings)
 	testutil.RunTest(t, test.cmdTest)
 
 	afterRunConf := settings.Config()
@@ -106,7 +107,7 @@ func (test setAuthInfoTest) run(t *testing.T) {
 }
 
 func TestSetAuthInfo(t *testing.T) {
-	given, cleanup := config.InitConfig(t)
+	given, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
 	input, cleanupInput := initInputConfig(t)

@@ -14,7 +14,7 @@ import (
 
 func getDummyAirshipSettings(t *testing.T) *environment.AirshipCTLSettings {
 	settings := new(environment.AirshipCTLSettings)
-	conf := config.DummyConfig()
+	conf := testutil.DummyConfig()
 	mfst := conf.Manifests["dummy_manifest"]
 
 	err := fixtures.Init()
