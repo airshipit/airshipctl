@@ -11,6 +11,9 @@
 # limitations under the License.
 
 - hosts: primary
+  roles:
+    - install-docker
+    - install-kubectl
   tasks:
     - name: "Build and install airshipctl"
       block:
