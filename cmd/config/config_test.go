@@ -14,16 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package config
+package config_test
 
 import (
 	"testing"
 
+	cmd "opendev.org/airship/airshipctl/cmd/config"
 	"opendev.org/airship/airshipctl/testutil"
-)
-
-const (
-	testClusterName = "testCluster"
 )
 
 func TestConfig(t *testing.T) {
@@ -31,12 +28,12 @@ func TestConfig(t *testing.T) {
 		{
 			Name:    "config-cmd-with-defaults",
 			CmdLine: "",
-			Cmd:     NewConfigCommand(nil),
+			Cmd:     cmd.NewConfigCommand(nil),
 		},
 		{
 			Name:    "config-cmd-with-help",
 			CmdLine: "--help",
-			Cmd:     NewConfigCommand(nil),
+			Cmd:     cmd.NewConfigCommand(nil),
 		},
 	}
 

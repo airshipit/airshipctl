@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package config
+package config_test
 
 import (
 	"bytes"
@@ -27,8 +27,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	cmd "opendev.org/airship/airshipctl/cmd/config"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/testutil"
 )
 
 type setClusterTest struct {
@@ -45,7 +47,7 @@ const (
 )
 
 func TestSetClusterWithCAFile(t *testing.T) {
-	given, cleanupGiven := config.InitConfig(t)
+	given, cleanupGiven := testutil.InitConfig(t)
 	defer cleanupGiven(t)
 
 	certFile := "../../pkg/config/testdata/ca.crt"
@@ -53,7 +55,7 @@ func TestSetClusterWithCAFile(t *testing.T) {
 	tname := testCluster
 	tctype := config.Ephemeral
 
-	expected, cleanupExpected := config.InitConfig(t)
+	expected, cleanupExpected := testutil.InitConfig(t)
 	defer cleanupExpected(t)
 
 	expected.Clusters[tname] = config.NewClusterPurpose()
@@ -83,7 +85,7 @@ func TestSetClusterWithCAFile(t *testing.T) {
 	test.run(t)
 }
 func TestSetClusterWithCAFileData(t *testing.T) {
-	given, cleanupGiven := config.InitConfig(t)
+	given, cleanupGiven := testutil.InitConfig(t)
 	defer cleanupGiven(t)
 
 	certFile := "../../pkg/config/testdata/ca.crt"
@@ -91,7 +93,7 @@ func TestSetClusterWithCAFileData(t *testing.T) {
 	tname := testCluster
 	tctype := config.Ephemeral
 
-	expected, cleanupExpected := config.InitConfig(t)
+	expected, cleanupExpected := testutil.InitConfig(t)
 	defer cleanupExpected(t)
 
 	expected.Clusters[tname] = config.NewClusterPurpose()
@@ -125,13 +127,13 @@ func TestSetClusterWithCAFileData(t *testing.T) {
 }
 
 func TestSetCluster(t *testing.T) {
-	given, cleanupGiven := config.InitConfig(t)
+	given, cleanupGiven := testutil.InitConfig(t)
 	defer cleanupGiven(t)
 
 	tname := testCluster
 	tctype := config.Ephemeral
 
-	expected, cleanupExpected := config.InitConfig(t)
+	expected, cleanupExpected := testutil.InitConfig(t)
 	defer cleanupExpected(t)
 
 	expected.Clusters[tname] = config.NewClusterPurpose()
@@ -161,10 +163,10 @@ func TestSetCluster(t *testing.T) {
 }
 
 func TestModifyCluster(t *testing.T) {
-	tname := testClusterName
+	tname := "testCluster"
 	tctype := config.Ephemeral
 
-	given, cleanupGiven := config.InitConfig(t)
+	given, cleanupGiven := testutil.InitConfig(t)
 	defer cleanupGiven(t)
 
 	given.Clusters[tname] = config.NewClusterPurpose()
@@ -177,7 +179,7 @@ func TestModifyCluster(t *testing.T) {
 	given.KubeConfig().Clusters[clusterName.Name()] = cluster
 	given.Clusters[tname].ClusterTypes[tctype].SetKubeCluster(cluster)
 
-	expected, cleanupExpected := config.InitConfig(t)
+	expected, cleanupExpected := testutil.InitConfig(t)
 	defer cleanupExpected(t)
 
 	expected.Clusters[tname] = config.NewClusterPurpose()
@@ -209,7 +211,7 @@ func (test setClusterTest) run(t *testing.T) {
 
 	buf := bytes.NewBuffer([]byte{})
 
-	cmd := NewCmdConfigSetCluster(settings)
+	cmd := cmd.NewCmdConfigSetCluster(settings)
 	cmd.SetOut(buf)
 	cmd.SetArgs(test.args)
 	err := cmd.Flags().Parse(test.flags)

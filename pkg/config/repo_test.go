@@ -1,4 +1,4 @@
-package config
+package config_test
 
 import (
 	"testing"
@@ -7,6 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"opendev.org/airship/airshipctl/pkg/config"
 )
 
 const (
@@ -147,7 +149,7 @@ type TestCase struct {
 }
 
 type TestRepos struct {
-	TestData map[string]*Repository `json:"test-data"`
+	TestData map[string]*config.Repository `json:"test-data"`
 }
 
 func TestToCheckout(t *testing.T) {

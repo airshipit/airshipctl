@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package config
+package testutil
 
 import (
 	"io/ioutil"
@@ -25,39 +25,42 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"opendev.org/airship/airshipctl/testutil"
+	"opendev.org/airship/airshipctl/pkg/config"
 )
 
+// types cloned directory from pkg/config/types to prevent circular import
+
 // DummyConfig used by tests, to initialize min set of data
-func DummyConfig() *Config {
-	conf := &Config{
-		Kind:       AirshipConfigKind,
-		APIVersion: AirshipConfigAPIVersion,
-		Clusters: map[string]*ClusterPurpose{
+func DummyConfig() *config.Config {
+	conf := &config.Config{
+		Kind:       config.AirshipConfigKind,
+		APIVersion: config.AirshipConfigAPIVersion,
+		Clusters: map[string]*config.ClusterPurpose{
 			"dummy_cluster": DummyClusterPurpose(),
 		},
-		AuthInfos: map[string]*AuthInfo{
+		AuthInfos: map[string]*config.AuthInfo{
 			"dummy_user": DummyAuthInfo(),
 		},
-		Contexts: map[string]*Context{
+		Contexts: map[string]*config.Context{
 			"dummy_context": DummyContext(),
 		},
-		Manifests: map[string]*Manifest{
+		Manifests: map[string]*config.Manifest{
 			"dummy_manifest": DummyManifest(),
 		},
 		ModulesConfig:  DummyModules(),
 		CurrentContext: "dummy_context",
-		kubeConfig:     kubeconfig.NewConfig(),
 	}
+	conf.SetKubeConfig(kubeconfig.NewConfig())
+
 	dummyCluster := conf.Clusters["dummy_cluster"]
-	conf.KubeConfig().Clusters["dummy_cluster_target"] = dummyCluster.ClusterTypes[Target].KubeCluster()
-	conf.KubeConfig().Clusters["dummy_cluster_ephemeral"] = dummyCluster.ClusterTypes[Ephemeral].KubeCluster()
+	conf.KubeConfig().Clusters["dummy_cluster_target"] = dummyCluster.ClusterTypes[config.Target].KubeCluster()
+	conf.KubeConfig().Clusters["dummy_cluster_ephemeral"] = dummyCluster.ClusterTypes[config.Ephemeral].KubeCluster()
 	return conf
 }
 
 // DummyContext , utility function used for tests
-func DummyContext() *Context {
-	c := NewContext()
+func DummyContext() *config.Context {
+	c := config.NewContext()
 	c.NameInKubeconf = "dummy_cluster_ephemeral"
 	c.Manifest = "dummy_manifest"
 	context := kubeconfig.NewContext()
@@ -70,8 +73,8 @@ func DummyContext() *Context {
 }
 
 // DummyCluster, utility function used for tests
-func DummyCluster() *Cluster {
-	c := NewCluster()
+func DummyCluster() *config.Cluster {
+	c := config.NewCluster()
 
 	cluster := kubeconfig.NewCluster()
 	cluster.Server = "http://dummy.server"
@@ -84,44 +87,48 @@ func DummyCluster() *Cluster {
 }
 
 // DummyManifest , utility function used for tests
-func DummyManifest() *Manifest {
-	m := NewManifest()
+func DummyManifest() *config.Manifest {
+	m := config.NewManifest()
 	// Repositories is the map of repository adddressable by a name
 	m.Repository = DummyRepository()
 	m.TargetPath = "/var/tmp/"
 	return m
 }
 
-func DummyRepository() *Repository {
-	return &Repository{
+// DummyRepository, utility function used for tests
+func DummyRepository() *config.Repository {
+	return &config.Repository{
 		URLString: "http://dummy.url.com",
-		CheckoutOptions: &RepoCheckout{
+		CheckoutOptions: &config.RepoCheckout{
 			Tag:           "v1.0.1",
 			ForceCheckout: false,
 		},
-		Auth: &RepoAuth{
+		Auth: &config.RepoAuth{
 			Type:    "ssh-key",
 			KeyPath: "testdata/test-key.pem",
 		},
 	}
 }
 
-func DummyRepoAuth() *RepoAuth {
-	return &RepoAuth{
+// DummyRepoAuth , utility function used for tests
+func DummyRepoAuth() *config.RepoAuth {
+	return &config.RepoAuth{
 		Type:    "ssh-key",
 		KeyPath: "testdata/test-key.pem",
 	}
 }
 
-func DummyRepoCheckout() *RepoCheckout {
-	return &RepoCheckout{
+// DummyRepoCheckout, utility function used for checks
+func DummyRepoCheckout() *config.RepoCheckout {
+	return &config.RepoCheckout{
 		Tag:           "v1.0.1",
 		ForceCheckout: false,
 	}
 }
 
-func DummyAuthInfo() *AuthInfo {
-	a := NewAuthInfo()
+// DummyAuthInfo , utility function used for tests
+func DummyAuthInfo() *config.AuthInfo {
+	a := config.NewAuthInfo()
 	authinfo := kubeconfig.NewAuthInfo()
 	authinfo.Username = "dummy_username"
 	authinfo.Password = "dummy_password"
@@ -132,15 +139,27 @@ func DummyAuthInfo() *AuthInfo {
 	return a
 }
 
-func DummyModules() *Modules {
-	m := NewModules()
+// DummyKubeAuthInfo , utility function used for tests
+func DummyKubeAuthInfo() *kubeconfig.AuthInfo {
+	authinfo := kubeconfig.NewAuthInfo()
+	authinfo.Username = "dummy_username"
+	authinfo.Password = "dummy_password"
+	authinfo.ClientCertificate = "dummy_certificate"
+	authinfo.ClientKey = "dummy_key"
+	authinfo.Token = "dummy_token"
+	return authinfo
+}
+
+// DummyModules , utility function used for tests
+func DummyModules() *config.Modules {
+	m := config.NewModules()
 	m.BootstrapInfo["dummy_bootstrap_config"] = DummyBootstrap()
 	return m
 }
 
 // DummyClusterPurpose , utility function used for tests
-func DummyClusterPurpose() *ClusterPurpose {
-	cp := NewClusterPurpose()
+func DummyClusterPurpose() *config.ClusterPurpose {
+	cp := config.NewClusterPurpose()
 	cp.ClusterTypes["ephemeral"] = DummyCluster()
 	cp.ClusterTypes["ephemeral"].NameInKubeconf = "dummy_cluster_ephemeral"
 	cp.ClusterTypes["target"] = DummyCluster()
@@ -152,9 +171,9 @@ func DummyClusterPurpose() *ClusterPurpose {
 // The returned config object will be associated with real files stored in a
 // directory in the user's temporary file storage
 // This directory can be cleaned up by calling the returned "cleanup" function
-func InitConfig(t *testing.T) (conf *Config, cleanup func(*testing.T)) {
+func InitConfig(t *testing.T) (conf *config.Config, cleanup func(*testing.T)) {
 	t.Helper()
-	testDir, cleanup := testutil.TempDir(t, "airship-test")
+	testDir, cleanup := TempDir(t, "airship-test")
 
 	configPath := filepath.Join(testDir, "config")
 	err := ioutil.WriteFile(configPath, []byte(testConfigYAML), 0666)
@@ -164,7 +183,7 @@ func InitConfig(t *testing.T) (conf *Config, cleanup func(*testing.T)) {
 	err = ioutil.WriteFile(kubeConfigPath, []byte(testKubeConfigYAML), 0666)
 	require.NoError(t, err)
 
-	conf = NewConfig()
+	conf = config.NewConfig()
 
 	err = conf.LoadConfig(configPath, kubeConfigPath)
 	require.NoError(t, err)
@@ -172,10 +191,10 @@ func InitConfig(t *testing.T) (conf *Config, cleanup func(*testing.T)) {
 	return conf, cleanup
 }
 
-func DummyClusterOptions() *ClusterOptions {
-	co := &ClusterOptions{}
+func DummyClusterOptions() *config.ClusterOptions {
+	co := &config.ClusterOptions{}
 	co.Name = "dummy_cluster"
-	co.ClusterType = Ephemeral
+	co.ClusterType = config.Ephemeral
 	co.Server = "http://1.1.1.1"
 	co.InsecureSkipTLSVerify = false
 	co.CertificateAuthority = ""
@@ -184,8 +203,8 @@ func DummyClusterOptions() *ClusterOptions {
 	return co
 }
 
-func DummyContextOptions() *ContextOptions {
-	co := &ContextOptions{}
+func DummyContextOptions() *config.ContextOptions {
+	co := &config.ContextOptions{}
 	co.Name = "dummy_context"
 	co.Manifest = "dummy_manifest"
 	co.AuthInfo = "dummy_user"
@@ -195,8 +214,8 @@ func DummyContextOptions() *ContextOptions {
 	return co
 }
 
-func DummyAuthInfoOptions() *AuthInfoOptions {
-	authinfo := &AuthInfoOptions{}
+func DummyAuthInfoOptions() *config.AuthInfoOptions {
+	authinfo := &config.AuthInfoOptions{}
 	authinfo.Username = "dummy_username"
 	authinfo.Password = "dummy_password"
 	authinfo.ClientCertificate = "dummy_certificate"
@@ -205,14 +224,14 @@ func DummyAuthInfoOptions() *AuthInfoOptions {
 	return authinfo
 }
 
-func DummyBootstrap() *Bootstrap {
-	bs := &Bootstrap{}
-	cont := Container{
+func DummyBootstrap() *config.Bootstrap {
+	bs := &config.Bootstrap{}
+	cont := config.Container{
 		Volume:           "/dummy:dummy",
 		Image:            "dummy_image:dummy_tag",
 		ContainerRuntime: "docker",
 	}
-	builder := Builder{
+	builder := config.Builder{
 		UserDataFileName:       "user-data",
 		NetworkConfigFileName:  "netconfig",
 		OutputMetadataFileName: "output-metadata.yaml",

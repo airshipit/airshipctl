@@ -23,7 +23,7 @@ func getDummyPullSettings() *Settings {
 	mockPullSettings := &Settings{
 		AirshipCTLSettings: new(environment.AirshipCTLSettings),
 	}
-	mockConf := config.DummyConfig()
+	mockConf := testutil.DummyConfig()
 	mockPullSettings.AirshipCTLSettings.SetConfig(mockConf)
 	return mockPullSettings
 }

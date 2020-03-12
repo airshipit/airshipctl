@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package config
+package config_test
 
 import (
 	"fmt"
@@ -24,6 +24,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	cmd "opendev.org/airship/airshipctl/cmd/config"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/testutil"
@@ -48,17 +49,17 @@ func TestConfigSetContext(t *testing.T) {
 		{
 			Name:    "config-cmd-set-context-with-help",
 			CmdLine: "--help",
-			Cmd:     NewCmdConfigSetContext(nil),
+			Cmd:     cmd.NewCmdConfigSetContext(nil),
 		},
 		{
 			Name:    "config-cmd-set-context-no-flags",
 			CmdLine: "context",
-			Cmd:     NewCmdConfigSetContext(nil),
+			Cmd:     cmd.NewCmdConfigSetContext(nil),
 		},
 		{
 			Name:    "config-cmd-set-context-too-many-args",
 			CmdLine: "arg1 arg2",
-			Cmd:     NewCmdConfigSetContext(nil),
+			Cmd:     cmd.NewCmdConfigSetContext(nil),
 			Error:   fmt.Errorf("accepts at most %d arg(s), received %d", 1, 2),
 		},
 	}
@@ -69,7 +70,7 @@ func TestConfigSetContext(t *testing.T) {
 }
 
 func TestSetContext(t *testing.T) {
-	given, cleanupGiven := config.InitConfig(t)
+	given, cleanupGiven := testutil.InitConfig(t)
 	defer cleanupGiven(t)
 
 	tests := []struct {
@@ -129,7 +130,7 @@ func (test setContextTest) run(t *testing.T) {
 	settings := &environment.AirshipCTLSettings{}
 	settings.SetConfig(test.givenConfig)
 
-	test.cmdTest.Cmd = NewCmdConfigSetContext(settings)
+	test.cmdTest.Cmd = cmd.NewCmdConfigSetContext(settings)
 	testutil.RunTest(t, test.cmdTest)
 
 	afterRunConf := settings.Config()

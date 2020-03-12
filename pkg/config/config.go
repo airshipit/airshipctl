@@ -416,6 +416,10 @@ func (c *Config) KubeConfig() *clientcmdapi.Config {
 	return c.kubeConfig
 }
 
+func (c *Config) SetKubeConfig(kubeConfig *clientcmdapi.Config) {
+	c.kubeConfig = kubeConfig
+}
+
 // Get A Cluster
 func (c *Config) GetCluster(cName, cType string) (*Cluster, error) {
 	_, exists := c.Clusters[cName]

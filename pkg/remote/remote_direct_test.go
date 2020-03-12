@@ -10,11 +10,12 @@ import (
 	"opendev.org/airship/airshipctl/pkg/environment"
 
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
+	"opendev.org/airship/airshipctl/testutil"
 )
 
 func initSettings(t *testing.T, rd *config.RemoteDirect, testdata string) *environment.AirshipCTLSettings {
 	settings := &environment.AirshipCTLSettings{}
-	settings.SetConfig(config.DummyConfig())
+	settings.SetConfig(testutil.DummyConfig())
 	bi, err := settings.Config().CurrentContextBootstrapInfo()
 	require.NoError(t, err)
 	bi.RemoteDirect = rd

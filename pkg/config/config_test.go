@@ -39,47 +39,47 @@ func TestString(t *testing.T) {
 	}{
 		{
 			name:     "config",
-			stringer: config.DummyConfig(),
+			stringer: testutil.DummyConfig(),
 		},
 		{
 			name:     "context",
-			stringer: config.DummyContext(),
+			stringer: testutil.DummyContext(),
 		},
 		{
 			name:     "cluster",
-			stringer: config.DummyCluster(),
+			stringer: testutil.DummyCluster(),
 		},
 		{
 			name:     "authinfo",
-			stringer: config.DummyAuthInfo(),
+			stringer: testutil.DummyAuthInfo(),
 		},
 		{
 			name:     "manifest",
-			stringer: config.DummyManifest(),
+			stringer: testutil.DummyManifest(),
 		},
 		{
 			name:     "modules",
-			stringer: config.DummyModules(),
+			stringer: testutil.DummyModules(),
 		},
 		{
 			name:     "repository",
-			stringer: config.DummyRepository(),
+			stringer: testutil.DummyRepository(),
 		},
 		{
 			name:     "repo-auth",
-			stringer: config.DummyRepoAuth(),
+			stringer: testutil.DummyRepoAuth(),
 		},
 		{
 			name:     "repo-checkout",
-			stringer: config.DummyRepoCheckout(),
+			stringer: testutil.DummyRepoCheckout(),
 		},
 		{
 			name:     "bootstrap",
-			stringer: config.DummyBootstrap(),
+			stringer: testutil.DummyBootstrap(),
 		},
 		{
 			name:     "bootstrap",
-			stringer: config.DummyBootstrap(),
+			stringer: testutil.DummyBootstrap(),
 		},
 		{
 			name: "builder",
@@ -116,7 +116,7 @@ func TestPrettyString(t *testing.T) {
 	data, err := fSys.ReadFile("/prettycluster-string.yaml")
 	require.NoError(t, err)
 
-	cluster := config.DummyCluster()
+	cluster := testutil.DummyCluster()
 	assert.EqualValues(t, cluster.PrettyString(), string(data))
 }
 
@@ -230,7 +230,7 @@ func TestEqual(t *testing.T) {
 }
 
 func TestLoadConfig(t *testing.T) {
-	conf, cleanup := config.InitConfig(t)
+	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
 	assert.Len(t, conf.Clusters, 5)
@@ -241,7 +241,7 @@ func TestLoadConfig(t *testing.T) {
 }
 
 func TestPersistConfig(t *testing.T) {
-	conf, cleanup := config.InitConfig(t)
+	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
 	err := conf.PersistConfig()
@@ -370,7 +370,7 @@ func TestEnsureComplete(t *testing.T) {
 }
 
 func TestPurge(t *testing.T) {
-	conf, cleanup := config.InitConfig(t)
+	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
 	// Store it
@@ -392,7 +392,7 @@ func TestPurge(t *testing.T) {
 }
 
 func TestKClusterString(t *testing.T) {
-	conf, cleanup := config.InitConfig(t)
+	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
 	kClusters := conf.KubeConfig().Clusters
@@ -402,7 +402,7 @@ func TestKClusterString(t *testing.T) {
 	assert.EqualValues(t, config.KClusterString(nil), "null\n")
 }
 func TestKContextString(t *testing.T) {
-	conf, cleanup := config.InitConfig(t)
+	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
 	kContexts := conf.KubeConfig().Contexts
@@ -412,7 +412,7 @@ func TestKContextString(t *testing.T) {
 	assert.EqualValues(t, config.KClusterString(nil), "null\n")
 }
 func TestKAuthInfoString(t *testing.T) {
-	conf, cleanup := config.InitConfig(t)
+	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
 	kAuthInfos := conf.KubeConfig().AuthInfos
@@ -445,7 +445,7 @@ func TestValidClusterTypeFail(t *testing.T) {
 	assert.Error(t, err)
 }
 func TestGetCluster(t *testing.T) {
-	conf, cleanup := config.InitConfig(t)
+	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
 	cluster, err := conf.GetCluster("def", config.Ephemeral)
@@ -465,10 +465,10 @@ func TestGetCluster(t *testing.T) {
 }
 
 func TestAddCluster(t *testing.T) {
-	conf, cleanup := config.InitConfig(t)
+	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
-	co := config.DummyClusterOptions()
+	co := testutil.DummyClusterOptions()
 	cluster, err := conf.AddCluster(co)
 	require.NoError(t, err)
 
@@ -476,10 +476,10 @@ func TestAddCluster(t *testing.T) {
 }
 
 func TestModifyCluster(t *testing.T) {
-	conf, cleanup := config.InitConfig(t)
+	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
-	co := config.DummyClusterOptions()
+	co := testutil.DummyClusterOptions()
 	cluster, err := conf.AddCluster(co)
 	require.NoError(t, err)
 
@@ -498,7 +498,7 @@ func TestModifyCluster(t *testing.T) {
 }
 
 func TestGetClusters(t *testing.T) {
-	conf, cleanup := config.InitConfig(t)
+	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
 	clusters := conf.GetClusters()
@@ -506,7 +506,7 @@ func TestGetClusters(t *testing.T) {
 }
 
 func TestGetContexts(t *testing.T) {
-	conf, cleanup := config.InitConfig(t)
+	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
 	contexts := conf.GetContexts()
@@ -514,7 +514,7 @@ func TestGetContexts(t *testing.T) {
 }
 
 func TestGetContext(t *testing.T) {
-	conf, cleanup := config.InitConfig(t)
+	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
 	context, err := conf.GetContext("def_ephemeral")
@@ -530,19 +530,19 @@ func TestGetContext(t *testing.T) {
 }
 
 func TestAddContext(t *testing.T) {
-	conf, cleanup := config.InitConfig(t)
+	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
-	co := config.DummyContextOptions()
+	co := testutil.DummyContextOptions()
 	context := conf.AddContext(co)
 	assert.EqualValues(t, conf.Contexts[co.Name], context)
 }
 
 func TestModifyContext(t *testing.T) {
-	conf, cleanup := config.InitConfig(t)
+	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
-	co := config.DummyContextOptions()
+	co := testutil.DummyContextOptions()
 	context := conf.AddContext(co)
 
 	co.Namespace += stringDelta
@@ -560,7 +560,7 @@ func TestModifyContext(t *testing.T) {
 // AuthInfo Related
 
 func TestGetAuthInfos(t *testing.T) {
-	conf, cleanup := config.InitConfig(t)
+	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
 	authinfos := conf.GetAuthInfos()
@@ -568,7 +568,7 @@ func TestGetAuthInfos(t *testing.T) {
 }
 
 func TestGetAuthInfo(t *testing.T) {
-	conf, cleanup := config.InitConfig(t)
+	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
 	authinfo, err := conf.GetAuthInfo("def-user")
@@ -583,19 +583,19 @@ func TestGetAuthInfo(t *testing.T) {
 }
 
 func TestAddAuthInfo(t *testing.T) {
-	conf, cleanup := config.InitConfig(t)
+	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
-	co := config.DummyAuthInfoOptions()
+	co := testutil.DummyAuthInfoOptions()
 	authinfo := conf.AddAuthInfo(co)
 	assert.EqualValues(t, conf.AuthInfos[co.Name], authinfo)
 }
 
 func TestModifyAuthInfo(t *testing.T) {
-	conf, cleanup := config.InitConfig(t)
+	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
-	co := config.DummyAuthInfoOptions()
+	co := testutil.DummyAuthInfoOptions()
 	authinfo := conf.AddAuthInfo(co)
 
 	co.Username += stringDelta
