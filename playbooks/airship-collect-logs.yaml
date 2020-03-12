@@ -16,7 +16,7 @@
   vars:
     logs_dir: "/tmp/logs"
   roles:
-    - gather-host-logs
+    - gather-system-logs
     - airship-gather-sushy-logs
     - airship-gather-libvirt-logs
     - airship-gather-runtime-logs
