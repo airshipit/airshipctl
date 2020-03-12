@@ -13,20 +13,16 @@ current-context: dummy_cluster
 kind: Config
 manifests:
   dummy_manifest:
-    repositories:
-      dummy:
-        target-path: dummy_targetpath
-        url:
-          ForceQuery: false
-          Fragment: ""
-          Host: dummy.url.com
-          Opaque: ""
-          Path: ""
-          RawPath: ""
-          RawQuery: ""
-          Scheme: http
-          User: null
-        username: dummy_user
+    repository:
+      auth:
+        ssh-key: {{ airship_config_primary_repo_key_path | default("") }}
+        type: {{ airship_config_primary_repo_auth_type }}
+      checkout:
+        branch: "master"
+        force: false
+        remote-ref: ""
+        tag: ""
+      url: {{ airship_config_primary_repo_url }}
     target-path: {{ airship_config_manifest_directory }}
 modules-config:
   bootstrapInfo:
