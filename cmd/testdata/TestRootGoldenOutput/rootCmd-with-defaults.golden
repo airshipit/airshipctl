@@ -10,7 +10,6 @@ Available Commands:
   config      Modify airshipctl config files
   document    manages deployment documents
   help        Help about any command
-  kubectl     kubectl controls the Kubernetes cluster manager
   version     Show the version number of airshipctl
 
 Flags:
