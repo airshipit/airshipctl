@@ -2,8 +2,8 @@ package document
 
 const (
 	// Selectors
-	BaseAirshipSelector      = "airshipit.org"
-	EphemeralClusterSelector = BaseAirshipSelector + "/ephemeral in (True, true)"
+	BaseAirshipSelector = "airshipit.org"
+	ControlNodeSelector = BaseAirshipSelector + "/node-role=control-plane"
 
 	// Labels
 	DeployedByLabel = BaseAirshipSelector + "/deployed"

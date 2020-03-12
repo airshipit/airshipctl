@@ -8,12 +8,10 @@ import (
 	"sigs.k8s.io/kustomize/v3/pkg/types"
 
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/testutil"
 )
 
 func TestGetCloudData(t *testing.T) {
-	fSys := testutil.SetupTestFs(t, "testdata")
-	bundle, err := document.NewBundle(fSys, "/", "/")
+	bundle, err := document.NewBundleByPath("testdata")
 	require.NoError(t, err, "Building Bundle Failed")
 
 	tests := []struct {

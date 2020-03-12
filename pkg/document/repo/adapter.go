@@ -28,7 +28,7 @@ type GitDriver struct {
 	Storer     storage.Storer
 }
 
-func NewGitDriver(fs billy.Filesystem, s storage.Storer) *GitDriver {
+func NewGitDriver(fs billy.Filesystem, s storage.Storer) Adapter {
 	return &GitDriver{Storer: s, Filesystem: fs}
 }
 

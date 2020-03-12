@@ -1,11 +1,14 @@
-repository:
-  auth:
-    ssh-key: testdata/test-key.pem
-    type: ssh-key
-  checkout:
-    branch: ""
-    force: false
-    remote-ref: ""
-    tag: v1.0.1
-  url: http://dummy.url.com
+primary-repository-name: primary
+repositories:
+  primary:
+    auth:
+      ssh-key: testdata/test-key.pem
+      type: ssh-key
+    checkout:
+      branch: ""
+      force: false
+      remote-ref: ""
+      tag: v1.0.1
+    url: http://dummy.url.com/manifests.git
+sub-path: manifests/site/test-site
 target-path: /var/tmp/

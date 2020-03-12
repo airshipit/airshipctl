@@ -13,16 +13,19 @@ current-context: dummy_cluster
 kind: Config
 manifests:
   dummy_manifest:
-    repository:
-      auth:
-        ssh-key: {{ airship_config_primary_repo_key_path | default("") }}
-        type: {{ airship_config_primary_repo_auth_type }}
-      checkout:
-        branch: "master"
-        force: false
-        remote-ref: ""
-        tag: ""
-      url: {{ airship_config_primary_repo_url }}
+    primary-repository: primary
+    repositories:
+      primary:
+        checkout:
+          branch: "master"
+          force: false
+          remote-ref: ""
+          tag: ""
+        url: {{ airship_config_primary_repo_url }}
+    ## this is temporary hack, as soon as we use `document pull` command in gate process
+    ## this will subpath will be airshipctl/manifests/site/test-bootstrap, as airshipctl
+    ## will be primary repository
+    sub-path: "manifests/site/test-bootstrap"
     target-path: {{ airship_config_manifest_directory }}
 modules-config:
   bootstrapInfo:

@@ -4,9 +4,7 @@ metadata:
   name: test-rc
   namespace: test
   labels:
-    airshipit.org/ephemeral: "true"
-    name: test-rc
-    airship-component: "initinfra"
+    airshipit.org/initinfra: "true"
 spec:
   replicas: 1
   template:

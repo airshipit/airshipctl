@@ -25,19 +25,8 @@ func (s *Settings) cloneRepositories() error {
 		return err
 	}
 
-	mainRepoConfig := currentManifest.Repository
-	repository, err := repo.NewRepository(currentManifest.TargetPath, mainRepoConfig)
-	if err != nil {
-		return err
-	}
-	err = repository.Download(mainRepoConfig.ToCheckoutOptions(true).Force)
-	if err != nil {
-		return err
-	}
-	repository.Driver.Close()
-
-	// Clone extra repositories
-	for _, extraRepoConfig := range currentManifest.ExtraRepositories {
+	// Clone repositories
+	for _, extraRepoConfig := range currentManifest.Repositories {
 		repository, err := repo.NewRepository(currentManifest.TargetPath, extraRepoConfig)
 		if err != nil {
 			return err

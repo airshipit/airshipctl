@@ -28,7 +28,7 @@ func (tc TestClient) Kubectl() kubectl.Interface      { return tc.MockKubectl() 
 
 const (
 	kubeconfigPath    = "testdata/kubeconfig.yaml"
-	filenameRC        = "testdata/replicationcontroller.yaml"
+	filenameRC        = "testdata/primary/site/test-site/ephemeral/initinfra/replicationcontroller.yaml"
 	airshipConfigFile = "testdata/config.yaml"
 )
 

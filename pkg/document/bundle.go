@@ -57,6 +57,12 @@ type Bundle interface {
 	GetAllDocuments() ([]Document, error)
 }
 
+// NewBundleByPath helper function that returns new document.Bundle interface based on clusterType and
+// phase, example: helpers.NewBunde(airConfig, "ephemeral", "initinfra")
+func NewBundleByPath(rootPath string) (Bundle, error) {
+	return NewBundle(NewDocumentFs(), rootPath, "")
+}
+
 // NewBundle is a convenience function to create a new bundle
 // Over time, it will evolve to support allowing more control
 // for kustomize plugins

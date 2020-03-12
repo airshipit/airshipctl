@@ -63,10 +63,6 @@ func getRemoteDirectClient(remoteConfig *config.RemoteDirect, remoteURL string) 
 
 func getRemoteDirectConfig(settings *environment.AirshipCTLSettings) (*config.RemoteDirect, string, error) {
 	cfg := settings.Config()
-	manifest, err := cfg.CurrentContextManifest()
-	if err != nil {
-		return nil, "", err
-	}
 	bootstrapSettings, err := cfg.CurrentContextBootstrapInfo()
 	if err != nil {
 		return nil, "", err
@@ -77,14 +73,17 @@ func getRemoteDirectConfig(settings *environment.AirshipCTLSettings) (*config.Re
 		return nil, "", config.ErrMissingConfig{What: "RemoteDirect options not defined in bootstrap config"}
 	}
 
-	// TODO (dukov) replace with the appropriate function once it's available
-	// in document module
-	docBundle, err := document.NewBundle(document.NewDocumentFs(), manifest.TargetPath, "")
+	root, err := cfg.CurrentContextEntryPoint(config.Ephemeral, "")
 	if err != nil {
 		return nil, "", err
 	}
 
-	ls := document.EphemeralClusterSelector
+	docBundle, err := document.NewBundleByPath(root)
+	if err != nil {
+		return nil, "", err
+	}
+
+	ls := document.ControlNodeSelector
 	selector := document.NewSelector().
 		ByGvk("", "", AirshipHostKind).
 		ByLabel(ls)

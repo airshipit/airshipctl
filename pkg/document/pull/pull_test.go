@@ -3,7 +3,6 @@ package pull
 import (
 	"io/ioutil"
 	"path"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -16,6 +15,7 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/util"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
@@ -42,7 +42,7 @@ func TestPull(t *testing.T) {
 		fx := fixtures.Basic().One()
 
 		dummyGitDir := fx.DotGit().Root()
-		currentManifest.Repository = &config.Repository{
+		currentManifest.Repositories = map[string]*config.Repository{currentManifest.PrimaryRepositoryName: {
 			URLString: dummyGitDir,
 			CheckoutOptions: &config.RepoCheckout{
 				Branch:        "master",
@@ -51,6 +51,7 @@ func TestPull(t *testing.T) {
 			Auth: &config.RepoAuth{
 				Type: "http-basic",
 			},
+		},
 		}
 
 		tmpDir, cleanup := testutil.TempDir(t, "airshipctlPullTest-")
@@ -58,13 +59,13 @@ func TestPull(t *testing.T) {
 
 		currentManifest.TargetPath = tmpDir
 
-		_, err = repo2.NewRepository(".", currentManifest.Repository)
+		_, err = repo2.NewRepository(".", currentManifest.Repositories[currentManifest.PrimaryRepositoryName])
 		require.NoError(err)
 
 		err = dummyPullSettings.cloneRepositories()
 
 		require.NoError(err)
-		dummyRepoDirName := filepath.Base(dummyGitDir)
+		dummyRepoDirName := util.GitDirNameFromURL(dummyGitDir)
 		assert.FileExists(path.Join(tmpDir, dummyRepoDirName, "go/example.go"))
 		assert.FileExists(path.Join(tmpDir, dummyRepoDirName, ".git/HEAD"))
 		contents, err := ioutil.ReadFile(path.Join(tmpDir, dummyRepoDirName, ".git/HEAD"))
@@ -82,14 +83,16 @@ func TestPull(t *testing.T) {
 
 		mfst := conf.Manifests["dummy_manifest"]
 		dummyGitDir := fx.DotGit().Root()
-		mfst.Repository = &config.Repository{
-			URLString: dummyGitDir,
-			CheckoutOptions: &config.RepoCheckout{
-				Branch:        "master",
-				ForceCheckout: false,
-			},
-			Auth: &config.RepoAuth{
-				Type: "http-basic",
+		mfst.Repositories = map[string]*config.Repository{
+			mfst.PrimaryRepositoryName: {
+				URLString: dummyGitDir,
+				CheckoutOptions: &config.RepoCheckout{
+					Branch:        "master",
+					ForceCheckout: false,
+				},
+				Auth: &config.RepoAuth{
+					Type: "http-basic",
+				},
 			},
 		}
 		dummyPullSettings.SetConfig(conf)
@@ -103,7 +106,7 @@ func TestPull(t *testing.T) {
 		err = dummyPullSettings.Pull()
 		require.NoError(err)
 
-		dummyRepoDirName := filepath.Base(dummyGitDir)
+		dummyRepoDirName := util.GitDirNameFromURL(dummyGitDir)
 		assert.FileExists(path.Join(tmpDir, dummyRepoDirName, "go/example.go"))
 		assert.FileExists(path.Join(tmpDir, dummyRepoDirName, ".git/HEAD"))
 		contents, err := ioutil.ReadFile(path.Join(tmpDir, dummyRepoDirName, ".git/HEAD"))

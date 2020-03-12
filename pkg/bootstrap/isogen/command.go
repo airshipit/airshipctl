@@ -34,19 +34,17 @@ func GenerateBootstrapIso(settings *environment.AirshipCTLSettings) error {
 		return err
 	}
 
-	var manifest *config.Manifest
-	manifest, err = globalConf.CurrentContextManifest()
-	if err != nil {
-		return err
-	}
-
 	if err = verifyInputs(cfg); err != nil {
 		return err
 	}
 
 	// TODO (dukov) replace with the appropriate function once it's available
 	// in document module
-	docBundle, err := document.NewBundle(document.NewDocumentFs(), manifest.TargetPath, "")
+	root, err := globalConf.CurrentContextEntryPoint(config.Ephemeral, "")
+	if err != nil {
+		return err
+	}
+	docBundle, err := document.NewBundleByPath(root)
 	if err != nil {
 		return err
 	}

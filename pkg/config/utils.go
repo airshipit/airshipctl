@@ -16,6 +16,10 @@ limitations under the License.
 
 package config
 
+const (
+	DefaultTestPrimaryRepo = "primary"
+)
+
 // NewConfig returns a newly initialized Config object
 func NewConfig() *Config {
 	return &Config{
@@ -30,15 +34,19 @@ func NewConfig() *Config {
 		},
 		Manifests: map[string]*Manifest{
 			AirshipDefaultManifest: {
-				Repository: &Repository{
-					URLString: AirshipDefaultManifestRepoLocation,
-					CheckoutOptions: &RepoCheckout{
-						CommitHash: "master",
-						Branch:     "master",
-						RemoteRef:  "master",
+				Repositories: map[string]*Repository{
+					DefaultTestPrimaryRepo: {
+						URLString: AirshipDefaultManifestRepoLocation,
+						CheckoutOptions: &RepoCheckout{
+							CommitHash: "master",
+							Branch:     "master",
+							RemoteRef:  "master",
+						},
 					},
 				},
-				TargetPath: "/tmp/" + AirshipDefaultManifest,
+				TargetPath:            "/tmp/" + AirshipDefaultManifest,
+				PrimaryRepositoryName: DefaultTestPrimaryRepo,
+				SubPath:               AirshipDefaultManifestRepo + "/manifests/site",
 			},
 		},
 		ModulesConfig: &Modules{
@@ -78,8 +86,8 @@ func NewCluster() *Cluster {
 // object with non-nil maps
 func NewManifest() *Manifest {
 	return &Manifest{
-		Repository:        NewRepository(),
-		ExtraRepositories: make(map[string]*Repository),
+		PrimaryRepositoryName: DefaultTestPrimaryRepo,
+		Repositories:          map[string]*Repository{DefaultTestPrimaryRepo: NewRepository()},
 	}
 }
 

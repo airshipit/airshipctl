@@ -93,3 +93,11 @@ type ErrMissingCurrentContext struct {
 func (e ErrMissingCurrentContext) Error() string {
 	return "Current context must be set before using --current flag"
 }
+
+// ErrMissingPrimaryRepo returned when Primary Repository is not set in context manifest
+type ErrMissingPrimaryRepo struct {
+}
+
+func (e ErrMissingPrimaryRepo) Error() string {
+	return "Current context manifest must have primary repository set"
+}

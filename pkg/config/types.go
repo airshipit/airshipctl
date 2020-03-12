@@ -113,15 +113,23 @@ type AuthInfo struct {
 	authInfo *kubeconfig.AuthInfo
 }
 
-// Manifests is a tuple of references to a Manifest (how do Identify, collect ,
+// Manifest is a tuple of references to a Manifest (how do Identify, collect ,
 // find the yaml manifests that airship uses to perform its operations)
 type Manifest struct {
-	// Repositories is the map of repository adddressable by a name
-	Repository *Repository `json:"repository"`
+	// PrimaryRepositoryName is a name of the repo, that contains site/<site-name> directory
+	// and is a starting point for building document bundle
+	PrimaryRepositoryName string `json:"primary-repository-name"`
 	// ExtraRepositories is the map of extra repositories addressable by a name
-	ExtraRepositories map[string]*Repository `json:"extra-repositories,omitempty"`
+	Repositories map[string]*Repository `json:"repositories,omitempty"`
 	// TargetPath Local Target path for working or home dirctory for all Manifest Cloned/Returned/Generated
 	TargetPath string `json:"target-path"`
+	// SubPath is a path relative to TargetPath + Path where PrimaryRepository is cloned and contains
+	// directories with ClusterType and Phase bundles, example:
+	// Repositories[PrimaryRepositoryName].Url = 'https://github.com/airshipit/treasuremap'
+	// SubPath = "manifests"
+	// you would expect that at treasuremap/manifests you would have ephemeral/initinfra and
+	// ephemera/target directories, containing kustomize.yaml.
+	SubPath string `json:"sub-path"`
 }
 
 // Repository is a tuple that holds the information for the remote sources of manifest yaml documents.
