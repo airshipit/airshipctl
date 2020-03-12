@@ -65,8 +65,9 @@ func (infra *Infra) Deploy() error {
 		return err
 	}
 
+	selector := document.NewInintInfraSelector()
 	// TODO (kkalynovskyi) Add Selector that would filter by label indicating wether to deploy it to k8s
-	docs, err := b.GetAllDocuments()
+	docs, err := b.Select(selector)
 	if err != nil {
 		return err
 	}

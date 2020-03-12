@@ -1,0 +1,36 @@
+## this file provides two invalid documents that would lead to errors in
+## different places, see more details in each document comment
+---
+## this document will lead to failure when trying to get string data
+## by field (spec.networkData.name) and return error
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  labels:
+    airshipit.org/ephemeral-node: "true"
+  name: master-0
+spec:
+  online: true
+  bootMACAddress: 00:3b:8b:0c:ec:8b
+  bmc:
+    address: ipmi://192.168.111.1:6230
+    credentialsName: master-0-bmc-secret
+  networkData:
+    namespace: validNamespace
+---
+## this document will lead to failure when trying to get string data
+## by field (spec.networkData.namespace) and return error
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  labels:
+    airshipit.org/ephemeral-node: "true"
+  name: master-1
+spec:
+  online: true
+  bootMACAddress: 00:3b:8b:0c:ec:8b
+  bmc:
+    address: ipmi://192.168.111.1:6230
+    credentialsName: master-0-bmc-secret
+  networkData:
+    name: validName

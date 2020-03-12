@@ -83,10 +83,7 @@ func getRemoteDirectConfig(settings *environment.AirshipCTLSettings) (*config.Re
 		return nil, "", err
 	}
 
-	ls := document.ControlNodeSelector
-	selector := document.NewSelector().
-		ByGvk("", "", AirshipHostKind).
-		ByLabel(ls)
+	selector := document.NewEphemeralBMHSelector()
 	docs, err := docBundle.Select(selector)
 	if err != nil {
 		return nil, "", err

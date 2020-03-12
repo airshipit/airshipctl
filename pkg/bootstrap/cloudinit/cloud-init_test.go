@@ -32,7 +32,7 @@ func TestGetCloudData(t *testing.T) {
 			expectedNetData:  nil,
 			expectedErr: document.ErrDocNotFound{
 				Selector: document.NewSelector().
-					ByLabel("airshipit.org/ephemeral-node=true").
+					ByLabel(document.EphemeralHostSelector).
 					ByKind("BareMetalHost"),
 			},
 		},
@@ -42,7 +42,7 @@ func TestGetCloudData(t *testing.T) {
 			expectedNetData:  nil,
 			expectedErr: document.ErrMultipleDocsFound{
 				Selector: document.NewSelector().
-					ByLabel("airshipit.org/ephemeral-node=true").
+					ByLabel(document.EphemeralHostSelector).
 					ByKind("BareMetalHost"),
 			},
 		},
@@ -82,7 +82,7 @@ func TestGetCloudData(t *testing.T) {
 			expectedErr: document.ErrDocNotFound{
 				Selector: document.NewSelector().
 					ByKind("Secret").
-					ByLabel("airshipit.org/ephemeral-user-data=true"),
+					ByLabel(document.EphemeralUserDataSelector),
 			},
 		},
 	}
