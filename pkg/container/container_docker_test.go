@@ -218,6 +218,9 @@ func TestImagePull(t *testing.T) {
 				imagePull: func() (io.ReadCloser, error) {
 					return ioutil.NopCloser(strings.NewReader("test")), nil
 				},
+				imageInspectWithRaw: func() (types.ImageInspect, []byte, error) {
+					return types.ImageInspect{}, nil, testError
+				},
 			},
 			expectedErr: nil,
 		},
@@ -225,6 +228,9 @@ func TestImagePull(t *testing.T) {
 			mockDockerClient: mockDockerClient{
 				imagePull: func() (io.ReadCloser, error) {
 					return nil, testError
+				},
+				imageInspectWithRaw: func() (types.ImageInspect, []byte, error) {
+					return types.ImageInspect{}, nil, testError
 				},
 			},
 			expectedErr: testError,
@@ -442,6 +448,9 @@ func TestNewDockerContainer(t *testing.T) {
 				imagePull: func() (io.ReadCloser, error) {
 					return ioutil.NopCloser(strings.NewReader("test")), nil
 				},
+				imageInspectWithRaw: func() (types.ImageInspect, []byte, error) {
+					return types.ImageInspect{}, nil, testError
+				},
 			},
 			expectedErr: nil,
 			expectedResult: resultStruct{
@@ -456,6 +465,9 @@ func TestNewDockerContainer(t *testing.T) {
 			cli: mockDockerClient{
 				imagePull: func() (io.ReadCloser, error) {
 					return nil, testError
+				},
+				imageInspectWithRaw: func() (types.ImageInspect, []byte, error) {
+					return types.ImageInspect{}, nil, testError
 				},
 			},
 			expectedErr:    testError,
