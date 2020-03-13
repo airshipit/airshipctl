@@ -89,6 +89,7 @@
         state: directory
         recurse: true
         owner: "{{ ansible_user }}"
+        path: "{{ libvirt_log_dir }}"
       become: true
 
     - name: Downloads logs to executor
