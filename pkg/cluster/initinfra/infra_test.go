@@ -8,23 +8,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"k8s.io/client-go/kubernetes"
-
 	"opendev.org/airship/airshipctl/pkg/cluster/initinfra"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/k8s/client"
+	"opendev.org/airship/airshipctl/pkg/k8s/client/fake"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubectl"
 	"opendev.org/airship/airshipctl/testutil/k8sutils"
 )
-
-type TestClient struct {
-	MockKubectl   func() kubectl.Interface
-	MockClientset func() kubernetes.Interface
-}
-
-func (tc TestClient) ClientSet() kubernetes.Interface { return tc.MockClientset() }
-func (tc TestClient) Kubectl() kubectl.Interface      { return tc.MockKubectl() }
 
 const (
 	kubeconfigPath    = "testdata/kubeconfig.yaml"
@@ -55,7 +46,7 @@ func TestDeploy(t *testing.T) {
 	infra.FileSystem = document.NewDocumentFs()
 
 	kctl := kubectl.NewKubectl(tf)
-	tc := TestClient{
+	tc := fake.Client{
 		MockKubectl: func() kubectl.Interface { return kctl },
 	}
 
@@ -66,7 +57,7 @@ func TestDeploy(t *testing.T) {
 		expectedError error
 	}{
 		{
-			client: TestClient{
+			client: fake.Client{
 				MockKubectl: func() kubectl.Interface {
 					return kubectl.NewKubectl(k8sutils.
 						NewMockKubectlFactory().
