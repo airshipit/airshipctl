@@ -36,8 +36,8 @@ require (
 	k8s.io/cli-runtime v0.0.0-20191114110141-0a35778df828
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/kubectl v0.0.0-20191114113550-6123e1c827f7
-	opendev.org/airship/go-redfish v0.0.0-20200110185254-3ab47e28bae8
-	opendev.org/airship/go-redfish/client v0.0.0-20200110185254-3ab47e28bae8
+	opendev.org/airship/go-redfish v0.0.0-20200318103738-db034d1d753a
+	opendev.org/airship/go-redfish/client v0.0.0-20200318103738-db034d1d753a
 	sigs.k8s.io/kustomize/v3 v3.2.0
 	sigs.k8s.io/yaml v1.1.0
 )

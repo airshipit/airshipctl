@@ -28,11 +28,13 @@ func TestRedfishRemoteDirectNormal(t *testing.T) {
 
 	systemID := computerSystemID
 	httpResp := &http.Response{StatusCode: 200}
-	m.On("GetSystem", context.Background(), systemID).
+	m.On("GetSystem", context.Background(), systemID).Times(1).
 		Return(getTestSystem(), httpResp, nil)
 	m.On("InsertVirtualMedia", context.Background(), "manager-1", "Cd", mock.Anything).
 		Return(redfishClient.RedfishError{}, httpResp, nil)
 
+	m.On("GetSystem", context.Background(), systemID).Times(1).
+		Return(getTestSystem(), httpResp, nil)
 	systemReq := redfishClient.ComputerSystem{
 		Boot: redfishClient.Boot{
 			BootSourceOverrideTarget: redfishClient.BOOTSOURCE_CD,
@@ -48,10 +50,16 @@ func TestRedfishRemoteDirectNormal(t *testing.T) {
 		Times(1).
 		Return(redfishClient.RedfishError{}, httpResp, nil)
 
+	m.On("GetSystem", context.Background(), systemID).Times(1).
+		Return(redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_OFF}, httpResp, nil)
+
 	resetReq.ResetType = redfishClient.RESETTYPE_ON
 	m.On("ResetSystem", context.Background(), systemID, resetReq).
 		Times(1).
 		Return(redfishClient.RedfishError{}, httpResp, nil)
+
+	m.On("GetSystem", context.Background(), systemID).Times(1).
+		Return(redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_ON}, httpResp, nil)
 
 	rDCfg := getDefaultRedfishRemoteDirectObj(t, m)
 

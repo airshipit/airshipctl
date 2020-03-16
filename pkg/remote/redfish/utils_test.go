@@ -94,17 +94,24 @@ func TestRedfishUtilRebootSystemOK(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
+	httpResp := &http.Response{StatusCode: 200}
 	ctx := context.Background()
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 	m.On("ResetSystem", ctx, systemID, resetReq).
 		Times(1).
-		Return(redfishClient.RedfishError{}, &http.Response{StatusCode: 200}, nil)
+		Return(redfishClient.RedfishError{}, httpResp, nil)
+
+	m.On("GetSystem", ctx, systemID).Times(1).
+		Return(redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_OFF}, httpResp, nil)
 
 	resetReq.ResetType = redfishClient.RESETTYPE_ON
 	m.On("ResetSystem", ctx, systemID, resetReq).
 		Times(1).
-		Return(redfishClient.RedfishError{}, &http.Response{StatusCode: 200}, nil)
+		Return(redfishClient.RedfishError{}, httpResp, nil)
+
+	m.On("GetSystem", ctx, systemID).Times(1).
+		Return(redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_ON}, httpResp, nil)
 
 	err := RebootSystem(ctx, m, systemID)
 	assert.NoError(t, err)
@@ -156,6 +163,9 @@ func TestRedfishUtilRebootSystemTurningOnError(t *testing.T) {
 		Times(1).
 		Return(redfishClient.RedfishError{}, &http.Response{StatusCode: 200}, nil)
 
+	m.On("GetSystem", ctx, systemID).Times(1).
+		Return(redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_OFF}, &http.Response{StatusCode: 200}, nil)
+
 	resetOnReq := redfishClient.ResetRequestBody{}
 	resetOnReq.ResetType = redfishClient.RESETTYPE_ON
 	m.On("ResetSystem", ctx, systemID, resetOnReq).
@@ -166,4 +176,21 @@ func TestRedfishUtilRebootSystemTurningOnError(t *testing.T) {
 	err := RebootSystem(ctx, m, systemID)
 	_, ok := err.(ErrRedfishClient)
 	assert.True(t, ok)
+}
+
+func TestRedfishUtilRebootSystemTimeout(t *testing.T) {
+	m := &redfishMocks.RedfishAPI{}
+	defer m.AssertExpectations(t)
+
+	ctx := context.WithValue(context.Background(), "numRetries", 1)
+	resetReq := redfishClient.ResetRequestBody{}
+	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
+	m.On("ResetSystem", ctx, systemID, resetReq).
+		Times(1).
+		Return(redfishClient.RedfishError{}, &http.Response{StatusCode: 200}, nil)
+
+	m.On("GetSystem", ctx, systemID).
+		Return(redfishClient.ComputerSystem{}, &http.Response{StatusCode: 200}, nil)
+	err := RebootSystem(ctx, m, systemID)
+	assert.Equal(t, ErrOperationRetriesExceeded{}, err)
 }
