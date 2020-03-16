@@ -225,8 +225,7 @@ func (c *DockerContainer) RunCommand(
 	containerInput io.Reader,
 	volumeMounts []string,
 	envVars []string,
-	// TODO (D. Ukov) add debug logic
-	_ bool,
+	debug bool,
 ) error {
 	realCmd, err := c.getCmd(cmd)
 	if err != nil {
@@ -264,7 +263,24 @@ func (c *DockerContainer) RunCommand(
 		return err
 	}
 
+	if debug {
+		log.Debug("start reading container logs")
+		var reader io.ReadCloser
+		reader, err = c.dockerClient.ContainerLogs(*c.ctx, c.id, types.ContainerLogsOptions{ShowStdout: true, Follow: true})
+		if err != nil {
+			log.Debugf("failed to read container logs %s", err)
+			reader = ioutil.NopCloser(strings.NewReader(""))
+		}
+
+		_, err = io.Copy(log.Writer(), reader)
+		if err != nil {
+			log.Debugf("failed to write container logs to log output %s", err)
+		}
+		log.Debug("got EOF from container logs")
+	}
+
 	statusCh, errCh := c.dockerClient.ContainerWait(*c.ctx, c.id, container.WaitConditionNotRunning)
+	log.Debugf("waiting until command '%s' is finished...", realCmd)
 	select {
 	case err = <-errCh:
 		if err != nil {
