@@ -14,7 +14,7 @@ import (
 func TestNewBundle(t *testing.T) {
 	require := require.New(t)
 
-	bundle := testutil.NewTestBundle(t, "testdata")
+	bundle := testutil.NewTestBundle(t, "testdata/common")
 	require.NotNil(bundle)
 }
 
@@ -22,7 +22,7 @@ func TestBundleDocumentFiltering(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
-	bundle := testutil.NewTestBundle(t, "testdata")
+	bundle := testutil.NewTestBundle(t, "testdata/common")
 
 	t.Run("GetKustomizeResourceMap", func(t *testing.T) {
 		r := bundle.GetKustomizeResourceMap()

@@ -1,0 +1,4 @@
+resources:
+ - baremetal.yaml
+ - secret.yaml
+ - argo.yaml

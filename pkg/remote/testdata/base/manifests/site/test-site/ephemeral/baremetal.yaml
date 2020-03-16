@@ -3,7 +3,7 @@ apiVersion: metal3.io/v1alpha1
 kind: BareMetalHost
 metadata:
   labels:
-    airshipit.org/node-role: "control-plane"
+    airshipit.org/ephemeral-node: "true"
   name: master-0
 spec:
   online: true
@@ -16,7 +16,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   labels:
-    airshipit.org/node-role: "control-plane"
+    airshipit.org/ephemeral-node: "true"
   name: master-0-bmc-secret
 type: Opaque
 data:

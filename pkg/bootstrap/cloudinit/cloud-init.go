@@ -7,13 +7,8 @@ import (
 )
 
 const (
-	UserDataKind           = "Secret"
-	NetworkDataKind        = "Secret"
-	BareMetalHostKind      = "BareMetalHost"
-	EphemeralHostLabel     = "airshipit.org/ephemeral-node=true"
-	EphemeralUserDataLabel = "airshipit.org/ephemeral-user-data=true"
-	networkDataKey         = "networkData"
-	userDataKey            = "userData"
+	networkDataKey = "networkData"
+	userDataKey    = "userData"
 )
 
 // GetCloudData reads YAML document input and generates cloud-init data for
@@ -36,7 +31,7 @@ func GetCloudData(docBundle document.Bundle) (userData []byte, netConf []byte, e
 
 func getUserData(docBundle document.Bundle) ([]byte, error) {
 	// find the user-data document
-	selector := document.NewSelector().ByKind(UserDataKind).ByLabel(EphemeralUserDataLabel)
+	selector := document.NewEphemeralCloudDataSelector()
 	docs, err := docBundle.Select(selector)
 	if err != nil {
 		return nil, err
@@ -62,7 +57,7 @@ func getUserData(docBundle document.Bundle) ([]byte, error) {
 
 func getNetworkData(docBundle document.Bundle) ([]byte, error) {
 	// find the baremetal host indicated as the ephemeral node
-	selector := document.NewSelector().ByKind(BareMetalHostKind).ByLabel(EphemeralHostLabel)
+	selector := document.NewEphemeralBMHSelector()
 	docs, err := docBundle.Select(selector)
 	if err != nil {
 		return nil, err
@@ -78,18 +73,11 @@ func getNetworkData(docBundle document.Bundle) ([]byte, error) {
 		bmhDoc = docs[0]
 	}
 
-	// extract the network data document pointer from the bmh document
-	netConfDocName, err := bmhDoc.GetString("spec.networkData.name")
-	if err != nil {
-		return nil, err
-	}
-	netConfDocNamespace, err := bmhDoc.GetString("spec.networkData.namespace")
-	if err != nil {
-		return nil, err
-	}
-
 	// try and find these documents in our bundle
-	selector = document.NewSelector().ByKind(NetworkDataKind).ByNamespace(netConfDocNamespace).ByName(netConfDocName)
+	selector, err = document.NewEphemeralNetworkDataSelector(bmhDoc)
+	if err != nil {
+		return nil, err
+	}
 	docs, err = docBundle.Select(selector)
 
 	if err != nil {

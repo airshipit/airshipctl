@@ -21,7 +21,7 @@ func TestDocument(t *testing.T) {
 	// alanmeadows(TODO): at some point
 	// refactoring this so there isn't a reliance
 	// on a bundle might be useful
-	fSys := testutil.SetupTestFs(t, "testdata")
+	fSys := testutil.SetupTestFs(t, "testdata/common")
 	bundle, err := document.NewBundle(fSys, "/", "/")
 	require.NoError(err, "Building Bundle Failed")
 	require.NotNil(bundle)
