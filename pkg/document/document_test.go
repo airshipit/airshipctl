@@ -96,4 +96,16 @@ func TestDocument(t *testing.T) {
 
 		assert.Equal(s, gotSlice)
 	})
+
+	t.Run("Label", func(t *testing.T) {
+		docs, err := bundle.GetAllDocuments()
+		require.NoError(err, "Unexpected error trying to GetAllDocuments")
+
+		for _, doc := range docs {
+			err := doc.Label("test", "testval")
+			require.NoError(err, "Unexpected error trying to Label")
+			labelList := doc.GetLabels()
+			assert.Contains(labelList, "test", "Could not find expected label")
+		}
+	})
 }

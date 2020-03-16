@@ -11,8 +11,8 @@ type Factory struct {
 
 // Document interface
 type Document interface {
-	GetKustomizeResource() resource.Resource
-	SetKustomizeResource(*resource.Resource) error
+	Label(key string, value string) error
+	GetLabels() map[string]string
 	AsYAML() ([]byte, error)
 	MarshalJSON() ([]byte, error)
 	GetName() string
@@ -26,6 +26,26 @@ type Document interface {
 	GetSlice(path string) ([]interface{}, error)
 	GetStringMap(path string) (map[string]string, error)
 	GetMap(path string) (map[string]interface{}, error)
+}
+
+// Label document by applying label on it
+func (d *Factory) Label(key string, value string) error {
+	r := d.GetKustomizeResource()
+	labels := r.GetLabels()
+	if labels == nil {
+		labels = make(map[string]string)
+	}
+	labels[key] = value
+	r.SetLabels(labels)
+	err := d.SetKustomizeResource(&r)
+	return err
+}
+
+// GetLabels returns applied labels for the document
+func (d *Factory) GetLabels() map[string]string {
+	r := d.GetKustomizeResource()
+	labels := r.GetLabels()
+	return labels
 }
 
 // GetNamespace returns the namespace the resource thinks it's in.
@@ -124,7 +144,7 @@ func (d *Factory) SetKustomizeResource(r *resource.Resource) error {
 // documents - e.g. in the future all documents require an airship
 // annotation X
 func NewDocument(r *resource.Resource) (Document, error) {
-	var doc Document = &Factory{}
+	doc := &Factory{}
 	err := doc.SetKustomizeResource(r)
 	return doc, err
 }
