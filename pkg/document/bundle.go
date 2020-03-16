@@ -42,10 +42,6 @@ type BundleFactory struct {
 // Bundle interface provides the specification for a bundle implementation
 type Bundle interface {
 	Write(out io.Writer) error
-	GetKustomizeResourceMap() resmap.ResMap
-	SetKustomizeResourceMap(resmap.ResMap) error
-	GetKustomizeBuildOptions() KustomizeBuildOptions
-	SetKustomizeBuildOptions(KustomizeBuildOptions) error
 	SetFileSystem(FileSystem) error
 	GetFileSystem() FileSystem
 	Select(selector Selector) ([]Document, error)
@@ -66,7 +62,7 @@ func NewBundleByPath(rootPath string) (Bundle, error) {
 // NewBundle is a convenience function to create a new bundle
 // Over time, it will evolve to support allowing more control
 // for kustomize plugins
-func NewBundle(fSys FileSystem, kustomizePath string, outputPath string) (bundle Bundle, err error) {
+func NewBundle(fSys FileSystem, kustomizePath string, outputPath string) (Bundle, error) {
 	var options = KustomizeBuildOptions{
 		KustomizationPath: kustomizePath,
 		OutputPath:        outputPath,
@@ -75,13 +71,13 @@ func NewBundle(fSys FileSystem, kustomizePath string, outputPath string) (bundle
 	}
 
 	// init an empty bundle factory
-	bundle = &BundleFactory{}
+	bundle := &BundleFactory{}
 
 	// set the fs and build options we will use
-	if err = bundle.SetFileSystem(fSys); err != nil {
+	if err := bundle.SetFileSystem(fSys); err != nil {
 		return nil, err
 	}
-	if err = bundle.SetKustomizeBuildOptions(options); err != nil {
+	if err := bundle.SetKustomizeBuildOptions(options); err != nil {
 		return nil, err
 	}
 

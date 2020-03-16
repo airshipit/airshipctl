@@ -24,13 +24,6 @@ func TestBundleDocumentFiltering(t *testing.T) {
 
 	bundle := testutil.NewTestBundle(t, "testdata/common")
 
-	t.Run("GetKustomizeResourceMap", func(t *testing.T) {
-		r := bundle.GetKustomizeResourceMap()
-
-		// ensure it is populated
-		assert.NotZero(r.Size())
-	})
-
 	t.Run("GetByGvk", func(t *testing.T) {
 		docs, err := bundle.GetByGvk("apps", "v1", "Deployment")
 		require.NoError(err)
