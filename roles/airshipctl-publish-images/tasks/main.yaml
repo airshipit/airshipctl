@@ -25,8 +25,8 @@
   block:
     - name: Login to Image Registry
       docker_login:
-        username: "{{ image-repo-credentials.username }}"
-        password: "{{ image-repo-credentials.password }}"
+        username: "{{ image_repo_credentials.username }}"
+        password: "{{ image_repo_credentials.password }}"
         registry_url: "{{ image_repo }}"
 
     - name: Push Image with Latest Tag

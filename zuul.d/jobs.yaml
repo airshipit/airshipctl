@@ -36,7 +36,7 @@
     nodeset: airship-airshipctl-single-node
     secrets:
       - name: github_credentials
-        secret: airship-airshipctl-airshipit-github-username-password
+        secret: airship_airshipctl_airshipit_github_username_password
 
 - job:
     name: airship-airshipctl-build-image
@@ -60,7 +60,7 @@
       git_mirror_repository: airshipit/airshipctl
     secrets:
       - name: git_mirror_credentials
-        secret: airship-airshipctl-airshipit-github-secret
+        secret: airship_airshipctl_airshipit_github_secret
         pass-to-parent: true
 
 - job:
@@ -96,7 +96,7 @@
     parent: airship-airshipctl-build-image
     post-run: playbooks/airship-airshipctl-publish-images.yaml
     secrets:
-      - airshipctl-image-repo-credentials
+      - airshipctl_image_repo_credentials
     vars:
       image: quay.io/airshipit/airshipctl
       image_repo: https://quay.io/api/v1/
