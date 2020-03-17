@@ -20,4 +20,9 @@ func TestReadYAMLFile(t *testing.T) {
 	actualString := actual["testString"]
 	expectedString := "test"
 	assert.Equal(expectedString, actualString)
+
+	// test using an incorrect yaml
+	err = util.ReadYAMLFile("testdata/incorrect.yaml", &actual)
+	expectedString = "error converting YAML to JSON"
+	require.Contains(err.Error(), expectedString)
 }
