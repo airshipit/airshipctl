@@ -25,7 +25,7 @@ func TestRedfishErrorNonNilErrorWithoutHttpResp(t *testing.T) {
 	realErr := fmt.Errorf("sample error")
 	err := ScreenRedfishError(nil, realErr)
 	assert.Error(t, err)
-	_, ok := err.(*ClientError)
+	_, ok := err.(ErrRedfishClient)
 	assert.True(t, ok)
 }
 
@@ -34,15 +34,15 @@ func TestRedfishErrorNonNilErrorWithHttpRespError(t *testing.T) {
 
 	httpResp := &http.Response{StatusCode: 408}
 	err := ScreenRedfishError(httpResp, realErr)
-	assert.Equal(t, err, NewRedfishClientErrorf(realErr.Error()))
+	assert.Equal(t, err, ErrRedfishClient{Message: realErr.Error()})
 
 	httpResp.StatusCode = 400
 	err = ScreenRedfishError(httpResp, realErr)
-	assert.Equal(t, err, NewRedfishClientErrorf(realErr.Error()))
+	assert.Equal(t, err, ErrRedfishClient{Message: realErr.Error()})
 
 	httpResp.StatusCode = 199
 	err = ScreenRedfishError(httpResp, realErr)
-	assert.Equal(t, err, NewRedfishClientErrorf(realErr.Error()))
+	assert.Equal(t, err, ErrRedfishClient{Message: realErr.Error()})
 }
 
 func TestRedfishErrorNonNilErrorWithHttpRespOK(t *testing.T) {

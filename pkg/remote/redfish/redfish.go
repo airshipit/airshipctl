@@ -39,7 +39,7 @@ func (cfg RemoteDirect) DoRemoteDirect() error {
 	systemID := cfg.EphemeralNodeID
 	system, _, err := cfg.RedfishAPI.GetSystem(cfg.Context, systemID)
 	if err != nil {
-		return NewRedfishClientErrorf("Get System[%s] failed with err: %s", systemID, err.Error())
+		return ErrRedfishClient{Message: fmt.Sprintf("Get System[%s] failed with err: %v", systemID, err)}
 	}
 	alog.Debugf("Ephemeral Node System ID: '%s'", systemID)
 

@@ -75,7 +75,7 @@ func TestRedfishRemoteDirectInvalidSystemId(t *testing.T) {
 
 	err := localRDCfg.DoRemoteDirect()
 
-	_, ok := err.(*ClientError)
+	_, ok := err.(ErrRedfishClient)
 	assert.True(t, ok)
 }
 
@@ -96,7 +96,7 @@ func TestRedfishRemoteDirectGetSystemNetworkError(t *testing.T) {
 
 	err := rDCfg.DoRemoteDirect()
 
-	_, ok := err.(*ClientError)
+	_, ok := err.(ErrRedfishClient)
 	assert.True(t, ok)
 }
 
@@ -123,7 +123,7 @@ func TestRedfishRemoteDirectInvalidIsoPath(t *testing.T) {
 
 	err := localRDCfg.DoRemoteDirect()
 
-	_, ok := err.(*ClientError)
+	_, ok := err.(ErrRedfishClient)
 	assert.True(t, ok)
 }
 
@@ -148,7 +148,7 @@ func TestRedfishRemoteDirectCdDvdNotAvailableInBootSources(t *testing.T) {
 
 	err := rDCfg.DoRemoteDirect()
 
-	_, ok := err.(*ClientError)
+	_, ok := err.(ErrRedfishClient)
 	assert.True(t, ok)
 }
 
@@ -175,7 +175,7 @@ func TestRedfishRemoteDirectSetSystemBootSourceFailed(t *testing.T) {
 
 	err := rDCfg.DoRemoteDirect()
 
-	_, ok := err.(*ClientError)
+	_, ok := err.(ErrRedfishClient)
 	assert.True(t, ok)
 }
 
@@ -209,7 +209,7 @@ func TestRedfishRemoteDirectSystemRebootFailed(t *testing.T) {
 
 	err := rDCfg.DoRemoteDirect()
 
-	_, ok := err.(*ClientError)
+	_, ok := err.(ErrRedfishClient)
 	assert.True(t, ok)
 }
 
