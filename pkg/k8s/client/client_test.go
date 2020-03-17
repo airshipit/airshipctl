@@ -1,4 +1,4 @@
-package client
+package client_test
 
 import (
 	"path/filepath"
@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/k8s/client"
+	"opendev.org/airship/airshipctl/testutil"
 )
 
 const (
@@ -15,9 +17,11 @@ const (
 	airshipConfigDir = "testdata"
 )
 
-func TestNewclient(t *testing.T) {
+func TestNewClient(t *testing.T) {
 	settings := &environment.AirshipCTLSettings{}
-	settings.InitConfig()
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+	settings.SetConfig(conf)
 
 	akp, err := filepath.Abs(kubeconfigPath)
 	require.NoError(t, err)
@@ -28,7 +32,7 @@ func TestNewclient(t *testing.T) {
 	settings.SetAirshipConfigPath(adir)
 	settings.SetKubeConfigPath(akp)
 
-	client, err := NewClient(settings)
+	client, err := client.NewClient(settings)
 	assert.NoError(t, err)
 	assert.NotNil(t, client)
 	assert.NotNil(t, client.ClientSet())
