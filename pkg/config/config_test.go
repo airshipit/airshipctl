@@ -28,7 +28,11 @@ import (
 	"opendev.org/airship/airshipctl/testutil"
 )
 
-const stringDelta = "_changed"
+const (
+	stringDelta        = "_changed"
+	currentContextName = "def_ephemeral"
+	defaultString      = "default"
+)
 
 func TestString(t *testing.T) {
 	fSys := testutil.SetupTestFs(t, "testdata")
@@ -369,6 +373,27 @@ func TestEnsureComplete(t *testing.T) {
 	}
 }
 
+func TestCurrentContextBootstrapInfo(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	clusterName := "def"
+	clusterType := "ephemeral"
+
+	bootstrapInfo, err := conf.CurrentContextBootstrapInfo()
+	require.Error(t, err)
+	assert.Nil(t, bootstrapInfo)
+
+	conf.CurrentContext = currentContextName
+	conf.Clusters[clusterName].ClusterTypes[clusterType].Bootstrap = defaultString
+	conf.Contexts[currentContextName].Manifest = defaultString
+	conf.Contexts[currentContextName].KubeContext().Cluster = clusterName
+
+	bootstrapInfo, err = conf.CurrentContextBootstrapInfo()
+	require.NoError(t, err)
+	assert.Equal(t, conf.ModulesConfig.BootstrapInfo[defaultString], bootstrapInfo)
+}
+
 func TestPurge(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
@@ -428,7 +453,6 @@ func TestComplexName(t *testing.T) {
 	clusterName := config.NewClusterComplexName()
 	clusterName.WithType(cName, ctName)
 	assert.EqualValues(t, cName+"_"+ctName, clusterName.Name())
-
 	assert.EqualValues(t, cName, clusterName.ClusterName())
 	assert.EqualValues(t, ctName, clusterName.ClusterType())
 
@@ -444,6 +468,29 @@ func TestValidClusterTypeFail(t *testing.T) {
 	err := config.ValidClusterType("Fake")
 	assert.Error(t, err)
 }
+
+func TestSetLoadedConfigPath(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	testPath := "/tmp/loadedconfig"
+
+	assert.NotEqual(t, testPath, conf.LoadedConfigPath())
+	conf.SetLoadedConfigPath(testPath)
+	assert.Equal(t, testPath, conf.LoadedConfigPath())
+}
+
+func TestSetKubeConfigPath(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	testPath := "/tmp/kubeconfig"
+
+	assert.NotEqual(t, testPath, conf.KubeConfigPath())
+	conf.SetKubeConfigPath(testPath)
+	assert.Equal(t, testPath, conf.KubeConfigPath())
+}
+
 func TestGetCluster(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
@@ -555,6 +602,114 @@ func TestModifyContext(t *testing.T) {
 	assert.EqualValues(t, conf.Contexts[co.Name].KubeContext().AuthInfo, co.AuthInfo)
 	assert.EqualValues(t, conf.Contexts[co.Name].Manifest, co.Manifest)
 	assert.EqualValues(t, conf.Contexts[co.Name], context)
+}
+
+func TestGetCurrentContext(t *testing.T) {
+	t.Run("getCurrentContext", func(t *testing.T) {
+		conf, cleanup := testutil.InitConfig(t)
+		defer cleanup(t)
+
+		context, err := conf.GetCurrentContext()
+		require.Error(t, err)
+		assert.Nil(t, context)
+
+		conf.CurrentContext = currentContextName
+		conf.Contexts[currentContextName].Manifest = defaultString
+
+		context, err = conf.GetCurrentContext()
+		require.NoError(t, err)
+		assert.Equal(t, conf.Contexts[currentContextName], context)
+	})
+
+	t.Run("getCurrentContextIncomplete", func(t *testing.T) {
+		conf, cleanup := testutil.InitConfig(t)
+		defer cleanup(t)
+
+		context, err := conf.GetCurrentContext()
+		require.Error(t, err)
+		assert.Nil(t, context)
+
+		conf.CurrentContext = currentContextName
+
+		context, err = conf.GetCurrentContext()
+		assert.Error(t, err)
+		assert.Nil(t, context)
+	})
+}
+
+func TestCurrentContextCluster(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	clusterName := "def"
+	clusterType := "ephemeral"
+
+	cluster, err := conf.CurrentContextCluster()
+	require.Error(t, err)
+	assert.Nil(t, cluster)
+
+	conf.CurrentContext = currentContextName
+	conf.Contexts[currentContextName].Manifest = defaultString
+	conf.Contexts[currentContextName].KubeContext().Cluster = clusterName
+
+	cluster, err = conf.CurrentContextCluster()
+	require.NoError(t, err)
+	assert.Equal(t, conf.Clusters[clusterName].ClusterTypes[clusterType], cluster)
+}
+
+func TestCurrentContextAuthInfo(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	authInfo, err := conf.CurrentContextAuthInfo()
+	require.Error(t, err)
+	assert.Nil(t, authInfo)
+
+	conf.CurrentContext = currentContextName
+	conf.Contexts[currentContextName].Manifest = defaultString
+
+	authInfo, err = conf.CurrentContextAuthInfo()
+	require.NoError(t, err)
+	assert.Equal(t, conf.AuthInfos["k-admin"], authInfo)
+}
+
+func TestCurrentContextManifest(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	clusterName := "def"
+
+	manifest, err := conf.CurrentContextManifest()
+	require.Error(t, err)
+	assert.Nil(t, manifest)
+
+	conf.CurrentContext = currentContextName
+	conf.Contexts[currentContextName].Manifest = defaultString
+	conf.Contexts[currentContextName].KubeContext().Cluster = clusterName
+
+	manifest, err = conf.CurrentContextManifest()
+	require.NoError(t, err)
+	assert.Equal(t, conf.Manifests[defaultString], manifest)
+}
+
+func TestCurrentContextEntryPoint(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	clusterName := "def"
+	clusterType := "ephemeral"
+
+	entryPoint, err := conf.CurrentContextEntryPoint(clusterType, defaultString)
+	require.Error(t, err)
+	assert.Equal(t, "", entryPoint)
+
+	conf.CurrentContext = currentContextName
+	conf.Contexts[currentContextName].Manifest = defaultString
+	conf.Contexts[currentContextName].KubeContext().Cluster = clusterName
+
+	entryPoint, err = conf.CurrentContextEntryPoint(clusterType, defaultString)
+	require.NoError(t, err)
+	assert.Nil(t, nil, entryPoint)
 }
 
 // AuthInfo Related
