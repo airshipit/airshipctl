@@ -11,41 +11,46 @@ type Factory struct {
 
 // Document interface
 type Document interface {
-	Label(key string, value string) error
-	GetLabels() map[string]string
+	Annotate(key, value string)
 	AsYAML() ([]byte, error)
-	MarshalJSON() ([]byte, error)
-	GetName() string
-	GetKind() string
-	GetNamespace() string
-	GetString(path string) (string, error)
-	GetStringSlice(path string) ([]string, error)
+	GetAnnotations() map[string]string
 	GetBool(path string) (bool, error)
 	GetFloat64(path string) (float64, error)
 	GetInt64(path string) (int64, error)
-	GetSlice(path string) ([]interface{}, error)
-	GetStringMap(path string) (map[string]string, error)
+	GetKind() string
+	GetLabels() map[string]string
 	GetMap(path string) (map[string]interface{}, error)
+	GetName() string
+	GetNamespace() string
+	GetSlice(path string) ([]interface{}, error)
+	GetString(path string) (string, error)
+	GetStringMap(path string) (map[string]string, error)
+	GetStringSlice(path string) ([]string, error)
+	Label(key, value string)
+	MarshalJSON() ([]byte, error)
+}
+
+// Factory implements Document
+var _ Document = &Factory{}
+
+// Annotate document by applying annotation to it
+func (d *Factory) Annotate(key string, value string) {
+	annotations := d.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+	annotations[key] = value
+	d.SetAnnotations(annotations)
 }
 
 // Label document by applying label on it
-func (d *Factory) Label(key string, value string) error {
-	r := d.GetKustomizeResource()
-	labels := r.GetLabels()
+func (d *Factory) Label(key string, value string) {
+	labels := d.GetKustomizeResource().GetLabels()
 	if labels == nil {
 		labels = make(map[string]string)
 	}
 	labels[key] = value
-	r.SetLabels(labels)
-	err := d.SetKustomizeResource(&r)
-	return err
-}
-
-// GetLabels returns applied labels for the document
-func (d *Factory) GetLabels() map[string]string {
-	r := d.GetKustomizeResource()
-	labels := r.GetLabels()
-	return labels
+	d.GetKustomizeResource().SetLabels(labels)
 }
 
 // GetNamespace returns the namespace the resource thinks it's in.

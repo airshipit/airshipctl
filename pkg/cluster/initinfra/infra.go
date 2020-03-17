@@ -81,10 +81,7 @@ func (infra *Infra) Deploy() error {
 	// also if prune is set to true, this fulfills requirement for all labeled document to be labeled.
 	// Pruning by annotation is not available, therefore we need to use label.
 	for _, doc := range docs {
-		err := doc.Label(document.DeployedByLabel, document.InitinfraIdentifier)
-		if err != nil {
-			return err
-		}
+		doc.Label(document.DeployedByLabel, document.InitinfraIdentifier)
 	}
 
 	return kctl.Apply(docs, ao)

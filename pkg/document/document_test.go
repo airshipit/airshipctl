@@ -102,10 +102,20 @@ func TestDocument(t *testing.T) {
 		require.NoError(err, "Unexpected error trying to GetAllDocuments")
 
 		for _, doc := range docs {
-			err := doc.Label("test", "testval")
-			require.NoError(err, "Unexpected error trying to Label")
+			doc.Label("test", "testval")
 			labelList := doc.GetLabels()
-			assert.Contains(labelList, "test", "Could not find expected label")
+			assert.Contains(labelList, "test")
+		}
+	})
+
+	t.Run("Annotate", func(t *testing.T) {
+		docs, err := bundle.GetAllDocuments()
+		require.NoError(err, "Unexpected error trying to GetAllDocuments")
+
+		for _, doc := range docs {
+			doc.Annotate("test", "testval")
+			annotationList := doc.GetAnnotations()
+			assert.Contains(annotationList, "test")
 		}
 	})
 }
