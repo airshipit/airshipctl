@@ -267,6 +267,8 @@ func TestSetVirtualMediaInsertVirtualMediaError(t *testing.T) {
 		Return(testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil)
 	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
 		Return(testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
+	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
+		Return(testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
 	m.On("InsertVirtualMedia", context.Background(), testutil.ManagerID, "Cd", mock.Anything).Return(
 		redfishClient.RedfishError{}, &http.Response{StatusCode: 500}, redfishClient.GenericOpenAPIError{})
 

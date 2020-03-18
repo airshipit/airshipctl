@@ -48,7 +48,10 @@ func GetVirtualMedia(types []string) redfishClient.VirtualMedia {
 		mediaTypes = append(mediaTypes, t)
 	}
 
+	inserted := false
+
 	vMedia.MediaTypes = mediaTypes
+	vMedia.Inserted = &inserted
 
 	return vMedia
 }

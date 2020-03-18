@@ -13,9 +13,13 @@
 package dell
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	redfishMocks "opendev.org/airship/go-redfish/api/mocks"
+	redfishClient "opendev.org/airship/go-redfish/client"
 )
 
 const (
@@ -25,10 +29,24 @@ const (
 )
 
 func TestNewClient(t *testing.T) {
-	// NOTE(drewwalters96): The Dell client implementation of this method simply creates the standard Redfish
-	// client. This test verifies that the Dell client creates and stores an instance of the standard client.
-
-	// Create the Dell client
 	_, _, err := NewClient(ephemeralNodeID, isoPath, redfishURL, false, false, "username", "password")
 	assert.NoError(t, err)
+}
+
+func TestSetEphemeralBootSourceByTypeGetSystemError(t *testing.T) {
+	m := &redfishMocks.RedfishAPI{}
+	defer m.AssertExpectations(t)
+
+	ctx, client, err := NewClient("invalid-server", isoPath, redfishURL, false, false, "", "")
+	assert.NoError(t, err)
+
+	// Mock redfish get system request
+	m.On("GetSystem", ctx, client.EphemeralNodeID()).Times(1).Return(redfishClient.ComputerSystem{},
+		&http.Response{StatusCode: 500}, redfishClient.GenericOpenAPIError{})
+
+	// Replace normal API client with mocked API client
+	client.RedfishAPI = m
+
+	err = client.SetEphemeralBootSourceByType(ctx)
+	assert.Error(t, err)
 }
