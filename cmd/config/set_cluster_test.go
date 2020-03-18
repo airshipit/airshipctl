@@ -46,6 +46,32 @@ const (
 	testCluster = "my_new-cluster"
 )
 
+func TestConfigSetCluster(t *testing.T) {
+	cmdTests := []*testutil.CmdTest{
+		{
+			Name:    "config-cmd-set-cluster-with-help",
+			CmdLine: "--help",
+			Cmd:     cmd.NewSetClusterCommand(nil),
+		},
+		{
+			Name:    "config-cmd-set-cluster-with-no-flags",
+			CmdLine: "",
+			Cmd:     cmd.NewSetClusterCommand(nil),
+			Error:   fmt.Errorf("accepts %d arg(s), received %d", 1, 0),
+		},
+		{
+			Name:    "config-cmd-set-cluster-too-many-args",
+			CmdLine: "arg1 arg2",
+			Cmd:     cmd.NewSetClusterCommand(nil),
+			Error:   fmt.Errorf("accepts at most %d arg(s), received %d", 1, 2),
+		},
+	}
+
+	for _, tt := range cmdTests {
+		testutil.RunTest(t, tt)
+	}
+}
+
 func TestSetClusterWithCAFile(t *testing.T) {
 	given, cleanupGiven := testutil.InitConfig(t)
 	defer cleanupGiven(t)

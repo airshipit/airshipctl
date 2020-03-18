@@ -18,25 +18,30 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/util"
 )
 
 func TestReadYAMLFile(t *testing.T) {
 	assert := assert.New(t)
-	require := require.New(t)
 
 	var actual map[string]interface{}
-	err := util.ReadYAMLFile("testdata/test.yaml", &actual)
-	require.NoError(err, "Error while reading YAML")
 
-	actualString := actual["testString"]
-	expectedString := "test"
-	assert.Equal(expectedString, actualString)
+	tests := []struct {
+		testFile string
+		isError  bool
+	}{
+		{"testdata/test.yaml", false},
+		{"testdata/incorrect.yaml", true},
+		{"testdata/notfound.yaml", true},
+	}
 
-	// test using an incorrect yaml
-	err = util.ReadYAMLFile("testdata/incorrect.yaml", &actual)
-	expectedString = "error converting YAML to JSON"
-	require.Contains(err.Error(), expectedString)
+	for _, test := range tests {
+		err := util.ReadYAMLFile(test.testFile, &actual)
+		if test.isError {
+			assert.Error(err)
+		} else {
+			assert.NoError(err)
+		}
+	}
 }
