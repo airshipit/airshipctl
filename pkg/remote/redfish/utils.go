@@ -2,6 +2,7 @@ package redfish
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"strings"
 	"time"
@@ -63,7 +64,7 @@ func SetSystemBootSourceForMediaType(ctx context.Context,
 	/* Check available boot sources for system */
 	system, _, err := api.GetSystem(ctx, systemID)
 	if err != nil {
-		return NewRedfishClientErrorf("Get System[%s] failed with err: %s", systemID, err.Error())
+		return ErrRedfishClient{Message: fmt.Sprintf("Get System[%s] failed with err: %v", systemID, err)}
 	}
 
 	allowableValues := system.Boot.BootSourceOverrideTargetRedfishAllowableValues
@@ -77,7 +78,7 @@ func SetSystemBootSourceForMediaType(ctx context.Context,
 		}
 	}
 
-	return NewRedfishClientErrorf("failed to set system[%s] boot source", systemID)
+	return ErrRedfishClient{Message: fmt.Sprintf("failed to set system[%s] boot source", systemID)}
 }
 
 // Reboots a system by force shutoff and turning on.
