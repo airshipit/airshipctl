@@ -7,6 +7,7 @@ cluster: dummycluster_ephemeral
 namespace: dummy_namespace
 user: dummy_user
 
+
 Context: ContextBaz
 context-kubeconf: ContextBaz_ephemeral
 manifest: Manifest_ContextBaz
@@ -16,6 +17,7 @@ cluster: dummycluster_ephemeral
 namespace: dummy_namespace
 user: dummy_user
 
+
 Context: ContextFoo
 context-kubeconf: ContextFoo_ephemeral
 manifest: Manifest_ContextFoo
@@ -24,4 +26,5 @@ LocationOfOrigin: ""
 cluster: dummycluster_ephemeral
 namespace: dummy_namespace
 user: dummy_user
+
 

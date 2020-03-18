@@ -54,13 +54,12 @@ func TestGetAuthInfoCmd(t *testing.T) {
 		},
 		{
 			Name:    "get-all-credentials",
-			CmdLine: fmt.Sprintf("%s %s", fooAuthInfo, barAuthInfo),
+			CmdLine: fmt.Sprintf(""),
 			Cmd:     cmd.NewCmdConfigGetAuthInfo(settings),
 		},
-		// This is not implemented yet
 		{
-			Name:    "get-multiple-credentials",
-			CmdLine: fmt.Sprintf("%s %s", fooAuthInfo, barAuthInfo),
+			Name:    "get-specific-credentials",
+			CmdLine: fmt.Sprintf("%s", fooAuthInfo),
 			Cmd:     cmd.NewCmdConfigGetAuthInfo(settings),
 		},
 

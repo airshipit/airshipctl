@@ -44,16 +44,31 @@ func NewCmdConfigGetCluster(rootSettings *environment.AirshipCTLSettings) *cobra
 		Short:   getClusterLong,
 		Example: getClusterExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			airconfig := rootSettings.Config
 			if len(args) == 1 {
 				o.Name = args[0]
+
+				err := validate(o)
+				if err != nil {
+					return err
+				}
+
+				cluster, err := airconfig.GetCluster(o.Name, o.ClusterType)
+				if err != nil {
+					return err
+				}
+				fmt.Fprintln(cmd.OutOrStdout(), cluster.PrettyString())
+				return nil
 			}
 
-			err := validate(o)
-			if err != nil {
-				return err
+			clusters := airconfig.GetClusters()
+			if len(clusters) == 0 {
+				fmt.Fprintln(cmd.OutOrStdout(), "No clusters found in the configuration.")
 			}
-
-			return config.RunGetCluster(o, cmd.OutOrStdout(), rootSettings.Config)
+			for _, cluster := range clusters {
+				fmt.Fprintln(cmd.OutOrStdout(), cluster.PrettyString())
+			}
+			return nil
 		},
 	}
 
