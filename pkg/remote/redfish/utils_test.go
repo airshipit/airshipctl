@@ -2,7 +2,6 @@ package redfish
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -17,47 +16,41 @@ const (
 )
 
 func TestRedfishErrorNoError(t *testing.T) {
-	err := ScreenRedfishError(nil, nil)
+	err := ScreenRedfishError(&http.Response{StatusCode: 200}, nil)
 	assert.NoError(t, err)
 }
 
 func TestRedfishErrorNonNilErrorWithoutHttpResp(t *testing.T) {
-	realErr := fmt.Errorf("sample error")
-	err := ScreenRedfishError(nil, realErr)
-	assert.Error(t, err)
+	err := ScreenRedfishError(nil, redfishClient.GenericOpenAPIError{})
+
 	_, ok := err.(ErrRedfishClient)
 	assert.True(t, ok)
 }
 
 func TestRedfishErrorNonNilErrorWithHttpRespError(t *testing.T) {
-	realErr := fmt.Errorf("sample error")
+	respErr := redfishClient.GenericOpenAPIError{}
 
-	httpResp := &http.Response{StatusCode: 408}
-	err := ScreenRedfishError(httpResp, realErr)
-	assert.Equal(t, err, ErrRedfishClient{Message: realErr.Error()})
+	err := ScreenRedfishError(&http.Response{StatusCode: 408}, respErr)
+	_, ok := err.(ErrRedfishClient)
+	assert.True(t, ok)
 
-	httpResp.StatusCode = 400
-	err = ScreenRedfishError(httpResp, realErr)
-	assert.Equal(t, err, ErrRedfishClient{Message: realErr.Error()})
+	err = ScreenRedfishError(&http.Response{StatusCode: 500}, respErr)
+	_, ok = err.(ErrRedfishClient)
+	assert.True(t, ok)
 
-	httpResp.StatusCode = 199
-	err = ScreenRedfishError(httpResp, realErr)
-	assert.Equal(t, err, ErrRedfishClient{Message: realErr.Error()})
+	err = ScreenRedfishError(&http.Response{StatusCode: 199}, respErr)
+	_, ok = err.(ErrRedfishClient)
+	assert.True(t, ok)
 }
 
 func TestRedfishErrorNonNilErrorWithHttpRespOK(t *testing.T) {
-	realErr := fmt.Errorf("sample error")
+	respErr := redfishClient.GenericOpenAPIError{}
 
-	httpResp := &http.Response{StatusCode: 204}
-	err := ScreenRedfishError(httpResp, realErr)
+	// NOTE: Redfish client only uses HTTP 200 & HTTP 204 for success.
+	err := ScreenRedfishError(&http.Response{StatusCode: 204}, respErr)
 	assert.NoError(t, err)
 
-	httpResp.StatusCode = 200
-	err = ScreenRedfishError(httpResp, realErr)
-	assert.NoError(t, err)
-
-	httpResp.StatusCode = 399
-	err = ScreenRedfishError(httpResp, realErr)
+	err = ScreenRedfishError(&http.Response{StatusCode: 200}, respErr)
 	assert.NoError(t, err)
 }
 
@@ -106,12 +99,12 @@ func TestRedfishUtilRebootSystemOK(t *testing.T) {
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 	m.On("ResetSystem", ctx, systemID, resetReq).
 		Times(1).
-		Return(redfishClient.RedfishError{}, nil, nil)
+		Return(redfishClient.RedfishError{}, &http.Response{StatusCode: 200}, nil)
 
 	resetReq.ResetType = redfishClient.RESETTYPE_ON
 	m.On("ResetSystem", ctx, systemID, resetReq).
 		Times(1).
-		Return(redfishClient.RedfishError{}, nil, nil)
+		Return(redfishClient.RedfishError{}, &http.Response{StatusCode: 200}, nil)
 
 	err := RebootSystem(ctx, m, systemID)
 	assert.NoError(t, err)
@@ -122,19 +115,17 @@ func TestRedfishUtilRebootSystemForceOffError2(t *testing.T) {
 	defer m.AssertExpectations(t)
 
 	ctx := context.Background()
-	realErr := fmt.Errorf("unauthorized")
-	httpResp := &http.Response{
-		StatusCode: 401,
-	}
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 
 	m.On("ResetSystem", ctx, systemID, resetReq).
 		Times(1).
-		Return(redfishClient.RedfishError{}, httpResp, realErr)
+		Return(redfishClient.RedfishError{}, &http.Response{StatusCode: 401},
+			redfishClient.GenericOpenAPIError{})
 
 	err := RebootSystem(ctx, m, systemID)
-	assert.Error(t, err)
+	_, ok := err.(ErrRedfishClient)
+	assert.True(t, ok)
 }
 
 func TestRedfishUtilRebootSystemForceOffError(t *testing.T) {
@@ -142,18 +133,16 @@ func TestRedfishUtilRebootSystemForceOffError(t *testing.T) {
 	defer m.AssertExpectations(t)
 
 	ctx := context.Background()
-	realErr := fmt.Errorf("unauthorized")
-	httpResp := &http.Response{
-		StatusCode: 401,
-	}
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 	m.On("ResetSystem", ctx, systemID, resetReq).
 		Times(1).
-		Return(redfishClient.RedfishError{}, httpResp, realErr)
+		Return(redfishClient.RedfishError{}, &http.Response{StatusCode: 401},
+			redfishClient.GenericOpenAPIError{})
 
 	err := RebootSystem(ctx, m, systemID)
-	assert.Error(t, err)
+	_, ok := err.(ErrRedfishClient)
+	assert.True(t, ok)
 }
 
 func TestRedfishUtilRebootSystemTurningOnError(t *testing.T) {
@@ -165,18 +154,16 @@ func TestRedfishUtilRebootSystemTurningOnError(t *testing.T) {
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 	m.On("ResetSystem", ctx, systemID, resetReq).
 		Times(1).
-		Return(redfishClient.RedfishError{}, nil, nil)
+		Return(redfishClient.RedfishError{}, &http.Response{StatusCode: 200}, nil)
 
-	realErr := fmt.Errorf("unauthorized")
-	httpResp := &http.Response{
-		StatusCode: 401,
-	}
 	resetOnReq := redfishClient.ResetRequestBody{}
 	resetOnReq.ResetType = redfishClient.RESETTYPE_ON
 	m.On("ResetSystem", ctx, systemID, resetOnReq).
 		Times(1).
-		Return(redfishClient.RedfishError{}, httpResp, realErr)
+		Return(redfishClient.RedfishError{}, &http.Response{StatusCode: 401},
+			redfishClient.GenericOpenAPIError{})
 
 	err := RebootSystem(ctx, m, systemID)
-	assert.Error(t, err)
+	_, ok := err.(ErrRedfishClient)
+	assert.True(t, ok)
 }
