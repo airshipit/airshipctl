@@ -18,6 +18,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/k8s/client"
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
@@ -45,6 +46,7 @@ func NewClusterCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comm
 
 	clusterRootCmd.AddCommand(NewInitCommand(rootSettings))
 	clusterRootCmd.AddCommand(NewMoveCommand(rootSettings))
+	clusterRootCmd.AddCommand(NewStatusCommand(rootSettings, client.DefaultClient))
 
 	return clusterRootCmd
 }

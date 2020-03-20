@@ -1,0 +1,8 @@
+resources:
+  - crd.yaml
+  - stable-resource.yaml
+  - pending-resource.yaml
+  - missing.yaml
+  - unknown.yaml
+  - legacy-crd.yaml
+  - legacy-resource.yaml

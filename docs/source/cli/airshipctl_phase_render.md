@@ -14,12 +14,12 @@ airshipctl phase render PHASE_NAME [flags]
 
 ```
 
-#Get all 'initinfra' phase documents containing labels "app=helm" and
-#"service=tiller"
+# Get all 'initinfra' phase documents containing labels "app=helm" and
+# "service=tiller"
 airshipctl phase render initinfra -l app=helm,service=tiller
 
-#Get all documents containing labels "app=helm" and "service=tiller"
-#and kind 'Deployment'
+# Get all documents containing labels "app=helm" and "service=tiller"
+# and kind 'Deployment'
 airshipctl phase render initinfra -l app=helm,service=tiller -k Deployment
 
 ```

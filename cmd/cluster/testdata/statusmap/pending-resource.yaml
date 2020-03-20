@@ -1,0 +1,7 @@
+# this resource is pending because the fake version in the cluster will
+# have .status.state == "pending"
+apiVersion: "example.com/v1"
+kind: Resource
+metadata:
+  name: pending-resource
+  namespace: default

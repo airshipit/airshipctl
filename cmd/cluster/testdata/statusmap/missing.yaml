@@ -1,0 +1,7 @@
+# This resource doesn't have a status-check defined by its CRD (which is also
+# missing for brevity). Requesting its status is an error
+apiVersion: "example.com/v1"
+kind: Missing
+metadata:
+  name: missing-resource
+  namespace: default
