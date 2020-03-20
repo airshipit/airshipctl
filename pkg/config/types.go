@@ -223,4 +223,7 @@ type RemoteDirect struct {
 	RemoteType string `json:"remoteType,omitempty"`
 	// IsoURL specifies url to download ISO image for epehemeral node
 	IsoURL string `json:"isoUrl,omitempty"`
+	// Ignore SSL certificate check. This options is useful for remote APIs
+	// with non-trusted or self-signed SSL certificates
+	Insecure bool `json:"insecure,omitempty"`
 }

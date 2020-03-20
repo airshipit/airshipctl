@@ -248,6 +248,7 @@ func TestNewRedfishRemoteDirectClient(t *testing.T) {
 		defaultURL,
 		computerSystemID,
 		"/tmp/test.iso",
+		true,
 	)
 	assert.NoError(t, err)
 
@@ -257,6 +258,7 @@ func TestNewRedfishRemoteDirectClient(t *testing.T) {
 		"",
 		computerSystemID,
 		"/tmp/test.iso",
+		false,
 	)
 	expectedError := "missing configuration: redfish remote url empty"
 	assert.EqualError(t, err, expectedError)
@@ -267,6 +269,7 @@ func TestNewRedfishRemoteDirectClient(t *testing.T) {
 		defaultURL,
 		"",
 		"/tmp/test.iso",
+		false,
 	)
 	expectedError = "missing configuration: redfish ephemeral node id empty"
 	assert.EqualError(t, err, expectedError)
@@ -277,6 +280,7 @@ func TestNewRedfishRemoteDirectClient(t *testing.T) {
 		defaultURL,
 		computerSystemID,
 		"",
+		false,
 	)
 	expectedError = "missing configuration: redfish ephemeral node iso Path empty"
 	assert.EqualError(t, err, expectedError)
@@ -290,6 +294,7 @@ func getDefaultRedfishRemoteDirectObj(t *testing.T, api redfishAPI.RedfishAPI) R
 		defaultURL,
 		computerSystemID,
 		"/tmp/test.iso",
+		false,
 	)
 
 	require.NoError(t, err)

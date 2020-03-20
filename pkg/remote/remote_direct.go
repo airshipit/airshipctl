@@ -48,7 +48,9 @@ func getRemoteDirectClient(remoteConfig *config.RemoteDirect, remoteURL string) 
 			context.Background(),
 			baseURL,
 			nodeID,
-			remoteConfig.IsoURL)
+			remoteConfig.IsoURL,
+			remoteConfig.Insecure,
+		)
 		if err != nil {
 			alog.Debugf("redfish remotedirect client creation failed")
 			return nil, err

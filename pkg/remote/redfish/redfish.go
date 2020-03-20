@@ -2,7 +2,9 @@ package redfish
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
+	"net/http"
 	"net/url"
 
 	redfishApi "opendev.org/airship/go-redfish/api"
@@ -82,6 +84,7 @@ func NewRedfishRemoteDirectClient(ctx context.Context,
 	remoteURL string,
 	ephNodeID string,
 	isoPath string,
+	insecure bool,
 ) (RemoteDirect, error) {
 	if remoteURL == "" {
 		return RemoteDirect{},
@@ -108,6 +111,16 @@ func NewRedfishRemoteDirectClient(ctx context.Context,
 		BasePath:      remoteURL,
 		DefaultHeader: make(map[string]string),
 		UserAgent:     "airshipctl/client",
+	}
+
+	if insecure {
+		cfg.HTTPClient = &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true, //nolint:gosec
+				},
+			},
+		}
 	}
 
 	var api redfishApi.RedfishAPI = redfishClient.NewAPIClient(cfg).DefaultApi
