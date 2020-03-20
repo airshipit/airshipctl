@@ -1,4 +1,4 @@
-package redfish
+package redfish_test
 
 import (
 	"context"
@@ -6,42 +6,40 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	redfishMocks "opendev.org/airship/go-redfish/api/mocks"
 	redfishClient "opendev.org/airship/go-redfish/client"
 
-	testutil "opendev.org/airship/airshipctl/testutil/redfish"
-)
-
-const (
-	systemID = "123"
+	"opendev.org/airship/airshipctl/pkg/remote/redfish"
+	testutil "opendev.org/airship/airshipctl/testutil/redfishutils/helpers"
 )
 
 func TestRedfishErrorNoError(t *testing.T) {
-	err := ScreenRedfishError(&http.Response{StatusCode: 200}, nil)
+	err := redfish.ScreenRedfishError(&http.Response{StatusCode: 200}, nil)
 	assert.NoError(t, err)
 }
 
 func TestRedfishErrorNonNilErrorWithoutHttpResp(t *testing.T) {
-	err := ScreenRedfishError(nil, redfishClient.GenericOpenAPIError{})
+	err := redfish.ScreenRedfishError(nil, redfishClient.GenericOpenAPIError{})
 
-	_, ok := err.(ErrRedfishClient)
+	_, ok := err.(redfish.ErrRedfishClient)
 	assert.True(t, ok)
 }
 
 func TestRedfishErrorNonNilErrorWithHttpRespError(t *testing.T) {
 	respErr := redfishClient.GenericOpenAPIError{}
 
-	err := ScreenRedfishError(&http.Response{StatusCode: 408}, respErr)
-	_, ok := err.(ErrRedfishClient)
+	err := redfish.ScreenRedfishError(&http.Response{StatusCode: 408}, respErr)
+	_, ok := err.(redfish.ErrRedfishClient)
 	assert.True(t, ok)
 
-	err = ScreenRedfishError(&http.Response{StatusCode: 500}, respErr)
-	_, ok = err.(ErrRedfishClient)
+	err = redfish.ScreenRedfishError(&http.Response{StatusCode: 500}, respErr)
+	_, ok = err.(redfish.ErrRedfishClient)
 	assert.True(t, ok)
 
-	err = ScreenRedfishError(&http.Response{StatusCode: 199}, respErr)
-	_, ok = err.(ErrRedfishClient)
+	err = redfish.ScreenRedfishError(&http.Response{StatusCode: 199}, respErr)
+	_, ok = err.(redfish.ErrRedfishClient)
 	assert.True(t, ok)
 }
 
@@ -49,27 +47,27 @@ func TestRedfishErrorNonNilErrorWithHttpRespOK(t *testing.T) {
 	respErr := redfishClient.GenericOpenAPIError{}
 
 	// NOTE: Redfish client only uses HTTP 200 & HTTP 204 for success.
-	err := ScreenRedfishError(&http.Response{StatusCode: 204}, respErr)
+	err := redfish.ScreenRedfishError(&http.Response{StatusCode: 204}, respErr)
 	assert.NoError(t, err)
 
-	err = ScreenRedfishError(&http.Response{StatusCode: 200}, respErr)
+	err = redfish.ScreenRedfishError(&http.Response{StatusCode: 200}, respErr)
 	assert.NoError(t, err)
 }
 
 func TestRedfishUtilGetResIDFromURL(t *testing.T) {
 	// simple case
 	url := "api/user/123"
-	id := GetResourceIDFromURL(url)
+	id := redfish.GetResourceIDFromURL(url)
 	assert.Equal(t, id, "123")
 
 	// FQDN
 	url = "http://www.abc.com/api/user/123"
-	id = GetResourceIDFromURL(url)
+	id = redfish.GetResourceIDFromURL(url)
 	assert.Equal(t, id, "123")
 
 	//Trailing slash
 	url = "api/user/123/"
-	id = GetResourceIDFromURL(url)
+	id = redfish.GetResourceIDFromURL(url)
 	assert.Equal(t, id, "123")
 }
 
@@ -82,13 +80,13 @@ func TestRedfishUtilIsIdInList(t *testing.T) {
 	}
 	var emptyList []redfishClient.IdRef
 
-	res := IsIDInList(idList, "1")
+	res := redfish.IsIDInList(idList, "1")
 	assert.True(t, res)
 
-	res = IsIDInList(idList, "100")
+	res = redfish.IsIDInList(idList, "100")
 	assert.False(t, res)
 
-	res = IsIDInList(emptyList, "1")
+	res = redfish.IsIDInList(emptyList, "1")
 	assert.False(t, res)
 }
 
@@ -97,19 +95,21 @@ func TestGetVirtualMediaID(t *testing.T) {
 	defer m.AssertExpectations(t)
 
 	ctx := context.Background()
-	managerID := "manager-090102"
 	httpResp := &http.Response{StatusCode: 200}
 
-	m.On("ListManagerVirtualMedia", ctx, managerID).Times(1).
+	m.On("GetSystem", ctx, mock.Anything).
+		Return(testutil.GetTestSystem(), &http.Response{StatusCode: 200}, nil)
+
+	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
 		Return(testutil.GetMediaCollection([]string{"Floppy", "Cd"}), httpResp, nil)
 
-	m.On("GetManagerVirtualMedia", ctx, managerID, "Floppy").Times(1).
+	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Floppy").Times(1).
 		Return(testutil.GetVirtualMedia([]string{"Floppy", "USBStick"}), httpResp, nil)
 
-	m.On("GetManagerVirtualMedia", ctx, managerID, "Cd").Times(1).
+	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
 		Return(testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
 
-	mediaID, mediaType, err := GetVirtualMediaID(ctx, m, managerID)
+	mediaID, mediaType, err := redfish.GetVirtualMediaID(ctx, m, testutil.ManagerID)
 	assert.Equal(t, mediaID, "Cd")
 	assert.Equal(t, mediaType, "CD")
 	assert.NoError(t, err)
@@ -120,12 +120,18 @@ func TestGetVirtualMediaIDNoMedia(t *testing.T) {
 	defer m.AssertExpectations(t)
 
 	ctx := context.Background()
-	managerID := "manager-090102"
 	httpResp := &http.Response{StatusCode: 200}
 
-	m.On("ListManagerVirtualMedia", ctx, managerID).Times(1).Return(redfishClient.Collection{}, httpResp, nil)
+	// Remove available media types from test system
+	system := testutil.GetTestSystem()
+	system.Boot.BootSourceOverrideTargetRedfishAllowableValues = []redfishClient.BootSource{}
+	m.On("GetSystem", ctx, mock.Anything).
+		Return(system, &http.Response{StatusCode: 200}, nil)
 
-	mediaID, mediaType, err := GetVirtualMediaID(ctx, m, managerID)
+	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
+		Return(redfishClient.Collection{}, httpResp, nil)
+
+	mediaID, mediaType, err := redfish.GetVirtualMediaID(ctx, m, testutil.ManagerID)
 	assert.Empty(t, mediaID)
 	assert.Empty(t, mediaType)
 	assert.Error(t, err)
@@ -136,122 +142,23 @@ func TestGetVirtualMediaIDUnacceptableMediaTypes(t *testing.T) {
 	defer m.AssertExpectations(t)
 
 	ctx := context.Background()
-	managerID := "manager-090102"
 	httpResp := &http.Response{StatusCode: 200}
 
-	m.On("ListManagerVirtualMedia", ctx, managerID).Times(1).
+	system := testutil.GetTestSystem()
+	system.Boot.BootSourceOverrideTargetRedfishAllowableValues = []redfishClient.BootSource{
+		redfishClient.BOOTSOURCE_PXE,
+	}
+	m.On("GetSystem", ctx, mock.Anything).
+		Return(system, &http.Response{StatusCode: 200}, nil)
+
+	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
 		Return(testutil.GetMediaCollection([]string{"Floppy"}), httpResp, nil)
 
-	m.On("GetManagerVirtualMedia", ctx, managerID, "Floppy").Times(1).
+	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Floppy").Times(1).
 		Return(testutil.GetVirtualMedia([]string{"Floppy", "USBStick"}), httpResp, nil)
 
-	mediaID, mediaType, err := GetVirtualMediaID(ctx, m, managerID)
+	mediaID, mediaType, err := redfish.GetVirtualMediaID(ctx, m, testutil.ManagerID)
 	assert.Empty(t, mediaID)
 	assert.Empty(t, mediaType)
 	assert.Error(t, err)
-}
-
-func TestRedfishUtilRebootSystemOK(t *testing.T) {
-	m := &redfishMocks.RedfishAPI{}
-	defer m.AssertExpectations(t)
-
-	httpResp := &http.Response{StatusCode: 200}
-	ctx := context.Background()
-	resetReq := redfishClient.ResetRequestBody{}
-	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
-	m.On("ResetSystem", ctx, systemID, resetReq).
-		Times(1).
-		Return(redfishClient.RedfishError{}, httpResp, nil)
-
-	m.On("GetSystem", ctx, systemID).Times(1).
-		Return(redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_OFF}, httpResp, nil)
-
-	resetReq.ResetType = redfishClient.RESETTYPE_ON
-	m.On("ResetSystem", ctx, systemID, resetReq).
-		Times(1).
-		Return(redfishClient.RedfishError{}, httpResp, nil)
-
-	m.On("GetSystem", ctx, systemID).Times(1).
-		Return(redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_ON}, httpResp, nil)
-
-	err := RebootSystem(ctx, m, systemID)
-	assert.NoError(t, err)
-}
-
-func TestRedfishUtilRebootSystemForceOffError2(t *testing.T) {
-	m := &redfishMocks.RedfishAPI{}
-	defer m.AssertExpectations(t)
-
-	ctx := context.Background()
-	resetReq := redfishClient.ResetRequestBody{}
-	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
-
-	m.On("ResetSystem", ctx, systemID, resetReq).
-		Times(1).
-		Return(redfishClient.RedfishError{}, &http.Response{StatusCode: 401},
-			redfishClient.GenericOpenAPIError{})
-
-	err := RebootSystem(ctx, m, systemID)
-	_, ok := err.(ErrRedfishClient)
-	assert.True(t, ok)
-}
-
-func TestRedfishUtilRebootSystemForceOffError(t *testing.T) {
-	m := &redfishMocks.RedfishAPI{}
-	defer m.AssertExpectations(t)
-
-	ctx := context.Background()
-	resetReq := redfishClient.ResetRequestBody{}
-	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
-	m.On("ResetSystem", ctx, systemID, resetReq).
-		Times(1).
-		Return(redfishClient.RedfishError{}, &http.Response{StatusCode: 401},
-			redfishClient.GenericOpenAPIError{})
-
-	err := RebootSystem(ctx, m, systemID)
-	_, ok := err.(ErrRedfishClient)
-	assert.True(t, ok)
-}
-
-func TestRedfishUtilRebootSystemTurningOnError(t *testing.T) {
-	m := &redfishMocks.RedfishAPI{}
-	defer m.AssertExpectations(t)
-
-	ctx := context.Background()
-	resetReq := redfishClient.ResetRequestBody{}
-	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
-	m.On("ResetSystem", ctx, systemID, resetReq).
-		Times(1).
-		Return(redfishClient.RedfishError{}, &http.Response{StatusCode: 200}, nil)
-
-	m.On("GetSystem", ctx, systemID).Times(1).
-		Return(redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_OFF}, &http.Response{StatusCode: 200}, nil)
-
-	resetOnReq := redfishClient.ResetRequestBody{}
-	resetOnReq.ResetType = redfishClient.RESETTYPE_ON
-	m.On("ResetSystem", ctx, systemID, resetOnReq).
-		Times(1).
-		Return(redfishClient.RedfishError{}, &http.Response{StatusCode: 401},
-			redfishClient.GenericOpenAPIError{})
-
-	err := RebootSystem(ctx, m, systemID)
-	_, ok := err.(ErrRedfishClient)
-	assert.True(t, ok)
-}
-
-func TestRedfishUtilRebootSystemTimeout(t *testing.T) {
-	m := &redfishMocks.RedfishAPI{}
-	defer m.AssertExpectations(t)
-
-	ctx := context.WithValue(context.Background(), "numRetries", 1)
-	resetReq := redfishClient.ResetRequestBody{}
-	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
-	m.On("ResetSystem", ctx, systemID, resetReq).
-		Times(1).
-		Return(redfishClient.RedfishError{}, &http.Response{StatusCode: 200}, nil)
-
-	m.On("GetSystem", ctx, systemID).
-		Return(redfishClient.ComputerSystem{}, &http.Response{StatusCode: 200}, nil)
-	err := RebootSystem(ctx, m, systemID)
-	assert.Equal(t, ErrOperationRetriesExceeded{}, err)
 }

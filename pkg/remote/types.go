@@ -24,9 +24,9 @@ type Client interface {
 
 	// TODO(drewwalters96): This function may be too tightly coupled to remoteDirect operations. This could probably
 	// be combined with SetVirtualMedia.
-	SetEphemeralBootSourceByType(context.Context, string) error
+	SetEphemeralBootSourceByType(context.Context) error
 
 	// TODO(drewwalters96): This function is tightly coupled to Redfish. It should be combined with the
 	// SetBootSource operation and removed from the client interface.
-	SetVirtualMedia(context.Context, string, string) error
+	SetVirtualMedia(context.Context, string) error
 }

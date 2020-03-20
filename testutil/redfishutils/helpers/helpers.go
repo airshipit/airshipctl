@@ -10,12 +10,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package redfish
+package redfishutils
 
 import (
 	"fmt"
 
 	redfishClient "opendev.org/airship/go-redfish/client"
+)
+
+const (
+	// ManagerID is the Redfish manager ID used by helper functions and should be used in mock calls.
+	ManagerID = "manager1"
 )
 
 // GetMediaCollection builds a collection of media IDs returned by the "ListManagerVirtualMedia" function.
@@ -46,4 +51,32 @@ func GetVirtualMedia(types []string) redfishClient.VirtualMedia {
 	vMedia.MediaTypes = mediaTypes
 
 	return vMedia
+}
+
+// GetTestSystem builds a test computer system.
+func GetTestSystem() redfishClient.ComputerSystem {
+	return redfishClient.ComputerSystem{
+		Id:   "serverid-00",
+		Name: "server-100",
+		UUID: "58893887-8974-2487-2389-841168418919",
+		Status: redfishClient.Status{
+			State:  "Enabled",
+			Health: "OK",
+		},
+		Links: redfishClient.SystemLinks{
+			ManagedBy: []redfishClient.IdRef{
+				{OdataId: fmt.Sprintf("/redfish/v1/Managers/%s", ManagerID)},
+			},
+		},
+		Boot: redfishClient.Boot{
+			BootSourceOverrideTarget:  redfishClient.BOOTSOURCE_CD,
+			BootSourceOverrideEnabled: redfishClient.BOOTSOURCEOVERRIDEENABLED_CONTINUOUS,
+			BootSourceOverrideTargetRedfishAllowableValues: []redfishClient.BootSource{
+				redfishClient.BOOTSOURCE_CD,
+				redfishClient.BOOTSOURCE_FLOPPY,
+				redfishClient.BOOTSOURCE_HDD,
+				redfishClient.BOOTSOURCE_PXE,
+			},
+		},
+	}
 }

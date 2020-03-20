@@ -1,6 +1,19 @@
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package remote
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
@@ -13,28 +26,28 @@ import (
 )
 
 const (
-	AirshipRemoteTypeRedfish string = "redfish"
+	AirshipHostKind string = "BareMetalHost"
 )
 
-// Interface to be implemented by remoteDirect implementation
-type RDClient interface {
-	DoRemoteDirect() error
+// Adapter bridges the gap between out-of-band clients. It can hold any type of OOB client, e.g. Redfish.
+type Adapter struct {
+	OOBClient    Client
+	context      context.Context
+	remoteConfig *config.RemoteDirect
+	remoteURL    string
+	username     string
+	password     string
 }
 
-// Get remotedirect client based on config
-func getRemoteDirectClient(
-	remoteConfig *config.RemoteDirect,
-	remoteURL string,
-	username string,
-	password string) (RDClient, error) {
-	var client RDClient
-	switch remoteConfig.RemoteType {
-	case AirshipRemoteTypeRedfish:
+// configureClient retrieves a client for remoteDirect requests based on the RemoteType in the Airship config file.
+func (a *Adapter) configureClient(remoteURL string) error {
+	switch a.remoteConfig.RemoteType {
+	case redfish.ClientType:
 		alog.Debug("Remote type redfish")
 
 		rfURL, err := url.Parse(remoteURL)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		baseURL := fmt.Sprintf("%s://%s", rfURL.Scheme, rfURL.Host)
@@ -45,93 +58,121 @@ func getRemoteDirectClient(
 
 		urlPath := strings.Split(rfURL.Path, "/")
 		nodeID := urlPath[len(urlPath)-1]
-
-		client, err = redfish.NewRedfishRemoteDirectClient(
-			baseURL,
-			nodeID,
-			username,
-			password,
-			remoteConfig.IsoURL,
-			remoteConfig.Insecure,
-			remoteConfig.UseProxy,
-		)
-		if err != nil {
-			alog.Debugf("redfish remotedirect client creation failed")
-			return nil, err
+		if nodeID == "" {
+			return redfish.ErrRedfishMissingConfig{
+				What: "redfish ephemeral node id empty",
+			}
 		}
 
+		if a.remoteConfig.IsoURL == "" {
+			return redfish.ErrRedfishMissingConfig{
+				What: "redfish ephemeral node iso Path empty",
+			}
+		}
+
+		a.context, a.OOBClient, err = redfish.NewClient(
+			nodeID,
+			a.remoteConfig.IsoURL,
+			baseURL,
+			a.remoteConfig.Insecure,
+			a.remoteConfig.UseProxy,
+			a.username,
+			a.password)
+		if err != nil {
+			alog.Debugf("redfish remotedirect client creation failed")
+			return err
+		}
 	default:
-		return nil, NewRemoteDirectErrorf("invalid remote type")
+		return NewRemoteDirectErrorf("invalid remote type")
 	}
 
-	return client, nil
+	return nil
 }
 
-func getRemoteDirectConfig(settings *environment.AirshipCTLSettings) (
-	remoteConfig *config.RemoteDirect,
-	remoteURL string,
-	username string,
-	password string,
-	err error) {
+// initializeAdapter retrieves the remote direct configuration defined in the Airship configuration file.
+func (a *Adapter) intializeAdapter(settings *environment.AirshipCTLSettings) error {
 	cfg := settings.Config()
 	bootstrapSettings, err := cfg.CurrentContextBootstrapInfo()
 	if err != nil {
-		return nil, "", "", "", err
+		return err
 	}
 
-	remoteConfig = bootstrapSettings.RemoteDirect
-	if remoteConfig == nil {
-		return nil, "", "", "", config.ErrMissingConfig{What: "RemoteDirect options not defined in bootstrap config"}
+	a.remoteConfig = bootstrapSettings.RemoteDirect
+	if a.remoteConfig == nil {
+		return config.ErrMissingConfig{What: "RemoteDirect options not defined in bootstrap config"}
 	}
 
 	bundlePath, err := cfg.CurrentContextEntryPoint(config.Ephemeral, "")
 	if err != nil {
-		return nil, "", "", "", err
+		return err
 	}
 
 	docBundle, err := document.NewBundleByPath(bundlePath)
 	if err != nil {
-		return nil, "", "", "", err
+		return err
 	}
 
 	selector := document.NewEphemeralBMHSelector()
 	doc, err := docBundle.SelectOne(selector)
 	if err != nil {
-		return nil, "", "", "", err
+		return err
 	}
 
-	remoteURL, err = document.GetBMHBMCAddress(doc)
-	if err != nil {
-		return nil, "", "", "", err
-	}
-
-	username, password, err = document.GetBMHBMCCredentials(doc, docBundle)
-	if err != nil {
-		return nil, "", "", "", err
-	}
-
-	return remoteConfig, remoteURL, username, password, nil
-}
-
-// Top level function to execute remote direct based on remote type
-func DoRemoteDirect(settings *environment.AirshipCTLSettings) error {
-	remoteConfig, remoteURL, username, password, err := getRemoteDirectConfig(settings)
+	a.remoteURL, err = document.GetBMHBMCAddress(doc)
 	if err != nil {
 		return err
 	}
 
-	client, err := getRemoteDirectClient(remoteConfig, remoteURL, username, password)
+	a.username, a.password, err = document.GetBMHBMCCredentials(doc, docBundle)
 	if err != nil {
 		return err
 	}
-
-	err = client.DoRemoteDirect()
-	if err != nil {
-		alog.Debugf("remote direct failed: %s", err)
-		return err
-	}
-
-	alog.Print("Remote direct successfully completed")
 
 	return nil
+}
+
+// DoRemoteDirect executes remote direct based on remote type.
+func (a *Adapter) DoRemoteDirect() error {
+	alog.Debugf("Using Remote Endpoint: %q", a.remoteURL)
+
+	/* Load ISO in manager's virtual media */
+	err := a.OOBClient.SetVirtualMedia(a.context, a.remoteConfig.IsoURL)
+	if err != nil {
+		return err
+	}
+
+	alog.Debugf("Successfully loaded virtual media: %q", a.remoteConfig.IsoURL)
+
+	/* Set system's bootsource to selected media */
+	err = a.OOBClient.SetEphemeralBootSourceByType(a.context)
+	if err != nil {
+		return err
+	}
+
+	/* Reboot system */
+	err = a.OOBClient.RebootSystem(a.context, a.OOBClient.EphemeralNodeID())
+	if err != nil {
+		return err
+	}
+
+	alog.Debug("Restarted ephemeral host")
+
+	return nil
+}
+
+// NewAdapter provides an adapter that exposes the capability to perform remote direct functionality with any
+// out-of-band client.
+func NewAdapter(settings *environment.AirshipCTLSettings) (*Adapter, error) {
+	a := &Adapter{}
+	a.context = context.Background()
+	err := a.intializeAdapter(settings)
+	if err != nil {
+		return a, err
+	}
+
+	if err := a.configureClient(a.remoteURL); err != nil {
+		return a, err
+	}
+
+	return a, nil
 }

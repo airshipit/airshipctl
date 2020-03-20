@@ -96,7 +96,12 @@ func (c *Client) RebootSystem(ctx context.Context, systemID string) error {
 
 // SetEphemeralBootSourceByType sets the boot source of the ephemeral node to one that's compatible with the boot
 // source type.
-func (c *Client) SetEphemeralBootSourceByType(ctx context.Context, mediaType string) error {
+func (c *Client) SetEphemeralBootSourceByType(ctx context.Context) error {
+	_, vMediaType, err := GetVirtualMediaID(ctx, c.redfishAPI, c.ephemeralNodeID)
+	if err != nil {
+		return err
+	}
+
 	// Retrieve system information, containing available boot sources
 	system, _, err := c.redfishAPI.GetSystem(ctx, c.ephemeralNodeID)
 	if err != nil {
@@ -105,7 +110,7 @@ func (c *Client) SetEphemeralBootSourceByType(ctx context.Context, mediaType str
 
 	allowableValues := system.Boot.BootSourceOverrideTargetRedfishAllowableValues
 	for _, bootSource := range allowableValues {
-		if strings.EqualFold(string(bootSource), mediaType) {
+		if strings.EqualFold(string(bootSource), vMediaType) {
 			/* set boot source */
 			systemReq := redfishClient.ComputerSystem{}
 			systemReq.Boot.BootSourceOverrideTarget = bootSource
@@ -119,16 +124,20 @@ func (c *Client) SetEphemeralBootSourceByType(ctx context.Context, mediaType str
 
 // SetVirtualMedia injects a virtual media device to an established virtual media ID. This assumes that isoPath is
 // accessible to the redfish server and virtualMedia device is either of type CD or DVD.
-func (c *Client) SetVirtualMedia(ctx context.Context, vMediaID string, isoPath string) error {
-	system, _, err := c.redfishAPI.GetSystem(ctx, c.ephemeralNodeID)
-	if err != nil {
-		return ErrRedfishClient{Message: fmt.Sprintf("Get System[%s] failed with err: %v", c.ephemeralNodeID, err)}
-	}
-
+func (c *Client) SetVirtualMedia(ctx context.Context, isoPath string) error {
 	log.Debugf("Ephemeral Node System ID: '%s'", c.ephemeralNodeID)
 
-	managerID := GetResourceIDFromURL(system.Links.ManagedBy[0].OdataId)
+	managerID, err := getManagerID(ctx, c.redfishAPI, c.ephemeralNodeID)
+	if err != nil {
+		return err
+	}
+
 	log.Debugf("Ephemeral node managerID: '%s'", managerID)
+
+	vMediaID, _, err := GetVirtualMediaID(ctx, c.redfishAPI, c.ephemeralNodeID)
+	if err != nil {
+		return err
+	}
 
 	vMediaReq := redfishClient.InsertMediaRequestBody{}
 	vMediaReq.Image = isoPath

@@ -2,20 +2,18 @@ package redfish
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
+	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
-	redfishApi "opendev.org/airship/go-redfish/api"
+	redfishAPI "opendev.org/airship/go-redfish/api"
 	redfishClient "opendev.org/airship/go-redfish/client"
 
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 const (
-	SystemRebootDelay         = 2 * time.Second
-	SystemActionRetries       = 30
 	RedfishURLSchemeSeparator = "+"
 )
 
@@ -47,7 +45,12 @@ func IsIDInList(idRefList []redfishClient.IdRef, id string) bool {
 }
 
 // GetVirtualMediaID retrieves the ID of a Redfish virtual media resource if it supports type "CD" or "DVD".
-func GetVirtualMediaID(ctx context.Context, api redfishApi.RedfishAPI, managerID string) (string, string, error) {
+func GetVirtualMediaID(ctx context.Context, api redfishAPI.RedfishAPI, systemID string) (string, string, error) {
+	managerID, err := getManagerID(ctx, api, systemID)
+	if err != nil {
+		return "", "", err
+	}
+
 	mediaCollection, httpResp, err := api.ListManagerVirtualMedia(ctx, managerID)
 	if err = ScreenRedfishError(httpResp, err); err != nil {
 		return "", "", err
@@ -72,88 +75,43 @@ func GetVirtualMediaID(ctx context.Context, api redfishApi.RedfishAPI, managerID
 	return "", "", ErrRedfishClient{Message: "Unable to find virtual media with type CD or DVD"}
 }
 
-// This function walks through the bootsources of a system and sets the bootsource
-// which is compatible with the given media type.
-func SetSystemBootSourceForMediaType(ctx context.Context,
-	api redfishApi.RedfishAPI,
-	systemID string,
-	mediaType string) error {
-	/* Check available boot sources for system */
+// ScreenRedfishError provides detailed error checking on a Redfish client response.
+func ScreenRedfishError(httpResp *http.Response, clientErr error) error {
+	if httpResp == nil {
+		return ErrRedfishClient{Message: "HTTP request failed. Please try again."}
+	}
+
+	// NOTE(drewwalters96): clientErr may not be nil even though the request was successful. The HTTP status code
+	// has to be verified for success on each request. The Redfish client uses HTTP codes 200 and 204 to indicate
+	// success.
+	if httpResp.StatusCode >= http.StatusOK && httpResp.StatusCode <= http.StatusNoContent {
+		// This range of status codes indicate success
+		return nil
+	}
+
+	if clientErr == nil {
+		return ErrRedfishClient{Message: http.StatusText(httpResp.StatusCode)}
+	}
+
+	oAPIErr, ok := clientErr.(redfishClient.GenericOpenAPIError)
+	if !ok {
+		return ErrRedfishClient{Message: "Unable to decode client error."}
+	}
+
+	var resp redfishClient.RedfishError
+	if err := json.Unmarshal(oAPIErr.Body(), &resp); err != nil {
+		// No JSON response included; use generic error text.
+		return ErrRedfishClient{Message: err.Error()}
+	}
+
+	return ErrRedfishClient{Message: resp.Error.Message}
+}
+
+func getManagerID(ctx context.Context, api redfishAPI.RedfishAPI, systemID string) (string, error) {
 	system, _, err := api.GetSystem(ctx, systemID)
 	if err != nil {
-		return ErrRedfishClient{Message: fmt.Sprintf("Get System[%s] failed with err: %v", systemID, err)}
+		return "", err
 	}
 
-	allowableValues := system.Boot.BootSourceOverrideTargetRedfishAllowableValues
-	for _, bootSource := range allowableValues {
-		if strings.EqualFold(string(bootSource), mediaType) {
-			/* set boot source */
-			systemReq := redfishClient.ComputerSystem{}
-			systemReq.Boot.BootSourceOverrideTarget = bootSource
-			_, httpResp, err := api.SetSystem(ctx, systemID, systemReq)
-			return ScreenRedfishError(httpResp, err)
-		}
-	}
-
-	return ErrRedfishClient{Message: fmt.Sprintf("failed to set system[%s] boot source", systemID)}
-}
-
-// Reboots a system by force shutoff and turning on.
-func RebootSystem(ctx context.Context, api redfishApi.RedfishAPI, systemID string) error {
-	waitForPowerState := func(desiredState redfishClient.PowerState) error {
-		// Check if number of retries is defined in context
-		totalRetries, ok := ctx.Value("numRetries").(int)
-		if !ok {
-			totalRetries = SystemActionRetries
-		}
-
-		for retry := 0; retry <= totalRetries; retry++ {
-			system, httpResp, err := api.GetSystem(ctx, systemID)
-			if err = ScreenRedfishError(httpResp, err); err != nil {
-				return err
-			}
-			if system.PowerState == desiredState {
-				return nil
-			}
-			time.Sleep(SystemRebootDelay)
-		}
-		return ErrOperationRetriesExceeded{}
-	}
-
-	resetReq := redfishClient.ResetRequestBody{}
-
-	// Send PowerOff request
-	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
-	_, httpResp, err := api.ResetSystem(ctx, systemID, resetReq)
-	if err = ScreenRedfishError(httpResp, err); err != nil {
-		return err
-	}
-	// Check that node is powered off
-	if err = waitForPowerState(redfishClient.POWERSTATE_OFF); err != nil {
-		return err
-	}
-
-	// Send PowerOn request
-	resetReq.ResetType = redfishClient.RESETTYPE_ON
-	_, httpResp, err = api.ResetSystem(ctx, systemID, resetReq)
-	if err = ScreenRedfishError(httpResp, err); err != nil {
-		return err
-	}
-	// Check that node is powered on and return
-	return waitForPowerState(redfishClient.POWERSTATE_ON)
-}
-
-// Insert the remote virtual media to the given virtual media id.
-// This assumes that isoPath is accessible to the redfish server and
-// virtualMedia device is either of type CD or DVD.
-func SetVirtualMedia(ctx context.Context,
-	api redfishApi.RedfishAPI,
-	managerID string,
-	vMediaID string,
-	isoPath string) error {
-	vMediaReq := redfishClient.InsertMediaRequestBody{}
-	vMediaReq.Image = isoPath
-	vMediaReq.Inserted = true
-	_, httpResp, err := api.InsertVirtualMedia(ctx, managerID, vMediaID, vMediaReq)
-	return ScreenRedfishError(httpResp, err)
+	return GetResourceIDFromURL(system.Links.ManagedBy[0].OdataId), nil
 }

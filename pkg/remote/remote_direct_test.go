@@ -8,9 +8,15 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
-
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 	"opendev.org/airship/airshipctl/testutil"
+	"opendev.org/airship/airshipctl/testutil/redfishutils"
+)
+
+const (
+	systemID   = "server-100"
+	isoURL     = "https://localhost:8080/ubuntu.iso"
+	redfishURL = "https://redfish.local"
 )
 
 func initSettings(t *testing.T, rd *config.RemoteDirect, testdata string) *environment.AirshipCTLSettings {
@@ -36,7 +42,7 @@ func TestUnknownRemoteType(t *testing.T) {
 		"base",
 	)
 
-	err := DoRemoteDirect(s)
+	_, err := NewAdapter(s)
 	_, ok := err.(*GenericError)
 	assert.True(t, ok)
 }
@@ -51,7 +57,7 @@ func TestRedfishRemoteDirectWithEmptyURL(t *testing.T) {
 		"emptyurl",
 	)
 
-	err := DoRemoteDirect(s)
+	_, err := NewAdapter(s)
 	_, ok := err.(redfish.ErrRedfishMissingConfig)
 	assert.True(t, ok)
 }
@@ -66,8 +72,7 @@ func TestRedfishRemoteDirectWithEmptyIsoPath(t *testing.T) {
 		"base",
 	)
 
-	err := DoRemoteDirect(s)
-
+	_, err := NewAdapter(s)
 	_, ok := err.(redfish.ErrRedfishMissingConfig)
 	assert.True(t, ok)
 }
@@ -79,8 +84,123 @@ func TestBootstrapRemoteDirectMissingConfigOpts(t *testing.T) {
 		"base",
 	)
 
-	err := DoRemoteDirect(s)
-
+	_, err := NewAdapter(s)
 	_, ok := err.(config.ErrMissingConfig)
+	assert.True(t, ok)
+}
+
+func TestDoRemoteDirectRedfish(t *testing.T) {
+	cfg := &config.RemoteDirect{
+		RemoteType: redfish.ClientType,
+		IsoURL:     isoURL,
+	}
+
+	// Initialize a remote direct adapter
+	settings := initSettings(t, cfg, "base")
+	a, err := NewAdapter(settings)
+	assert.NoError(t, err)
+
+	ctx, rMock, err := redfishutils.NewClient(systemID, isoURL, redfishURL, false, false, "admin", "password")
+	assert.NoError(t, err)
+
+	rMock.On("SetVirtualMedia", a.context, isoURL).Times(1).Return(nil)
+	rMock.On("SetEphemeralBootSourceByType", a.context).Times(1).Return(nil)
+	rMock.On("EphemeralNodeID").Times(1).Return(systemID)
+	rMock.On("RebootSystem", a.context, systemID).Times(1).Return(nil)
+
+	// Swap the redfish client initialized by the remote direct adapter with the above mocked client
+	a.context = ctx
+	a.OOBClient = rMock
+
+	err = a.DoRemoteDirect()
+	assert.NoError(t, err)
+}
+
+func TestDoRemoteDirectRedfishVirtualMediaError(t *testing.T) {
+	cfg := &config.RemoteDirect{
+		RemoteType: redfish.ClientType,
+		IsoURL:     isoURL,
+	}
+
+	// Initialize a remote direct adapter
+	settings := initSettings(t, cfg, "base")
+	a, err := NewAdapter(settings)
+	assert.NoError(t, err)
+
+	ctx, rMock, err := redfishutils.NewClient(systemID, isoURL, redfishURL, false, false, "admin", "password")
+	assert.NoError(t, err)
+
+	expectedErr := redfish.ErrRedfishClient{Message: "Unable to set virtual media."}
+	rMock.On("SetVirtualMedia", a.context, isoURL).Times(1).Return(expectedErr)
+	rMock.On("SetEphemeralBootSourceByType", a.context).Times(1).Return(nil)
+	rMock.On("EphemeralNodeID").Times(1).Return(systemID)
+	rMock.On("RebootSystem", a.context, systemID).Times(1).Return(nil)
+
+	// Swap the redfish client initialized by the remote direct adapter with the above mocked client
+	a.context = ctx
+	a.OOBClient = rMock
+
+	err = a.DoRemoteDirect()
+	_, ok := err.(redfish.ErrRedfishClient)
+	assert.True(t, ok)
+}
+
+func TestDoRemoteDirectRedfishBootSourceError(t *testing.T) {
+	cfg := &config.RemoteDirect{
+		RemoteType: redfish.ClientType,
+		IsoURL:     isoURL,
+	}
+
+	// Initialize a remote direct adapter
+	settings := initSettings(t, cfg, "base")
+	a, err := NewAdapter(settings)
+	assert.NoError(t, err)
+
+	ctx, rMock, err := redfishutils.NewClient(systemID, isoURL, redfishURL, false, false, "admin", "password")
+	assert.NoError(t, err)
+
+	rMock.On("SetVirtualMedia", a.context, isoURL).Times(1).Return(nil)
+
+	expectedErr := redfish.ErrRedfishClient{Message: "Unable to set boot source."}
+	rMock.On("SetEphemeralBootSourceByType", a.context).Times(1).Return(expectedErr)
+	rMock.On("EphemeralNodeID").Times(1).Return(systemID)
+	rMock.On("RebootSystem", a.context, systemID).Times(1).Return(nil)
+
+	// Swap the redfish client initialized by the remote direct adapter with the above mocked client
+	a.context = ctx
+	a.OOBClient = rMock
+
+	err = a.DoRemoteDirect()
+	_, ok := err.(redfish.ErrRedfishClient)
+	assert.True(t, ok)
+}
+
+func TestDoRemoteDirectRedfishRebootError(t *testing.T) {
+	cfg := &config.RemoteDirect{
+		RemoteType: redfish.ClientType,
+		IsoURL:     isoURL,
+	}
+
+	// Initialize a remote direct adapter
+	settings := initSettings(t, cfg, "base")
+	a, err := NewAdapter(settings)
+	assert.NoError(t, err)
+
+	ctx, rMock, err := redfishutils.NewClient(systemID, isoURL, redfishURL, false, false, "admin", "password")
+	assert.NoError(t, err)
+
+	rMock.On("SetVirtualMedia", a.context, isoURL).Times(1).Return(nil)
+	rMock.On("SetEphemeralBootSourceByType", a.context).Times(1).Return(nil)
+	rMock.On("EphemeralNodeID").Times(1).Return(systemID)
+
+	expectedErr := redfish.ErrRedfishClient{Message: "Unable to set boot source."}
+	rMock.On("RebootSystem", a.context, systemID).Times(1).Return(expectedErr)
+
+	// Swap the redfish client initialized by the remote direct adapter with the above mocked client
+	a.context = ctx
+	a.OOBClient = rMock
+
+	err = a.DoRemoteDirect()
+	_, ok := err.(redfish.ErrRedfishClient)
 	assert.True(t, ok)
 }

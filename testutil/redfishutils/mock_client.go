@@ -64,8 +64,8 @@ func (m *MockClient) RebootSystem(ctx context.Context, systemID string) error {
 //         client.On("SetEphemeralBootSourceByType").Return(<return values>)
 //
 //         err := client.setEphemeralBootSourceByType(<args>)
-func (m *MockClient) SetEphemeralBootSourceByType(ctx context.Context, mediaType string) error {
-	args := m.Called(ctx, mediaType)
+func (m *MockClient) SetEphemeralBootSourceByType(ctx context.Context) error {
+	args := m.Called(ctx)
 	return args.Error(0)
 }
 
@@ -77,8 +77,8 @@ func (m *MockClient) SetEphemeralBootSourceByType(ctx context.Context, mediaType
 //         client.On("SetVirtualMedia").Return(<return values>)
 //
 //         err := client.SetVirtualMedia(<args>)
-func (m *MockClient) SetVirtualMedia(ctx context.Context, vMediaID string, isoPath string) error {
-	args := m.Called(ctx, vMediaID, isoPath)
+func (m *MockClient) SetVirtualMedia(ctx context.Context, isoPath string) error {
+	args := m.Called(ctx, isoPath)
 	return args.Error(0)
 }
 

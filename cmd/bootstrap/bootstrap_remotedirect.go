@@ -7,13 +7,18 @@ import (
 	"opendev.org/airship/airshipctl/pkg/remote"
 )
 
-// New Bootstrap remote direct subcommand
+// NewRemoteDirectCommand provides a command with the capability to perform remote direct operations.
 func NewRemoteDirectCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	remoteDirect := &cobra.Command{
 		Use:   "remotedirect",
 		Short: "Bootstrap ephemeral node",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return remote.DoRemoteDirect(rootSettings)
+			a, err := remote.NewAdapter(rootSettings)
+			if err != nil {
+				return err
+			}
+
+			return a.DoRemoteDirect()
 		},
 	}
 
