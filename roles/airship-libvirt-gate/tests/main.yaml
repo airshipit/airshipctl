@@ -9,9 +9,12 @@
     gate_flavor: small
     gate_action: build-infra
 
-- name: query redfish to make sure it has runnig domains
+- name: query redfish to make sure it has running domains using HTTPS
   uri:
-    url: http://{{ airship_gate_redfish.bind_address }}:{{ airship_gate_redfish.port }}/redfish/v1/Systems?format=json
+    url: "https://{{ airship_gate_redfish.bind_address }}:{{ airship_gate_redfish.secure_port }}/redfish/v1/Systems?format=json"
+    url_username: "{{ airship_gate_redfish.username }}"
+    url_password: "{{ airship_gate_redfish.password }}"
+    validate_certs: false
     method: GET
     return_content: yes
   register: redfish_response
@@ -22,7 +25,10 @@
 
 - name: save ids to list
   uri:
-    url: "http://{{ airship_gate_redfish.bind_address }}:{{ airship_gate_redfish.port }}{{ item.value }}?format=json"
+    url: "https://{{ airship_gate_redfish.bind_address }}:{{ airship_gate_redfish.secure_port }}{{ item.value }}?format=json"
+    url_username: "{{ airship_gate_redfish.username }}"
+    url_password: "{{ airship_gate_redfish.password }}"
+    validate_certs: false
     method: GET
     return_content: yes
   with_dict: "{{ redfish_response.json.Members }}"

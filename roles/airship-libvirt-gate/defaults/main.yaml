@@ -19,6 +19,10 @@ airship_gate_ipam:
     bridge_ip: "10.23.24.1"
 
 airship_gate_redfish:
+  hostname: "redfish-emulator"
+  username: "username"
+  password: "password"
+  secure_port: 443
   port: 8000
   bind_address: "127.0.0.1"
 
