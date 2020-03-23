@@ -20,12 +20,11 @@ import (
 )
 
 func getDummyPullSettings() *Settings {
-	mockPullSettings := &Settings{
-		AirshipCTLSettings: new(environment.AirshipCTLSettings),
+	return &Settings{
+		AirshipCTLSettings: &environment.AirshipCTLSettings{
+			Config: testutil.DummyConfig(),
+		},
 	}
-	mockConf := testutil.DummyConfig()
-	mockPullSettings.AirshipCTLSettings.SetConfig(mockConf)
-	return mockPullSettings
 }
 
 func TestPull(t *testing.T) {
@@ -34,7 +33,7 @@ func TestPull(t *testing.T) {
 
 	t.Run("cloneRepositories", func(t *testing.T) {
 		dummyPullSettings := getDummyPullSettings()
-		currentManifest, err := dummyPullSettings.Config().CurrentContextManifest()
+		currentManifest, err := dummyPullSettings.Config.CurrentContextManifest()
 		require.NoError(err)
 
 		err = fixtures.Init()
@@ -75,7 +74,7 @@ func TestPull(t *testing.T) {
 
 	t.Run("Pull", func(t *testing.T) {
 		dummyPullSettings := getDummyPullSettings()
-		conf := dummyPullSettings.AirshipCTLSettings.Config()
+		conf := dummyPullSettings.AirshipCTLSettings.Config
 
 		err := fixtures.Init()
 		require.NoError(err)
@@ -95,7 +94,7 @@ func TestPull(t *testing.T) {
 				},
 			},
 		}
-		dummyPullSettings.SetConfig(conf)
+		dummyPullSettings.Config = conf
 
 		tmpDir, cleanup := testutil.TempDir(t, "airshipctlPullTest-")
 		defer cleanup(t)

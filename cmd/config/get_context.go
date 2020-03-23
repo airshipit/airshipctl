@@ -54,7 +54,7 @@ func NewCmdConfigGetContext(rootSettings *environment.AirshipCTLSettings) *cobra
 			if len(args) == 1 {
 				o.Name = args[0]
 			}
-			return config.RunGetContext(o, cmd.OutOrStdout(), rootSettings.Config())
+			return config.RunGetContext(o, cmd.OutOrStdout(), rootSettings.Config)
 		},
 	}
 

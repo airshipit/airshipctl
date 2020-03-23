@@ -46,7 +46,7 @@ func NewCmdConfigGetAuthInfo(rootSettings *environment.AirshipCTLSettings) *cobr
 			if len(args) == 1 {
 				o.Name = args[0]
 			}
-			return config.RunGetAuthInfo(o, cmd.OutOrStdout(), rootSettings.Config())
+			return config.RunGetAuthInfo(o, cmd.OutOrStdout(), rootSettings.Config)
 		},
 	}
 

@@ -9,9 +9,10 @@ import (
 )
 
 func TestNewClusterCommandReturn(t *testing.T) {
-	fakeRootSettings := &environment.AirshipCTLSettings{}
-	fakeRootSettings.SetAirshipConfigPath("../../testdata/k8s/config.yaml")
-	fakeRootSettings.SetKubeConfigPath("../../testdata/k8s/kubeconfig.yaml")
+	fakeRootSettings := &environment.AirshipCTLSettings{
+		AirshipConfigPath: "../../testdata/k8s/config.yaml",
+		KubeConfigPath:    "../../testdata/k8s/kubeconfig.yaml",
+	}
 	fakeRootSettings.InitConfig()
 
 	tests := []*testutil.CmdTest{

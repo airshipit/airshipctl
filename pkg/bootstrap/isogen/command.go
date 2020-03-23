@@ -24,7 +24,7 @@ const (
 func GenerateBootstrapIso(settings *environment.AirshipCTLSettings) error {
 	ctx := context.Background()
 
-	globalConf := settings.Config()
+	globalConf := settings.Config
 	if err := globalConf.EnsureComplete(); err != nil {
 		return err
 	}

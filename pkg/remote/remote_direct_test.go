@@ -21,12 +21,11 @@ const (
 
 func initSettings(t *testing.T, rd *config.RemoteDirect, testdata string) *environment.AirshipCTLSettings {
 	t.Helper()
-	settings := &environment.AirshipCTLSettings{}
-	settings.SetConfig(testutil.DummyConfig())
-	bi, err := settings.Config().CurrentContextBootstrapInfo()
+	settings := &environment.AirshipCTLSettings{Config: testutil.DummyConfig()}
+	bi, err := settings.Config.CurrentContextBootstrapInfo()
 	require.NoError(t, err)
 	bi.RemoteDirect = rd
-	cm, err := settings.Config().CurrentContextManifest()
+	cm, err := settings.Config.CurrentContextManifest()
 	require.NoError(t, err)
 	cm.TargetPath = "testdata/" + testdata
 	return settings

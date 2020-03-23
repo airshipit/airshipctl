@@ -86,10 +86,9 @@ func TestDeploy(t *testing.T) {
 	}
 }
 
-// MakeNewFakeRootSettings takes kubeconfig path and directory path to fixture dir as argument.
+// makeNewFakeRootSettings takes kubeconfig path and directory path to fixture dir as argument.
 func makeNewFakeRootSettings(t *testing.T, kp string, dir string) *environment.AirshipCTLSettings {
 	t.Helper()
-	rs := &environment.AirshipCTLSettings{}
 
 	akp, err := filepath.Abs(kp)
 	require.NoError(t, err)
@@ -97,9 +96,11 @@ func makeNewFakeRootSettings(t *testing.T, kp string, dir string) *environment.A
 	adir, err := filepath.Abs(dir)
 	require.NoError(t, err)
 
-	rs.SetAirshipConfigPath(adir)
-	rs.SetKubeConfigPath(akp)
+	settings := &environment.AirshipCTLSettings{
+		AirshipConfigPath: adir,
+		KubeConfigPath:    akp,
+	}
 
-	rs.InitConfig()
-	return rs
+	settings.InitConfig()
+	return settings
 }

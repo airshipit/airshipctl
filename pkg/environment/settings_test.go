@@ -48,8 +48,8 @@ func TestInitConfig(t *testing.T) {
 		expectedKubeConfig := filepath.Join(testDir, config.AirshipConfigDir, config.AirshipKubeConfig)
 
 		testSettings.InitConfig()
-		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath())
-		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath())
+		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath)
+		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath)
 	})
 
 	t.Run("PreferEnvToDefault", func(subTest *testing.T) {
@@ -68,8 +68,8 @@ func TestInitConfig(t *testing.T) {
 		defer os.Unsetenv(config.AirshipKubeConfigEnv)
 
 		testSettings.InitConfig()
-		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath())
-		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath())
+		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath)
+		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath)
 	})
 
 	t.Run("PreferCmdLineArgToDefault", func(subTest *testing.T) {
@@ -78,17 +78,18 @@ func TestInitConfig(t *testing.T) {
 		defer cleanup(t)
 		defer setHome(testDir)()
 
-		var testSettings AirshipCTLSettings
 		expectedAirshipConfig := filepath.Join(testDir, "airshipCmdLine")
 		expectedKubeConfig := filepath.Join(testDir, "kubeCmdLine")
 
-		testSettings.SetAirshipConfigPath(expectedAirshipConfig)
-		testSettings.SetKubeConfigPath(expectedKubeConfig)
+		testSettings := AirshipCTLSettings{
+			AirshipConfigPath: expectedAirshipConfig,
+			KubeConfigPath:    expectedKubeConfig,
+		}
 
 		// InitConfig should not change any values
 		testSettings.InitConfig()
-		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath())
-		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath())
+		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath)
+		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath)
 	})
 
 	t.Run("PreferCmdLineArgToEnv", func(subTest *testing.T) {
@@ -97,7 +98,6 @@ func TestInitConfig(t *testing.T) {
 		defer cleanup(t)
 		defer setHome(testDir)()
 
-		var testSettings AirshipCTLSettings
 		expectedAirshipConfig := filepath.Join(testDir, "airshipCmdLine")
 		expectedKubeConfig := filepath.Join(testDir, "kubeCmdLine")
 
@@ -111,12 +111,14 @@ func TestInitConfig(t *testing.T) {
 		defer os.Unsetenv(config.AirshipConfigEnv)
 		defer os.Unsetenv(config.AirshipKubeConfigEnv)
 
-		testSettings.SetAirshipConfigPath(expectedAirshipConfig)
-		testSettings.SetKubeConfigPath(expectedKubeConfig)
+		testSettings := AirshipCTLSettings{
+			AirshipConfigPath: expectedAirshipConfig,
+			KubeConfigPath:    expectedKubeConfig,
+		}
 
 		testSettings.InitConfig()
-		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath())
-		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath())
+		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath)
+		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath)
 	})
 }
 

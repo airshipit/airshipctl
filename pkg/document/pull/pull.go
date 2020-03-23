@@ -20,7 +20,7 @@ func (s *Settings) Pull() error {
 
 func (s *Settings) cloneRepositories() error {
 	// Clone main repository
-	currentManifest, err := s.Config().CurrentContextManifest()
+	currentManifest, err := s.Config.CurrentContextManifest()
 	if err != nil {
 		return err
 	}

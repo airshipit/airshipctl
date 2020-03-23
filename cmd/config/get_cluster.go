@@ -53,7 +53,7 @@ func NewCmdConfigGetCluster(rootSettings *environment.AirshipCTLSettings) *cobra
 				return err
 			}
 
-			return config.RunGetCluster(o, cmd.OutOrStdout(), rootSettings.Config())
+			return config.RunGetCluster(o, cmd.OutOrStdout(), rootSettings.Config)
 		},
 	}
 

@@ -66,7 +66,7 @@ func NewCmdConfigSetCluster(rootSettings *environment.AirshipCTLSettings) *cobra
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			o.Name = args[0]
-			modified, err := config.RunSetCluster(o, rootSettings.Config(), true)
+			modified, err := config.RunSetCluster(o, rootSettings.Config, true)
 			if err != nil {
 				return err
 			}

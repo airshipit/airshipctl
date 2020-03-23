@@ -88,12 +88,11 @@ func initInputConfig(t *testing.T) (given *config.Config, cleanup func(*testing.
 }
 
 func (test setAuthInfoTest) run(t *testing.T) {
-	settings := &environment.AirshipCTLSettings{}
-	settings.SetConfig(test.inputConfig)
+	settings := &environment.AirshipCTLSettings{Config: test.inputConfig}
 	test.cmdTest.Cmd = cmd.NewCmdConfigSetAuthInfo(settings)
 	testutil.RunTest(t, test.cmdTest)
 
-	afterRunConf := settings.Config()
+	afterRunConf := settings.Config
 	// Find the AuthInfo Created or Modified
 	afterRunAuthInfo, err := afterRunConf.GetAuthInfo(test.userName)
 	require.NoError(t, err)

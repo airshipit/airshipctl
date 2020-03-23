@@ -61,7 +61,7 @@ func NewCmdConfigSetAuthInfo(rootSettings *environment.AirshipCTLSettings) *cobr
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			o.Name = args[0]
-			modified, err := config.RunSetAuthInfo(o, rootSettings.Config(), true)
+			modified, err := config.RunSetAuthInfo(o, rootSettings.Config, true)
 			if err != nil {
 				return err
 			}

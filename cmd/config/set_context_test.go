@@ -127,13 +127,12 @@ func TestSetContext(t *testing.T) {
 
 func (test setContextTest) run(t *testing.T) {
 	// Get the Environment
-	settings := &environment.AirshipCTLSettings{}
-	settings.SetConfig(test.givenConfig)
+	settings := &environment.AirshipCTLSettings{Config: test.givenConfig}
 
 	test.cmdTest.Cmd = cmd.NewCmdConfigSetContext(settings)
 	testutil.RunTest(t, test.cmdTest)
 
-	afterRunConf := settings.Config()
+	afterRunConf := settings.Config
 
 	// Find the Context Created or Modified
 	afterRunContext, err := afterRunConf.GetContext(test.contextName)

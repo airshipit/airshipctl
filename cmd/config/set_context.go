@@ -70,7 +70,7 @@ func NewCmdConfigSetContext(rootSettings *environment.AirshipCTLSettings) *cobra
 				return nil
 			}
 
-			modified, err := config.RunSetContext(o, rootSettings.Config(), true)
+			modified, err := config.RunSetContext(o, rootSettings.Config, true)
 
 			if err != nil {
 				return err
