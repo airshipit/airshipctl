@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"reflect"
 
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
@@ -21,16 +20,6 @@ const (
 )
 
 // RepoCheckout methods
-
-func (c *RepoCheckout) Equal(s *RepoCheckout) bool {
-	if s == nil {
-		return s == c
-	}
-	return c.CommitHash == s.CommitHash &&
-		c.Branch == s.Branch &&
-		c.Tag == s.Tag &&
-		c.RemoteRef == s.RemoteRef
-}
 
 func (c *RepoCheckout) String() string {
 	yaml, err := yaml.Marshal(&c)
@@ -61,17 +50,6 @@ func (c *RepoCheckout) Validate() error {
 var (
 	AllowedAuthTypes = []string{SSHAuth, SSHPass, HTTPBasic}
 )
-
-func (auth *RepoAuth) Equal(s *RepoAuth) bool {
-	if s == nil {
-		return s == auth
-	}
-	return auth.Type == s.Type &&
-		auth.KeyPassword == s.KeyPassword &&
-		auth.KeyPath == s.KeyPath &&
-		auth.SSHPassword == s.SSHPassword &&
-		auth.Username == s.Username
-}
 
 func (auth *RepoAuth) String() string {
 	yaml, err := yaml.Marshal(&auth)
@@ -113,16 +91,6 @@ func stringInSlice(a string, list []string) bool {
 }
 
 // Repository functions
-// Equal compares repository specs
-func (repo *Repository) Equal(s *Repository) bool {
-	if s == nil {
-		return s == repo
-	}
-
-	return repo.URLString == s.URLString &&
-		reflect.DeepEqual(s.Auth, repo.Auth) &&
-		reflect.DeepEqual(s.CheckoutOptions, repo.CheckoutOptions)
-}
 
 func (repo *Repository) String() string {
 	yaml, err := yaml.Marshal(&repo)

@@ -23,7 +23,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"reflect"
 	"sort"
 	"strings"
 
@@ -741,29 +740,6 @@ func (c *Config) Purge() error {
 	return os.Remove(c.loadedConfigPath)
 }
 
-func (c *Config) Equal(d *Config) bool {
-	if d == nil {
-		return d == c
-	}
-	clusterEq := reflect.DeepEqual(c.Clusters, d.Clusters)
-	authInfoEq := reflect.DeepEqual(c.AuthInfos, d.AuthInfos)
-	contextEq := reflect.DeepEqual(c.Contexts, d.Contexts)
-	manifestEq := reflect.DeepEqual(c.Manifests, d.Manifests)
-	modulesEq := reflect.DeepEqual(c.ModulesConfig, d.ModulesConfig)
-	return c.Kind == d.Kind &&
-		c.APIVersion == d.APIVersion &&
-		clusterEq && authInfoEq && contextEq && manifestEq && modulesEq
-}
-
-// Cluster functions
-func (c *Cluster) Equal(d *Cluster) bool {
-	if d == nil {
-		return d == c
-	}
-	return c.NameInKubeconf == d.NameInKubeconf &&
-		c.Bootstrap == d.Bootstrap
-}
-
 func (c *Cluster) String() string {
 	cyaml, err := yaml.Marshal(&c)
 	if err != nil {
@@ -794,15 +770,6 @@ func (c *Cluster) SetKubeCluster(kc *clientcmdapi.Cluster) {
 }
 
 // Context functions
-func (c *Context) Equal(d *Context) bool {
-	if d == nil {
-		return d == c
-	}
-	return c.NameInKubeconf == d.NameInKubeconf &&
-		c.Manifest == d.Manifest &&
-		c.context == d.context
-}
-
 func (c *Context) String() string {
 	cyaml, err := yaml.Marshal(&c)
 	if err != nil {
@@ -839,13 +806,6 @@ func (c *Context) ClusterType() string {
 }
 
 // AuthInfo functions
-func (c *AuthInfo) Equal(d *AuthInfo) bool {
-	if d == nil {
-		return c == d
-	}
-	return c.authInfo == d.authInfo
-}
-
 func (c *AuthInfo) String() string {
 	kauthinfo := c.KubeAuthInfo()
 	kyaml, err := yaml.Marshal(&kauthinfo)
@@ -863,14 +823,6 @@ func (c *AuthInfo) SetKubeAuthInfo(kc *clientcmdapi.AuthInfo) {
 }
 
 // Manifest functions
-func (m *Manifest) Equal(n *Manifest) bool {
-	if n == nil {
-		return n == m
-	}
-	reposEq := reflect.DeepEqual(m.Repositories, n.Repositories)
-	return reposEq && m.TargetPath == n.TargetPath && m.SubPath == n.SubPath
-}
-
 func (m *Manifest) String() string {
 	yamlData, err := yaml.Marshal(&m)
 	if err != nil {
@@ -880,12 +832,6 @@ func (m *Manifest) String() string {
 }
 
 // Modules functions
-func (m *Modules) Equal(n *Modules) bool {
-	if n == nil {
-		return n == m
-	}
-	return reflect.DeepEqual(m.BootstrapInfo, n.BootstrapInfo)
-}
 func (m *Modules) String() string {
 	yamlData, err := yaml.Marshal(&m)
 	if err != nil {
@@ -895,15 +841,6 @@ func (m *Modules) String() string {
 }
 
 // Bootstrap functions
-func (b *Bootstrap) Equal(c *Bootstrap) bool {
-	if c == nil {
-		return b == c
-	}
-	contEq := reflect.DeepEqual(b.Container, c.Container)
-	bldrEq := reflect.DeepEqual(b.Builder, c.Builder)
-	return contEq && bldrEq
-}
-
 func (b *Bootstrap) String() string {
 	yamlData, err := yaml.Marshal(&b)
 	if err != nil {
@@ -913,15 +850,6 @@ func (b *Bootstrap) String() string {
 }
 
 // Container functions
-func (c *Container) Equal(d *Container) bool {
-	if d == nil {
-		return d == c
-	}
-	return c.Volume == d.Volume &&
-		c.Image == d.Image &&
-		c.ContainerRuntime == d.ContainerRuntime
-}
-
 func (c *Container) String() string {
 	yamlData, err := yaml.Marshal(&c)
 	if err != nil {
@@ -931,15 +859,6 @@ func (c *Container) String() string {
 }
 
 // Builder functions
-func (b *Builder) Equal(c *Builder) bool {
-	if c == nil {
-		return b == c
-	}
-	return b.UserDataFileName == c.UserDataFileName &&
-		b.NetworkConfigFileName == c.NetworkConfigFileName &&
-		b.OutputMetadataFileName == c.OutputMetadataFileName
-}
-
 func (b *Builder) String() string {
 	yamlData, err := yaml.Marshal(&b)
 	if err != nil {
