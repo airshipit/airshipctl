@@ -445,7 +445,7 @@ func (c *Config) AddCluster(theCluster *ClusterOptions) (*Cluster, error) {
 	// Create the new Airship config Cluster
 	nCluster := NewCluster()
 	c.Clusters[theCluster.Name].ClusterTypes[theCluster.ClusterType] = nCluster
-	// Create a new Kubeconfig Cluster object as well
+	// Create a new KubeConfig Cluster object as well
 	kcluster := clientcmdapi.NewCluster()
 	clusterName := NewClusterComplexName()
 	clusterName.WithType(theCluster.Name, theCluster.ClusterType)
@@ -554,7 +554,7 @@ func (c *Config) AddContext(theContext *ContextOptions) *Context {
 	// Create the new Airship config context
 	nContext := NewContext()
 	c.Contexts[theContext.Name] = nContext
-	// Create a new Kubeconfig Context object as well
+	// Create a new KubeConfig Context object as well
 	context := clientcmdapi.NewContext()
 	nContext.NameInKubeconf = theContext.Name
 	contextName := NewClusterComplexName()
@@ -685,7 +685,7 @@ func (c *Config) AddAuthInfo(theAuthInfo *AuthInfoOptions) *AuthInfo {
 	// Create the new Airship config context
 	nAuthInfo := NewAuthInfo()
 	c.AuthInfos[theAuthInfo.Name] = nAuthInfo
-	// Create a new Kubeconfig AuthInfo object as well
+	// Create a new KubeConfig AuthInfo object as well
 	authInfo := clientcmdapi.NewAuthInfo()
 	nAuthInfo.SetKubeAuthInfo(authInfo)
 	c.KubeConfig().AuthInfos[theAuthInfo.Name] = authInfo
