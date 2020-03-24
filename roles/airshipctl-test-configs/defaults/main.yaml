@@ -20,7 +20,7 @@ airship_config_iso_builder_docker_image: quay.io/airshipit/isogen:latest-debian_
 airship_config_iso_port: 8099
 airship_config_iso_serve_host: localhost
 airship_config_iso_name: debian-custom.iso
-airship_site_name: manifests/site/test-site
+airship_site_name: "{{ airship_config_site_path | default('manifests/site/test-site') }}"
 remote_type: redfish
 remote_insecure: true
 remote_proxy: false

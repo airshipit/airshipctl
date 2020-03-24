@@ -135,9 +135,14 @@ libvirt_domain_template_default: |
       {% if volume.target is undefined %}
       <target dev='vd{{ 'abcdefghijklmnopqrstuvwxyz'[loop.index - 1] }}'/>
       {% else %}
-      <target dev='{{ volume.target }}' />
+      <target dev='{{ volume.target }}' bus='{{ volume.bus if volume.bus is defined else 'virtio' }}'/>
       {% endif %}
       </disk>
+      {% endfor %}
+      {% for controller in controllers | default([]) %}
+      <controller type='{{ controller }}'>
+      <address type='pci'/>
+      </controller>
       {% endfor %}
       {% for interface in interfaces %}
       {% if interface.type is defined and interface.type == 'direct' %}
@@ -150,7 +155,7 @@ libvirt_domain_template_default: |
       <interface type='network'>
       <source network='{{ interface.network }}'/>
       {% endif %}
-      {% if interface.mac is defined %}
+      {% if interface.mac | default("") != "" %}
       <mac address='{{ interface.mac }}'/>
       {% endif %}
       {# if the network configuration is invalid this can still appear in the xml #}

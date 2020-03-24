@@ -15,13 +15,26 @@
     LIBVIRT_DEFAULT_URI: qemu:///system
 
   tasks:
-    - name: read ip map
+    - name: set default vars
+      set_fact:
+        var_files_default:
+          - airship-ipam.yaml
+          - test-config.yaml
+
+    - name: read test variables
       include_vars:
-        file: vars/airship-ipam.yaml
+        file: "vars/{{ var_file }}"
+      with_items: "{{ var_files | default(var_files_default) }}"
+      loop_control:
+        loop_var: var_file
 
     - name: docker install
       include_role:
         name: docker-install
+
+    - name: install kustomize
+      include_role:
+        name: install-kustomize
 
     - name: make sure serve directory exists
       file:
@@ -30,6 +43,60 @@
         mode: "0755"
         owner: "{{ ansible_user }}"
       become: yes
+
+    - name: get BareMetalHost from model
+      block:
+        - name: clone document model
+          command: git clone -q {{ airship_config_primary_repo_url }} {{ remote_work_dir }}/airshipctl
+          when: remote_work_dir is defined
+        - name: get BareMetalHost objects
+          shell: |
+            set -e
+            kustomize build {{ airship_config_manifest_directory }}/{{ airship_config_site_path }}/ephemeral/controlplane |
+            kustomize config grep  "kind=BareMetalHost"
+          register: bmh_command
+          failed_when: "bmh_command.stdout == ''"
+          environment:
+            KUSTOMIZE_ENABLE_ALPHA_COMMANDS: "true"
+        - set_fact:
+            bmh: "{{ bmh_command.stdout | from_yaml_all | list }}"
+        - name: get network configuration for BareMetalHost objects
+          shell: |
+            set -e
+            kustomize build {{ airship_config_manifest_directory }}/{{ airship_config_site_path }}/ephemeral/controlplane |
+            kustomize config grep  "metadata.name={{ item.spec.networkData.name }}"
+          register: netdata_command
+          failed_when: "bmh_command.stdout == ''"
+          environment:
+            KUSTOMIZE_ENABLE_ALPHA_COMMANDS: "true"
+          with_items: "{{ bmh }}"
+        - name: get links from network data per BareMetalHost object
+          set_fact:
+            links: |
+              {{
+                netdata_command.results |
+                  map(attribute='stdout')| map('from_yaml') |
+                  map(attribute='data.networkData') | map('b64decode') | map('from_yaml') |
+                  map(attribute='links') | list
+              }}
+        - name: define list of VM mac addresses
+          set_fact:
+            vm_nic: "{{ dict(['nat_mac', 'provision_mac'] | zip([nat_mac_list[0], item.spec.bootMACAddress])) }}"
+          vars:
+            nat_mac_list: |
+              {{
+                links[idx] |
+                  rejectattr('ethernet_mac_address', 'undefined') |
+                  selectattr('ethernet_mac_address', '!=', item.spec.bootMACAddress) |
+                  map(attribute='ethernet_mac_address') | list
+              }}
+          failed_when: nat_mac_list | length == 0
+          loop: "{{ bmh }}"
+          loop_control:
+            index_var: idx
+          register: vm_nic_fact
+        - set_fact:
+            target_vm_nics: "{{ vm_nic_fact.results | map(attribute='ansible_facts.vm_nic') | list }}"
 
     - name: deploy-gate
       include_role:
@@ -44,19 +111,21 @@
             name: "default"
         airship_gate_flavors:
           medium:
-            target_vm_memory_mb: 1024
-            target_vm_vcpus: 1
+            target_vm_memory_mb: 4096
+            target_vm_vcpus: 2
             ephemeral_vm_memory_mb: 6124
             ephemeral_vm_vcpus: 4
             ephemeral_disk_size: 20G
             target_disk_size: 10G
             disk_format: qcow2
             target_vms_count: 1
+            target_vm_nics: "{{ target_vm_nics }}"
         airship_gate_file_exchanger:
-          servername: "loacalhost"
+          servername: "localhost"
           ip:
           - "127.0.0.1"
           - "::1"
+          - "{{ airship_gate_ipam.provision_network.bridge_ip }}"
           http_port: "{{ serve_port }}"
           path: "{{ serve_dir }}"
           user:
@@ -74,4 +143,3 @@
               - writers
             default:
               all: granted
-

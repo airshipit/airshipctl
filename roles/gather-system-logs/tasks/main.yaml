@@ -26,6 +26,9 @@
           mount > {{ logs_dir }}/system/mount.txt
           docker images > {{ logs_dir }}/system/docker-images.txt
           ps aux --sort=-%mem > {{ logs_dir }}/system/ps.txt
+          netstat -plantu > {{ logs_dir }}/system/netstat.txt
+          iptables -vxnL > {{ logs_dir }}/system/iptables_filter.txt
+          iptables -t nat -vxnL > {{ logs_dir }}/system/iptables_nat.txt
   args:
     executable: /bin/bash
   ignore_errors: True

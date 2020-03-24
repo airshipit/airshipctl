@@ -24,6 +24,7 @@
           - airshipctl-deploy-ephemeral-node
           - airshipctl-cluster-init-ephemeral
           - airshipctl-phase-apply-initinfra
+          - airshipctl-phase-controlplane
         var_files_default:
           - local-dev.yaml
           - airship-ipam.yaml

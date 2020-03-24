@@ -45,6 +45,17 @@
     - name: Enable sushy-emulator virtual host
       command: "a2ensite {{ sushy_emulator_frontend_name }}"
 
+    - name: Insert a accept rule for non-SSL port
+      iptables:
+        chain: INPUT
+        protocol: tcp
+        destination_port: "{{ sushy_emulator_frontend_http_port }}"
+        destination: "{{ item }}"
+        jump: ACCEPT
+        action: insert
+      with_items: "{{ sushy_emulator_frontend_ip }}"
+      when: "item | ipv4"
+
   - name: Create sushy-emulator HTTPS virtual host config
     when: sushy_emulator_frontend_https_port is defined
     block:
@@ -76,6 +87,17 @@
 
     - name: Enable sushy-emulator virtual host
       command: "a2ensite {{ sushy_emulator_frontend_name }}-ssl"
+
+    - name: Insert a accept rule for SSL port
+      iptables:
+        chain: INPUT
+        protocol: tcp
+        destination_port: "{{ sushy_emulator_frontend_https_port }}"
+        destination: "{{ item }}"
+        jump: ACCEPT
+        action: insert
+      with_items: "{{ sushy_emulator_frontend_ip }}"
+      when: "item | ipv4"
 
   - name: Restart Apache to apply all changes
     include_role:

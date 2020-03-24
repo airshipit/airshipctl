@@ -35,6 +35,7 @@ airship_gate_redfish_noauth:
   ip:
   - "127.0.0.1"
   - "::1"
+  - "{{ airship_gate_ipam.nat_network.bridge_ip }}"
   http_port: 8000
 
 airship_gate_redfish_auth:
@@ -42,6 +43,7 @@ airship_gate_redfish_auth:
   ip:
   - "127.0.0.1"
   - "::1"
+  - "{{ airship_gate_ipam.nat_network.bridge_ip }}"
   https_port: 8443
   user:
   - username: "username"
@@ -52,6 +54,7 @@ airship_gate_file_exchanger:
   ip:
     - "127.0.0.1"
     - "::1"
+    - "{{ airship_gate_ipam.nat_network.bridge_ip }}"
   http_port: 8100
   path: "/srv"
   user:

@@ -78,6 +78,17 @@
     - name: Enable file-exchanger virtual host
       command: "a2ensite {{ file_exchanger_name }}"
 
+    - name: Insert a accept rule for non-SSL port
+      iptables:
+        chain: INPUT
+        protocol: tcp
+        destination_port: "{{ file_exchanger_http_port }}"
+        destination: "{{ item }}"
+        jump: ACCEPT
+        action: insert
+      with_items: "{{ file_exchanger_ip }}"
+      when: "item | ipv4"
+
   - name: Create file-exchanger HTTPS virtual host config
     when: file_exchanger_https_port is defined and file_exchanger_https_port != "0"
     block:
@@ -109,6 +120,17 @@
 
     - name: Enable file-exchanger virtual host
       command: "a2ensite {{ file_exchanger_name }}-ssl"
+
+    - name: Insert a accept rule for SSL port
+      iptables:
+        chain: INPUT
+        protocol: tcp
+        destination_port: "{{ file_exchanger_https_port }}"
+        destination: "{{ item }}"
+        jump: ACCEPT
+        action: insert
+      with_items: "{{ file_exchanger_ip }}"
+      when: "item | ipv4"
 
   - name: Restart Apache to apply all changes
     include_role:

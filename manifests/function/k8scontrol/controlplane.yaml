@@ -1,0 +1,52 @@
+kind: KubeadmControlPlane
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+metadata:
+  name: cluster-controlplane
+spec:
+  replicas: 1
+  version: v1.17.0
+  infrastructureTemplate:
+    kind: Metal3MachineTemplate
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+    name: cluster-controlplane
+  kubeadmConfigSpec:
+    preKubeadmCommands:
+      - wget -O "/usr/bin/konfigadm" https://github.com/flanksource/konfigadm/releases/download/v0.5.3/konfigadm && chmod +x "/usr/bin/konfigadm"
+      - konfigadm apply --config=/konfigadm.yml
+    initConfiguration:
+      nodeRegistration:
+        name: '{{ ds.meta_data.local_hostname }}'
+        kubeletExtraArgs:
+          node-labels: 'metal3.io/uuid={{ ds.meta_data.uuid }}'
+    joinConfiguration:
+      controlPlane: {}
+      nodeRegistration:
+        name: '{{ ds.meta_data.local_hostname }}'
+        kubeletExtraArgs:
+          node-labels: 'metal3.io/uuid={{ ds.meta_data.uuid }}'
+    postKubeadmCommands:
+      - kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://docs.projectcalico.org/v3.9/manifests/calico.yaml
+    files:
+      - path: /konfigadm.yml
+        owner: root:root
+        permissions: "0640"
+        content: |
+          kubernetes:
+            version: 1.17.3
+          container_runtime:
+            type: docker
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: Metal3MachineTemplate
+metadata:
+  name: cluster-controlplane
+spec:
+  template:
+    spec:
+      image:
+        # NOTE (dukov) this should be overridden on lower levels
+        url: https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img
+        checksum: 4a6909d1480ac30d676accd7b37ec711
+      hostSelector:
+        matchLabels:
+          airshipit.org/k8s-role: controlplane-host

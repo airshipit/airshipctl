@@ -41,10 +41,15 @@
       {% if volume.target is undefined %}
       <target dev='vd{{ 'abcdefghijklmnopqrstuvwxyz'[loop.index - 1] }}'/>
       {% else %}
-      <target dev='{{ volume.target }}' />
+      <target dev='{{ volume.target }}' bus='{{ volume.bus if volume.bus is defined else 'virtio' }}'/>
       {% endif %}
     </disk>
 {% endfor %}
+{% if sata_controller %}
+    <controller type='sata'>
+      <address type='pci'/>
+    </controller>
+{% endif %}
 {% for interface in interfaces %}
 {% if interface.type is defined and interface.type == 'direct' %}
     <interface type='direct'>
@@ -56,7 +61,7 @@
     <interface type='network'>
       <source network='{{ interface.network }}'/>
 {% endif %}
-      {% if interface.mac is defined %}
+      {% if interface.mac | default("") != "" %}
       <mac address='{{ interface.mac }}'/>
       {% endif %}
       {# if the network configuration is invalid this can still appear in the xml #}

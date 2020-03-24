@@ -96,6 +96,7 @@
         - airshipctl-deploy-ephemeral-node
         - airshipctl-phase-apply-initinfra
         - airshipctl-cluster-init-ephemeral
+        - airshipctl-phase-controlplane
       serve_dir: /srv/iso
       serve_port: 8099
 
@@ -121,6 +122,7 @@
         - airshipctl-deploy-ephemeral-node
         - airshipctl-phase-apply-initinfra
         - airshipctl-cluster-init-ephemeral
+        - airshipctl-phase-controlplane
       serve_dir: /srv/iso
       serve_port: 8099
     voting: false
