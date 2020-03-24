@@ -47,7 +47,7 @@ func (infra *Infra) Deploy() error {
 	ao.SetDryRun(infra.DryRun)
 	// If prune is true, set selector for purning
 	if infra.Prune {
-		ao.SetPrune(document.DeployedByLabel + "=" + document.InitinfraIdentifier)
+		ao.SetPrune(document.InitInfraSelector)
 	}
 
 	globalConf := infra.RootSettings.Config()
@@ -65,23 +65,14 @@ func (infra *Infra) Deploy() error {
 		return err
 	}
 
+	// Returns documents marked with initinfra phase label
 	selector := document.NewInintInfraSelector()
-	// TODO (kkalynovskyi) Add Selector that would filter by label indicating wether to deploy it to k8s
 	docs, err := b.Select(selector)
 	if err != nil {
 		return err
 	}
 	if len(docs) == 0 {
 		return document.ErrDocNotFound{}
-	}
-
-	// Label every document indicating that it was deployed by initinfra module for further reference
-	// This may be used later to get all resources that are part of initinfra module, for monitoring, alerting
-	// upgrading etc...
-	// also if prune is set to true, this fulfills requirement for all labeled document to be labeled.
-	// Pruning by annotation is not available, therefore we need to use label.
-	for _, doc := range docs {
-		doc.Label(document.DeployedByLabel, document.InitinfraIdentifier)
 	}
 
 	return kctl.Apply(docs, ao)

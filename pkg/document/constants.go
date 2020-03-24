@@ -5,12 +5,7 @@ const (
 	BaseAirshipSelector       = "airshipit.org"
 	EphemeralHostSelector     = BaseAirshipSelector + "/ephemeral-node in (True, true)"
 	EphemeralUserDataSelector = BaseAirshipSelector + "/ephemeral-user-data in (True, true)"
-
-	// Labels
-	DeployedByLabel = BaseAirshipSelector + "/deployed"
-
-	// Identifiers (Static label values)
-	InitinfraIdentifier = "initinfra"
+	InitInfraSelector         = BaseAirshipSelector + "/phase = initinfra"
 )
 
 // Kinds

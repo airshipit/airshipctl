@@ -4,7 +4,7 @@ metadata:
   name: test-rc
   namespace: test
   labels:
-    airshipit.org/initinfra: "true"
+    airshipit.org/phase: "initinfra"
 spec:
   replicas: 1
   template:
