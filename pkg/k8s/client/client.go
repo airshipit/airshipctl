@@ -11,11 +11,6 @@ import (
 	k8sutils "opendev.org/airship/airshipctl/pkg/k8s/utils"
 )
 
-const (
-	// buffDir is a directory that is used as a tmp storage for kubectl
-	buffDir = ".airship"
-)
-
 // Interface provides an abstraction layer to interactions with kubernetes
 // clusters by providing a ClientSet which includes all kubernetes core objects
 // with standard operations, a DynamicClient which provides interactions with
@@ -48,7 +43,7 @@ func NewClient(settings *environment.AirshipCTLSettings) (Interface, error) {
 
 	f := k8sutils.FactoryFromKubeConfigPath(settings.KubeConfigPath())
 
-	pathToBufferDir := filepath.Join(filepath.Dir(settings.AirshipConfigPath()), buffDir)
+	pathToBufferDir := filepath.Dir(settings.AirshipConfigPath())
 	client.kubectl = kubectl.NewKubectl(f).WithBufferDir(pathToBufferDir)
 
 	client.clientSet, err = f.KubernetesClientSet()
