@@ -44,8 +44,8 @@ func (f TestFile) Name() string              { return f.MockName() }
 func (f TestFile) Write([]byte) (int, error) { return f.MockWrite() }
 func (f TestFile) Close() error              { return f.MockClose() }
 
-func TestNewKubectlFromKubeconfigPath(t *testing.T) {
-	f := k8sutils.FactoryFromKubeconfigPath(kubeconfigPath)
+func TestNewKubectlFromKubeConfigPath(t *testing.T) {
+	f := k8sutils.FactoryFromKubeConfigPath(kubeconfigPath)
 	kctl := kubectl.NewKubectl(f).WithBufferDir("/tmp/.airship")
 
 	assert.NotNil(t, kctl.Factory)

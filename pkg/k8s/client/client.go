@@ -46,7 +46,7 @@ func NewClient(settings *environment.AirshipCTLSettings) (Interface, error) {
 	client := new(Client)
 	var err error
 
-	f := k8sutils.FactoryFromKubeconfigPath(settings.KubeConfigPath())
+	f := k8sutils.FactoryFromKubeConfigPath(settings.KubeConfigPath())
 
 	pathToBufferDir := filepath.Join(filepath.Dir(settings.AirshipConfigPath()), buffDir)
 	client.kubectl = kubectl.NewKubectl(f).WithBufferDir(pathToBufferDir)

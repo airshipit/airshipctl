@@ -5,7 +5,7 @@ import (
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 )
 
-func FactoryFromKubeconfigPath(kp string) cmdutil.Factory {
+func FactoryFromKubeConfigPath(kp string) cmdutil.Factory {
 	kf := genericclioptions.NewConfigFlags(false)
 	kf.KubeConfig = &kp
 	return cmdutil.NewFactory(kf)

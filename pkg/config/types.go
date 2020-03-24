@@ -79,7 +79,7 @@ type Cluster struct {
 	// Complex cluster name defined by the using <cluster name>_<cluster type>)
 	NameInKubeconf string `json:"cluster-kubeconf"`
 
-	// Kubeconfig Cluster Object
+	// KubeConfig Cluster Object
 	cluster *kubeconfig.Cluster
 
 	// Bootstrap configuration this clusters ephemeral hosts will rely on
@@ -104,12 +104,12 @@ type Context struct {
 	// +optional
 	Manifest string `json:"manifest,omitempty"`
 
-	// Kubeconfig Context Object
+	// KubeConfig Context Object
 	context *kubeconfig.Context
 }
 
 type AuthInfo struct {
-	// Kubeconfig AuthInfo Object
+	// KubeConfig AuthInfo Object
 	authInfo *kubeconfig.AuthInfo
 }
 
