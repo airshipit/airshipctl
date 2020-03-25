@@ -98,8 +98,3 @@ func NewEphemeralNetworkDataSelector(bmhDoc Document) (Selector, error) {
 
 	return selector, nil
 }
-
-// NewInintInfraSelector returns selector to get deployable documents marked with initinfra label
-func NewInintInfraSelector() Selector {
-	return NewSelector().ByLabel(InitInfraSelector)
-}

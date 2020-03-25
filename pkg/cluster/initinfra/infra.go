@@ -65,9 +65,8 @@ func (infra *Infra) Deploy() error {
 		return err
 	}
 
-	// Returns documents marked with initinfra phase label
-	selector := document.NewInintInfraSelector()
-	docs, err := b.Select(selector)
+	// Returns all documents for this phase
+	docs, err := b.GetAllDocuments()
 	if err != nil {
 		return err
 	}
