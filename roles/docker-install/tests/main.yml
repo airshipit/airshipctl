@@ -1,0 +1,13 @@
+- name: install docker
+  include_role:
+    name: docker-install
+
+- name: check if docker is installed
+  shell: "docker version"
+  register: docker_version
+
+- name: verify docker is installed
+  assert:
+    that:
+      - docker_version.rc == 0
+

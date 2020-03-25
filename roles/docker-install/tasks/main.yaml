@@ -1,0 +1,66 @@
+---
+- name: Ensuring docker and support packages are present
+  become: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+  yum:
+    name:
+      - docker.io
+      - runc
+    update_cache: yes
+    state: present
+
+- name: Ensuring docker and support packages are present
+  become: true
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  apt:
+    name:
+      - docker.io
+      - runc
+    update_cache: yes
+    state: present
+
+- name: Ensure docker group exists
+  group:
+    name: docker
+    state: present
+
+- name: Add user "{{ ansible_user }}" to docker group
+  become: true
+  user:
+    name: "{{ ansible_user }}"
+    groups:
+    - docker
+    append: yes
+
+- name: Reset ssh connection to add docker group to user
+  meta: reset_connection
+  ignore_errors: true
+
+- block:
+    - name: Create docker directory
+      file:
+        path: /etc/systemd/system/docker.service.d/
+        state: directory
+        mode: '0755'
+
+    - name: Configure proxy for docker if enabled
+      template:
+        src: http-proxy-conf.j2
+        dest: /etc/systemd/system/docker.service.d/http-proxy.conf
+  when: proxy.enabled|bool == true
+  become: true
+
+- name: Start docker
+  become: true
+  systemd:
+    name: docker
+    state: restarted
+    daemon_reload: yes
+    enabled: true
+
+- name: Change group ownership on docker sock
+  become: true
+  file:
+    path: /var/run/docker.sock
+    group: docker
+

@@ -27,7 +27,6 @@ export TMP_DIR=${TMP_DIR:-"$(dirname $(mktemp -u))"}
 ANSIBLE_CFG=${ANSIBLE_CFG:-"${HOME}/.ansible.cfg"}
 ANSIBLE_HOSTS=${ANSIBLE_HOSTS:-"${TMP_DIR}/ansible_hosts"}
 PLAYBOOK_CONFIG=${PLAYBOOK_CONFIG:-"${TMP_DIR}/config.yaml"}
-OSH_INFRA_DIR=${OSH_INFRA_DIR:-"${TMP_DIR}/openstack-helm-infra"}
 
 mkdir -p "$TMP_DIR"
 envsubst <"${AIRSHIPCTL_WS}/tools/gate/config_template.yaml" > "$PLAYBOOK_CONFIG"
@@ -39,6 +38,4 @@ sudo apt-get -y update
 sudo apt-get -y --no-install-recommends install docker.io ansible make
 
 echo "primary ansible_host=localhost ansible_connection=local" > "$ANSIBLE_HOSTS"
-printf "[defaults]\nroles_path = %s/roles:%s/roles\n" "$AIRSHIPCTL_WS" "$OSH_INFRA_DIR" > "$ANSIBLE_CFG"
-rm -rf "$OSH_INFRA_DIR"
-git clone https://review.opendev.org/openstack/openstack-helm-infra.git "$OSH_INFRA_DIR"
+printf "[defaults]\nroles_path = %s/roles\n" "$AIRSHIPCTL_WS" > "$ANSIBLE_CFG"
