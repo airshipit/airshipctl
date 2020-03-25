@@ -416,37 +416,6 @@ func TestPurge(t *testing.T) {
 	assert.Falsef(t, os.IsExist(err), "Purge failed to remove file at %v", conf.LoadedConfigPath())
 }
 
-func TestKClusterString(t *testing.T) {
-	conf, cleanup := testutil.InitConfig(t)
-	defer cleanup(t)
-
-	kClusters := conf.KubeConfig().Clusters
-	for kClust := range kClusters {
-		assert.NotEmpty(t, config.KClusterString(kClusters[kClust]))
-	}
-	assert.EqualValues(t, config.KClusterString(nil), "null\n")
-}
-func TestKContextString(t *testing.T) {
-	conf, cleanup := testutil.InitConfig(t)
-	defer cleanup(t)
-
-	kContexts := conf.KubeConfig().Contexts
-	for kCtx := range kContexts {
-		assert.NotEmpty(t, config.KContextString(kContexts[kCtx]))
-	}
-	assert.EqualValues(t, config.KClusterString(nil), "null\n")
-}
-func TestKAuthInfoString(t *testing.T) {
-	conf, cleanup := testutil.InitConfig(t)
-	defer cleanup(t)
-
-	kAuthInfos := conf.KubeConfig().AuthInfos
-	for kAi := range kAuthInfos {
-		assert.NotEmpty(t, config.KAuthInfoString(kAuthInfos[kAi]))
-	}
-	assert.EqualValues(t, config.KAuthInfoString(nil), "null\n")
-}
-
 func TestComplexName(t *testing.T) {
 	cName := "aCluster"
 	ctName := config.Ephemeral
