@@ -68,8 +68,6 @@
     name: airship-airshipctl-gate-test
     attempts: 1
     timeout: 3600
-    roles:
-      - zuul: openstack/openstack-helm-infra
     pre-run:
       - playbooks/airship-airshipctl-deploy-docker.yaml
       - playbooks/airship-airshipctl-build-gate.yaml
