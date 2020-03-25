@@ -15,6 +15,7 @@ import (
 
 const (
 	SystemRebootDelay         = 2 * time.Second
+	SystemActionRetries       = 30
 	RedfishURLSchemeSeparator = "+"
 )
 
@@ -83,19 +84,47 @@ func SetSystemBootSourceForMediaType(ctx context.Context,
 
 // Reboots a system by force shutoff and turning on.
 func RebootSystem(ctx context.Context, api redfishApi.RedfishAPI, systemID string) error {
+	waitForPowerState := func(desiredState redfishClient.PowerState) error {
+		// Check if number of retries is defined in context
+		totalRetries, ok := ctx.Value("numRetries").(int)
+		if !ok {
+			totalRetries = SystemActionRetries
+		}
+
+		for retry := 0; retry <= totalRetries; retry++ {
+			system, httpResp, err := api.GetSystem(ctx, systemID)
+			if err = ScreenRedfishError(httpResp, err); err != nil {
+				return err
+			}
+			if system.PowerState == desiredState {
+				return nil
+			}
+			time.Sleep(SystemRebootDelay)
+		}
+		return ErrOperationRetriesExceeded{}
+	}
+
 	resetReq := redfishClient.ResetRequestBody{}
+
+	// Send PowerOff request
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 	_, httpResp, err := api.ResetSystem(ctx, systemID, resetReq)
 	if err = ScreenRedfishError(httpResp, err); err != nil {
 		return err
 	}
+	// Check that node is powered off
+	if err = waitForPowerState(redfishClient.POWERSTATE_OFF); err != nil {
+		return err
+	}
 
-	time.Sleep(SystemRebootDelay)
-
+	// Send PowerOn request
 	resetReq.ResetType = redfishClient.RESETTYPE_ON
 	_, httpResp, err = api.ResetSystem(ctx, systemID, resetReq)
-
-	return ScreenRedfishError(httpResp, err)
+	if err = ScreenRedfishError(httpResp, err); err != nil {
+		return err
+	}
+	// Check that node is powered on and return
+	return waitForPowerState(redfishClient.POWERSTATE_ON)
 }
 
 // Insert the remote virtual media to the given virtual media id.

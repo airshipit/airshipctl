@@ -29,6 +29,14 @@ func (e ErrRedfishMissingConfig) Error() string {
 	return "missing configuration: " + e.What
 }
 
+// ErrOperationRetriesExceeded raised if number of operation retries exceeded
+type ErrOperationRetriesExceeded struct {
+}
+
+func (e ErrOperationRetriesExceeded) Error() string {
+	return "maximum retries exceeded"
+}
+
 // ScreenRedfishError provides detailed error checking on a Redfish client response.
 func ScreenRedfishError(httpResp *http.Response, clientErr error) error {
 	// NOTE(drewwalters96): clientErr may not be nil even though the request was successful. The HTTP status code
