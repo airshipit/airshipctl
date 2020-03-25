@@ -1,6 +1,7 @@
 package document
 
 import (
+	"errors"
 	"fmt"
 	"io"
 
@@ -12,6 +13,7 @@ import (
 	"sigs.k8s.io/kustomize/v3/pkg/resmap"
 	"sigs.k8s.io/kustomize/v3/pkg/resource"
 	"sigs.k8s.io/kustomize/v3/pkg/target"
+	"sigs.k8s.io/kustomize/v3/pkg/types"
 
 	docplugins "opendev.org/airship/airshipctl/pkg/document/plugins"
 	"opendev.org/airship/airshipctl/pkg/log"
@@ -46,6 +48,7 @@ type Bundle interface {
 	GetFileSystem() FileSystem
 	Select(selector Selector) ([]Document, error)
 	SelectBundle(selector Selector) (Bundle, error)
+	SelectByFieldValue(string, func(interface{}) bool) (Bundle, error)
 	GetByGvk(string, string, string) ([]Document, error)
 	GetByName(string) (Document, error)
 	GetByAnnotation(annotationSelector string) ([]Document, error)
@@ -239,6 +242,89 @@ func (b *BundleFactory) SelectBundle(selector Selector) (Bundle, error) {
 		ResMap:                resourceMap,
 		FileSystem:            b.FileSystem,
 	}, nil
+}
+
+// SelectByFieldValue returns new Bundle with filtered resource documents.
+// Method iterates over all resources in the bundle. If resource has field
+// (i.e. key) specified in JSON path, and the comparison function returns
+// 'true' for value referenced by JSON path, then resource is added to
+// resulting bundle.
+// Example:
+// The bundle contains 3 documents
+//
+//     ---
+//     apiVersion: v1
+//     kind: DocKind1
+//     metadata:
+//       name: doc1
+//     spec:
+//       somekey:
+//         somefield: "someValue"
+//     ---
+//     apiVersion: v1
+//     kind: DocKind2
+//     metadata:
+//       name: doc2
+//     spec:
+//       somekey:
+//         somefield: "someValue"
+//     ---
+//     apiVersion: v1
+//     kind: DocKind1
+//     metadata:
+//       name: doc3
+//     spec:
+//       somekey:
+//         somefield: "someOtherValue"
+//
+// Execution of bundleInstance.SelectByFieldValue(
+//		"spec.somekey.somefield",
+//		func(v interface{}) { return v == "someValue" })
+// will return a new Bundle instance containing 2 documents:
+//     ---
+//     apiVersion: v1
+//     kind: DocKind1
+//     metadata:
+//       name: doc1
+//     spec:
+//       somekey:
+//         somefield: "someValue"
+//     ---
+//     apiVersion: v1
+//     kind: DocKind2
+//     metadata:
+//       name: doc2
+//     spec:
+//       somekey:
+//         somefield: "someValue"
+func (b *BundleFactory) SelectByFieldValue(path string, condition func(interface{}) bool) (Bundle, error) {
+	result := &BundleFactory{
+		KustomizeBuildOptions: b.KustomizeBuildOptions,
+		FileSystem:            b.FileSystem,
+	}
+	resourceMap := resmap.New()
+	for _, res := range b.Resources() {
+		val, err := res.GetFieldValue(path)
+		if err != nil {
+			if errors.As(err, &types.NoFieldError{}) {
+				// this resource doesn't have the specified field - skip it
+				continue
+			} else {
+				return nil, err
+			}
+		}
+
+		if condition(val) {
+			if err = resourceMap.Append(res); err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	if err := result.SetKustomizeResourceMap(resourceMap); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 // GetByAnnotation is a convenience method to get documents for a particular annotation
