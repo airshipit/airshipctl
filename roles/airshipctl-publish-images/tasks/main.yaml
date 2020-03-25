@@ -14,6 +14,8 @@
   apt:
     pkg:
       - python-docker
+      - python3-docker
+      - python-requests
       - python3-requests
     state: present
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
