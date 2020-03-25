@@ -10,19 +10,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# The role is used to copy manifest directory to remote host
+# The role is used to pull the manifests on remote host.
 # Durning tests in zuul, zuul copies git repository to target node, however
-# When running outside zuul/opendev ci env, we want to copy manifests from
-# commit to remote machine as well. `local_src_dir` should be set from command
-# line in anisble-playbook -e option,
-# eg: ansible-playbook -e local_src_dir="/home/ubuntu/airshipctl"
+# When running outside zuul/opendev ci env, we want to pull manifests from
+# commit to remote machine as well.
 
 
-- name: sync repository
-  synchronize:
-    delete: true
-    dest: "{{ remote_work_dir }}"
-    recursive: true
-# trailing slash "/" is needed to copy contents of the directory not directory itself.
-    src: "{{ local_src_dir }}/"
-  no_log: true
+- name: pull documents
+  command: airshipctl document pull --debug
+  when: remote_work_dir is defined

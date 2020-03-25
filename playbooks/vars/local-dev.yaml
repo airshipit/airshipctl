@@ -10,9 +10,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-remote_work_dir: "/tmp/airship"
 proxy:
   enabled: "{{ lookup('env', 'USE_PROXY', default='false') }}"
   http: "{{ lookup('env', 'HTTP_PROXY', default='') }}"
   https: "{{ lookup('env', 'HTTPS_PROXY', default='') }}"
   noproxy: "{{ lookup('env', 'NO_PROXY', default='') }}"
+
+# If remote_work_dir is defined, the deployment script will invoke airshipctl
+# document pull command to download the manifests to the remote_work_dir.
+# Otherwise, the current working dir where the script is launched is used and
+# document pull is skipped.
+remote_work_dir: "/tmp/airship"
