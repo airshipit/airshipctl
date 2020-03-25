@@ -2,10 +2,10 @@ package config
 
 // Constants related to the ClusterType type
 const (
-	Ephemeral                 = "ephemeral"
-	Target                    = "target"
-	AirshipClusterNameSep     = "_"
-	AirshipClusterDefaultType = Target
+	Ephemeral                   = "ephemeral"
+	Target                      = "target"
+	AirshipClusterNameSeparator = "_"
+	AirshipDefaultClusterType   = Target
 )
 
 // Constants related to Phases

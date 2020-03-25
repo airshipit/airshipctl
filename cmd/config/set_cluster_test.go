@@ -60,14 +60,13 @@ func TestSetClusterWithCAFile(t *testing.T) {
 
 	expected.Clusters[tname] = config.NewClusterPurpose()
 	expected.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
-	clusterName := config.NewClusterComplexName()
-	clusterName.WithType(tname, tctype)
-	expected.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.Name()
+	clusterName := config.NewClusterComplexName(tname, tctype)
+	expected.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.String()
 
 	expkCluster := kubeconfig.NewCluster()
 	expkCluster.CertificateAuthority = certFile
 	expkCluster.InsecureSkipTLSVerify = false
-	expected.KubeConfig().Clusters[clusterName.Name()] = expkCluster
+	expected.KubeConfig().Clusters[clusterName.String()] = expkCluster
 
 	test := setClusterTest{
 		description: "Testing 'airshipctl config set-cluster' with a new cluster",
@@ -98,9 +97,8 @@ func TestSetClusterWithCAFileData(t *testing.T) {
 
 	expected.Clusters[tname] = config.NewClusterPurpose()
 	expected.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
-	clusterName := config.NewClusterComplexName()
-	clusterName.WithType(tname, tctype)
-	expected.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.Name()
+	clusterName := config.NewClusterComplexName(tname, tctype)
+	expected.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.String()
 
 	expkCluster := kubeconfig.NewCluster()
 	readData, err := ioutil.ReadFile(certFile)
@@ -108,7 +106,7 @@ func TestSetClusterWithCAFileData(t *testing.T) {
 
 	expkCluster.CertificateAuthorityData = readData
 	expkCluster.InsecureSkipTLSVerify = false
-	expected.KubeConfig().Clusters[clusterName.Name()] = expkCluster
+	expected.KubeConfig().Clusters[clusterName.String()] = expkCluster
 
 	test := setClusterTest{
 		description: "Testing 'airshipctl config set-cluster' with a new cluster",
@@ -138,14 +136,13 @@ func TestSetCluster(t *testing.T) {
 
 	expected.Clusters[tname] = config.NewClusterPurpose()
 	expected.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
-	clusterName := config.NewClusterComplexName()
-	clusterName.WithType(tname, tctype)
-	expected.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.Name()
+	clusterName := config.NewClusterComplexName(tname, tctype)
+	expected.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.String()
 
 	expkCluster := kubeconfig.NewCluster()
 	expkCluster.Server = "https://192.168.0.11"
 	expkCluster.InsecureSkipTLSVerify = false
-	expected.KubeConfig().Clusters[clusterName.Name()] = expkCluster
+	expected.KubeConfig().Clusters[clusterName.String()] = expkCluster
 
 	test := setClusterTest{
 		description: "Testing 'airshipctl config set-cluster' with a new cluster",
@@ -170,13 +167,12 @@ func TestModifyCluster(t *testing.T) {
 	defer cleanupGiven(t)
 
 	given.Clusters[tname] = config.NewClusterPurpose()
-	clusterName := config.NewClusterComplexName()
-	clusterName.WithType(tname, tctype)
+	clusterName := config.NewClusterComplexName(tname, tctype)
 	given.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
-	given.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.Name()
+	given.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.String()
 	cluster := kubeconfig.NewCluster()
 	cluster.Server = "https://192.168.0.10"
-	given.KubeConfig().Clusters[clusterName.Name()] = cluster
+	given.KubeConfig().Clusters[clusterName.String()] = cluster
 	given.Clusters[tname].ClusterTypes[tctype].SetKubeCluster(cluster)
 
 	expected, cleanupExpected := testutil.InitConfig(t)
@@ -184,10 +180,10 @@ func TestModifyCluster(t *testing.T) {
 
 	expected.Clusters[tname] = config.NewClusterPurpose()
 	expected.Clusters[tname].ClusterTypes[tctype] = config.NewCluster()
-	expected.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.Name()
+	expected.Clusters[tname].ClusterTypes[tctype].NameInKubeconf = clusterName.String()
 	expkCluster := kubeconfig.NewCluster()
 	expkCluster.Server = "https://192.168.0.10"
-	expected.KubeConfig().Clusters[clusterName.Name()] = expkCluster
+	expected.KubeConfig().Clusters[clusterName.String()] = expkCluster
 	expected.Clusters[tname].ClusterTypes[tctype].SetKubeCluster(expkCluster)
 
 	test := setClusterTest{

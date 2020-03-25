@@ -182,8 +182,8 @@ type RepoCheckout struct {
 // Holds the complex cluster name information
 // Encapsulates the different operations around using it.
 type ClusterComplexName struct {
-	clusterName string
-	clusterType string
+	Name string
+	Type string
 }
 
 // Bootstrap holds configurations for bootstrap steps

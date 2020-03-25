@@ -307,23 +307,6 @@ func TestPurge(t *testing.T) {
 	assert.Falsef(t, os.IsExist(err), "Purge failed to remove file at %v", conf.LoadedConfigPath())
 }
 
-func TestComplexName(t *testing.T) {
-	cName := "aCluster"
-	ctName := config.Ephemeral
-	clusterName := config.NewClusterComplexName()
-	clusterName.WithType(cName, ctName)
-	assert.EqualValues(t, cName+"_"+ctName, clusterName.Name())
-	assert.EqualValues(t, cName, clusterName.ClusterName())
-	assert.EqualValues(t, ctName, clusterName.ClusterType())
-
-	cName = "bCluster"
-	clusterName.SetClusterName(cName)
-	clusterName.SetDefaultType()
-	ctName = clusterName.ClusterType()
-	assert.EqualValues(t, cName+"_"+ctName, clusterName.Name())
-	assert.EqualValues(t, "clusterName:"+cName+", clusterType:"+ctName, clusterName.String())
-}
-
 func TestValidClusterTypeFail(t *testing.T) {
 	err := config.ValidClusterType("Fake")
 	assert.Error(t, err)
@@ -625,4 +608,47 @@ func TestModifyAuthInfo(t *testing.T) {
 	assert.EqualValues(t, conf.AuthInfos[co.Name].KubeAuthInfo().ClientKey, co.ClientKey)
 	assert.EqualValues(t, conf.AuthInfos[co.Name].KubeAuthInfo().Token, co.Token)
 	assert.EqualValues(t, conf.AuthInfos[co.Name], authinfo)
+}
+
+func TestNewClusterComplexNameFromKubeClusterName(t *testing.T) {
+	tests := []struct {
+		name         string
+		inputName    string
+		expectedName string
+		expectedType string
+	}{
+		{
+			name:         "single-word",
+			inputName:    "myCluster",
+			expectedName: "myCluster",
+			expectedType: config.AirshipDefaultClusterType,
+		},
+		{
+			name:         "multi-word",
+			inputName:    "myCluster_two",
+			expectedName: "myCluster_two",
+			expectedType: config.AirshipDefaultClusterType,
+		},
+		{
+			name:         "cluster-appended",
+			inputName:    "myCluster_ephemeral",
+			expectedName: "myCluster",
+			expectedType: config.Ephemeral,
+		},
+		{
+			name:         "multi-word-cluster-appended",
+			inputName:    "myCluster_two_ephemeral",
+			expectedName: "myCluster_two",
+			expectedType: config.Ephemeral,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			complexName := config.NewClusterComplexNameFromKubeClusterName(tt.inputName)
+			assert.Equal(t, tt.expectedName, complexName.Name)
+			assert.Equal(t, tt.expectedType, complexName.Type)
+		})
+	}
 }

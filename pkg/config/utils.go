@@ -16,6 +16,8 @@ limitations under the License.
 
 package config
 
+import "strings"
+
 const (
 	DefaultTestPrimaryRepo = "primary"
 )
@@ -112,6 +114,40 @@ func NewClusterPurpose() *ClusterPurpose {
 	}
 }
 
-func NewClusterComplexName() *ClusterComplexName {
-	return &ClusterComplexName{}
+// NewClusterComplexName returns a ClusterComplexName with the given name and type.
+func NewClusterComplexName(clusterName, clusterType string) ClusterComplexName {
+	return ClusterComplexName{
+		Name: clusterName,
+		Type: clusterType,
+	}
+}
+
+// NewClusterComplexNameFromKubeClusterName takes the name of a cluster in a
+// format which might be found in a kubeconfig file. This may be a simple
+// string (e.g. myCluster), or it may be prepended with the type of the cluster
+// (e.g. myCluster_target)
+//
+// If a valid cluster type was appended, the returned ClusterComplexName will
+// have that type. If no cluster type is provided, the
+// AirshipDefaultClusterType will be used.
+func NewClusterComplexNameFromKubeClusterName(kubeClusterName string) ClusterComplexName {
+	parts := strings.Split(kubeClusterName, AirshipClusterNameSeparator)
+
+	if len(parts) == 1 {
+		return NewClusterComplexName(kubeClusterName, AirshipDefaultClusterType)
+	}
+
+	// kubeClusterName matches the format myCluster_something.
+	// Let's check if "something" is a clusterType.
+	potentialType := parts[len(parts)-1]
+	for _, ct := range AllClusterTypes {
+		if potentialType == ct {
+			// Rejoin the parts in the case of "my_cluster_etc_etc_<clusterType>"
+			name := strings.Join(parts[:len(parts)-1], AirshipClusterNameSeparator)
+			return NewClusterComplexName(name, potentialType)
+		}
+	}
+
+	// "something" is not a valid clusterType, so just use the default
+	return NewClusterComplexName(kubeClusterName, AirshipDefaultClusterType)
 }

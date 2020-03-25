@@ -153,19 +153,17 @@ func (c *Config) reconcileClusters() (map[string]string, bool) {
 
 	persistIt := false
 	for clusterName, cluster := range c.kubeConfig.Clusters {
-		clusterComplexName := NewClusterComplexName()
-		clusterComplexName.FromName(clusterName)
+		clusterComplexName := NewClusterComplexNameFromKubeClusterName(clusterName)
 		// Check if the cluster from the kubeconfig file complies with
 		// the airship naming convention
-		if !clusterComplexName.validName() {
-			clusterComplexName.SetDefaultType()
+		if clusterName != clusterComplexName.String() {
 			// Update the kubeconfig with proper airship name
-			c.kubeConfig.Clusters[clusterComplexName.Name()] = cluster
+			c.kubeConfig.Clusters[clusterComplexName.String()] = cluster
 			delete(c.kubeConfig.Clusters, clusterName)
 
 			// We also need to save the mapping from the old name
 			// so we can update the context in the kubeconfig later
-			updatedClusterNames[clusterName] = clusterComplexName.Name()
+			updatedClusterNames[clusterName] = clusterComplexName.String()
 
 			// Since we've modified the kubeconfig object, we'll
 			// need to let the caller know that the kubeconfig file
@@ -179,17 +177,16 @@ func (c *Config) reconcileClusters() (map[string]string, bool) {
 		}
 
 		// Update the airship config file
-		if c.Clusters[clusterComplexName.ClusterName()] == nil {
-			c.Clusters[clusterComplexName.ClusterName()] = NewClusterPurpose()
+		if c.Clusters[clusterComplexName.Name] == nil {
+			c.Clusters[clusterComplexName.Name] = NewClusterPurpose()
 		}
-		if c.Clusters[clusterComplexName.ClusterName()].ClusterTypes[clusterComplexName.ClusterType()] == nil {
-			c.Clusters[clusterComplexName.ClusterName()].ClusterTypes[clusterComplexName.ClusterType()] = NewCluster()
+		if c.Clusters[clusterComplexName.Name].ClusterTypes[clusterComplexName.Type] == nil {
+			c.Clusters[clusterComplexName.Name].ClusterTypes[clusterComplexName.Type] = NewCluster()
 		}
-		configCluster := c.Clusters[clusterComplexName.ClusterName()].ClusterTypes[clusterComplexName.ClusterType()]
-		if configCluster.NameInKubeconf != clusterComplexName.Name() {
-			configCluster.NameInKubeconf = clusterComplexName.Name()
-			// TODO What do we do with the BOOTSTRAP CONFIG
-		}
+		configCluster := c.Clusters[clusterComplexName.Name].ClusterTypes[clusterComplexName.Type]
+		configCluster.NameInKubeconf = clusterComplexName.String()
+		// TODO What do we do with the BOOTSTRAP CONFIG
+
 		// Store the reference to the KubeConfig Cluster in the Airship Config
 		configCluster.SetKubeCluster(cluster)
 	}
@@ -239,11 +236,10 @@ func (c *Config) reconcileContexts(updatedClusterNames map[string]string) {
 		c.Contexts[key].NameInKubeconf = context.Cluster
 		c.Contexts[key].SetKubeContext(context)
 
-		// What about if a Context refers to a properly named cluster
-		// that does not exist in airship config
-		clusterName := NewClusterComplexName()
-		clusterName.FromName(context.Cluster)
-		if clusterName.validName() && c.Clusters[clusterName.ClusterName()] == nil {
+		// What about if a Context refers to a cluster that does not
+		// exist in airship config
+		clusterName := NewClusterComplexNameFromKubeClusterName(context.Cluster)
+		if c.Clusters[clusterName.Name] == nil {
 			// I cannot create this cluster, it will have empty information
 			// Best course of action is to delete it I think
 			delete(c.kubeConfig.Contexts, key)
@@ -446,12 +442,11 @@ func (c *Config) AddCluster(theCluster *ClusterOptions) (*Cluster, error) {
 	c.Clusters[theCluster.Name].ClusterTypes[theCluster.ClusterType] = nCluster
 	// Create a new KubeConfig Cluster object as well
 	kcluster := clientcmdapi.NewCluster()
-	clusterName := NewClusterComplexName()
-	clusterName.WithType(theCluster.Name, theCluster.ClusterType)
-	nCluster.NameInKubeconf = clusterName.Name()
+	clusterName := NewClusterComplexName(theCluster.Name, theCluster.ClusterType)
+	nCluster.NameInKubeconf = clusterName.String()
 	nCluster.SetKubeCluster(kcluster)
 
-	c.KubeConfig().Clusters[clusterName.Name()] = kcluster
+	c.KubeConfig().Clusters[clusterName.String()] = kcluster
 
 	// Ok , I have initialized structs for the Cluster information
 	// We can use Modify to populate the correct information
@@ -556,8 +551,6 @@ func (c *Config) AddContext(theContext *ContextOptions) *Context {
 	// Create a new KubeConfig Context object as well
 	context := clientcmdapi.NewContext()
 	nContext.NameInKubeconf = theContext.Name
-	contextName := NewClusterComplexName()
-	contextName.WithType(theContext.Name, theContext.ClusterType)
 
 	nContext.SetKubeContext(context)
 	c.KubeConfig().Contexts[theContext.Name] = context
@@ -610,10 +603,9 @@ func (c *Config) CurrentContextCluster() (*Cluster, error) {
 	if err != nil {
 		return nil, err
 	}
-	clusterName := NewClusterComplexName()
-	clusterName.FromName(currentContext.KubeContext().Cluster)
+	clusterName := NewClusterComplexNameFromKubeClusterName(currentContext.KubeContext().Cluster)
 
-	return c.Clusters[clusterName.ClusterName()].ClusterTypes[currentContext.ClusterType()], nil
+	return c.Clusters[clusterName.Name].ClusterTypes[currentContext.ClusterType()], nil
 }
 
 func (c *Config) CurrentContextAuthInfo() (*AuthInfo, error) {
@@ -755,11 +747,8 @@ func (c *Cluster) String() string {
 }
 
 func (c *Cluster) PrettyString() string {
-	clusterName := NewClusterComplexName()
-	clusterName.FromName(c.NameInKubeconf)
-
-	return fmt.Sprintf("Cluster: %s\n%s:\n%s",
-		clusterName.ClusterName(), clusterName.ClusterType(), c)
+	clusterName := NewClusterComplexNameFromKubeClusterName(c.NameInKubeconf)
+	return fmt.Sprintf("Cluster: %s\n%s:\n%s", clusterName.Name, clusterName.Type, c)
 }
 
 func (c *Cluster) KubeCluster() *clientcmdapi.Cluster {
@@ -784,11 +773,8 @@ func (c *Context) String() string {
 }
 
 func (c *Context) PrettyString() string {
-	clusterName := NewClusterComplexName()
-	clusterName.FromName(c.NameInKubeconf)
-
-	return fmt.Sprintf("Context: %s\n%s\n",
-		clusterName.ClusterName(), c.String())
+	clusterName := NewClusterComplexNameFromKubeClusterName(c.NameInKubeconf)
+	return fmt.Sprintf("Context: %s\n%s\n", clusterName.Name, c)
 }
 
 func (c *Context) KubeContext() *clientcmdapi.Context {
@@ -800,9 +786,7 @@ func (c *Context) SetKubeContext(kc *clientcmdapi.Context) {
 }
 
 func (c *Context) ClusterType() string {
-	clusterName := NewClusterComplexName()
-	clusterName.FromName(c.NameInKubeconf)
-	return clusterName.ClusterType()
+	return NewClusterComplexNameFromKubeClusterName(c.NameInKubeconf).Type
 }
 
 // AuthInfo functions
@@ -867,60 +851,10 @@ func (b *Builder) String() string {
 	return string(yamlData)
 }
 
-// ClusterComplexName functions
-func (c *ClusterComplexName) validName() bool {
-	err := ValidClusterType(c.clusterType)
-	return c.clusterName != "" && err == nil
-}
-
-func (c *ClusterComplexName) FromName(clusterName string) {
-	if clusterName == "" {
-		return
-	}
-
-	userNameSplit := strings.Split(clusterName, AirshipClusterNameSep)
-	if len(userNameSplit) == 1 {
-		c.clusterName = clusterName
-		return
-	}
-
-	for _, cType := range AllClusterTypes {
-		if userNameSplit[len(userNameSplit)-1] == cType {
-			c.clusterType = userNameSplit[len(userNameSplit)-1]
-			c.clusterName = strings.Join(userNameSplit[:len(userNameSplit)-1], AirshipClusterNameSep)
-			return
-		}
-	}
-}
-
-func (c *ClusterComplexName) WithType(clusterName string, clusterType string) {
-	c.FromName(clusterName)
-	c.SetClusterType(clusterType)
-}
-func (c *ClusterComplexName) Name() string {
-	s := []string{c.clusterName, c.clusterType}
-	return strings.Join(s, AirshipClusterNameSep)
-}
-func (c *ClusterComplexName) ClusterName() string {
-	return c.clusterName
-}
-
-func (c *ClusterComplexName) ClusterType() string {
-	return c.clusterType
-}
-func (c *ClusterComplexName) SetClusterName(cn string) {
-	c.clusterName = cn
-}
-
-func (c *ClusterComplexName) SetClusterType(ct string) {
-	c.clusterType = ct
-}
-func (c *ClusterComplexName) SetDefaultType() {
-	c.SetClusterType(AirshipClusterDefaultType)
-}
 func (c *ClusterComplexName) String() string {
-	return fmt.Sprintf("clusterName:%s, clusterType:%s", c.clusterName, c.clusterType)
+	return strings.Join([]string{c.Name, c.Type}, AirshipClusterNameSeparator)
 }
+
 func ValidClusterType(clusterType string) error {
 	for _, validType := range AllClusterTypes {
 		if clusterType == validType {
