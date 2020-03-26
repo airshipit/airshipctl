@@ -1,0 +1,26 @@
+## This file provides 2 resources that should be filtered out by DeplyToK8s selector
+## because they have airshipit.org/deploy-k8s: "false" airshipit.org/deploy-k8s: "False"
+## labels
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    config.kubernetes.io/local-config: "true"
+  name: ignore-namespace
+---
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  annotations:
+    config.kubernetes.io/local-config: "true"
+  name: ignore-bmh
+spec:
+  online: true
+  bootMACAddress: 00:3b:8b:0c:ec:8b
+  bmc:
+    address: ipmi://192.168.111.1:6230
+    credentialsName: master-0-bmc-secret
+  networkData:
+    namespace: validNamespace
+...

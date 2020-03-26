@@ -60,3 +60,21 @@ func TestSelectorsNegative(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestSelectorsSkip(t *testing.T) {
+	// These two tests take bundle with two malformed documents
+	// each of the documents will fail at different locations providing higher
+	// test coverage
+	bundle := testutil.NewTestBundle(t, "testdata/selectors/exclude-from-k8s")
+
+	t.Run("TestNewEphemeralNetworkDataSelectorErr", func(t *testing.T) {
+		selector := document.NewDeployToK8sSelector()
+		docs, err := bundle.Select(selector)
+		require.NoError(t, err)
+		assert.Len(t, docs, 5)
+		for _, doc := range docs {
+			assert.NotEqual(t, "ignore-namespace", doc.GetName())
+			assert.NotEqual(t, "ignore-bmh", doc.GetName())
+		}
+	})
+}

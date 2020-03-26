@@ -1,6 +1,8 @@
 apiVersion: metal3.io/v1alpha1
 kind: BareMetalHost
 metadata:
+  annotations:
+    config.kubernetes.io/local-config: "true"
   labels:
     airshipit.org/ephemeral-node: "true"
   name: master-0
