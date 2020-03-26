@@ -66,7 +66,7 @@ func (infra *Infra) Deploy() error {
 	}
 
 	// Returns all documents for this phase
-	docs, err := b.GetAllDocuments()
+	docs, err := b.Select(document.NewDeployToK8sSelector())
 	if err != nil {
 		return err
 	}

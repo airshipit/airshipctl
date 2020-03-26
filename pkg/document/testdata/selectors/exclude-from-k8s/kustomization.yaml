@@ -1,0 +1,4 @@
+resources:
+- ignore-resources.yaml
+- deploy-resources.yaml
+- more-deploy-resources.yaml

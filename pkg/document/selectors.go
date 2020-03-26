@@ -98,3 +98,9 @@ func NewEphemeralNetworkDataSelector(bmhDoc Document) (Selector, error) {
 
 	return selector, nil
 }
+
+// NewDeployToK8sSelector returns a selector to get documents that are to be deployed
+// to kubernetes cluster.
+func NewDeployToK8sSelector() Selector {
+	return NewSelector().ByAnnotation(DeployToK8sSelector)
+}
