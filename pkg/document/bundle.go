@@ -14,6 +14,7 @@ import (
 	"sigs.k8s.io/kustomize/v3/pkg/resource"
 	"sigs.k8s.io/kustomize/v3/pkg/target"
 	"sigs.k8s.io/kustomize/v3/pkg/types"
+	"sigs.k8s.io/kustomize/v3/plugin/builtin"
 
 	docplugins "opendev.org/airship/airshipctl/pkg/document/plugins"
 	"opendev.org/airship/airshipctl/pkg/log"
@@ -31,7 +32,6 @@ type KustomizeBuildOptions struct {
 	KustomizationPath string
 	OutputPath        string
 	LoadRestrictor    loader.LoadRestrictorFunc
-	OutOrder          int
 }
 
 // BundleFactory contains the objects within a bundle
@@ -70,7 +70,6 @@ func NewBundle(fSys FileSystem, kustomizePath string, outputPath string) (Bundle
 		KustomizationPath: kustomizePath,
 		OutputPath:        outputPath,
 		LoadRestrictor:    loader.RestrictionRootOnly,
-		OutOrder:          0,
 	}
 
 	// init an empty bundle factory
@@ -116,7 +115,10 @@ func NewBundle(fSys FileSystem, kustomizePath string, outputPath string) (Bundle
 		return bundle, err
 	}
 	err = bundle.SetKustomizeResourceMap(m)
-
+	if err != nil {
+		return nil, err
+	}
+	err = bundle.OrderLegacy()
 	return bundle, err
 }
 
@@ -154,6 +156,11 @@ func (b *BundleFactory) SetFileSystem(fSys FileSystem) error {
 // GetFileSystem gets the filesystem that will be used by this bundle
 func (b *BundleFactory) GetFileSystem() FileSystem {
 	return b.FileSystem
+}
+
+// OrderLegacy uses kustomize Transformer plugin to correct order of resources
+func (b *BundleFactory) OrderLegacy() error {
+	return builtin.NewLegacyOrderTransformerPlugin().Transform(b.GetKustomizeResourceMap())
 }
 
 // GetAllDocuments returns all documents in this bundle

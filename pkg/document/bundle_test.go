@@ -138,3 +138,29 @@ func TestBundleDocumentFiltering(t *testing.T) {
 		assert.Contains(b.String(), "workflow-controller")
 	})
 }
+
+func TestBundleOrder(t *testing.T) {
+	bundle := testutil.NewTestBundle(t, "testdata/order")
+
+	docs, err := bundle.GetAllDocuments()
+	require.NoError(t, err)
+	require.Len(t, docs, 3)
+
+	// first must be namespace argo-namespace
+	doc := docs[0]
+	require.NotNil(t, doc)
+	assert.Equal(t, "Namespace", doc.GetKind())
+	assert.Equal(t, "argo-namespace", doc.GetName())
+
+	// second must be CRD named workflows.argoproj.io
+	doc = docs[1]
+	require.NotNil(t, doc)
+	assert.Equal(t, "CustomResourceDefinition", doc.GetKind())
+	assert.Equal(t, "workflows.argoproj.io", doc.GetName())
+
+	// second must be CR workflow-controller
+	doc = docs[2]
+	require.NotNil(t, doc)
+	assert.Equal(t, "Deployment", doc.GetKind())
+	assert.Equal(t, "workflow-controller", doc.GetName())
+}
