@@ -63,8 +63,3 @@ const (
 	FlagUsername = "username"
 	FlagCurrent  = "current"
 )
-
-// Constants related to filesystem
-const (
-	SiteDirectory = "site"
-)
