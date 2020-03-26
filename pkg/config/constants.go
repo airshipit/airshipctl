@@ -1,8 +1,5 @@
 package config
 
-// OutputFormat denotes the form with which to display tabulated data
-type OutputFormat string
-
 // Constants related to the ClusterType type
 const (
 	Ephemeral                 = "ephemeral"
