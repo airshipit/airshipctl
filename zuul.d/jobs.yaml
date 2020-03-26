@@ -25,8 +25,6 @@
 
 - job:
     name: airship-airshipctl-lint-unit
-    roles:
-      - zuul: airship/zuul-airship-roles
     pre-run: playbooks/airship-airshipctl-deploy-docker.yaml
     run: playbooks/airship-airshipctl-lint-unit.yaml
     nodeset: airship-airshipctl-single-node
@@ -42,8 +40,6 @@
 
 - job:
     name: airship-airshipctl-build-image
-    roles:
-      - zuul: airship/zuul-airship-roles
     nodeset: airship-airshipctl-single-node
     run: playbooks/airship-airshipctl-build-images.yaml
     irrelevant-files:
