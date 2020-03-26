@@ -226,4 +226,9 @@ type RemoteDirect struct {
 	// Ignore SSL certificate check. This options is useful for remote APIs
 	// with non-trusted or self-signed SSL certificates
 	Insecure bool `json:"insecure,omitempty"`
+	// Allow remotedirect requests to be proxied.  This defaults to false
+	// because in general, most users will want to communicate directly
+	// with redfish and other bmc urls directly even if the environment
+	// has a proxy set
+	UseProxy bool `json:"useproxy,omitempty"`
 }
