@@ -13,7 +13,7 @@
 - name: dump docker logs
   shell: |-
     journalctl --unit "docker" --no-pager > "{{ runtime_logs_dir }}/docker.log"
-  when: ansible_facts.services['docker'] is defined
+  when: ansible_facts.services['docker.service'] is defined
   args:
     executable: /bin/bash
   become: true
@@ -21,7 +21,7 @@
 - name: dump containerd logs
   shell: |-
     journalctl --unit "containerd" --no-pager > "{{ runtime_logs_dir }}/containerd.log"
-  when: ansible_facts.services['containerd'] is defined
+  when: ansible_facts.services['containerd.service'] is defined
   args:
     executable: /bin/bash
   become: true
