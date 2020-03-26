@@ -1010,35 +1010,3 @@ func ValidClusterType(clusterType string) error {
 	}
 	return fmt.Errorf("cluster type must be one of %v", AllClusterTypes)
 }
-
-/* ______________________________
-PLACEHOLDER UNTIL I IDENTIFY if CLIENTADM
-HAS SOMETHING LIKE THIS
-*/
-
-func KClusterString(cluster *clientcmdapi.Cluster) string {
-	yamlData, err := yaml.Marshal(&cluster)
-	if err != nil {
-		return ""
-	}
-
-	return string(yamlData)
-}
-
-func KContextString(context *clientcmdapi.Context) string {
-	yamlData, err := yaml.Marshal(&context)
-	if err != nil {
-		return ""
-	}
-
-	return string(yamlData)
-}
-
-func KAuthInfoString(authInfo *clientcmdapi.AuthInfo) string {
-	yamlData, err := yaml.Marshal(&authInfo)
-	if err != nil {
-		return ""
-	}
-
-	return string(yamlData)
-}
