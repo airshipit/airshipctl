@@ -15,7 +15,6 @@ import (
 
 const (
 	AirshipRemoteTypeRedfish string = "redfish"
-	AirshipHostKind          string = "BareMetalHost"
 )
 
 // Interface to be implemented by remoteDirect implementation
