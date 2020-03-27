@@ -85,6 +85,7 @@ func NewRedfishRemoteDirectClient(ctx context.Context,
 	ephNodeID string,
 	isoPath string,
 	insecure bool,
+	useproxy bool,
 ) (RemoteDirect, error) {
 	if remoteURL == "" {
 		return RemoteDirect{},
@@ -113,14 +114,24 @@ func NewRedfishRemoteDirectClient(ctx context.Context,
 		UserAgent:     "airshipctl/client",
 	}
 
+	// see https://github.com/golang/go/issues/26013
+	// We clone the default transport to ensure when we customize the transport
+	// that we are providing it sane timeouts and other defaults that we would
+	// normally get when not overriding the transport
+	defaultTransportCopy := (http.DefaultTransport.(*http.Transport))
+	transport := defaultTransportCopy.Clone()
+
 	if insecure {
-		cfg.HTTPClient = &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: true, //nolint:gosec
-				},
-			},
+		transport.TLSClientConfig = &tls.Config{
+			InsecureSkipVerify: true, //nolint:gosec
 		}
+	}
+	if !useproxy {
+		transport.Proxy = nil
+	}
+
+	cfg.HTTPClient = &http.Client{
+		Transport: transport,
 	}
 
 	var api redfishApi.RedfishAPI = redfishClient.NewAPIClient(cfg).DefaultApi
