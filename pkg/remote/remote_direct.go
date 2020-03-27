@@ -1,7 +1,6 @@
 package remote
 
 import (
-	"context"
 	"fmt"
 	"net/url"
 	"strings"
@@ -23,7 +22,11 @@ type Client interface {
 }
 
 // Get remotedirect client based on config
-func getRemoteDirectClient(remoteConfig *config.RemoteDirect, remoteURL string) (Client, error) {
+func getRemoteDirectClient(
+	remoteConfig *config.RemoteDirect,
+	remoteURL string,
+	username string,
+	password string) (Client, error) {
 	var client Client
 	switch remoteConfig.RemoteType {
 	case AirshipRemoteTypeRedfish:
@@ -44,9 +47,10 @@ func getRemoteDirectClient(remoteConfig *config.RemoteDirect, remoteURL string) 
 		nodeID := urlPath[len(urlPath)-1]
 
 		client, err = redfish.NewRedfishRemoteDirectClient(
-			context.Background(),
 			baseURL,
 			nodeID,
+			username,
+			password,
 			remoteConfig.IsoURL,
 			remoteConfig.Insecure,
 			remoteConfig.UseProxy,
@@ -63,56 +67,60 @@ func getRemoteDirectClient(remoteConfig *config.RemoteDirect, remoteURL string) 
 	return client, nil
 }
 
-func getRemoteDirectConfig(settings *environment.AirshipCTLSettings) (*config.RemoteDirect, string, error) {
+func getRemoteDirectConfig(settings *environment.AirshipCTLSettings) (
+	remoteConfig *config.RemoteDirect,
+	remoteURL string,
+	username string,
+	password string,
+	err error) {
 	cfg := settings.Config()
 	bootstrapSettings, err := cfg.CurrentContextBootstrapInfo()
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", "", err
 	}
 
-	remoteConfig := bootstrapSettings.RemoteDirect
+	remoteConfig = bootstrapSettings.RemoteDirect
 	if remoteConfig == nil {
-		return nil, "", config.ErrMissingConfig{What: "RemoteDirect options not defined in bootstrap config"}
+		return nil, "", "", "", config.ErrMissingConfig{What: "RemoteDirect options not defined in bootstrap config"}
 	}
 
-	root, err := cfg.CurrentContextEntryPoint(config.Ephemeral, "")
+	bundlePath, err := cfg.CurrentContextEntryPoint(config.Ephemeral, "")
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", "", err
 	}
 
-	docBundle, err := document.NewBundleByPath(root)
+	docBundle, err := document.NewBundleByPath(bundlePath)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", "", err
 	}
 
 	selector := document.NewEphemeralBMHSelector()
-	docs, err := docBundle.Select(selector)
+	doc, err := docBundle.SelectOne(selector)
 	if err != nil {
-		return nil, "", err
-	}
-	if len(docs) == 0 {
-		return nil, "", document.ErrDocNotFound{
-			Selector: selector,
-		}
+		return nil, "", "", "", err
 	}
 
-	// NOTE If filter returned more than one document chose first
-	remoteURL, err := docs[0].GetString("spec.bmc.address")
+	remoteURL, err = document.GetBMHBMCAddress(doc)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", "", err
 	}
 
-	return remoteConfig, remoteURL, nil
+	username, password, err = document.GetBMHBMCCredentials(doc, docBundle)
+	if err != nil {
+		return nil, "", "", "", err
+	}
+
+	return remoteConfig, remoteURL, username, password, nil
 }
 
 // Top level function to execute remote direct based on remote type
 func DoRemoteDirect(settings *environment.AirshipCTLSettings) error {
-	remoteConfig, remoteURL, err := getRemoteDirectConfig(settings)
+	remoteConfig, remoteURL, username, password, err := getRemoteDirectConfig(settings)
 	if err != nil {
 		return err
 	}
 
-	client, err := getRemoteDirectClient(remoteConfig, remoteURL)
+	client, err := getRemoteDirectClient(remoteConfig, remoteURL, username, password)
 	if err != nil {
 		return err
 	}

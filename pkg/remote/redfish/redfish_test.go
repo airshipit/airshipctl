@@ -28,37 +28,44 @@ func TestRedfishRemoteDirectNormal(t *testing.T) {
 
 	systemID := computerSystemID
 	httpResp := &http.Response{StatusCode: 200}
-	m.On("GetSystem", context.Background(), systemID).Times(1).
+
+	ctx := context.WithValue(
+		context.Background(),
+		redfishClient.ContextBasicAuth,
+		redfishClient.BasicAuth{UserName: "username", Password: "password"},
+	)
+
+	m.On("GetSystem", ctx, systemID).Times(1).
 		Return(getTestSystem(), httpResp, nil)
-	m.On("InsertVirtualMedia", context.Background(), "manager-1", "Cd", mock.Anything).
+	m.On("InsertVirtualMedia", ctx, "manager-1", "Cd", mock.Anything).
 		Return(redfishClient.RedfishError{}, httpResp, nil)
 
-	m.On("GetSystem", context.Background(), systemID).Times(1).
+	m.On("GetSystem", ctx, systemID).Times(1).
 		Return(getTestSystem(), httpResp, nil)
 	systemReq := redfishClient.ComputerSystem{
 		Boot: redfishClient.Boot{
 			BootSourceOverrideTarget: redfishClient.BOOTSOURCE_CD,
 		},
 	}
-	m.On("SetSystem", context.Background(), systemID, systemReq).
+	m.On("SetSystem", ctx, systemID, systemReq).
 		Times(1).
 		Return(redfishClient.ComputerSystem{}, httpResp, nil)
 
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
-	m.On("ResetSystem", context.Background(), systemID, resetReq).
+	m.On("ResetSystem", ctx, systemID, resetReq).
 		Times(1).
 		Return(redfishClient.RedfishError{}, httpResp, nil)
 
-	m.On("GetSystem", context.Background(), systemID).Times(1).
+	m.On("GetSystem", ctx, systemID).Times(1).
 		Return(redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_OFF}, httpResp, nil)
 
 	resetReq.ResetType = redfishClient.RESETTYPE_ON
-	m.On("ResetSystem", context.Background(), systemID, resetReq).
+	m.On("ResetSystem", ctx, systemID, resetReq).
 		Times(1).
 		Return(redfishClient.RedfishError{}, httpResp, nil)
 
-	m.On("GetSystem", context.Background(), systemID).Times(1).
+	m.On("GetSystem", ctx, systemID).Times(1).
 		Return(redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_ON}, httpResp, nil)
 
 	rDCfg := getDefaultRedfishRemoteDirectObj(t, m)
@@ -72,13 +79,19 @@ func TestRedfishRemoteDirectInvalidSystemId(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
+	ctx := context.WithValue(
+		context.Background(),
+		redfishClient.ContextBasicAuth,
+		redfishClient.BasicAuth{UserName: "username", Password: "password"},
+	)
+
 	systemID := "invalid-server"
 	localRDCfg := getDefaultRedfishRemoteDirectObj(t, m)
 
 	localRDCfg.EphemeralNodeID = systemID
 
 	realErr := fmt.Errorf("%s system do not exist", systemID)
-	m.On("GetSystem", context.Background(), systemID).
+	m.On("GetSystem", ctx, systemID).
 		Times(1).
 		Return(redfishClient.ComputerSystem{}, nil, realErr)
 
@@ -92,10 +105,16 @@ func TestRedfishRemoteDirectGetSystemNetworkError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
+	ctx := context.WithValue(
+		context.Background(),
+		redfishClient.ContextBasicAuth,
+		redfishClient.BasicAuth{UserName: "username", Password: "password"},
+	)
+
 	systemID := computerSystemID
 	realErr := fmt.Errorf("server request timeout")
 	httpResp := &http.Response{StatusCode: 408}
-	m.On("GetSystem", context.Background(), systemID).
+	m.On("GetSystem", ctx, systemID).
 		Times(1).
 		Return(redfishClient.ComputerSystem{}, httpResp, realErr)
 
@@ -111,6 +130,12 @@ func TestRedfishRemoteDirectInvalidIsoPath(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
+	ctx := context.WithValue(
+		context.Background(),
+		redfishClient.ContextBasicAuth,
+		redfishClient.BasicAuth{UserName: "username", Password: "password"},
+	)
+
 	systemID := computerSystemID
 	rDCfg := getDefaultRedfishRemoteDirectObj(t, m)
 	localRDCfg := rDCfg
@@ -118,11 +143,11 @@ func TestRedfishRemoteDirectInvalidIsoPath(t *testing.T) {
 
 	realErr := redfishClient.GenericOpenAPIError{}
 	httpResp := &http.Response{StatusCode: 500}
-	m.On("GetSystem", context.Background(), systemID).
+	m.On("GetSystem", ctx, systemID).
 		Times(1).
 		Return(getTestSystem(), nil, nil)
 
-	m.On("InsertVirtualMedia", context.Background(), "manager-1", "Cd", mock.Anything).
+	m.On("InsertVirtualMedia", ctx, "manager-1", "Cd", mock.Anything).
 		Return(redfishClient.RedfishError{}, httpResp, realErr)
 
 	err := localRDCfg.DoRemoteDirect()
@@ -135,6 +160,12 @@ func TestRedfishRemoteDirectCdDvdNotAvailableInBootSources(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
+	ctx := context.WithValue(
+		context.Background(),
+		redfishClient.ContextBasicAuth,
+		redfishClient.BasicAuth{UserName: "username", Password: "password"},
+	)
+
 	systemID := computerSystemID
 	invalidSystem := getTestSystem()
 	invalidSystem.Boot.BootSourceOverrideTargetRedfishAllowableValues = []redfishClient.BootSource{
@@ -142,10 +173,10 @@ func TestRedfishRemoteDirectCdDvdNotAvailableInBootSources(t *testing.T) {
 		redfishClient.BOOTSOURCE_PXE,
 	}
 
-	m.On("GetSystem", context.Background(), systemID).
+	m.On("GetSystem", ctx, systemID).
 		Return(invalidSystem, nil, nil)
 
-	m.On("InsertVirtualMedia", context.Background(), "manager-1", "Cd", mock.Anything).
+	m.On("InsertVirtualMedia", ctx, "manager-1", "Cd", mock.Anything).
 		Return(redfishClient.RedfishError{}, nil, nil)
 
 	rDCfg := getDefaultRedfishRemoteDirectObj(t, m)
@@ -160,15 +191,21 @@ func TestRedfishRemoteDirectSetSystemBootSourceFailed(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
+	ctx := context.WithValue(
+		context.Background(),
+		redfishClient.ContextBasicAuth,
+		redfishClient.BasicAuth{UserName: "username", Password: "password"},
+	)
+
 	systemID := computerSystemID
 	httpSuccResp := &http.Response{StatusCode: 200}
-	m.On("GetSystem", context.Background(), systemID).
+	m.On("GetSystem", ctx, systemID).
 		Return(getTestSystem(), httpSuccResp, nil)
 
-	m.On("InsertVirtualMedia", context.Background(), "manager-1", "Cd", mock.Anything).
+	m.On("InsertVirtualMedia", ctx, "manager-1", "Cd", mock.Anything).
 		Return(redfishClient.RedfishError{}, httpSuccResp, nil)
 
-	m.On("SetSystem", context.Background(), systemID, mock.Anything).
+	m.On("SetSystem", ctx, systemID, mock.Anything).
 		Times(1).
 		Return(redfishClient.ComputerSystem{}, &http.Response{StatusCode: 401},
 			redfishClient.GenericOpenAPIError{})
@@ -185,21 +222,27 @@ func TestRedfishRemoteDirectSystemRebootFailed(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
+	ctx := context.WithValue(
+		context.Background(),
+		redfishClient.ContextBasicAuth,
+		redfishClient.BasicAuth{UserName: "username", Password: "password"},
+	)
+
 	systemID := computerSystemID
 	httpSuccResp := &http.Response{StatusCode: 200}
-	m.On("GetSystem", context.Background(), systemID).
+	m.On("GetSystem", ctx, systemID).
 		Return(getTestSystem(), httpSuccResp, nil)
 
-	m.On("InsertVirtualMedia", context.Background(), mock.Anything, mock.Anything, mock.Anything).
+	m.On("InsertVirtualMedia", ctx, mock.Anything, mock.Anything, mock.Anything).
 		Return(redfishClient.RedfishError{}, httpSuccResp, nil)
 
-	m.On("SetSystem", context.Background(), systemID, mock.Anything).
+	m.On("SetSystem", ctx, systemID, mock.Anything).
 		Times(1).
 		Return(redfishClient.ComputerSystem{}, httpSuccResp, nil)
 
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
-	m.On("ResetSystem", context.Background(), systemID, resetReq).
+	m.On("ResetSystem", ctx, systemID, resetReq).
 		Times(1).
 		Return(redfishClient.RedfishError{}, &http.Response{StatusCode: 401},
 			redfishClient.GenericOpenAPIError{})
@@ -244,9 +287,10 @@ func TestNewRedfishRemoteDirectClient(t *testing.T) {
 	defer m.AssertExpectations(t)
 
 	_, err := NewRedfishRemoteDirectClient(
-		context.Background(),
 		defaultURL,
 		computerSystemID,
+		"username",
+		"password",
 		"/tmp/test.iso",
 		true,
 		false,
@@ -255,9 +299,10 @@ func TestNewRedfishRemoteDirectClient(t *testing.T) {
 
 	// Test with empty remote URL
 	_, err = NewRedfishRemoteDirectClient(
-		context.Background(),
 		"",
 		computerSystemID,
+		"username",
+		"password",
 		"/tmp/test.iso",
 		false,
 		false,
@@ -267,9 +312,10 @@ func TestNewRedfishRemoteDirectClient(t *testing.T) {
 
 	// Test with empty ephemeral NodeID
 	_, err = NewRedfishRemoteDirectClient(
-		context.Background(),
 		defaultURL,
 		"",
+		"username",
+		"password",
 		"/tmp/test.iso",
 		false,
 		false,
@@ -279,9 +325,10 @@ func TestNewRedfishRemoteDirectClient(t *testing.T) {
 
 	// Test with empty Iso Path
 	_, err = NewRedfishRemoteDirectClient(
-		context.Background(),
 		defaultURL,
 		computerSystemID,
+		"username",
+		"password",
 		"",
 		false,
 		false,
@@ -294,9 +341,10 @@ func getDefaultRedfishRemoteDirectObj(t *testing.T, api redfishAPI.RedfishAPI) R
 	t.Helper()
 
 	rDCfg, err := NewRedfishRemoteDirectClient(
-		context.Background(),
 		defaultURL,
 		computerSystemID,
+		"username",
+		"password",
 		"/tmp/test.iso",
 		false,
 		false,

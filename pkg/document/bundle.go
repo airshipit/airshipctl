@@ -47,6 +47,7 @@ type Bundle interface {
 	SetFileSystem(FileSystem) error
 	GetFileSystem() FileSystem
 	Select(selector Selector) ([]Document, error)
+	SelectOne(selector Selector) (Document, error)
 	SelectBundle(selector Selector) (Bundle, error)
 	SelectByFieldValue(string, func(interface{}) bool) (Bundle, error)
 	GetByGvk(string, string, string) ([]Document, error)
@@ -218,6 +219,29 @@ func (b *BundleFactory) Select(selector Selector) ([]Document, error) {
 		docSet[i] = doc
 	}
 	return docSet, err
+}
+
+// SelectOne serves the common use case where you expect one match
+// and only one match to your selector -- in other words, you want to
+// error if you didn't find any documents, and error if you found
+// more than one.  This reduces code repetition that would otherwise
+// be scattered around that evaluates the length of the doc set returned
+// for this common case
+func (b *BundleFactory) SelectOne(selector Selector) (Document, error) {
+	docSet, err := b.Select(selector)
+	if err != nil {
+		return nil, err
+	}
+
+	// evaluate docSet for at least one document, and no more than
+	// one document and raise errors as appropriate
+	switch numDocsFound := len(docSet); {
+	case numDocsFound == 0:
+		return nil, ErrDocNotFound{Selector: selector}
+	case numDocsFound > 1:
+		return nil, ErrMultipleDocsFound{Selector: selector}
+	}
+	return docSet[0], nil
 }
 
 // SelectBundle offers an interface to pass a Selector, built on top of kustomize Selector

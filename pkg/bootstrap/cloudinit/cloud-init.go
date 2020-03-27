@@ -74,7 +74,7 @@ func getNetworkData(docBundle document.Bundle) ([]byte, error) {
 	}
 
 	// try and find these documents in our bundle
-	selector, err = document.NewEphemeralNetworkDataSelector(bmhDoc)
+	selector, err = document.NewNetworkDataSelector(bmhDoc)
 	if err != nil {
 		return nil, err
 	}
