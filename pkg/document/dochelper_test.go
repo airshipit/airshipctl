@@ -29,7 +29,7 @@ func TestDocHelpers(t *testing.T) {
 	assert := assert.New(t)
 
 	fSys := testutil.SetupTestFs(t, "testdata/dochelper")
-	bundle, err := document.NewBundle(fSys, "/", "/")
+	bundle, err := document.NewBundle(fSys, "/")
 	require.NoError(err, "Building Bundle Failed")
 	require.NotNil(bundle)
 

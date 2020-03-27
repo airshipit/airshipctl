@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	fixtures "gopkg.in/src-d/go-git-fixtures.v3"
-	"sigs.k8s.io/kustomize/v3/pkg/fs"
+	fs "sigs.k8s.io/kustomize/api/filesys"
 
 	"opendev.org/airship/airshipctl/pkg/document"
 )
@@ -39,7 +39,7 @@ func SetupTestFs(t *testing.T, fixtureDir string) document.FileSystem {
 // NewTestBundle helps to create a new bundle with FakeFs containing documents from fixtureDir
 func NewTestBundle(t *testing.T, fixtureDir string) document.Bundle {
 	t.Helper()
-	b, err := document.NewBundle(SetupTestFs(t, fixtureDir), "/", "/")
+	b, err := document.NewBundle(SetupTestFs(t, fixtureDir), "/")
 	require.NoError(t, err, "Failed to build a bundle, setting up TestBundle failed")
 	return b
 }

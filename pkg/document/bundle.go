@@ -15,36 +15,21 @@
 package document
 
 import (
-	"errors"
 	"io"
+	"strings"
 
-	"sigs.k8s.io/kustomize/v3/k8sdeps/kunstruct"
-	"sigs.k8s.io/kustomize/v3/k8sdeps/transformer"
-	"sigs.k8s.io/kustomize/v3/k8sdeps/validator"
-	"sigs.k8s.io/kustomize/v3/pkg/loader"
-	"sigs.k8s.io/kustomize/v3/pkg/plugins"
-	"sigs.k8s.io/kustomize/v3/pkg/resmap"
-	"sigs.k8s.io/kustomize/v3/pkg/resource"
-	"sigs.k8s.io/kustomize/v3/pkg/target"
-	"sigs.k8s.io/kustomize/v3/pkg/types"
-	"sigs.k8s.io/kustomize/v3/plugin/builtin"
+	"sigs.k8s.io/kustomize/api/konfig"
+	"sigs.k8s.io/kustomize/api/krusty"
+	"sigs.k8s.io/kustomize/api/resmap"
+	"sigs.k8s.io/kustomize/api/types"
 
-	docplugins "opendev.org/airship/airshipctl/pkg/document/plugins"
-	"opendev.org/airship/airshipctl/pkg/log"
 	utilyaml "opendev.org/airship/airshipctl/pkg/util/yaml"
 )
-
-func init() {
-	// NOTE (dukov) This is sort of a hack but it's the only way to add an
-	// external 'builtin' plugin to Kustomize
-	plugins.TransformerFactories[plugins.Unknown] = docplugins.NewTransformerLoader
-}
 
 // KustomizeBuildOptions contain the options for running a Kustomize build on a bundle
 type KustomizeBuildOptions struct {
 	KustomizationPath string
-	OutputPath        string
-	LoadRestrictor    loader.LoadRestrictorFunc
+	LoadRestrictions  types.LoadRestrictions
 }
 
 // BundleFactory contains the objects within a bundle
@@ -73,17 +58,16 @@ type Bundle interface {
 // NewBundleByPath helper function that returns new document.Bundle interface based on clusterType and
 // phase, example: helpers.NewBunde(airConfig, "ephemeral", "initinfra")
 func NewBundleByPath(rootPath string) (Bundle, error) {
-	return NewBundle(NewDocumentFs(), rootPath, "")
+	return NewBundle(NewDocumentFs(), rootPath)
 }
 
 // NewBundle is a convenience function to create a new bundle
 // Over time, it will evolve to support allowing more control
 // for kustomize plugins
-func NewBundle(fSys FileSystem, kustomizePath string, outputPath string) (Bundle, error) {
+func NewBundle(fSys FileSystem, kustomizePath string) (Bundle, error) {
 	var options = KustomizeBuildOptions{
 		KustomizationPath: kustomizePath,
-		OutputPath:        outputPath,
-		LoadRestrictor:    loader.RestrictionRootOnly,
+		LoadRestrictions:  types.LoadRestrictionsRootOnly,
 	}
 
 	// init an empty bundle factory
@@ -97,42 +81,19 @@ func NewBundle(fSys FileSystem, kustomizePath string, outputPath string) (Bundle
 		return nil, err
 	}
 
-	// boiler plate to allow us to run Kustomize build
-	uf := kunstruct.NewKunstructuredFactoryImpl()
-	pf := transformer.NewFactoryImpl()
-	rf := resmap.NewFactory(resource.NewFactory(uf), pf)
-	v := validator.NewKustValidator()
-
-	pluginConfig := plugins.DefaultPluginConfig()
-	pl := plugins.NewLoader(pluginConfig, rf)
-
-	ldr, err := loader.NewLoader(
-		bundle.GetKustomizeBuildOptions().LoadRestrictor, v, bundle.GetKustomizeBuildOptions().KustomizationPath, fSys)
-	if err != nil {
-		return bundle, err
+	var o = krusty.Options{
+		DoLegacyResourceSort: true, // Default and what we want
+		LoadRestrictions:     options.LoadRestrictions,
+		DoPrune:              false,                         // Default
+		PluginConfig:         konfig.DisabledPluginConfig(), // Default
 	}
 
-	defer func() {
-		if e := ldr.Cleanup(); e != nil {
-			log.Fatal("failed to cleanup loader ERROR: ", e)
-		}
-	}()
-
-	kt, err := target.NewKustTarget(ldr, rf, pf, pl)
-	if err != nil {
-		return bundle, err
-	}
-
-	// build a resource map of kustomize rendered objects
-	m, err := kt.MakeCustomizedResMap()
+	kustomizer := krusty.MakeKustomizer(fSys, &o)
+	m, err := kustomizer.Run(kustomizePath)
 	if err != nil {
 		return bundle, err
 	}
 	err = bundle.SetKustomizeResourceMap(m)
-	if err != nil {
-		return nil, err
-	}
-	err = bundle.OrderLegacy()
 	return bundle, err
 }
 
@@ -170,11 +131,6 @@ func (b *BundleFactory) SetFileSystem(fSys FileSystem) error {
 // GetFileSystem gets the filesystem that will be used by this bundle
 func (b *BundleFactory) GetFileSystem() FileSystem {
 	return b.FileSystem
-}
-
-// OrderLegacy uses kustomize Transformer plugin to correct order of resources
-func (b *BundleFactory) OrderLegacy() error {
-	return builtin.NewLegacyOrderTransformerPlugin().Transform(b.GetKustomizeResourceMap())
 }
 
 // GetAllDocuments returns all documents in this bundle
@@ -334,7 +290,7 @@ func (b *BundleFactory) SelectByFieldValue(path string, condition func(interface
 	for _, res := range b.Resources() {
 		val, err := res.GetFieldValue(path)
 		if err != nil {
-			if errors.As(err, &types.NoFieldError{}) {
+			if strings.Contains(err.Error(), "no field named") {
 				// this resource doesn't have the specified field - skip it
 				continue
 			} else {
