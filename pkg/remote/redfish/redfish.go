@@ -29,13 +29,17 @@ type RemoteDirect struct {
 
 	// Redfish Client implementation
 	RedfishAPI redfishApi.RedfishAPI
+
+	// optional Username Authentication
+	Username string
+
+	// optional Password
+	Password string
 }
 
 // Top level function to handle Redfish remote direct
 func (cfg RemoteDirect) DoRemoteDirect() error {
 	alog.Debugf("Using Redfish Endpoint: '%s'", cfg.RemoteURL.String())
-
-	/* TODO: Add Authentication when redfish library supports it. */
 
 	/* Get system details */
 	systemID := cfg.EphemeralNodeID
@@ -79,10 +83,12 @@ func (cfg RemoteDirect) DoRemoteDirect() error {
 	return nil
 }
 
-// Creates a new Redfish remote direct client.
-func NewRedfishRemoteDirectClient(ctx context.Context,
+// NewRedfishRemoteDirectClient creates a new Redfish remote direct client.
+func NewRedfishRemoteDirectClient(
 	remoteURL string,
 	ephNodeID string,
+	username string,
+	password string,
 	isoPath string,
 	insecure bool,
 	useproxy bool,
@@ -99,6 +105,17 @@ func NewRedfishRemoteDirectClient(ctx context.Context,
 			ErrRedfishMissingConfig{
 				What: "redfish ephemeral node id empty",
 			}
+	}
+
+	var ctx context.Context
+	if username != "" && password != "" {
+		ctx = context.WithValue(
+			context.Background(),
+			redfishClient.ContextBasicAuth,
+			redfishClient.BasicAuth{UserName: username, Password: password},
+		)
+	} else {
+		ctx = context.Background()
 	}
 
 	if isoPath == "" {

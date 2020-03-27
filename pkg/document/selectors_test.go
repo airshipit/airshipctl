@@ -24,7 +24,7 @@ func TestSelectorsPositive(t *testing.T) {
 		require.NoError(t, err)
 		assert.Len(t, docs, 1)
 		bmhDoc := docs[0]
-		selector, err := document.NewEphemeralNetworkDataSelector(bmhDoc)
+		selector, err := document.NewNetworkDataSelector(bmhDoc)
 		require.NoError(t, err)
 		assert.Equal(t, "validName", selector.Name)
 	})
@@ -42,12 +42,12 @@ func TestSelectorsNegative(t *testing.T) {
 	// test coverage
 	bundle := testutil.NewTestBundle(t, "testdata/selectors/invalid")
 
-	t.Run("TestNewEphemeralNetworkDataSelectorErr", func(t *testing.T) {
+	t.Run("TestNewNetworkDataSelectorErr", func(t *testing.T) {
 		docs, err := bundle.Select(document.NewEphemeralBMHSelector())
 		require.NoError(t, err)
 		assert.Len(t, docs, 2)
 		bmhDoc := docs[0]
-		_, err = document.NewEphemeralNetworkDataSelector(bmhDoc)
+		_, err = document.NewNetworkDataSelector(bmhDoc)
 		assert.Error(t, err)
 	})
 
@@ -56,7 +56,7 @@ func TestSelectorsNegative(t *testing.T) {
 		require.NoError(t, err)
 		assert.Len(t, docs, 2)
 		bmhDoc := docs[1]
-		_, err = document.NewEphemeralNetworkDataSelector(bmhDoc)
+		_, err = document.NewNetworkDataSelector(bmhDoc)
 		assert.Error(t, err)
 	})
 }
@@ -67,7 +67,7 @@ func TestSelectorsSkip(t *testing.T) {
 	// test coverage
 	bundle := testutil.NewTestBundle(t, "testdata/selectors/exclude-from-k8s")
 
-	t.Run("TestNewEphemeralNetworkDataSelectorErr", func(t *testing.T) {
+	t.Run("TestNewNetworkDataSelectorErr", func(t *testing.T) {
 		selector := document.NewDeployToK8sSelector()
 		docs, err := bundle.Select(selector)
 		require.NoError(t, err)

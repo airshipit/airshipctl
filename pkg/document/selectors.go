@@ -64,7 +64,7 @@ func (s Selector) ByAnnotation(annotationSelector string) Selector {
 	return s
 }
 
-// EphemeralCloudDataSelector returns selector to get BaremetalHost for ephemeral node
+// NewEphemeralCloudDataSelector returns selector to get BaremetalHost for ephemeral node
 func NewEphemeralCloudDataSelector() Selector {
 	return NewSelector().ByKind(SecretKind).ByLabel(EphemeralUserDataSelector)
 }
@@ -74,11 +74,16 @@ func NewEphemeralBMHSelector() Selector {
 	return NewSelector().ByKind(BareMetalHostKind).ByLabel(EphemeralHostSelector)
 }
 
-// NewEphemeralNetworkDataSelector returns selector that can be used to get secret with
+// NewBMCCredentialsSelector returns selector to get BaremetalHost BMC credentials
+func NewBMCCredentialsSelector(name string) Selector {
+	return NewSelector().ByKind(SecretKind).ByName(name)
+}
+
+// NewNetworkDataSelector returns selector that can be used to get secret with
 // network data bmhDoc argument is a document interface, that should hold fields
 // spec.networkData.name and spec.networkData.namespace where to find the secret,
 // if either of these fields are not defined in Document error will be returned
-func NewEphemeralNetworkDataSelector(bmhDoc Document) (Selector, error) {
+func NewNetworkDataSelector(bmhDoc Document) (Selector, error) {
 	selector := NewSelector()
 	// extract the network data document pointer from the bmh document
 	netConfDocName, err := bmhDoc.GetString("spec.networkData.name")
