@@ -15,6 +15,7 @@ import (
 	redfishClient "opendev.org/airship/go-redfish/client"
 
 	. "opendev.org/airship/airshipctl/pkg/remote/redfish"
+	testutil "opendev.org/airship/airshipctl/testutil/redfish"
 )
 
 const (
@@ -37,6 +38,14 @@ func TestRedfishRemoteDirectNormal(t *testing.T) {
 
 	m.On("GetSystem", ctx, systemID).Times(1).
 		Return(getTestSystem(), httpResp, nil)
+
+	// GetVirtualMediaID() mocks
+	m.On("ListManagerVirtualMedia", ctx, "manager-1").Times(1).
+		Return(testutil.GetMediaCollection([]string{"Cd", "Floppy"}), httpResp, nil)
+
+	m.On("GetManagerVirtualMedia", ctx, "manager-1", "Cd").Times(1).
+		Return(testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
+
 	m.On("InsertVirtualMedia", ctx, "manager-1", "Cd", mock.Anything).
 		Return(redfishClient.RedfishError{}, httpResp, nil)
 
@@ -142,11 +151,19 @@ func TestRedfishRemoteDirectInvalidIsoPath(t *testing.T) {
 	localRDCfg.IsoPath = "bogus/path/to.iso"
 
 	realErr := redfishClient.GenericOpenAPIError{}
-	httpResp := &http.Response{StatusCode: 500}
 	m.On("GetSystem", ctx, systemID).
 		Times(1).
 		Return(getTestSystem(), nil, nil)
 
+	httpSuccResp := &http.Response{StatusCode: 200}
+	// GetVirtualMediaID() mocks
+	m.On("ListManagerVirtualMedia", ctx, "manager-1").Times(1).
+		Return(testutil.GetMediaCollection([]string{"Cd", "Floppy"}), httpSuccResp, nil)
+
+	m.On("GetManagerVirtualMedia", ctx, "manager-1", "Cd").Times(1).
+		Return(testutil.GetVirtualMedia([]string{"CD"}), httpSuccResp, nil)
+
+	httpResp := &http.Response{StatusCode: 500}
 	m.On("InsertVirtualMedia", ctx, "manager-1", "Cd", mock.Anything).
 		Return(redfishClient.RedfishError{}, httpResp, realErr)
 
@@ -176,6 +193,14 @@ func TestRedfishRemoteDirectCdDvdNotAvailableInBootSources(t *testing.T) {
 	m.On("GetSystem", ctx, systemID).
 		Return(invalidSystem, nil, nil)
 
+	// GetVirtualMediaID() mocks
+	httpResp := &http.Response{StatusCode: 200}
+	m.On("ListManagerVirtualMedia", ctx, "manager-1").Times(1).
+		Return(testutil.GetMediaCollection([]string{"Cd", "Floppy"}), httpResp, nil)
+
+	m.On("GetManagerVirtualMedia", ctx, "manager-1", "Cd").Times(1).
+		Return(testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
+
 	m.On("InsertVirtualMedia", ctx, "manager-1", "Cd", mock.Anything).
 		Return(redfishClient.RedfishError{}, nil, nil)
 
@@ -199,8 +224,16 @@ func TestRedfishRemoteDirectSetSystemBootSourceFailed(t *testing.T) {
 
 	systemID := computerSystemID
 	httpSuccResp := &http.Response{StatusCode: 200}
+
 	m.On("GetSystem", ctx, systemID).
 		Return(getTestSystem(), httpSuccResp, nil)
+
+	// GetVirtualMediaID() mocks
+	m.On("ListManagerVirtualMedia", ctx, "manager-1").Times(1).
+		Return(testutil.GetMediaCollection([]string{"Cd", "Floppy"}), httpSuccResp, nil)
+
+	m.On("GetManagerVirtualMedia", ctx, "manager-1", "Cd").Times(1).
+		Return(testutil.GetVirtualMedia([]string{"CD"}), httpSuccResp, nil)
 
 	m.On("InsertVirtualMedia", ctx, "manager-1", "Cd", mock.Anything).
 		Return(redfishClient.RedfishError{}, httpSuccResp, nil)
@@ -232,6 +265,13 @@ func TestRedfishRemoteDirectSystemRebootFailed(t *testing.T) {
 	httpSuccResp := &http.Response{StatusCode: 200}
 	m.On("GetSystem", ctx, systemID).
 		Return(getTestSystem(), httpSuccResp, nil)
+
+	// GetVirtualMediaID() mocks
+	m.On("ListManagerVirtualMedia", ctx, "manager-1").Times(1).
+		Return(testutil.GetMediaCollection([]string{"Cd", "Floppy"}), httpSuccResp, nil)
+
+	m.On("GetManagerVirtualMedia", ctx, "manager-1", "Cd").Times(1).
+		Return(testutil.GetVirtualMedia([]string{"CD"}), httpSuccResp, nil)
 
 	m.On("InsertVirtualMedia", ctx, mock.Anything, mock.Anything, mock.Anything).
 		Return(redfishClient.RedfishError{}, httpSuccResp, nil)

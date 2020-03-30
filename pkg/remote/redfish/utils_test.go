@@ -9,6 +9,8 @@ import (
 
 	redfishMocks "opendev.org/airship/go-redfish/api/mocks"
 	redfishClient "opendev.org/airship/go-redfish/client"
+
+	testutil "opendev.org/airship/airshipctl/testutil/redfish"
 )
 
 const (
@@ -88,6 +90,65 @@ func TestRedfishUtilIsIdInList(t *testing.T) {
 
 	res = IsIDInList(emptyList, "1")
 	assert.False(t, res)
+}
+
+func TestGetVirtualMediaID(t *testing.T) {
+	m := &redfishMocks.RedfishAPI{}
+	defer m.AssertExpectations(t)
+
+	ctx := context.Background()
+	managerID := "manager-090102"
+	httpResp := &http.Response{StatusCode: 200}
+
+	m.On("ListManagerVirtualMedia", ctx, managerID).Times(1).
+		Return(testutil.GetMediaCollection([]string{"Floppy", "Cd"}), httpResp, nil)
+
+	m.On("GetManagerVirtualMedia", ctx, managerID, "Floppy").Times(1).
+		Return(testutil.GetVirtualMedia([]string{"Floppy", "USBStick"}), httpResp, nil)
+
+	m.On("GetManagerVirtualMedia", ctx, managerID, "Cd").Times(1).
+		Return(testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
+
+	mediaID, mediaType, err := GetVirtualMediaID(ctx, m, managerID)
+	assert.Equal(t, mediaID, "Cd")
+	assert.Equal(t, mediaType, "CD")
+	assert.NoError(t, err)
+}
+
+func TestGetVirtualMediaIDNoMedia(t *testing.T) {
+	m := &redfishMocks.RedfishAPI{}
+	defer m.AssertExpectations(t)
+
+	ctx := context.Background()
+	managerID := "manager-090102"
+	httpResp := &http.Response{StatusCode: 200}
+
+	m.On("ListManagerVirtualMedia", ctx, managerID).Times(1).Return(redfishClient.Collection{}, httpResp, nil)
+
+	mediaID, mediaType, err := GetVirtualMediaID(ctx, m, managerID)
+	assert.Empty(t, mediaID)
+	assert.Empty(t, mediaType)
+	assert.Error(t, err)
+}
+
+func TestGetVirtualMediaIDUnacceptableMediaTypes(t *testing.T) {
+	m := &redfishMocks.RedfishAPI{}
+	defer m.AssertExpectations(t)
+
+	ctx := context.Background()
+	managerID := "manager-090102"
+	httpResp := &http.Response{StatusCode: 200}
+
+	m.On("ListManagerVirtualMedia", ctx, managerID).Times(1).
+		Return(testutil.GetMediaCollection([]string{"Floppy"}), httpResp, nil)
+
+	m.On("GetManagerVirtualMedia", ctx, managerID, "Floppy").Times(1).
+		Return(testutil.GetVirtualMedia([]string{"Floppy", "USBStick"}), httpResp, nil)
+
+	mediaID, mediaType, err := GetVirtualMediaID(ctx, m, managerID)
+	assert.Empty(t, mediaID)
+	assert.Empty(t, mediaType)
+	assert.Error(t, err)
 }
 
 func TestRedfishUtilRebootSystemOK(t *testing.T) {

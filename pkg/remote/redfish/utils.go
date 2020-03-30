@@ -46,14 +46,30 @@ func IsIDInList(idRefList []redfishClient.IdRef, id string) bool {
 	return false
 }
 
-// This function walks through the list of manager's virtual media resources
-// and gets the ID of virtualmedia which has type "CD" or "DVD"
-func GetVirtualMediaID() (string, string, error) {
-	// TODO: Sushy emulator has a bug which sends 'virtualMedia.inserted' field as
-	//       string instead of a boolean which causes the redfish client to fail
-	//       while unmarshalling this field.
-	//       Insert logic here after the bug is fixed in sushy-emulator.
-	return "Cd", "CD", nil
+// GetVirtualMediaID retrieves the ID of a Redfish virtual media resource if it supports type "CD" or "DVD".
+func GetVirtualMediaID(ctx context.Context, api redfishApi.RedfishAPI, managerID string) (string, string, error) {
+	mediaCollection, httpResp, err := api.ListManagerVirtualMedia(ctx, managerID)
+	if err = ScreenRedfishError(httpResp, err); err != nil {
+		return "", "", err
+	}
+
+	for _, mediaURI := range mediaCollection.Members {
+		// Retrieve the virtual media ID from the request URI
+		mediaID := GetResourceIDFromURL(mediaURI.OdataId)
+
+		vMedia, httpResp, err := api.GetManagerVirtualMedia(ctx, managerID, mediaID)
+		if err = ScreenRedfishError(httpResp, err); err != nil {
+			return "", "", err
+		}
+
+		for _, mediaType := range vMedia.MediaTypes {
+			if mediaType == "CD" || mediaType == "DVD" {
+				return mediaID, mediaType, nil
+			}
+		}
+	}
+
+	return "", "", ErrRedfishClient{Message: "Unable to find virtual media with type CD or DVD"}
 }
 
 // This function walks through the bootsources of a system and sets the bootsource
