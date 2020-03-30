@@ -28,5 +28,8 @@ func NewRemoteCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comma
 	powerStatusCmd := NewPowerStatusCommand(rootSettings)
 	remoteRootCmd.AddCommand(powerStatusCmd)
 
+	rebootCmd := NewRebootCommand(rootSettings)
+	remoteRootCmd.AddCommand(rebootCmd)
+
 	return remoteRootCmd
 }
