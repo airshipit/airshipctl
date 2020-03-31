@@ -1,5 +1,6 @@
 resources:
   - ../../global/crd/baremetal-operator
+  - config-file
   - rbac
   - operator.yaml
   - namespace.yaml
