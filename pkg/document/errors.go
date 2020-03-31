@@ -28,7 +28,7 @@ type ErrMultipleDocsFound struct {
 }
 
 func (e ErrDocNotFound) Error() string {
-	return fmt.Sprintf("Document filtered by selector %q found no documents", e.Selector)
+	return fmt.Sprintf("Document filtered by selector %v found no documents", e.Selector)
 }
 
 func (e ErrDocumentDataKeyNotFound) Error() string {
@@ -40,5 +40,5 @@ func (e ErrDocumentMalformed) Error() string {
 }
 
 func (e ErrMultipleDocsFound) Error() string {
-	return fmt.Sprintf("Document filtered by selector %q found more than one document", e.Selector)
+	return fmt.Sprintf("Document filtered by selector %v found more than one document", e.Selector)
 }
