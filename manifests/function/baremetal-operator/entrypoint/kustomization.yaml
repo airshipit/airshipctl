@@ -9,4 +9,3 @@ configMapGenerator:
     - init-bootstrap
     - inspector-entrypoint
     - ironic-entrypoint
-    - mariadb-entrypoint
