@@ -1,0 +1,21 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  labels:
+  name: ironic-vars
+data:
+  MARIADB_PASSWORD: "e8ca990d79d351eacda0"
+  PROVISIONING_IP: "192.168.10.100"
+  DHCP_RANGE: "192.168.10.200,192.168.10.250"
+  PROVISIONING_INTERFACE: "pxe0"
+  HTTP: "80"
+  DEPLOY_KERNEL_PATH: "/images/ironic-python-agent.kernel"
+  DEPLOY_RAMDISK_PATH: "/images/ironic-python-agent.initramfs"
+  FAST_TRACK: "false"
+  API_WORKERS: "4"
+  AUTOMATED_CLEAN: "true"
+  IRONIC_VOLUME_CAPACITY: "10Gi"
+  IRONIC_STORAGE_CLASS_NAME: "default"
+  IRONIC_HOST_PATH: "/opt/metal3-dev-env/ironic/"
+  IRONIC_PYTHON_AGENT: "http://192.168.100.1/images/ironic-python-agent.tar"

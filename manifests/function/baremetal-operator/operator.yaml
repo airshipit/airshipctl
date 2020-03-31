@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metal3-baremetal-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: metal3-baremetal-operator
+  template:
+    metadata:
+      labels:
+        name: metal3-baremetal-operator
+    spec:
+      serviceAccountName: metal3-baremetal-operator
+      containers:
+        - name: baremetal-operator
+          image: "quay.io/metal3-io/baremetal-operator:latest"
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 60000
+            name: metrics
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              export DEPLOY_KERNEL_URL=http://$PROVISIONING_IP:80/$DEPLOY_KERNEL_PATH;
+              export DEPLOY_RAMDISK_URL=http://$PROVISIONING_IP:80/$DEPLOY_RAMDISK_PATH;
+              export IRONIC_ENDPOINT=http://$PROVISIONING_IP:6385/v1/;
+              export IRONIC_INSPECTOR_ENDPOINT=http://$PROVISIONING_IP:5050/v1/;
+              /baremetal-operator
+          envFrom:
+          - configMapRef:
+              name: ironic-vars
+          env:
+            - name: WATCH_NAMESPACE
+              value: default
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "baremetal-operator"
+        # Temporary workaround to talk to an external Ironic process until Ironic is running in this pod.
+        - name: ironic-proxy
+          image: alpine/socat
+          command: ["/bin/sh", "-c"]
+          args:
+            - socat tcp-listen:6385,fork,reuseaddr tcp-connect:$PROVISIONING_IP:6385
+          imagePullPolicy: Always
+        - name: ironic-inspector-proxy
+          image: alpine/socat
+          command: ["/bin/sh", "-c"]
+          args:
+            - socat tcp-listen:5050,fork,reuseaddr tcp-connect:$PROVISIONING_IP:5050
+          imagePullPolicy: Always

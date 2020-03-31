@@ -1,0 +1,8 @@
+resources:
+  - ../../global/crd/baremetal-operator
+  - rbac
+  - operator.yaml
+  - namespace.yaml
+  - ironic-vars.yaml
+
+namespace: metal3

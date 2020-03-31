@@ -1,0 +1,2 @@
+resources:
+  - metal3.io_baremetalhosts_crd.yaml
