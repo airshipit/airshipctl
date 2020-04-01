@@ -21,9 +21,12 @@ import (
 type Client interface {
 	RebootSystem(context.Context, string) error
 
+	SystemPowerOff(context.Context, string) error
+
 	// TODO(drewwalters96): Should this be a string forever? We may want to define our own custom type, as the
 	// string format will be client dependent when we add new clients.
 	SystemPowerStatus(context.Context, string) (string, error)
+
 	EphemeralNodeID() string
 
 	// TODO(drewwalters96): This function may be too tightly coupled to remoteDirect operations. This could probably

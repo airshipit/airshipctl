@@ -82,6 +82,19 @@ func (m *MockClient) SetVirtualMedia(ctx context.Context, isoPath string) error 
 	return args.Error(0)
 }
 
+// SystemPowerOff provides a stubbed method that can be mocked to test functions that use the
+// Redfish client without making any Redfish API calls or requiring the appropriate Redfish client settings.
+//
+//     Example usage:
+//         client := redfishutils.NewClient()
+//         client.On("SystemPowerOff").Return(<return values>)
+//
+//         err := client.SystemPowerOff(<args>)
+func (m *MockClient) SystemPowerOff(ctx context.Context, systemID string) error {
+	args := m.Called(ctx, systemID)
+	return args.Error(0)
+}
+
 // SystemPowerStatus provides a stubbed method that can be mocked to test functions that use the
 // Redfish client without making any Redfish API calls or requiring the appropriate Redfish client settings.
 //

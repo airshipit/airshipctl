@@ -25,6 +25,9 @@ func NewRemoteCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comma
 		Short: "Control remote entities, i.e. hosts.",
 	}
 
+	powerOffCmd := NewPowerOffCommand(rootSettings)
+	remoteRootCmd.AddCommand(powerOffCmd)
+
 	powerStatusCmd := NewPowerStatusCommand(rootSettings)
 	remoteRootCmd.AddCommand(powerStatusCmd)
 

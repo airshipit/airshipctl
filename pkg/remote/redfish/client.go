@@ -146,6 +146,16 @@ func (c *Client) SetVirtualMedia(ctx context.Context, isoPath string) error {
 	return ScreenRedfishError(httpResp, err)
 }
 
+// SystemPowerOff shuts down a host.
+func (c *Client) SystemPowerOff(ctx context.Context, systemID string) error {
+	resetReq := redfishClient.ResetRequestBody{}
+	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
+
+	_, httpResp, err := c.redfishAPI.ResetSystem(ctx, systemID, resetReq)
+
+	return ScreenRedfishError(httpResp, err)
+}
+
 // SystemPowerStatus retrieves the power status of a host as a human-readable string.
 func (c *Client) SystemPowerStatus(ctx context.Context, systemID string) (string, error) {
 	computerSystem, httpResp, err := c.redfishAPI.GetSystem(ctx, systemID)
