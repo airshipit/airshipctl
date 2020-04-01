@@ -200,6 +200,16 @@ func (c *Client) SystemPowerOff(ctx context.Context) error {
 	return ScreenRedfishError(httpResp, err)
 }
 
+// SystemPowerOn powers on a host.
+func (c *Client) SystemPowerOn(ctx context.Context) error {
+	resetReq := redfishClient.ResetRequestBody{}
+	resetReq.ResetType = redfishClient.RESETTYPE_ON
+
+	_, httpResp, err := c.RedfishAPI.ResetSystem(ctx, c.nodeID, resetReq)
+
+	return ScreenRedfishError(httpResp, err)
+}
+
 // SystemPowerStatus retrieves the power status of a host as a human-readable string.
 func (c *Client) SystemPowerStatus(ctx context.Context) (string, error) {
 	computerSystem, httpResp, err := c.RedfishAPI.GetSystem(ctx, c.nodeID)

@@ -38,6 +38,9 @@ func NewBaremetalCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Co
 	powerOffCmd := NewPowerOffCommand(rootSettings)
 	cmd.AddCommand(powerOffCmd)
 
+	powerOnCmd := NewPowerOnCommand(rootSettings)
+	cmd.AddCommand(powerOnCmd)
+
 	powerStatusCmd := NewPowerStatusCommand(rootSettings)
 	cmd.AddCommand(powerStatusCmd)
 
