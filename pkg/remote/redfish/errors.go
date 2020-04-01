@@ -42,7 +42,7 @@ func ScreenRedfishError(httpResp *http.Response, clientErr error) error {
 	// NOTE(drewwalters96): clientErr may not be nil even though the request was successful. The HTTP status code
 	// has to be verified for success on each request. The Redfish client uses HTTP codes 200 and 204 to indicate
 	// success.
-	if httpResp != nil && httpResp.StatusCode != 200 && httpResp.StatusCode != 204 {
+	if httpResp != nil && (httpResp.StatusCode < http.StatusOK || httpResp.StatusCode > http.StatusNoContent) {
 		if clientErr == nil {
 			return ErrRedfishClient{Message: http.StatusText(httpResp.StatusCode)}
 		}
@@ -57,6 +57,8 @@ func ScreenRedfishError(httpResp *http.Response, clientErr error) error {
 			// No JSON response included; use generic error text.
 			return ErrRedfishClient{Message: err.Error()}
 		}
+
+		return ErrRedfishClient{Message: resp.Error.Message}
 	} else if httpResp == nil {
 		return ErrRedfishClient{Message: "HTTP request failed. Please try again."}
 	}
