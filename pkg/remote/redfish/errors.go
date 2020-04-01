@@ -39,29 +39,32 @@ func (e ErrOperationRetriesExceeded) Error() string {
 
 // ScreenRedfishError provides detailed error checking on a Redfish client response.
 func ScreenRedfishError(httpResp *http.Response, clientErr error) error {
-	// NOTE(drewwalters96): clientErr may not be nil even though the request was successful. The HTTP status code
-	// has to be verified for success on each request. The Redfish client uses HTTP codes 200 and 204 to indicate
-	// success.
-	if httpResp != nil && (httpResp.StatusCode < http.StatusOK || httpResp.StatusCode > http.StatusNoContent) {
-		if clientErr == nil {
-			return ErrRedfishClient{Message: http.StatusText(httpResp.StatusCode)}
-		}
-
-		oAPIErr, ok := clientErr.(redfishClient.GenericOpenAPIError)
-		if !ok {
-			return ErrRedfishClient{Message: "Unable to decode client error."}
-		}
-
-		var resp redfishClient.RedfishError
-		if err := json.Unmarshal(oAPIErr.Body(), &resp); err != nil {
-			// No JSON response included; use generic error text.
-			return ErrRedfishClient{Message: err.Error()}
-		}
-
-		return ErrRedfishClient{Message: resp.Error.Message}
-	} else if httpResp == nil {
+	if httpResp == nil {
 		return ErrRedfishClient{Message: "HTTP request failed. Please try again."}
 	}
 
-	return nil
+	// NOTE(drewwalters96): clientErr may not be nil even though the request was successful. The HTTP status code
+	// has to be verified for success on each request. The Redfish client uses HTTP codes 200 and 204 to indicate
+	// success.
+	if httpResp.StatusCode >= http.StatusOK && httpResp.StatusCode <= http.StatusNoContent {
+		// This range of status codes indicate success
+		return nil
+	}
+
+	if clientErr == nil {
+		return ErrRedfishClient{Message: http.StatusText(httpResp.StatusCode)}
+	}
+
+	oAPIErr, ok := clientErr.(redfishClient.GenericOpenAPIError)
+	if !ok {
+		return ErrRedfishClient{Message: "Unable to decode client error."}
+	}
+
+	var resp redfishClient.RedfishError
+	if err := json.Unmarshal(oAPIErr.Body(), &resp); err != nil {
+		// No JSON response included; use generic error text.
+		return ErrRedfishClient{Message: err.Error()}
+	}
+
+	return ErrRedfishClient{Message: resp.Error.Message}
 }
