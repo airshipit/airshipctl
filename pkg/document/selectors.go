@@ -1,6 +1,7 @@
 package document
 
 import (
+	"fmt"
 	"strings"
 
 	"sigs.k8s.io/kustomize/v3/pkg/gvk"
@@ -62,6 +63,39 @@ func (s Selector) ByAnnotation(annotationSelector string) Selector {
 		s.AnnotationSelector = annotationSelector
 	}
 	return s
+}
+
+// String is a convenience function which dumps all relevant information about a Selector in the following format:
+// [Key1=Value1, Key2=Value2, ...]
+func (s Selector) String() string {
+	var components []string
+	if s.Group != "" {
+		components = append(components, fmt.Sprintf("Group=%q", s.Group))
+	}
+	if s.Version != "" {
+		components = append(components, fmt.Sprintf("Version=%q", s.Version))
+	}
+	if s.Kind != "" {
+		components = append(components, fmt.Sprintf("Kind=%q", s.Kind))
+	}
+	if s.Namespace != "" {
+		components = append(components, fmt.Sprintf("Namespace=%q", s.Namespace))
+	}
+	if s.Name != "" {
+		components = append(components, fmt.Sprintf("Name=%q", s.Name))
+	}
+	if s.AnnotationSelector != "" {
+		components = append(components, fmt.Sprintf("Annotations=%q", s.AnnotationSelector))
+	}
+	if s.LabelSelector != "" {
+		components = append(components, fmt.Sprintf("Labels=%q", s.LabelSelector))
+	}
+
+	if len(components) == 0 {
+		return "No selection conditions specified"
+	}
+
+	return fmt.Sprintf("[%s]", strings.Join(components, ", "))
 }
 
 // NewEphemeralCloudDataSelector returns selector to get BaremetalHost for ephemeral node

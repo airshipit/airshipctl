@@ -78,3 +78,41 @@ func TestSelectorsSkip(t *testing.T) {
 		}
 	})
 }
+
+func TestSelectorString(t *testing.T) {
+	tests := []struct {
+		name     string
+		selector document.Selector
+		expected string
+	}{
+		{
+			name:     "unconditional",
+			selector: document.Selector{},
+			expected: "No selection conditions specified",
+		},
+		{
+			name:     "by-name",
+			selector: document.NewSelector().ByName("foo"),
+			expected: `[Name="foo"]`,
+		},
+		{
+			name: "by-all",
+			selector: document.NewSelector().
+				ByGvk("testGroup", "testVersion", "testKind").
+				ByNamespace("testNamespace").
+				ByName("testName").
+				ByAnnotation("testAnnotation=true").
+				ByLabel("testLabel=true"),
+			expected: `[Group="testGroup", Version="testVersion", Kind="testKind", ` +
+				`Namespace="testNamespace", Name="testName", ` +
+				`Annotations="testAnnotation=true", Labels="testLabel=true"]`,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, tt.selector.String())
+		})
+	}
+}
