@@ -146,6 +146,16 @@ func (c *Client) SetVirtualMedia(ctx context.Context, isoPath string) error {
 	return ScreenRedfishError(httpResp, err)
 }
 
+// SystemPowerStatus retrieves the power status of a host as a human-readable string.
+func (c *Client) SystemPowerStatus(ctx context.Context, systemID string) (string, error) {
+	computerSystem, httpResp, err := c.redfishAPI.GetSystem(ctx, systemID)
+	if err = ScreenRedfishError(httpResp, err); err != nil {
+		return "", err
+	}
+
+	return string(computerSystem.PowerState), nil
+}
+
 // NewClient returns a client with the capability to make Redfish requests.
 func NewClient(ephemeralNodeID string,
 	isoPath string,

@@ -32,7 +32,7 @@ const (
 // Adapter bridges the gap between out-of-band clients. It can hold any type of OOB client, e.g. Redfish.
 type Adapter struct {
 	OOBClient    Client
-	context      context.Context
+	Context      context.Context
 	remoteConfig *config.RemoteDirect
 	remoteURL    string
 	username     string
@@ -70,7 +70,7 @@ func (a *Adapter) configureClient(remoteURL string) error {
 			}
 		}
 
-		a.context, a.OOBClient, err = redfish.NewClient(
+		a.Context, a.OOBClient, err = redfish.NewClient(
 			nodeID,
 			a.remoteConfig.IsoURL,
 			baseURL,
@@ -136,7 +136,7 @@ func (a *Adapter) DoRemoteDirect() error {
 	alog.Debugf("Using Remote Endpoint: %q", a.remoteURL)
 
 	/* Load ISO in manager's virtual media */
-	err := a.OOBClient.SetVirtualMedia(a.context, a.remoteConfig.IsoURL)
+	err := a.OOBClient.SetVirtualMedia(a.Context, a.remoteConfig.IsoURL)
 	if err != nil {
 		return err
 	}
@@ -144,13 +144,13 @@ func (a *Adapter) DoRemoteDirect() error {
 	alog.Debugf("Successfully loaded virtual media: %q", a.remoteConfig.IsoURL)
 
 	/* Set system's bootsource to selected media */
-	err = a.OOBClient.SetEphemeralBootSourceByType(a.context)
+	err = a.OOBClient.SetEphemeralBootSourceByType(a.Context)
 	if err != nil {
 		return err
 	}
 
 	/* Reboot system */
-	err = a.OOBClient.RebootSystem(a.context, a.OOBClient.EphemeralNodeID())
+	err = a.OOBClient.RebootSystem(a.Context, a.OOBClient.EphemeralNodeID())
 	if err != nil {
 		return err
 	}
@@ -164,7 +164,7 @@ func (a *Adapter) DoRemoteDirect() error {
 // out-of-band client.
 func NewAdapter(settings *environment.AirshipCTLSettings) (*Adapter, error) {
 	a := &Adapter{}
-	a.context = context.Background()
+	a.Context = context.Background()
 	err := a.initializeAdapter(settings)
 	if err != nil {
 		return a, err

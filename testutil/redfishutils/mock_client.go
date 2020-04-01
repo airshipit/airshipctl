@@ -82,6 +82,19 @@ func (m *MockClient) SetVirtualMedia(ctx context.Context, isoPath string) error 
 	return args.Error(0)
 }
 
+// SystemPowerStatus provides a stubbed method that can be mocked to test functions that use the
+// Redfish client without making any Redfish API calls or requiring the appropriate Redfish client settings.
+//
+//     Example usage:
+//         client := redfishutils.NewClient()
+//         client.On("SystemPowerStatus").Return(<return values>)
+//
+//         err := client.SystemPowerStatus(<args>)
+func (m *MockClient) SystemPowerStatus(ctx context.Context, systemID string) (string, error) {
+	args := m.Called(ctx, systemID)
+	return args.String(0), args.Error(1)
+}
+
 // NewClient returns a mocked Redfish client in order to test functions that use the Redfish client without making any
 // Redfish API calls.
 func NewClient(ephemeralNodeID string, isoPath string, redfishURL string, insecure bool,

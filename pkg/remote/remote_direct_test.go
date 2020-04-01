@@ -103,13 +103,13 @@ func TestDoRemoteDirectRedfish(t *testing.T) {
 	ctx, rMock, err := redfishutils.NewClient(systemID, isoURL, redfishURL, false, false, "admin", "password")
 	assert.NoError(t, err)
 
-	rMock.On("SetVirtualMedia", a.context, isoURL).Times(1).Return(nil)
-	rMock.On("SetEphemeralBootSourceByType", a.context).Times(1).Return(nil)
+	rMock.On("SetVirtualMedia", a.Context, isoURL).Times(1).Return(nil)
+	rMock.On("SetEphemeralBootSourceByType", a.Context).Times(1).Return(nil)
 	rMock.On("EphemeralNodeID").Times(1).Return(systemID)
-	rMock.On("RebootSystem", a.context, systemID).Times(1).Return(nil)
+	rMock.On("RebootSystem", a.Context, systemID).Times(1).Return(nil)
 
 	// Swap the redfish client initialized by the remote direct adapter with the above mocked client
-	a.context = ctx
+	a.Context = ctx
 	a.OOBClient = rMock
 
 	err = a.DoRemoteDirect()
@@ -131,13 +131,13 @@ func TestDoRemoteDirectRedfishVirtualMediaError(t *testing.T) {
 	assert.NoError(t, err)
 
 	expectedErr := redfish.ErrRedfishClient{Message: "Unable to set virtual media."}
-	rMock.On("SetVirtualMedia", a.context, isoURL).Times(1).Return(expectedErr)
-	rMock.On("SetEphemeralBootSourceByType", a.context).Times(1).Return(nil)
+	rMock.On("SetVirtualMedia", a.Context, isoURL).Times(1).Return(expectedErr)
+	rMock.On("SetEphemeralBootSourceByType", a.Context).Times(1).Return(nil)
 	rMock.On("EphemeralNodeID").Times(1).Return(systemID)
-	rMock.On("RebootSystem", a.context, systemID).Times(1).Return(nil)
+	rMock.On("RebootSystem", a.Context, systemID).Times(1).Return(nil)
 
 	// Swap the redfish client initialized by the remote direct adapter with the above mocked client
-	a.context = ctx
+	a.Context = ctx
 	a.OOBClient = rMock
 
 	err = a.DoRemoteDirect()
@@ -159,15 +159,15 @@ func TestDoRemoteDirectRedfishBootSourceError(t *testing.T) {
 	ctx, rMock, err := redfishutils.NewClient(systemID, isoURL, redfishURL, false, false, "admin", "password")
 	assert.NoError(t, err)
 
-	rMock.On("SetVirtualMedia", a.context, isoURL).Times(1).Return(nil)
+	rMock.On("SetVirtualMedia", a.Context, isoURL).Times(1).Return(nil)
 
 	expectedErr := redfish.ErrRedfishClient{Message: "Unable to set boot source."}
-	rMock.On("SetEphemeralBootSourceByType", a.context).Times(1).Return(expectedErr)
+	rMock.On("SetEphemeralBootSourceByType", a.Context).Times(1).Return(expectedErr)
 	rMock.On("EphemeralNodeID").Times(1).Return(systemID)
-	rMock.On("RebootSystem", a.context, systemID).Times(1).Return(nil)
+	rMock.On("RebootSystem", a.Context, systemID).Times(1).Return(nil)
 
 	// Swap the redfish client initialized by the remote direct adapter with the above mocked client
-	a.context = ctx
+	a.Context = ctx
 	a.OOBClient = rMock
 
 	err = a.DoRemoteDirect()
@@ -189,15 +189,15 @@ func TestDoRemoteDirectRedfishRebootError(t *testing.T) {
 	ctx, rMock, err := redfishutils.NewClient(systemID, isoURL, redfishURL, false, false, "admin", "password")
 	assert.NoError(t, err)
 
-	rMock.On("SetVirtualMedia", a.context, isoURL).Times(1).Return(nil)
-	rMock.On("SetEphemeralBootSourceByType", a.context).Times(1).Return(nil)
+	rMock.On("SetVirtualMedia", a.Context, isoURL).Times(1).Return(nil)
+	rMock.On("SetEphemeralBootSourceByType", a.Context).Times(1).Return(nil)
 	rMock.On("EphemeralNodeID").Times(1).Return(systemID)
 
 	expectedErr := redfish.ErrRedfishClient{Message: "Unable to set boot source."}
-	rMock.On("RebootSystem", a.context, systemID).Times(1).Return(expectedErr)
+	rMock.On("RebootSystem", a.Context, systemID).Times(1).Return(expectedErr)
 
 	// Swap the redfish client initialized by the remote direct adapter with the above mocked client
-	a.context = ctx
+	a.Context = ctx
 	a.OOBClient = rMock
 
 	err = a.DoRemoteDirect()

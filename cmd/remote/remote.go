@@ -16,7 +16,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/environment"
-	"opendev.org/airship/airshipctl/pkg/errors"
 )
 
 // NewRemoteCommand creates a new command that provides functionality to control remote entities.
@@ -24,10 +23,10 @@ func NewRemoteCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comma
 	remoteRootCmd := &cobra.Command{
 		Use:   "remote",
 		Short: "Control remote entities, i.e. hosts.",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return errors.ErrNotImplemented{}
-		},
 	}
+
+	powerStatusCmd := NewPowerStatusCommand(rootSettings)
+	remoteRootCmd.AddCommand(powerStatusCmd)
 
 	return remoteRootCmd
 }
