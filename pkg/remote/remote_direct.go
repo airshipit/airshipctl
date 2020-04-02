@@ -23,6 +23,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/environment"
 	alog "opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
+	redfishDell "opendev.org/airship/airshipctl/pkg/remote/redfish/vendors/dell"
 )
 
 // Adapter bridges the gap between out-of-band clients. It can hold any type of OOB client, e.g. Redfish.
@@ -38,9 +39,7 @@ type Adapter struct {
 // configureClient retrieves a client for remoteDirect requests based on the RemoteType in the Airship config file.
 func (a *Adapter) configureClient(remoteURL string) error {
 	switch a.remoteConfig.RemoteType {
-	case redfish.ClientType:
-		alog.Debug("Remote type redfish")
-
+	case redfish.ClientType, redfishDell.ClientType:
 		rfURL, err := url.Parse(remoteURL)
 		if err != nil {
 			return err
@@ -66,16 +65,29 @@ func (a *Adapter) configureClient(remoteURL string) error {
 			}
 		}
 
-		a.Context, a.OOBClient, err = redfish.NewClient(
-			nodeID,
-			a.remoteConfig.IsoURL,
-			baseURL,
-			a.remoteConfig.Insecure,
-			a.remoteConfig.UseProxy,
-			a.username,
-			a.password)
+		if a.remoteConfig.RemoteType == redfishDell.ClientType {
+			alog.Debug("Remote type: Redfish for Integrated Dell Remote Access Controller (iDrac) systems")
+			a.Context, a.OOBClient, err = redfishDell.NewClient(
+				nodeID,
+				a.remoteConfig.IsoURL,
+				baseURL,
+				a.remoteConfig.Insecure,
+				a.remoteConfig.UseProxy,
+				a.username,
+				a.password)
+		} else {
+			alog.Debug("Remote type: Redfish")
+			a.Context, a.OOBClient, err = redfish.NewClient(
+				nodeID,
+				a.remoteConfig.IsoURL,
+				baseURL,
+				a.remoteConfig.Insecure,
+				a.remoteConfig.UseProxy,
+				a.username,
+				a.password)
+		}
+
 		if err != nil {
-			alog.Debugf("redfish remotedirect client creation failed")
 			return err
 		}
 	default:

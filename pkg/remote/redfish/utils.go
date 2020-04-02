@@ -29,10 +29,18 @@ const (
 	URLSchemeSeparator = "+"
 )
 
+// GetManagerID retrieves the manager ID for a redfish system.
+func GetManagerID(ctx context.Context, api redfishAPI.RedfishAPI, systemID string) (string, error) {
+	system, _, err := api.GetSystem(ctx, systemID)
+	if err != nil {
+		return "", err
+	}
+
+	return GetResourceIDFromURL(system.Links.ManagedBy[0].OdataId), nil
+}
+
 // GetResourceIDFromURL returns a parsed Redfish resource ID
 // from the Redfish URL
-// Redfish Id ref is a URI which contains resource Id
-// as the last part.
 func GetResourceIDFromURL(refURL string) string {
 	u, err := url.Parse(refURL)
 	if err != nil {
@@ -59,7 +67,7 @@ func IsIDInList(idRefList []redfishClient.IdRef, id string) bool {
 
 // GetVirtualMediaID retrieves the ID of a Redfish virtual media resource if it supports type "CD" or "DVD".
 func GetVirtualMediaID(ctx context.Context, api redfishAPI.RedfishAPI, systemID string) (string, string, error) {
-	managerID, err := getManagerID(ctx, api, systemID)
+	managerID, err := GetManagerID(ctx, api, systemID)
 	if err != nil {
 		return "", "", err
 	}
@@ -118,13 +126,4 @@ func ScreenRedfishError(httpResp *http.Response, clientErr error) error {
 	}
 
 	return ErrRedfishClient{Message: resp.Error.Message}
-}
-
-func getManagerID(ctx context.Context, api redfishAPI.RedfishAPI, systemID string) (string, error) {
-	system, _, err := api.GetSystem(ctx, systemID)
-	if err != nil {
-		return "", err
-	}
-
-	return GetResourceIDFromURL(system.Links.ManagedBy[0].OdataId), nil
 }

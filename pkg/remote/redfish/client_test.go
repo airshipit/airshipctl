@@ -78,7 +78,7 @@ func TestRebootSystem(t *testing.T) {
 		Return(redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_ON}, httpResp, nil)
 
 	// Replace normal API client with mocked API client
-	client.redfishAPI = m
+	client.RedfishAPI = m
 
 	err = client.RebootSystem(ctx, ephemeralNodeID)
 	assert.NoError(t, err)
@@ -99,7 +99,7 @@ func TestRebootSystemShutdownError(t *testing.T) {
 		&http.Response{StatusCode: 401}, redfishClient.GenericOpenAPIError{})
 
 	// Replace normal API client with mocked API client
-	client.redfishAPI = m
+	client.RedfishAPI = m
 
 	err = client.RebootSystem(ctx, ephemeralNodeID)
 	_, ok := err.(ErrRedfishClient)
@@ -133,7 +133,7 @@ func TestRebootSystemStartupError(t *testing.T) {
 		&http.Response{StatusCode: 401}, redfishClient.GenericOpenAPIError{})
 
 	// Replace normal API client with mocked API client
-	client.redfishAPI = m
+	client.RedfishAPI = m
 
 	err = client.RebootSystem(ctx, systemID)
 	_, ok := err.(ErrRedfishClient)
@@ -160,7 +160,7 @@ func TestRebootSystemTimeout(t *testing.T) {
 		Return(redfishClient.ComputerSystem{}, &http.Response{StatusCode: 200}, nil)
 
 	// Replace normal API client with mocked API client
-	client.redfishAPI = m
+	client.RedfishAPI = m
 
 	err = client.RebootSystem(ctx, systemID)
 	assert.Equal(t, ErrOperationRetriesExceeded{}, err)
@@ -178,7 +178,7 @@ func TestSetEphemeralBootSourceByTypeGetSystemError(t *testing.T) {
 		&http.Response{StatusCode: 500}, redfishClient.GenericOpenAPIError{})
 
 	// Replace normal API client with mocked API client
-	client.redfishAPI = m
+	client.RedfishAPI = m
 
 	err = client.SetEphemeralBootSourceByType(ctx)
 	assert.Error(t, err)
@@ -201,7 +201,7 @@ func TestSetEphemeralBootSourceByTypeSetSystemError(t *testing.T) {
 		redfishClient.ComputerSystem{}, &http.Response{StatusCode: 401}, redfishClient.GenericOpenAPIError{})
 
 	// Replace normal API client with mocked API client
-	client.redfishAPI = m
+	client.RedfishAPI = m
 
 	err = client.SetEphemeralBootSourceByType(ctx)
 	assert.Error(t, err)
@@ -228,7 +228,7 @@ func TestSetEphemeralBootSourceByTypeBootSourceUnavailable(t *testing.T) {
 		Return(testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
 
 	// Replace normal API client with mocked API client
-	client.redfishAPI = m
+	client.RedfishAPI = m
 
 	err = client.SetEphemeralBootSourceByType(ctx)
 	_, ok := err.(ErrRedfishClient)
@@ -247,7 +247,7 @@ func TestSetVirtualMediaGetSystemError(t *testing.T) {
 		nil, redfishClient.GenericOpenAPIError{})
 
 	// Replace normal API client with mocked API client
-	client.redfishAPI = m
+	client.RedfishAPI = m
 
 	err = client.SetVirtualMedia(ctx, client.isoPath)
 	assert.Error(t, err)
@@ -271,7 +271,7 @@ func TestSetVirtualMediaInsertVirtualMediaError(t *testing.T) {
 		redfishClient.RedfishError{}, &http.Response{StatusCode: 500}, redfishClient.GenericOpenAPIError{})
 
 	// Replace normal API client with mocked API client
-	client.redfishAPI = m
+	client.RedfishAPI = m
 
 	err = client.SetVirtualMedia(ctx, client.isoPath)
 	_, ok := err.(ErrRedfishClient)
