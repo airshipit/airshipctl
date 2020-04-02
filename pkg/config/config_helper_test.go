@@ -117,3 +117,26 @@ func TestRunUseContext(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestRunSetManifest(t *testing.T) {
+	t.Run("testAddManifest", func(t *testing.T) {
+		conf := testutil.DummyConfig()
+		dummyManifestOptions := testutil.DummyManifestOptions()
+		dummyManifestOptions.Name = "test_manifest"
+
+		modified, err := config.RunSetManifest(dummyManifestOptions, conf, false)
+		assert.NoError(t, err)
+		assert.False(t, modified)
+	})
+
+	t.Run("testModifyManifest", func(t *testing.T) {
+		conf := testutil.DummyConfig()
+		dummyManifestOptions := testutil.DummyManifestOptions()
+		dummyManifestOptions.TargetPath = "/tmp/default"
+
+		modified, err := config.RunSetManifest(dummyManifestOptions, conf, false)
+		assert.NoError(t, err)
+		assert.True(t, modified)
+		assert.Equal(t, "/tmp/default", conf.Manifests["dummy_manifest"].TargetPath)
+	})
+}

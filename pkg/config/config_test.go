@@ -748,3 +748,13 @@ func TestManagementConfigurationByNameDoesNotExist(t *testing.T) {
 	_, err := conf.GetManagementConfiguration(fmt.Sprintf("%s-test", config.AirshipDefaultContext))
 	assert.Error(t, err)
 }
+
+func TestGetManifests(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	manifests := conf.GetManifests()
+	require.NotNil(t, manifests)
+
+	assert.EqualValues(t, manifests[0].PrimaryRepositoryName, "primary")
+}

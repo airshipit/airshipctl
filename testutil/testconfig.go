@@ -264,6 +264,21 @@ func DummyManagementConfiguration() *config.ManagementConfiguration {
 	}
 }
 
+// DummyManifestOptions creates ManifestOptions config object
+// for unit testing
+func DummyManifestOptions() *config.ManifestOptions {
+	return &config.ManifestOptions{
+		Name:       "dummy_manifest",
+		SubPath:    "manifests/dummy_site",
+		TargetPath: "/tmp/dummy_site",
+		IsPrimary:  true,
+		RepoName:   "dummy_repo",
+		URL:        "https://github.com/treasuremap/dummy_site",
+		Branch:     "master",
+		Force:      true,
+	}
+}
+
 const (
 	testConfigYAML = `apiVersion: airshipit.org/v1alpha1
 bootstrapInfo:

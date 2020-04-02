@@ -19,6 +19,8 @@ package config
 import (
 	"fmt"
 	"os"
+
+	"opendev.org/airship/airshipctl/pkg/errors"
 )
 
 // AuthInfoOptions holds all configurable options for
@@ -53,6 +55,21 @@ type ClusterOptions struct {
 	InsecureSkipTLSVerify bool
 	CertificateAuthority  string
 	EmbedCAData           bool
+}
+
+// ManifestOptions holds all configurable options for manifest configuration
+type ManifestOptions struct {
+	Name       string
+	RepoName   string
+	URL        string
+	Branch     string
+	CommitHash string
+	Tag        string
+	RemoteRef  string
+	Force      bool
+	IsPrimary  bool
+	SubPath    string
+	TargetPath string
 }
 
 // TODO(howell): The following functions are tightly coupled with flags passed
@@ -149,6 +166,31 @@ func checkExists(flagName, path string) error {
 	}
 	if _, err := os.Stat(path); err != nil {
 		return fmt.Errorf("could not read %s data from '%s': %v", flagName, path, err)
+	}
+	return nil
+}
+
+// Validate checks for the possible manifest option values and returns
+// Error when invalid value or incompatible choice of values given
+func (o *ManifestOptions) Validate() error {
+	if o.Name == "" {
+		return fmt.Errorf("you must specify a non-empty Manifest name")
+	}
+	if o.RemoteRef != "" {
+		return fmt.Errorf("Repository checkout by RemoteRef is not yet implemented\n%w", errors.ErrNotImplemented{})
+	}
+	if o.IsPrimary && o.RepoName == "" {
+		return ErrMissingRepositoryName{}
+	}
+	possibleValues := [3]string{o.CommitHash, o.Branch, o.Tag}
+	var count int
+	for _, val := range possibleValues {
+		if val != "" {
+			count++
+		}
+	}
+	if count > 1 {
+		return ErrMutuallyExclusiveCheckout{}
 	}
 	return nil
 }

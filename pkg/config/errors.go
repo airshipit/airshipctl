@@ -70,6 +70,43 @@ func (e ErrMutuallyExclusiveCheckout) Error() string {
 	return "Checkout mutually exclusive, use either: commit-hash, branch or tag."
 }
 
+// ErrRepositoryNotFound is returned if repository is empty
+// when using in set-manifest
+type ErrRepositoryNotFound struct {
+	Name string
+}
+
+func (e ErrRepositoryNotFound) Error() string {
+	return fmt.Sprintf("Repository %q not found.", e.Name)
+}
+
+// ErrMissingRepositoryName is returned if repository name is empty
+// when using in set-manifest
+type ErrMissingRepositoryName struct {
+}
+
+func (e ErrMissingRepositoryName) Error() string {
+	return "Missing repository name."
+}
+
+// ErrMissingRepoURL is returned if repository is empty
+// when using --primary in set-manifest
+type ErrMissingRepoURL struct {
+}
+
+func (e ErrMissingRepoURL) Error() string {
+	return "A valid URL should be specified."
+}
+
+// ErrMissingRepoCheckoutOptions is returned if repository checkout
+// options is empty in set-manifest
+type ErrMissingRepoCheckoutOptions struct {
+}
+
+func (e ErrMissingRepoCheckoutOptions) Error() string {
+	return "Missing repository checkout options."
+}
+
 // ErrBootstrapInfoNotFound returned if bootstrap
 // information is not found for cluster
 type ErrBootstrapInfoNotFound struct {

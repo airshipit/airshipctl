@@ -1,0 +1,4 @@
+primaryRepositoryName: foo_primary_repo
+subPath: ""
+targetPath: foo_target_path
+

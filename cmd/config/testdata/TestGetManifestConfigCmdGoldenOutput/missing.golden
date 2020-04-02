@@ -1,0 +1,19 @@
+Error: Missing configuration: Manifest with name 'manifestMissing'
+Usage:
+  get-manifest NAME [flags]
+
+Aliases:
+  get-manifest, get-manifests
+
+Examples:
+
+# List all the manifests airshipctl knows about
+airshipctl config get-manifests
+
+# Display a specific manifest
+airshipctl config get-manifest e2e
+
+
+Flags:
+  -h, --help   help for get-manifest
+
