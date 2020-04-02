@@ -32,18 +32,9 @@ func GetCloudData(docBundle document.Bundle) (userData []byte, netConf []byte, e
 func getUserData(docBundle document.Bundle) ([]byte, error) {
 	// find the user-data document
 	selector := document.NewEphemeralCloudDataSelector()
-	docs, err := docBundle.Select(selector)
+	userDataDoc, err := docBundle.SelectOne(selector)
 	if err != nil {
 		return nil, err
-	}
-	var userDataDoc document.Document = &document.Factory{}
-	switch numDocsFound := len(docs); {
-	case numDocsFound == 0:
-		return nil, document.ErrDocNotFound{Selector: selector}
-	case numDocsFound > 1:
-		return nil, document.ErrMultipleDocsFound{Selector: selector}
-	case numDocsFound == 1:
-		userDataDoc = docs[0]
 	}
 
 	// finally, try and retrieve the data we want from the document
@@ -58,44 +49,24 @@ func getUserData(docBundle document.Bundle) ([]byte, error) {
 func getNetworkData(docBundle document.Bundle) ([]byte, error) {
 	// find the baremetal host indicated as the ephemeral node
 	selector := document.NewEphemeralBMHSelector()
-	docs, err := docBundle.Select(selector)
+	d, err := docBundle.SelectOne(selector)
 	if err != nil {
 		return nil, err
-	}
-
-	var bmhDoc document.Document = &document.Factory{}
-	switch numDocsFound := len(docs); {
-	case numDocsFound == 0:
-		return nil, document.ErrDocNotFound{Selector: selector}
-	case numDocsFound > 1:
-		return nil, document.ErrMultipleDocsFound{Selector: selector}
-	case numDocsFound == 1:
-		bmhDoc = docs[0]
 	}
 
 	// try and find these documents in our bundle
-	selector, err = document.NewNetworkDataSelector(bmhDoc)
+	selector, err = document.NewNetworkDataSelector(d)
 	if err != nil {
 		return nil, err
 	}
-	docs, err = docBundle.Select(selector)
+	d, err = docBundle.SelectOne(selector)
 
 	if err != nil {
 		return nil, err
-	}
-
-	var networkDataDoc document.Document = &document.Factory{}
-	switch numDocsFound := len(docs); {
-	case numDocsFound == 0:
-		return nil, document.ErrDocNotFound{Selector: selector}
-	case numDocsFound > 1:
-		return nil, document.ErrMultipleDocsFound{Selector: selector}
-	case numDocsFound == 1:
-		networkDataDoc = docs[0]
 	}
 
 	// finally, try and retrieve the data we want from the document
-	netData, err := decodeData(networkDataDoc, networkDataKey)
+	netData, err := decodeData(d, networkDataKey)
 	if err != nil {
 		return nil, err
 	}

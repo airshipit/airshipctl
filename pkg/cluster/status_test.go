@@ -147,11 +147,8 @@ func TestGetStatusForResource(t *testing.T) {
 			testStatusMap, err := cluster.NewStatusMap(bundle)
 			require.NoError(t, err)
 
-			// TODO(howell): Replace with with SelectOne when it becomes available
-			docs, err := bundle.Select(tt.selector)
+			doc, err := bundle.SelectOne(tt.selector)
 			require.NoError(t, err)
-			require.Len(t, docs, 1)
-			doc := docs[0]
 
 			actualStatus, err := testStatusMap.GetStatusForResource(tt.testClient, doc)
 			if tt.err != nil {

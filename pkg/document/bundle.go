@@ -2,7 +2,6 @@ package document
 
 import (
 	"errors"
-	"fmt"
 	"io"
 
 	"sigs.k8s.io/kustomize/v3/k8sdeps/kunstruct"
@@ -178,25 +177,9 @@ func (b *BundleFactory) GetAllDocuments() ([]Document, error) {
 	return docSet, nil
 }
 
-// GetByName finds a document by name, error if more than one document found
-// or if no documents found
+// GetByName finds a document by name
 func (b *BundleFactory) GetByName(name string) (Document, error) {
-	resSet := make([]*resource.Resource, 0, len(b.ResMap.Resources()))
-	for _, res := range b.ResMap.Resources() {
-		if res.GetName() == name {
-			resSet = append(resSet, res)
-		}
-	}
-	// alanmeadows(TODO): improve this and other error potentials by
-	// by adding strongly typed errors
-	switch found := len(resSet); {
-	case found == 0:
-		return &Factory{}, fmt.Errorf("no documents found with name %s", name)
-	case found > 1:
-		return &Factory{}, fmt.Errorf("more than one document found with name %s", name)
-	default:
-		return NewDocument(resSet[0])
-	}
+	return b.SelectOne(NewSelector().ByName(name))
 }
 
 // Select offers an interface to pass a Selector, built on top of kustomize Selector
@@ -239,7 +222,7 @@ func (b *BundleFactory) SelectOne(selector Selector) (Document, error) {
 	case numDocsFound == 0:
 		return nil, ErrDocNotFound{Selector: selector}
 	case numDocsFound > 1:
-		return nil, ErrMultipleDocsFound{Selector: selector}
+		return nil, ErrMultiDocsFound{Selector: selector}
 	}
 	return docSet[0], nil
 }
