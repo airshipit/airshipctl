@@ -94,6 +94,19 @@
         - network: "{{ airship_gate_names.nat_network }}"
         - network: "{{ airship_gate_names.provision_network }}"
 
+- name: install apache2 reverse proxy
+  include_role:
+    name: reverse-proxy
+  vars:
+    reverse_proxy_action: "install"
+    reverse_proxy_hostname: "{{ airship_gate_redfish.hostname }}"
+    reverse_proxy_username: "{{ airship_gate_redfish.username }}"
+    reverse_proxy_password: "{{ airship_gate_redfish.password }}"
+    reverse_proxy_frontend_ip: "{{ airship_gate_redfish.bind_address }}"
+    reverse_proxy_frontend_port: "{{ airship_gate_redfish.secure_port }}"
+    reverse_proxy_backend_ip: "{{ airship_gate_redfish.bind_address }}"
+    reverse_proxy_backend_port: "{{ airship_gate_redfish.port }}"
+
 - name: install and start redfish emulator
   include_role:
     name: redfish-emulator
