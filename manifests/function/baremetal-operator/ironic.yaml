@@ -65,12 +65,7 @@ spec:
           securityContext:
              capabilities:
                add: ["NET_ADMIN"]
-          securityContext:
-             capabilities:
-               add: ["NET_ADMIN"]
           command: ["/bin/runhttpd"]
-          securityContext:
-            privileged: true
           volumeMounts:
               - mountPath: "/shared"
                 name: ironic-storage
