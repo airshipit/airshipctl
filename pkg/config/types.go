@@ -68,7 +68,7 @@ type Config struct {
 	kubeConfig *kubeconfig.Config
 }
 
-// Encapsulates the Cluster Type as an enumeration
+// ClusterPurpose encapsulates the Cluster Type as an enumeration
 type ClusterPurpose struct {
 	// Cluster map of referenceable names to cluster configs
 	ClusterTypes map[string]*Cluster `json:"cluster-type"`
@@ -86,7 +86,7 @@ type Cluster struct {
 	Bootstrap string `json:"bootstrap-info"`
 }
 
-// Modules, generic configuration for modules
+// Modules encapsulates all module configurations
 // Configuration that the Bootstrap Module would need
 // Configuration that the Document Module would need
 // Configuration that the Workflows Module would need
@@ -179,7 +179,7 @@ type RepoCheckout struct {
 	ForceCheckout bool `json:"force"`
 }
 
-// Holds the complex cluster name information
+// ClusterComplexName holds the complex cluster name information
 // Encapsulates the different operations around using it.
 type ClusterComplexName struct {
 	Name string

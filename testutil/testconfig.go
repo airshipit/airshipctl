@@ -58,7 +58,7 @@ func DummyConfig() *config.Config {
 	return conf
 }
 
-// DummyContext , utility function used for tests
+// DummyContext creates a Context config object for unit testing
 func DummyContext() *config.Context {
 	c := config.NewContext()
 	c.NameInKubeconf = "dummy_cluster_ephemeral"
@@ -72,7 +72,7 @@ func DummyContext() *config.Context {
 	return c
 }
 
-// DummyCluster, utility function used for tests
+// DummyCluster creates a Cluster config object for unit testing
 func DummyCluster() *config.Cluster {
 	c := config.NewCluster()
 
@@ -86,7 +86,7 @@ func DummyCluster() *config.Cluster {
 	return c
 }
 
-// DummyManifest , utility function used for tests
+// DummyManifest creates a Manifest config object for unit testing
 func DummyManifest() *config.Manifest {
 	m := config.NewManifest()
 	// Repositories is the map of repository adddressable by a name
@@ -97,7 +97,7 @@ func DummyManifest() *config.Manifest {
 	return m
 }
 
-// DummyRepository, utility function used for tests
+// DummyRepository creates a Repository config object for unit testing
 func DummyRepository() *config.Repository {
 	return &config.Repository{
 		URLString: "http://dummy.url.com/manifests.git",
@@ -112,7 +112,7 @@ func DummyRepository() *config.Repository {
 	}
 }
 
-// DummyRepoAuth , utility function used for tests
+// DummyRepoAuth creates a RepoAuth config object for unit testing
 func DummyRepoAuth() *config.RepoAuth {
 	return &config.RepoAuth{
 		Type:    "ssh-key",
@@ -120,7 +120,8 @@ func DummyRepoAuth() *config.RepoAuth {
 	}
 }
 
-// DummyRepoCheckout, utility function used for checks
+// DummyRepoCheckout creates a RepoCheckout config object
+// for unit testing
 func DummyRepoCheckout() *config.RepoCheckout {
 	return &config.RepoCheckout{
 		Tag:           "v1.0.1",
@@ -128,7 +129,7 @@ func DummyRepoCheckout() *config.RepoCheckout {
 	}
 }
 
-// DummyAuthInfo , utility function used for tests
+// DummyAuthInfo creates a AuthInfo config object for unit testing
 func DummyAuthInfo() *config.AuthInfo {
 	a := config.NewAuthInfo()
 	authinfo := kubeconfig.NewAuthInfo()
@@ -141,7 +142,8 @@ func DummyAuthInfo() *config.AuthInfo {
 	return a
 }
 
-// DummyKubeAuthInfo , utility function used for tests
+// DummyKubeAuthInfo creates a AuthInfo kubeconfig object
+// for unit testing
 func DummyKubeAuthInfo() *kubeconfig.AuthInfo {
 	authinfo := kubeconfig.NewAuthInfo()
 	authinfo.Username = "dummy_username"
@@ -152,14 +154,14 @@ func DummyKubeAuthInfo() *kubeconfig.AuthInfo {
 	return authinfo
 }
 
-// DummyModules , utility function used for tests
+// DummyModules returns Modules config objects for unit testing
 func DummyModules() *config.Modules {
 	m := config.NewModules()
 	m.BootstrapInfo["dummy_bootstrap_config"] = DummyBootstrap()
 	return m
 }
 
-// DummyClusterPurpose , utility function used for tests
+// DummyClusterPurpose creates ClusterPurpose config object for unit testing
 func DummyClusterPurpose() *config.ClusterPurpose {
 	cp := config.NewClusterPurpose()
 	cp.ClusterTypes["ephemeral"] = DummyCluster()
@@ -193,6 +195,8 @@ func InitConfig(t *testing.T) (conf *config.Config, cleanup func(*testing.T)) {
 	return conf, cleanup
 }
 
+// DummyClusterOptions creates ClusterOptions config object
+// for unit testing
 func DummyClusterOptions() *config.ClusterOptions {
 	co := &config.ClusterOptions{}
 	co.Name = "dummy_cluster"
@@ -205,6 +209,8 @@ func DummyClusterOptions() *config.ClusterOptions {
 	return co
 }
 
+// DummyContextOptions creates ContextOptions config object
+// for unit testing
 func DummyContextOptions() *config.ContextOptions {
 	co := &config.ContextOptions{}
 	co.Name = "dummy_context"
@@ -216,6 +222,8 @@ func DummyContextOptions() *config.ContextOptions {
 	return co
 }
 
+// DummyAuthInfoOptions creates AuthInfoOptions config object
+// for unit testing
 func DummyAuthInfoOptions() *config.AuthInfoOptions {
 	authinfo := &config.AuthInfoOptions{}
 	authinfo.Username = "dummy_username"
@@ -226,6 +234,7 @@ func DummyAuthInfoOptions() *config.AuthInfoOptions {
 	return authinfo
 }
 
+// DummyBootstrap creates Bootstrap config object for unit testing
 func DummyBootstrap() *config.Bootstrap {
 	bs := &config.Bootstrap{}
 	cont := config.Container{

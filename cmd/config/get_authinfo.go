@@ -33,8 +33,8 @@ airshipctl config get-credentials
 airshipctl config get-credentials e2e`
 )
 
-// An AuthInfo refers to a particular user for a cluster
 // NewCmdConfigGetAuthInfo returns a Command instance for 'config -AuthInfo' sub command
+// An AuthInfo refers to a particular user for a cluster
 func NewCmdConfigGetAuthInfo(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	o := &config.AuthInfoOptions{}
 	cmd := &cobra.Command{

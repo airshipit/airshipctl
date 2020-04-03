@@ -1,3 +1,15 @@
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package redfish
 
 import (
@@ -17,9 +29,10 @@ const (
 	RedfishURLSchemeSeparator = "+"
 )
 
+// GetResourceIDFromURL returns a parsed Redfish resource ID
+// from the Redfish URL
 // Redfish Id ref is a URI which contains resource Id
-// as the last part. This function extracts resource
-// ID from ID ref
+// as the last part.
 func GetResourceIDFromURL(refURL string) string {
 	u, err := url.Parse(refURL)
 	if err != nil {
@@ -33,7 +46,7 @@ func GetResourceIDFromURL(refURL string) string {
 	return id
 }
 
-// Checks whether an ID exists in Redfish IDref collection
+// IsIDInList checks whether an ID exists in Redfish IDref collection
 func IsIDInList(idRefList []redfishClient.IdRef, id string) bool {
 	for _, r := range idRefList {
 		rID := GetResourceIDFromURL(r.OdataId)
