@@ -12,6 +12,12 @@ spec:
       labels:
         name: metal3-baremetal-operator
     spec:
+      tolerations:
+      # Mark the pod as a critical add-on for rescheduling.
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
       serviceAccountName: metal3-baremetal-operator
       containers:
         - name: baremetal-operator

@@ -1,0 +1,6 @@
+#!/usr/bin/bash
+
+cp -f /shared/httpd.conf /etc/httpd/conf/httpd.conf
+
+/bin/runhealthcheck "httpd" "80" &>/dev/null &
+exec /usr/sbin/httpd -DFOREGROUND

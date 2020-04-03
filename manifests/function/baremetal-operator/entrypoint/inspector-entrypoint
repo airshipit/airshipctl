@@ -1,0 +1,5 @@
+#!/usr/bin/bash
+
+exec /usr/bin/ironic-inspector --config-file /etc/ironic-inspector/inspector-dist.conf \
+	--config-file /shared/inspector.conf \
+	--log-file /shared/log/ironic-inspector/ironic-inspector.log

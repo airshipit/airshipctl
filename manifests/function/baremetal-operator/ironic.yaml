@@ -1,0 +1,118 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ironic
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: ironic
+  template:
+    metadata:
+      labels:
+        name: ironic
+    spec:
+      hostNetwork: true
+      volumes:
+        - name: ironic-storage
+          persistentVolumeClaim:
+           claimName: ironic-pv-claim
+        - name: ironic-config-files
+          configMap:
+            name: ironic-config-files
+            defaultMode: 0644
+        - name: ironic-entrypoints
+          configMap:
+            name: ironic-entrypoints
+            defaultMode: 0700
+        - name: ironic-vars
+          configMap:
+            name: ironic-vars
+            defaultMode: 0644
+      nodeSelector: {}
+      initContainers:
+        - name: init-bootstrap
+          image: "centos"
+          imagePullPolicy: Always
+          command: ['/bin/init-bootstrap']
+          volumeMounts:
+            - name: ironic-storage
+              mountPath: "/shared"
+            - name: ironic-entrypoints
+              mountPath: /bin/init-bootstrap
+              subPath: init-bootstrap
+            - name: ironic-config-files
+              mountPath: /cfg
+            - name: ironic-vars
+              mountPath: /ironic-vars
+      containers:
+        - name: dnsmasq
+          image: "quay.io/metal3-io/ironic:latest"
+          imagePullPolicy: Always
+          command: ["/bin/rundnsmasq"]
+          securityContext:
+            privileged: true
+          volumeMounts:
+              - mountPath: "/shared"
+                name: ironic-storage
+              - name: ironic-entrypoints
+                mountPath: /bin/rundnsmasq
+                subPath: dnsmasq-entrypoint
+        - name: httpd
+          image: "quay.io/metal3-io/ironic:latest"
+          imagePullPolicy: Always
+          securityContext:
+             capabilities:
+               add: ["NET_ADMIN"]
+          securityContext:
+             capabilities:
+               add: ["NET_ADMIN"]
+          command: ["/bin/runhttpd"]
+          securityContext:
+            privileged: true
+          volumeMounts:
+              - mountPath: "/shared"
+                name: ironic-storage
+              - name: ironic-entrypoints
+                mountPath: /bin/runhttpd
+                subPath: httpd-entrypoint
+        - name: mariadb
+          image: "quay.io/metal3-io/ironic:latest"
+          imagePullPolicy: Always
+          command: ["/bin/runmariadb"]
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: "/shared"
+              name: ironic-storage
+            - mountPath: "/var/lib/mysql"
+              name: ironic-storage
+              subPath: mysql
+            - name: ironic-entrypoints
+              mountPath: /bin/runmariadb
+              subPath: mariadb-entrypoint
+        - name: ironic
+          image: "quay.io/metal3-io/ironic:latest"
+          imagePullPolicy: Always
+          command: ["/bin/runironic"]
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: "/shared"
+              name: ironic-storage
+            - name: ironic-entrypoints
+              mountPath: /bin/runironic
+              subPath: ironic-entrypoint
+        - name: ironic-inspector
+          image: "quay.io/metal3-io/ironic-inspector:latest"
+          imagePullPolicy: Always
+          command: ["/bin/runironic-inspector"]
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: "/shared"
+              name: ironic-storage
+            - name: ironic-entrypoints
+              mountPath: /bin/runironic-inspector
+              subPath: inspector-entrypoint

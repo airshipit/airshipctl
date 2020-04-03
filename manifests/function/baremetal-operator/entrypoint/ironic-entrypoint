@@ -1,0 +1,12 @@
+#!/usr/bin/bash
+
+cp -f /shared/ironic.conf /etc/ironic/ironic.conf
+
+ironic-dbsync --config-file /etc/ironic/ironic.conf upgrade
+
+/usr/bin/ironic-conductor &
+/usr/bin/ironic-api &
+
+/bin/runhealthcheck "ironic" &>/dev/null &
+
+sleep infinity
