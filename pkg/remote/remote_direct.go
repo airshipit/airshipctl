@@ -90,7 +90,7 @@ func (a *Adapter) configureClient(remoteURL string) error {
 }
 
 // initializeAdapter retrieves the remote direct configuration defined in the Airship configuration file.
-func (a *Adapter) intializeAdapter(settings *environment.AirshipCTLSettings) error {
+func (a *Adapter) initializeAdapter(settings *environment.AirshipCTLSettings) error {
 	cfg := settings.Config()
 	bootstrapSettings, err := cfg.CurrentContextBootstrapInfo()
 	if err != nil {
@@ -165,7 +165,7 @@ func (a *Adapter) DoRemoteDirect() error {
 func NewAdapter(settings *environment.AirshipCTLSettings) (*Adapter, error) {
 	a := &Adapter{}
 	a.context = context.Background()
-	err := a.intializeAdapter(settings)
+	err := a.initializeAdapter(settings)
 	if err != nil {
 		return a, err
 	}
