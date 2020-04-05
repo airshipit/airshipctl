@@ -10,6 +10,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+docker_config_path: "/etc/docker"
+
+docker_config_log_driver: "journald"
+docker_config_log_opts: {}
+
+docker_config: |
+  {
+    "log-driver": "{{ docker_config_log_driver }}",
+    "log-opts": {{ docker_config_log_opts | to_json }}
+  }
+
 proxy:
   enabled: false
   http:
