@@ -12,6 +12,9 @@ require (
 	github.com/elazarl/goproxy v0.0.0-20190421051319-9d40249d3c2f // indirect
 	github.com/elazarl/goproxy/ext v0.0.0-20190421051319-9d40249d3c2f // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
+	github.com/go-git/go-billy/v5 v5.0.0
+	github.com/go-git/go-git-fixtures/v4 v4.0.1
+	github.com/go-git/go-git/v5 v5.0.0
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc // indirect
 	github.com/imdario/mergo v0.3.7 // indirect
@@ -19,12 +22,6 @@ require (
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/spf13/cobra v0.0.5
 	github.com/stretchr/testify v1.4.0
-	golang.org/x/crypto v0.0.0-20191202143827-86a70503ff7e // indirect
-	golang.org/x/net v0.0.0-20191204025024-5ee1b9f4859a // indirect
-	golang.org/x/sys v0.0.0-20191204072324-ce4227a45e2e // indirect
-	gopkg.in/src-d/go-billy.v4 v4.3.2
-	gopkg.in/src-d/go-git-fixtures.v3 v3.5.0
-	gopkg.in/src-d/go-git.v4 v4.13.1
 	k8s.io/api v0.17.3
 	k8s.io/apiextensions-apiserver v0.17.3
 	k8s.io/apimachinery v0.17.3

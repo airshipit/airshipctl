@@ -17,14 +17,14 @@ package repo
 import (
 	"testing"
 
+	"github.com/go-git/go-billy/v5/memfs"
+	fixtures "github.com/go-git/go-git-fixtures/v4"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/src-d/go-billy.v4/memfs"
-	fixtures "gopkg.in/src-d/go-git-fixtures.v3"
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport"
-	"gopkg.in/src-d/go-git.v4/storage/memory"
 
 	"opendev.org/airship/airshipctl/testutil"
 )
@@ -53,8 +53,6 @@ func (md mockBuilder) ToFetchOptions(transport.AuthMethod) *git.FetchOptions {
 func (md mockBuilder) URL() string { return md.URLString }
 
 func TestDownload(t *testing.T) {
-	err := fixtures.Init()
-	require.NoError(t, err)
 	defer testutil.CleanUpGitFixtures(t)
 
 	fx := fixtures.Basic().One()
@@ -92,8 +90,6 @@ func TestDownload(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	err := fixtures.Init()
-	require.NoError(t, err)
 	defer testutil.CleanUpGitFixtures(t)
 
 	fx := fixtures.Basic().One()
@@ -156,8 +152,6 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestOpen(t *testing.T) {
-	err := fixtures.Init()
-	require.NoError(t, err)
 	defer testutil.CleanUpGitFixtures(t)
 
 	fx := fixtures.Basic().One()
@@ -199,8 +193,6 @@ func TestOpen(t *testing.T) {
 }
 
 func TestCheckout(t *testing.T) {
-	err := fixtures.Init()
-	require.NoError(t, err)
 	defer testutil.CleanUpGitFixtures(t)
 
 	fx := fixtures.Basic().One()

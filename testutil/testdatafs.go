@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	fixtures "github.com/go-git/go-git-fixtures/v4"
 	"github.com/stretchr/testify/require"
-	fixtures "gopkg.in/src-d/go-git-fixtures.v3"
 	fs "sigs.k8s.io/kustomize/api/filesys"
 
 	"opendev.org/airship/airshipctl/pkg/document"

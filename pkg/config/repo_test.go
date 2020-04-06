@@ -35,11 +35,11 @@ const (
 	URLTestName              = "URLTest"
 	StringTestData           = `test-data:
   no-auth:
-    url: https://github.com/src-d/go-git.git
+    url: https://github.com/go-git/go-git.git
     checkout:
       tag: v3.0.0
   ssh-key-auth:
-    url: git@github.com:src-d/go-git.git
+    url: git@github.com:go-git/go-git.git
     auth:
       type: ssh-key
       ssh-key: "testdata/test-key.pem"
