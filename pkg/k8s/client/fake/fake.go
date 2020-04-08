@@ -15,6 +15,7 @@
 package fake
 
 import (
+	apix "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 
@@ -27,9 +28,10 @@ import (
 // per test. Examples of implementations can be found with each interface
 // method.
 type Client struct {
-	MockClientSet     func() kubernetes.Interface
-	MockDynamicClient func() dynamic.Interface
-	MockKubectl       func() kubectl.Interface
+	MockClientSet              func() kubernetes.Interface
+	MockDynamicClient          func() dynamic.Interface
+	MockApiextensionsClientSet func() apix.Interface
+	MockKubectl                func() kubectl.Interface
 }
 
 var _ client.Interface = &Client{}
@@ -64,6 +66,22 @@ func (c Client) ClientSet() kubernetes.Interface {
 // }
 func (c Client) DynamicClient() dynamic.Interface {
 	return c.MockDynamicClient()
+}
+
+// ApiextensionsClientSet is used to get a mocked implementation of an
+// Apiextensions clientset.  To initialize the mocked client to be returned,
+// the MockApiextensionsClientSet method must be implemented, ideally returning a
+// k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/fake.ClientSet.
+//
+// Example:
+//
+// testClient := fake.Client {
+// 	MockApiextensionsClientSet: func() apix.Interface {
+// 		return apix_fake.NewSimpleClientset()
+// 	},
+// }
+func (c Client) ApiextensionsClientSet() apix.Interface {
+	return c.MockApiextensionsClientSet()
 }
 
 // Kubectl is used to get a mocked implementation of a Kubectl client.

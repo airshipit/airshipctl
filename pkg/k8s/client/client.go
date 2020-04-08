@@ -17,8 +17,10 @@ package client
 import (
 	"path/filepath"
 
+	apix "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubectl"
@@ -34,6 +36,7 @@ import (
 type Interface interface {
 	ClientSet() kubernetes.Interface
 	DynamicClient() dynamic.Interface
+	ApiextensionsClientSet() apix.Interface
 
 	Kubectl() kubectl.Interface
 }
@@ -42,6 +45,7 @@ type Interface interface {
 type Client struct {
 	clientSet     kubernetes.Interface
 	dynamicClient dynamic.Interface
+	apixClient    apix.Interface
 
 	kubectl kubectl.Interface
 }
@@ -70,6 +74,17 @@ func NewClient(settings *environment.AirshipCTLSettings) (Interface, error) {
 		return nil, err
 	}
 
+	// kubectl factories can't create CRD clients...
+	config, err := clientcmd.BuildConfigFromFlags("", settings.KubeConfigPath)
+	if err != nil {
+		return nil, err
+	}
+
+	client.apixClient, err = apix.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
 	return client, nil
 }
 
@@ -91,6 +106,16 @@ func (c *Client) DynamicClient() dynamic.Interface {
 // SetDynamicClient setter for DynamicClient interface
 func (c *Client) SetDynamicClient(dynamicClient dynamic.Interface) {
 	c.dynamicClient = dynamicClient
+}
+
+// ApiextensionsV1 getter for ApiextensionsV1 interface
+func (c *Client) ApiextensionsClientSet() apix.Interface {
+	return c.apixClient
+}
+
+// SetApiextensionsV1 setter for ApiextensionsV1 interface
+func (c *Client) SetApiextensionsClientSet(apixClient apix.Interface) {
+	c.apixClient = apixClient
 }
 
 // Kubectl getter for Kubectl interface
