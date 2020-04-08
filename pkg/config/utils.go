@@ -21,6 +21,7 @@ import (
 )
 
 const (
+	// DefaultTestPrimaryRepo holds default repo name
 	DefaultTestPrimaryRepo = "primary"
 )
 
@@ -100,10 +101,12 @@ func NewManifest() *Manifest {
 	}
 }
 
+// NewRepository is a convenience function that returns a new Repository
 func NewRepository() *Repository {
 	return &Repository{}
 }
 
+// NewAuthInfo is a convenience function that returns a new AuthInfo
 func NewAuthInfo() *AuthInfo {
 	return &AuthInfo{}
 }

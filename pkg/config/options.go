@@ -24,6 +24,8 @@ import (
 	"os"
 )
 
+// AuthInfoOptions holds all configurable options for
+// authentication information or credential
 type AuthInfoOptions struct {
 	Name              string
 	ClientCertificate string
@@ -34,6 +36,7 @@ type AuthInfoOptions struct {
 	EmbedCertData     bool
 }
 
+// ContextOptions holds all configurable options for context
 type ContextOptions struct {
 	Name           string
 	ClusterType    string
@@ -45,6 +48,7 @@ type ContextOptions struct {
 	Current        bool
 }
 
+// ClusterOptions holds all configurable options for cluster configuration
 type ClusterOptions struct {
 	Name                  string
 	ClusterType           string
@@ -53,6 +57,9 @@ type ClusterOptions struct {
 	CertificateAuthority  string
 	EmbedCAData           bool
 }
+
+// Validate checks for the possible authentication values and returns
+// Error when invalid value or incompatible choice of values given
 
 // TODO(howell): The following functions are tightly coupled with flags passed
 // on the command line. We should find a way to remove this coupling, since it
@@ -87,6 +94,8 @@ func (o *AuthInfoOptions) Validate() error {
 	return nil
 }
 
+// Validate checks for the possible context option values and returns
+// Error when invalid value or incompatible choice of values given
 func (o *ContextOptions) Validate() error {
 	if !o.Current && o.Name == "" {
 		return errors.New("you must specify a non-empty context name")
@@ -112,6 +121,8 @@ func (o *ContextOptions) Validate() error {
 	return nil
 }
 
+// Validate checks for the possible cluster option values and returns
+// Error when invalid value or incompatible choice of values given
 func (o *ClusterOptions) Validate() error {
 	if o.Name == "" {
 		return errors.New("you must specify a non-empty cluster name")

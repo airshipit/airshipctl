@@ -387,29 +387,43 @@ func (c *Config) String() string {
 	return string(yamlData)
 }
 
+// ToYaml returns a YAML document
+// It serializes the given Config object to a valid YAML document
 func (c *Config) ToYaml() ([]byte, error) {
 	return yaml.Marshal(&c)
 }
 
+// LoadedConfigPath returns the file path of airship config
+// from where the current Config object is created
 func (c *Config) LoadedConfigPath() string {
 	return c.loadedConfigPath
 }
+
+// SetLoadedConfigPath updates the file path of airship config
+// in the Config object
 func (c *Config) SetLoadedConfigPath(lcp string) {
 	c.loadedConfigPath = lcp
 }
 
+// KubeConfigPath returns the file path of the kube config
+// from Config object
 func (c *Config) KubeConfigPath() string {
 	return c.kubeConfigPath
 }
 
+// SetKubeConfigPath updates the file path of the kubeconfig
+// in Config object
 func (c *Config) SetKubeConfigPath(kubeConfigPath string) {
 	c.kubeConfigPath = kubeConfigPath
 }
 
+// KubeConfig returns kube config object from the
+// context of current Config object
 func (c *Config) KubeConfig() *clientcmdapi.Config {
 	return c.kubeConfig
 }
 
+// SetKubeConfig updates kube config in Config object
 func (c *Config) SetKubeConfig(kubeConfig *clientcmdapi.Config) {
 	c.kubeConfig = kubeConfig
 }
@@ -428,6 +442,8 @@ func (c *Config) GetCluster(cName, cType string) (*Cluster, error) {
 	return cluster, nil
 }
 
+// AddCluster creates a new cluster and returns the
+// newly created cluster object
 func (c *Config) AddCluster(theCluster *ClusterOptions) (*Cluster, error) {
 	// Need to create new cluster placeholder
 	// Get list of ClusterPurposes that match the theCluster.name
@@ -452,6 +468,7 @@ func (c *Config) AddCluster(theCluster *ClusterOptions) (*Cluster, error) {
 	return c.ModifyCluster(nCluster, theCluster)
 }
 
+// ModifyCluster updates cluster object with given cluster options
 func (c *Config) ModifyCluster(cluster *Cluster, theCluster *ClusterOptions) (*Cluster, error) {
 	kcluster := cluster.KubeCluster()
 	if kcluster == nil {
@@ -542,6 +559,8 @@ func (c *Config) GetContexts() []*Context {
 	return contexts
 }
 
+// AddContext creates a new context and returns the instance of
+// newly created context
 func (c *Config) AddContext(theContext *ContextOptions) *Context {
 	// Create the new Airship config context
 	nContext := NewContext()
@@ -559,6 +578,7 @@ func (c *Config) AddContext(theContext *ContextOptions) *Context {
 	return nContext
 }
 
+// ModifyContext updates Context object with given given context options
 func (c *Config) ModifyContext(context *Context, theContext *ContextOptions) {
 	kubeContext := context.KubeContext()
 	if kubeContext == nil {
@@ -596,6 +616,8 @@ func (c *Config) GetCurrentContext() (*Context, error) {
 	}
 	return currentContext, nil
 }
+
+// CurrentContextCluster returns the Cluster for the current context
 func (c *Config) CurrentContextCluster() (*Cluster, error) {
 	currentContext, err := c.GetCurrentContext()
 	if err != nil {
@@ -606,6 +628,7 @@ func (c *Config) CurrentContextCluster() (*Cluster, error) {
 	return c.Clusters[clusterName.Name].ClusterTypes[currentContext.ClusterType()], nil
 }
 
+// CurrentContextAuthInfo returns the AuthInfo for the current context
 func (c *Config) CurrentContextAuthInfo() (*AuthInfo, error) {
 	currentContext, err := c.GetCurrentContext()
 	if err != nil {
@@ -614,6 +637,8 @@ func (c *Config) CurrentContextAuthInfo() (*AuthInfo, error) {
 
 	return c.AuthInfos[currentContext.KubeContext().AuthInfo], nil
 }
+
+// CurrentContextManifest returns the manifest for the current context
 func (c *Config) CurrentContextManifest() (*Manifest, error) {
 	currentContext, err := c.GetCurrentContext()
 	if err != nil {
@@ -687,6 +712,8 @@ func (c *Config) GetAuthInfos() []*AuthInfo {
 	return authInfos
 }
 
+// AddAuthInfo creates new AuthInfo with context details updated
+// in the  airship config and kube config
 func (c *Config) AddAuthInfo(theAuthInfo *AuthInfoOptions) *AuthInfo {
 	// Create the new Airship config context
 	nAuthInfo := NewAuthInfo()
@@ -700,6 +727,7 @@ func (c *Config) AddAuthInfo(theAuthInfo *AuthInfoOptions) *AuthInfo {
 	return nAuthInfo
 }
 
+// ModifyAuthInfo updates the AuthInfo in the Config object
 func (c *Config) ModifyAuthInfo(authinfo *AuthInfo, theAuthInfo *AuthInfoOptions) {
 	kubeAuthInfo := authinfo.KubeAuthInfo()
 	if kubeAuthInfo == nil {
@@ -768,7 +796,6 @@ func (c *Config) Purge() error {
 	return os.Remove(c.loadedConfigPath)
 }
 
-// Context functions
 func (c *Context) String() string {
 	cyaml, err := yaml.Marshal(&c)
 	if err != nil {
@@ -782,19 +809,24 @@ func (c *Context) String() string {
 	return fmt.Sprintf("%s\n%s", string(cyaml), string(kyaml))
 }
 
+// PrettyString returns cluster name in a formatted string
 func (c *Context) PrettyString() string {
 	clusterName := NewClusterComplexNameFromKubeClusterName(c.NameInKubeconf)
 	return fmt.Sprintf("Context: %s\n%s\n", clusterName.Name, c)
 }
 
+// KubeContext returns kube context object
 func (c *Context) KubeContext() *clientcmdapi.Context {
 	return c.context
 }
 
+// SetKubeContext updates kube contect with given context details
 func (c *Context) SetKubeContext(kc *clientcmdapi.Context) {
 	c.context = kc
 }
 
+// ClusterType returns cluster type by extracting the type portion from
+// the complex cluster name
 func (c *Context) ClusterType() string {
 	return NewClusterComplexNameFromKubeClusterName(c.NameInKubeconf).Type
 }
@@ -803,7 +835,6 @@ func (c *Context) ClusterName() string {
 	return NewClusterComplexNameFromKubeClusterName(c.NameInKubeconf).Name
 }
 
-// Manifest functions
 func (m *Manifest) String() string {
 	yamlData, err := yaml.Marshal(&m)
 	if err != nil {
@@ -830,7 +861,7 @@ func (m *ManagementConfiguration) String() string {
 	return string(yamlData)
 }
 
-// Container functions
+// String returns Container object in a serialized string format
 func (c *Container) String() string {
 	yamlData, err := yaml.Marshal(&c)
 	if err != nil {
@@ -839,7 +870,7 @@ func (c *Container) String() string {
 	return string(yamlData)
 }
 
-// Builder functions
+// String returns Builder object in a serialized string format
 func (b *Builder) String() string {
 	yamlData, err := yaml.Marshal(&b)
 	if err != nil {
