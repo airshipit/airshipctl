@@ -51,5 +51,7 @@ func TestNewClient(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, client)
 	assert.NotNil(t, client.ClientSet())
+	assert.NotNil(t, client.DynamicClient())
+	assert.NotNil(t, client.ApiextensionsClientSet())
 	assert.NotNil(t, client.Kubectl())
 }
