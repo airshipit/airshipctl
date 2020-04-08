@@ -15,12 +15,13 @@
 package cluster_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"opendev.org/airship/airshipctl/pkg/cluster"
@@ -29,65 +30,35 @@ import (
 	"opendev.org/airship/airshipctl/testutil"
 )
 
-type fakeBundle struct {
-	document.Bundle
-
-	mockGetByGvk func(string, string, string) ([]document.Document, error)
-}
-
-func (fb fakeBundle) GetByGvk(group, version, kind string) ([]document.Document, error) {
-	return fb.mockGetByGvk(group, version, kind)
-}
-
-func TestNewStatusMapErrorCases(t *testing.T) {
-	dummyError := errors.New("test error")
+func TestNewStatusMap(t *testing.T) {
 	tests := []struct {
 		name   string
-		bundle document.Bundle
+		client *fake.Client
 		err    error
 	}{
 		{
-			name: "bundle-fails-retrieving-v1-resources",
-			bundle: fakeBundle{
-				mockGetByGvk: func(_, version, _ string) ([]document.Document, error) {
-					if version == "v1" {
-						return nil, dummyError
-					}
-					return nil, nil
-				},
-			},
-			err: dummyError,
-		},
-		{
-			name: "bundle-fails-retrieving-v1beta1-resources",
-			bundle: fakeBundle{
-				mockGetByGvk: func(_, version, _ string) ([]document.Document, error) {
-					if version == "v1beta1" {
-						return nil, dummyError
-					}
-					return nil, nil
-				},
-			},
-			err: dummyError,
+			name:   "no-failure-on-valid-status-check-annotation",
+			client: fake.NewClient(fake.WithCRDs(makeResourceCRD(annotationValidStatusCheck()))),
+			err:    nil,
 		},
 		{
 			name:   "no-failure-when-missing-status-check-annotation",
-			bundle: testutil.NewTestBundle(t, "testdata/missing-status-check"),
+			client: fake.NewClient(fake.WithCRDs(makeResourceCRD(nil))),
 			err:    nil,
 		},
 		{
 			name:   "missing-status",
-			bundle: testutil.NewTestBundle(t, "testdata/missing-status"),
+			client: fake.NewClient(fake.WithCRDs(makeResourceCRD(annotationMissingStatus()))),
 			err:    cluster.ErrInvalidStatusCheck{What: "missing status field"},
 		},
 		{
 			name:   "missing-condition",
-			bundle: testutil.NewTestBundle(t, "testdata/missing-condition"),
+			client: fake.NewClient(fake.WithCRDs(makeResourceCRD(annotationMissingCondition()))),
 			err:    cluster.ErrInvalidStatusCheck{What: "missing condition field"},
 		},
 		{
 			name:   "malformed-status-check",
-			bundle: testutil.NewTestBundle(t, "testdata/malformed-status-check"),
+			client: fake.NewClient(fake.WithCRDs(makeResourceCRD(annotationMalformedStatusCheck()))),
 			err: cluster.ErrInvalidStatusCheck{What: `unable to parse jsonpath: ` +
 				`"{invalid json": invalid character 'i' looking for beginning of object key string`},
 		},
@@ -95,7 +66,7 @@ func TestNewStatusMapErrorCases(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt
-		_, err := cluster.NewStatusMap(tt.bundle)
+		_, err := cluster.NewStatusMap(tt.client)
 		assert.Equal(t, tt.err, err)
 	}
 }
@@ -104,7 +75,7 @@ func TestGetStatusForResource(t *testing.T) {
 	tests := []struct {
 		name           string
 		selector       document.Selector
-		testClient     *fake.Client
+		client         *fake.Client
 		expectedStatus cluster.Status
 		err            error
 	}{
@@ -113,7 +84,8 @@ func TestGetStatusForResource(t *testing.T) {
 			selector: document.NewSelector().
 				ByGvk("example.com", "v1", "Resource").
 				ByName("stable-resource"),
-			testClient: fake.NewClient(
+			client: fake.NewClient(
+				fake.WithCRDs(makeResourceCRD(annotationValidStatusCheck())),
 				fake.WithDynamicObjects(makeResource("Resource", "stable-resource", "stable")),
 			),
 			expectedStatus: cluster.Status("Stable"),
@@ -123,7 +95,8 @@ func TestGetStatusForResource(t *testing.T) {
 			selector: document.NewSelector().
 				ByGvk("example.com", "v1", "Resource").
 				ByName("pending-resource"),
-			testClient: fake.NewClient(
+			client: fake.NewClient(
+				fake.WithCRDs(makeResourceCRD(annotationValidStatusCheck())),
 				fake.WithDynamicObjects(makeResource("Resource", "pending-resource", "pending")),
 			),
 			expectedStatus: cluster.Status("Pending"),
@@ -133,28 +106,19 @@ func TestGetStatusForResource(t *testing.T) {
 			selector: document.NewSelector().
 				ByGvk("example.com", "v1", "Resource").
 				ByName("unknown"),
-			testClient: fake.NewClient(
+			client: fake.NewClient(
+				fake.WithCRDs(makeResourceCRD(annotationValidStatusCheck())),
 				fake.WithDynamicObjects(makeResource("Resource", "unknown", "unknown")),
 			),
 			expectedStatus: cluster.UnknownStatus,
-		},
-		{
-			name: "stable-legacy-is-stable",
-			selector: document.NewSelector().
-				ByGvk("example.com", "v1", "Legacy").
-				ByName("stable-legacy"),
-			testClient: fake.NewClient(
-				fake.WithDynamicObjects(makeResource("Legacy", "stable-legacy", "stable")),
-			),
-			expectedStatus: cluster.Status("Stable"),
 		},
 		{
 			name: "missing-resource-returns-error",
 			selector: document.NewSelector().
 				ByGvk("example.com", "v1", "Missing").
 				ByName("missing-resource"),
-			testClient: fake.NewClient(),
-			err:        cluster.ErrResourceNotFound{Resource: "missing-resource"},
+			client: fake.NewClient(),
+			err:    cluster.ErrResourceNotFound{Resource: "missing-resource"},
 		},
 	}
 
@@ -163,13 +127,13 @@ func TestGetStatusForResource(t *testing.T) {
 
 		t.Run(tt.name, func(t *testing.T) {
 			bundle := testutil.NewTestBundle(t, "testdata/statusmap")
-			testStatusMap, err := cluster.NewStatusMap(bundle)
+			testStatusMap, err := cluster.NewStatusMap(tt.client)
 			require.NoError(t, err)
 
 			doc, err := bundle.SelectOne(tt.selector)
 			require.NoError(t, err)
 
-			actualStatus, err := testStatusMap.GetStatusForResource(tt.testClient, doc)
+			actualStatus, err := testStatusMap.GetStatusForResource(doc)
 			if tt.err != nil {
 				assert.EqualError(t, err, tt.err.Error())
 				// We expected an error - no need to check anything else
@@ -196,4 +160,82 @@ func makeResource(kind, name, state string) *unstructured.Unstructured {
 			},
 		},
 	}
+}
+
+func makeResourceCRD(annotations map[string]string) *apiextensionsv1.CustomResourceDefinition {
+	return &apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        "resources.example.com",
+			Annotations: annotations,
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "example.com",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+				},
+			},
+			// omitting the openAPIV3Schema for brevity
+			Scope: "Namespaced",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Kind:     "Resource",
+				Plural:   "resources",
+				Singular: "resource",
+			},
+		},
+	}
+}
+
+func annotationValidStatusCheck() map[string]string {
+	return map[string]string{
+		"airshipit.org/status-check": `
+[
+  {
+    "status": "Stable",
+    "condition": "@.status.state==\"stable\""
+  },
+  {
+    "status": "Pending",
+    "condition": "@.status.state==\"pending\""
+  }
+]`,
+	}
+}
+
+func annotationMissingStatus() map[string]string {
+	return map[string]string{
+		"airshipit.org/status-check": `
+[
+  {
+    "condition": "@.status.state==\"stable\""
+  },
+  {
+    "condition": "@.status.state==\"pending\""
+  }
+]`,
+	}
+}
+
+func annotationMissingCondition() map[string]string {
+	return map[string]string{
+		"airshipit.org/status-check": `
+[
+  {
+    "status": "Stable"
+  },
+  {
+    "status": "Pending"
+  }
+]`,
+	}
+}
+
+func annotationMalformedStatusCheck() map[string]string {
+	return map[string]string{"airshipit.org/status-check": "{invalid json"}
 }
