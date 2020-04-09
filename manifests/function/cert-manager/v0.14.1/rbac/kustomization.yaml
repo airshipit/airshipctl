@@ -1,0 +1,24 @@
+resources:
+  - cainjector_clusterrole.yaml
+  - cainjector_clusterrole_binding.yaml
+  - cainjector_leaderelection_role.yaml
+  - cainjector_leaderelection_role_binding.yaml
+  - cainjector_sa.yaml
+  - controller_certificates_clusterrole.yaml
+  - controller_certificates_clusterrole_binding.yaml
+  - controller_challenges_clusterrole_binding.yaml
+  - controller_challenges_role.yaml
+  - controller_clusterissuers_clusterrole.yaml
+  - controller_clusterissuers_clusterrole_binding.yaml
+  - controller_ingress_shim_clusterrole.yaml
+  - controller_ingress_shim_clusterrole_binding.yaml
+  - controller_issuers_clusterrole.yaml
+  - controller_issuers_clusterrole_binding.yaml
+  - controller_orders_clusterrole.yaml
+  - controller_orders_clusterrole_binding.yaml
+  - edit_clusterrole.yaml
+  - manager_leaderelection_role.yaml
+  - manager_leaderelection_role_binding.yaml
+  - manager_sa.yaml
+  - view_clusterrole.yaml
+  - webhook_sa.yaml
