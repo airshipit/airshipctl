@@ -13,7 +13,7 @@ const (
 	Initinfra = "initinfra"
 )
 
-// Sorted
+// AllClusterTypes holds cluster types
 var AllClusterTypes = [2]string{Ephemeral, Target}
 
 // Constants defining default values

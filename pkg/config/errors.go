@@ -5,15 +5,15 @@ import (
 	"strings"
 )
 
-// Repo errors
-
-// ErrMutuallyExclusiveAuthSSHPass is returned when ssh-pass type
-// is selected and http-pass, ssh-key or key-pass options are defined
+// ErrIncompatibleAuthOptions is returned when incompatible
+// AuthTypes are provided
 type ErrIncompatibleAuthOptions struct {
 	ForbiddenOptions []string
 	AuthType         string
 }
 
+// NewErrIncompetibleAuthOptions returns Error of type
+// ErrIncompatibleAuthOptions
 func NewErrIncompetibleAuthOptions(fo []string, ao string) error {
 	return ErrIncompatibleAuthOptions{
 		ForbiddenOptions: fo,
@@ -21,11 +21,14 @@ func NewErrIncompetibleAuthOptions(fo []string, ao string) error {
 	}
 }
 
+// Error of type ErrIncompatibleAuthOptions is returned when
+// ssh-pass type is selected and http-pass, ssh-key or key-pass
+// options are defined
 func (e ErrIncompatibleAuthOptions) Error() string {
 	return fmt.Sprintf("Can not use %s options, with auth type %s", e.ForbiddenOptions, e.AuthType)
 }
 
-// ErrAuthTypeNotSupported is returned with wrong AuthType is provided
+// ErrAuthTypeNotSupported is returned when wrong AuthType is provided
 type ErrAuthTypeNotSupported struct {
 }
 

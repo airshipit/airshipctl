@@ -415,7 +415,7 @@ func (c *Config) SetKubeConfig(kubeConfig *clientcmdapi.Config) {
 	c.kubeConfig = kubeConfig
 }
 
-// Get A Cluster
+// GetCluster returns a cluster instance
 func (c *Config) GetCluster(cName, cType string) (*Cluster, error) {
 	_, exists := c.Clusters[cName]
 	if !exists {
@@ -519,8 +519,7 @@ func (c *Config) GetClusters() []*Cluster {
 	return clusters
 }
 
-// Context Operations from Config point of view
-// Get Context
+// GetContext returns a context instance
 func (c *Config) GetContext(cName string) (*Context, error) {
 	context, exists := c.Contexts[cName]
 	if !exists {
@@ -580,7 +579,7 @@ func (c *Config) ModifyContext(context *Context, theContext *ContextOptions) {
 	}
 }
 
-// CurrentContext methods Returns the appropriate information for the current context
+// GetCurrentContext methods Returns the appropriate information for the current context
 // Current Context holds labels for the approriate config objects
 //      Cluster is the name of the cluster for this context
 //      ClusterType is the name of the clustertype for this context, it should be a flag we pass to it??
@@ -647,6 +646,7 @@ func (c *Config) CurrentContextEntryPoint(clusterType string, phase string) (str
 		phase), nil
 }
 
+// GetAuthInfo returns an instance of authino
 // Credential or AuthInfo related methods
 func (c *Config) GetAuthInfo(aiName string) (*AuthInfo, error) {
 	authinfo, exists := c.AuthInfos[aiName]
