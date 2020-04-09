@@ -25,7 +25,7 @@ type DocumentFs struct {
 
 // NewDocumentFs returns an instalce of DocumentFs
 func NewDocumentFs() FileSystem {
-	return &DocumentFs{FileSystem: fs.MakeRealFS()}
+	return &DocumentFs{FileSystem: fs.MakeFsOnDisk()}
 }
 
 // TempFile creates file in temporary filesystem, at default os.TempDir

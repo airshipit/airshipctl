@@ -12,8 +12,7 @@ require (
 	github.com/elazarl/goproxy v0.0.0-20190421051319-9d40249d3c2f // indirect
 	github.com/elazarl/goproxy/ext v0.0.0-20190421051319-9d40249d3c2f // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
-	github.com/golang/groupcache v0.0.0-20190129154638-5b532d6fd5ef // indirect
-	github.com/gorilla/mux v1.7.2 // indirect
+	github.com/go-openapi/spec v0.19.4 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc // indirect
 	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/morikuni/aec v0.0.0-20170113033406-39771216ff4c // indirect
@@ -23,7 +22,6 @@ require (
 	golang.org/x/crypto v0.0.0-20191202143827-86a70503ff7e // indirect
 	golang.org/x/net v0.0.0-20191204025024-5ee1b9f4859a // indirect
 	golang.org/x/sys v0.0.0-20191204072324-ce4227a45e2e // indirect
-	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 	gopkg.in/src-d/go-billy.v4 v4.3.2
 	gopkg.in/src-d/go-git-fixtures.v3 v3.5.0
 	gopkg.in/src-d/go-git.v4 v4.13.1
@@ -35,8 +33,11 @@ require (
 	k8s.io/kubectl v0.17.3
 	opendev.org/airship/go-redfish v0.0.0-20200318103738-db034d1d753a
 	opendev.org/airship/go-redfish/client v0.0.0-20200318103738-db034d1d753a
-	sigs.k8s.io/kustomize/v3 v3.2.0
+	sigs.k8s.io/kustomize/v3 v3.3.1
 	sigs.k8s.io/yaml v1.1.0
 )
 
-replace k8s.io/client-go => k8s.io/client-go v0.0.0-20191114101535-6c5935290e33
+replace (
+	github.com/russross/blackfriday => github.com/russross/blackfriday v1.5.2
+	k8s.io/client-go => k8s.io/client-go v0.0.0-20191114101535-6c5935290e33
+)
