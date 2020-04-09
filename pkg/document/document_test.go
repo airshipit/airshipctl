@@ -97,25 +97,31 @@ func TestDocument(t *testing.T) {
 		assert.Equal(s, gotSlice)
 	})
 
-	t.Run("Label", func(t *testing.T) {
-		docs, err := bundle.GetAllDocuments()
-		require.NoError(err, "Unexpected error trying to GetAllDocuments")
-
-		for _, doc := range docs {
-			doc.Label("test", "testval")
-			labelList := doc.GetLabels()
-			assert.Contains(labelList, "test")
-		}
-	})
-
 	t.Run("Annotate", func(t *testing.T) {
 		docs, err := bundle.GetAllDocuments()
 		require.NoError(err, "Unexpected error trying to GetAllDocuments")
+		annotationMap := map[string]string{
+			"test-annotation": "test-annotaiton-value",
+		}
 
 		for _, doc := range docs {
-			doc.Annotate("test", "testval")
+			doc.Annotate(annotationMap)
 			annotationList := doc.GetAnnotations()
-			assert.Contains(annotationList, "test")
+			assert.Equal(annotationList["test-annotation"], "test-annotaiton-value")
+		}
+	})
+
+	t.Run("Label", func(t *testing.T) {
+		docs, err := bundle.GetAllDocuments()
+		require.NoError(err, "Unexpected error trying to GetAllDocuments")
+		labelMap := map[string]string{
+			"test-label": "test-label-value",
+		}
+
+		for _, doc := range docs {
+			doc.Label(labelMap)
+			labelList := doc.GetLabels()
+			assert.Equal(labelList["test-label"], "test-label-value")
 		}
 	})
 }
