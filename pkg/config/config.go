@@ -646,6 +646,22 @@ func (c *Config) CurrentContextEntryPoint(clusterType string, phase string) (str
 		phase), nil
 }
 
+func (c *Config) CurrentContextClusterType() (string, error) {
+	context, err := c.GetCurrentContext()
+	if err != nil {
+		return "", err
+	}
+	return context.ClusterType(), nil
+}
+
+func (c *Config) CurrentContextClusterName() (string, error) {
+	context, err := c.GetCurrentContext()
+	if err != nil {
+		return "", err
+	}
+	return context.ClusterName(), nil
+}
+
 // GetAuthInfo returns an instance of authino
 // Credential or AuthInfo related methods
 func (c *Config) GetAuthInfo(aiName string) (*AuthInfo, error) {
@@ -787,6 +803,10 @@ func (c *Context) SetKubeContext(kc *clientcmdapi.Context) {
 
 func (c *Context) ClusterType() string {
 	return NewClusterComplexNameFromKubeClusterName(c.NameInKubeconf).Type
+}
+
+func (c *Context) ClusterName() string {
+	return NewClusterComplexNameFromKubeClusterName(c.NameInKubeconf).Name
 }
 
 // AuthInfo functions

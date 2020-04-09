@@ -547,6 +547,42 @@ func TestCurrentContextEntryPoint(t *testing.T) {
 	assert.Nil(t, nil, entryPoint)
 }
 
+func TestCurrentContextClusterType(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	expectedClusterType := "ephemeral"
+
+	clusterTypeEmpty, err := conf.CurrentContextClusterType()
+	require.Error(t, err)
+	assert.Equal(t, "", clusterTypeEmpty)
+
+	conf.CurrentContext = currentContextName
+	conf.Contexts[currentContextName].Manifest = defaultString
+
+	actualClusterType, err := conf.CurrentContextClusterType()
+	require.NoError(t, err)
+	assert.Equal(t, expectedClusterType, actualClusterType)
+}
+
+func TestCurrentContextClusterName(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	expectedClusterName := "def"
+
+	clusterNameEmpty, err := conf.CurrentContextClusterName()
+	require.Error(t, err)
+	assert.Equal(t, "", clusterNameEmpty)
+
+	conf.CurrentContext = currentContextName
+	conf.Contexts[currentContextName].Manifest = defaultString
+
+	actualClusterName, err := conf.CurrentContextClusterName()
+	require.NoError(t, err)
+	assert.Equal(t, expectedClusterName, actualClusterName)
+}
+
 // AuthInfo Related
 
 func TestGetAuthInfos(t *testing.T) {
