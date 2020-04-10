@@ -4,6 +4,7 @@ Usage:
   baremetal [command]
 
 Available Commands:
+  ejectmedia   Eject media attached to a baremetal host
   help         Help about any command
   isogen       Generate baremetal host ISO image
   poweroff     Shutdown a baremetal host

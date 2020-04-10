@@ -29,6 +29,11 @@ func TestBaremetal(t *testing.T) {
 			Cmd:     baremetal.NewBaremetalCommand(nil),
 		},
 		{
+			Name:    "baremetal-ejectmedia-with-help",
+			CmdLine: "-h",
+			Cmd:     baremetal.NewEjectMediaCommand(nil),
+		},
+		{
 			Name:    "baremetal-isogen-with-help",
 			CmdLine: "-h",
 			Cmd:     baremetal.NewISOGenCommand(nil),

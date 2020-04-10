@@ -45,6 +45,65 @@ func (c *Client) NodeID() string {
 	return c.nodeID
 }
 
+// EjectVirtualMedia ejects a virtual media device attached to a host.
+func (c *Client) EjectVirtualMedia(ctx context.Context) error {
+	waitForEjectMedia := func(managerID string, mediaID string) error {
+		// Check if number of retries is defined in context
+		totalRetries, ok := ctx.Value("numRetries").(int)
+		if !ok {
+			totalRetries = systemActionRetries
+		}
+
+		for retry := 0; retry < totalRetries; retry++ {
+			vMediaMgr, httpResp, err := c.RedfishAPI.GetManagerVirtualMedia(ctx, managerID, mediaID)
+			if err = ScreenRedfishError(httpResp, err); err != nil {
+				return err
+			}
+
+			if *vMediaMgr.Inserted == false {
+				log.Debugf("Successfully ejected virtual media.")
+				return nil
+			}
+		}
+
+		return ErrOperationRetriesExceeded{What: fmt.Sprintf("eject media %s", mediaID), Retries: totalRetries}
+	}
+
+	managerID, err := getManagerID(ctx, c.RedfishAPI, c.nodeID)
+	if err != nil {
+		return err
+	}
+
+	mediaCollection, httpResp, err := c.RedfishAPI.ListManagerVirtualMedia(ctx, managerID)
+	if err = ScreenRedfishError(httpResp, err); err != nil {
+		return err
+	}
+
+	// Walk all virtual media devices and eject if inserted
+	for _, mediaURI := range mediaCollection.Members {
+		mediaID := GetResourceIDFromURL(mediaURI.OdataId)
+
+		vMediaMgr, httpResp, err := c.RedfishAPI.GetManagerVirtualMedia(ctx, managerID, mediaID)
+		if err = ScreenRedfishError(httpResp, err); err != nil {
+			return err
+		}
+
+		if *vMediaMgr.Inserted == true {
+			var emptyBody map[string]interface{}
+			_, httpResp, err = c.RedfishAPI.EjectVirtualMedia(ctx, managerID, mediaID, emptyBody)
+			if err = ScreenRedfishError(httpResp, err); err != nil {
+				return err
+			}
+
+			if err = waitForEjectMedia(managerID, mediaID); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 // RebootSystem power cycles a host by sending a shutdown signal followed by a power on signal.
 func (c *Client) RebootSystem(ctx context.Context) error {
 	waitForPowerState := func(desiredState redfishClient.PowerState) error {
@@ -126,66 +185,27 @@ func (c *Client) SetBootSourceByType(ctx context.Context) error {
 // SetVirtualMedia injects a virtual media device to an established virtual media ID. This assumes that isoPath is
 // accessible to the redfish server and virtualMedia device is either of type CD or DVD.
 func (c *Client) SetVirtualMedia(ctx context.Context, isoPath string) error {
-	waitForEjectMedia := func(managerID string, vMediaID string) error {
-		// Check if number of retries is defined in context
-		totalRetries, ok := ctx.Value("numRetries").(int)
-		if !ok {
-			totalRetries = systemActionRetries
-		}
-
-		for retry := 0; retry < totalRetries; retry++ {
-			vMediaMgr, httpResp, err := c.RedfishAPI.GetManagerVirtualMedia(ctx, managerID, vMediaID)
-			if err = ScreenRedfishError(httpResp, err); err != nil {
-				return err
-			}
-
-			if *vMediaMgr.Inserted == false {
-				log.Debugf("Successfully ejected virtual media.")
-				return nil
-			}
-		}
-
-		return ErrOperationRetriesExceeded{What: fmt.Sprintf("eject media %s", vMediaID), Retries: totalRetries}
+	// Eject all previously-inserted media
+	if err := c.EjectVirtualMedia(ctx); err != nil {
+		return err
 	}
 
-	log.Debugf("Setting virtual media for node: '%s'", c.nodeID)
+	// Retrieve the ID of a compatible media type
+	vMediaID, _, err := GetVirtualMediaID(ctx, c.RedfishAPI, c.nodeID)
+	if err != nil {
+		return err
+	}
 
 	managerID, err := getManagerID(ctx, c.RedfishAPI, c.nodeID)
 	if err != nil {
 		return err
 	}
 
-	log.Debugf("Ephemeral node managerID: '%s'", managerID)
-
-	vMediaID, _, err := GetVirtualMediaID(ctx, c.RedfishAPI, c.nodeID)
-	if err != nil {
-		return err
-	}
-
-	// Eject virtual media if it is already inserted
-	vMediaMgr, httpResp, err := c.RedfishAPI.GetManagerVirtualMedia(ctx, managerID, vMediaID)
-	if err = ScreenRedfishError(httpResp, err); err != nil {
-		return err
-	}
-
-	if *vMediaMgr.Inserted == true {
-		log.Debugf("Manager %s media type %s inserted. Attempting to eject.", managerID, vMediaID)
-
-		var emptyBody map[string]interface{}
-		_, httpResp, err = c.RedfishAPI.EjectVirtualMedia(ctx, managerID, vMediaID, emptyBody)
-		if err = ScreenRedfishError(httpResp, err); err != nil {
-			return err
-		}
-
-		if err = waitForEjectMedia(managerID, vMediaID); err != nil {
-			return err
-		}
-	}
-
+	// Insert media
 	vMediaReq := redfishClient.InsertMediaRequestBody{}
 	vMediaReq.Image = isoPath
 	vMediaReq.Inserted = true
-	_, httpResp, err = c.RedfishAPI.InsertVirtualMedia(ctx, managerID, vMediaID, vMediaReq)
+	_, httpResp, err := c.RedfishAPI.InsertVirtualMedia(ctx, managerID, vMediaID, vMediaReq)
 
 	return ScreenRedfishError(httpResp, err)
 }
