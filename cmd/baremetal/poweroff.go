@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package remote
+package baremetal
 
 import (
 	"fmt"
@@ -28,8 +28,8 @@ import (
 func NewPowerOffCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	var phase string
 	cmd := &cobra.Command{
-		Use:   "poweroff SYSTEM_ID",
-		Short: "Shutdown a host",
+		Use:   "poweroff BAREMETAL_HOST_DOC_NAME",
+		Short: "Shutdown a baremetal host",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			m, err := remote.NewManager(rootSettings, phase, remote.ByName(args[0]))
@@ -42,7 +42,7 @@ func NewPowerOffCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Com
 					return err
 				}
 
-				fmt.Fprintf(cmd.OutOrStdout(), "Remote host %s powered off\n", args[0])
+				fmt.Fprintf(cmd.OutOrStdout(), "Remote host %s powered off\n", host.HostName)
 			}
 
 			return nil

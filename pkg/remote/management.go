@@ -58,6 +58,7 @@ type baremetalHost struct {
 	Client
 	Context    context.Context
 	BMCAddress string
+	HostName   string
 	username   string
 	password   string
 }
@@ -182,7 +183,7 @@ func newBaremetalHost(mgmtCfg config.ManagementConfiguration,
 			return host, err
 		}
 
-		host = baremetalHost{client, ctx, address, username, password}
+		host = baremetalHost{client, ctx, address, hostDoc.GetName(), username, password}
 	default:
 		return host, ErrUnknownManagementType{Type: mgmtCfg.Type}
 	}

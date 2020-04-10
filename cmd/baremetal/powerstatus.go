@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package remote
+package baremetal
 
 import (
 	"fmt"
@@ -24,12 +24,12 @@ import (
 	"opendev.org/airship/airshipctl/pkg/remote"
 )
 
-// NewPowerStatusCommand provides a command to retrieve the power status of a remote host.
+// NewPowerStatusCommand provides a command to retrieve the power status of a baremetal host.
 func NewPowerStatusCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	var phase string
 	cmd := &cobra.Command{
-		Use:   "powerstatus SYSTEM_ID",
-		Short: "Retrieve the power status of a host",
+		Use:   "powerstatus BAREMETAL_HOST_DOC_NAME",
+		Short: "Retrieve the power status of a baremetal host",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			m, err := remote.NewManager(rootSettings, phase, remote.ByName(args[0]))
@@ -43,7 +43,7 @@ func NewPowerStatusCommand(rootSettings *environment.AirshipCTLSettings) *cobra.
 					return err
 				}
 
-				fmt.Fprintf(cmd.OutOrStdout(), "Remote host %s has power status: %s\n", args[0],
+				fmt.Fprintf(cmd.OutOrStdout(), "Remote host %s has power status: %s\n", host.HostName,
 					powerStatus)
 			}
 

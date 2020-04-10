@@ -54,6 +54,7 @@ func TestDoRemoteDirectMissingConfigOpts(t *testing.T) {
 		rMock,
 		ctx,
 		redfishURL,
+		"doc-name",
 		username,
 		password,
 	}
@@ -73,6 +74,7 @@ func TestDoRemoteDirectMissingISOURL(t *testing.T) {
 		rMock,
 		ctx,
 		redfishURL,
+		"doc-name",
 		username,
 		password,
 	}
@@ -98,6 +100,7 @@ func TestDoRemoteDirectRedfish(t *testing.T) {
 		rMock,
 		ctx,
 		redfishURL,
+		"doc-name",
 		username,
 		password,
 	}
@@ -127,6 +130,7 @@ func TestDoRemoteDirectRedfishVirtualMediaError(t *testing.T) {
 		rMock,
 		ctx,
 		redfishURL,
+		"doc-name",
 		username,
 		password,
 	}
@@ -158,6 +162,7 @@ func TestDoRemoteDirectRedfishBootSourceError(t *testing.T) {
 		rMock,
 		ctx,
 		redfishURL,
+		"doc-name",
 		username,
 		password,
 	}
@@ -190,6 +195,7 @@ func TestDoRemoteDirectRedfishRebootError(t *testing.T) {
 		rMock,
 		ctx,
 		redfishURL,
+		"doc-name",
 		username,
 		password,
 	}

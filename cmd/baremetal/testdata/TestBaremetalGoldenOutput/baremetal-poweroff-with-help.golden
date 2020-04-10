@@ -1,0 +1,8 @@
+Shutdown a baremetal host
+
+Usage:
+  poweroff BAREMETAL_HOST_DOC_NAME [flags]
+
+Flags:
+  -h, --help           help for poweroff
+      --phase string   airshipctl phase that contains the desired baremetal host document(s) (default "bootstrap")

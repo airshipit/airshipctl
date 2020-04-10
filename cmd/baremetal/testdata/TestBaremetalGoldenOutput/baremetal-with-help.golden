@@ -6,6 +6,9 @@ Usage:
 Available Commands:
   help         Help about any command
   isogen       Generate baremetal host ISO image
+  poweroff     Shutdown a baremetal host
+  powerstatus  Retrieve the power status of a baremetal host
+  reboot       Reboot a host
   remotedirect Bootstrap the ephemeral host
 
 Flags:

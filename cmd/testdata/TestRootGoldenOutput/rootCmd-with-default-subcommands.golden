@@ -10,7 +10,6 @@ Available Commands:
   config      Manage the airshipctl config file
   document    Manage deployment documents
   help        Help about any command
-  remote      Control remote entities, i.e. hosts.
   secret      Manage secrets
   version     Show the version number of airshipctl
 
