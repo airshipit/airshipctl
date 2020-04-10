@@ -19,7 +19,7 @@
   become: true
 
 - name: build ephemeral node iso
-  command: airshipctl bootstrap isogen
+  command: airshipctl baremetal isogen
   environment:
     http_proxy: "{{ proxy.http }}"
     https_proxy: "{{ proxy.http }}"

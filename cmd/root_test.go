@@ -23,7 +23,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/cmd"
-	"opendev.org/airship/airshipctl/cmd/bootstrap"
+	"opendev.org/airship/airshipctl/cmd/baremetal"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/testutil"
 )
@@ -105,7 +105,8 @@ func getDefaultRootCommand(t *testing.T) *cobra.Command {
 }
 
 func getSpecializedRootCommand(t *testing.T) *cobra.Command {
+	t.Helper()
 	rootCmd := getVanillaRootCommand(t)
-	rootCmd.AddCommand(bootstrap.NewBootstrapCommand(&environment.AirshipCTLSettings{}))
+	rootCmd.AddCommand(baremetal.NewBaremetalCommand(&environment.AirshipCTLSettings{}))
 	return rootCmd
 }

@@ -1,4 +1,4 @@
-Bootstrap ephemeral node
+Bootstrap the ephemeral host
 
 Usage:
   remotedirect [flags]

@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package bootstrap
+package baremetal
 
 import (
 	"github.com/spf13/cobra"
@@ -20,18 +20,18 @@ import (
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
-// NewBootstrapCommand creates a new command for bootstrapping airshipctl
-func NewBootstrapCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
-	bootstrapRootCmd := &cobra.Command{
-		Use:   "bootstrap",
-		Short: "Bootstrap ephemeral Kubernetes cluster",
+// NewBaremetalCommand creates a new command for interacting with baremetal using airshipctl.
+func NewBaremetalCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "baremetal",
+		Short: "Perform actions on baremetal hosts",
 	}
 
 	isoGenCmd := NewISOGenCommand(rootSettings)
-	bootstrapRootCmd.AddCommand(isoGenCmd)
+	cmd.AddCommand(isoGenCmd)
 
 	remoteDirectCmd := NewRemoteDirectCommand(rootSettings)
-	bootstrapRootCmd.AddCommand(remoteDirectCmd)
+	cmd.AddCommand(remoteDirectCmd)
 
-	return bootstrapRootCmd
+	return cmd
 }

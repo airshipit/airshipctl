@@ -1,7 +1,0 @@
-Generate bootstrap ISO image
-
-Usage:
-  bootstrap isogen [flags]
-
-Flags:
-  -h, --help   help for isogen

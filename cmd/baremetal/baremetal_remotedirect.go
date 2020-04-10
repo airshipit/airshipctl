@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package bootstrap
+package baremetal
 
 import (
 	"github.com/spf13/cobra"
@@ -25,9 +25,9 @@ import (
 
 // NewRemoteDirectCommand provides a command with the capability to perform remote direct operations.
 func NewRemoteDirectCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
-	remoteDirect := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "remotedirect",
-		Short: "Bootstrap ephemeral node",
+		Short: "Bootstrap the ephemeral host",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			manager, err := remote.NewManager(rootSettings,
 				config.BootstrapPhase,
@@ -45,5 +45,5 @@ func NewRemoteDirectCommand(rootSettings *environment.AirshipCTLSettings) *cobra
 		},
 	}
 
-	return remoteDirect
+	return cmd
 }

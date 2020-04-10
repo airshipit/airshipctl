@@ -12,23 +12,24 @@
  limitations under the License.
 */
 
-package bootstrap
+package baremetal
 
 import (
-	"testing"
+	"github.com/spf13/cobra"
 
-	"opendev.org/airship/airshipctl/testutil"
+	"opendev.org/airship/airshipctl/pkg/bootstrap/isogen"
+	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
-func TestRemoteDirect(t *testing.T) {
-	tests := []*testutil.CmdTest{
-		{
-			Name:    "remotedirect-cmd-with-help",
-			CmdLine: "remotedirect --help",
-			Cmd:     NewRemoteDirectCommand(nil),
+// NewISOGenCommand creates a new command with the capability to generate the ephemeral node ISO image.
+func NewISOGenCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "isogen",
+		Short: "Generate baremetal host ISO image",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return isogen.GenerateBootstrapIso(rootSettings)
 		},
 	}
-	for _, tt := range tests {
-		testutil.RunTest(t, tt)
-	}
+
+	return cmd
 }

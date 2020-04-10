@@ -12,23 +12,29 @@
  limitations under the License.
 */
 
-package bootstrap_test
+package baremetal_test
 
 import (
 	"testing"
 
-	"opendev.org/airship/airshipctl/cmd/bootstrap"
+	"opendev.org/airship/airshipctl/cmd/baremetal"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
-func TestBootstrap(t *testing.T) {
+func TestBaremetal(t *testing.T) {
 	tests := []*testutil.CmdTest{
 		{
-			Name:    "bootstrap-isogen-cmd-with-help",
-			CmdLine: "isogen --help",
-			Cmd:     bootstrap.NewBootstrapCommand(nil),
+			Name:    "isogen",
+			CmdLine: "-h",
+			Cmd:     baremetal.NewISOGenCommand(nil),
+		},
+		{
+			Name:    "remotedirect",
+			CmdLine: "-h",
+			Cmd:     baremetal.NewRemoteDirectCommand(nil),
 		},
 	}
+
 	for _, tt := range tests {
 		testutil.RunTest(t, tt)
 	}

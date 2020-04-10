@@ -22,7 +22,7 @@ import (
 	// Import to initialize client auth plugins.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
-	"opendev.org/airship/airshipctl/cmd/bootstrap"
+	"opendev.org/airship/airshipctl/cmd/baremetal"
 	"opendev.org/airship/airshipctl/cmd/cluster"
 	"opendev.org/airship/airshipctl/cmd/completion"
 	"opendev.org/airship/airshipctl/cmd/config"
@@ -66,7 +66,7 @@ func NewRootCommand(out io.Writer) (*cobra.Command, *environment.AirshipCTLSetti
 // AddDefaultAirshipCTLCommands is a convenience function for adding all of the
 // default commands to airshipctl
 func AddDefaultAirshipCTLCommands(cmd *cobra.Command, settings *environment.AirshipCTLSettings) *cobra.Command {
-	cmd.AddCommand(bootstrap.NewBootstrapCommand(settings))
+	cmd.AddCommand(baremetal.NewBaremetalCommand(settings))
 	cmd.AddCommand(cluster.NewClusterCommand(settings))
 	cmd.AddCommand(completion.NewCompletionCommand())
 	cmd.AddCommand(document.NewDocumentCommand(settings))
