@@ -10,8 +10,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-libvirt_remote_scheme_list:
-  - http
-  - https
-libvirt_image_cleanup_cache: false
-libvirt_image_cache_path: /tmp/airship
