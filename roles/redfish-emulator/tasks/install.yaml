@@ -23,7 +23,6 @@
       name:
         - python3-pip
         - python3-libvirt
-        - python-libvirt
       state: present
 
   - name: Install sushy-tools
