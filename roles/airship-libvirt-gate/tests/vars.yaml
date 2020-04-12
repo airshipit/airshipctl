@@ -10,13 +10,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-airship_gate_redfish:
-  hostname: "redfish-emulator"
-  username: "username"
-  password: "password"
-  secure_port: 443
-  port: 8000
-  bind_address: "127.0.0.1"
+airship_gate_redfish_noauth:
+  servername: "localhost"
+  ip:
+  - "127.0.0.1"
+  - "::1"
+  http_port: 8000
+
+airship_gate_redfish_auth:
+  servername: "localhost"
+  ip:
+  - "127.0.0.1"
+  - "::1"
+  https_port: 8443
+  user:
+  - username: "username"
+    password: "password"
 
 airship_gate_names:
   provision_network: air_prov

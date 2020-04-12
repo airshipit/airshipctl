@@ -1,0 +1,59 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- name: ensure OS
+  when: ansible_distribution != 'Debian' and ansible_distribution != 'Ubuntu'
+  fail:
+    msg: "Only Debian|Ubuntu are currently supported"
+
+- name: Preparing wsgi module for sushy-emulator
+  become: true
+  block:
+
+  - name: Ensure Apache
+    include_role:
+      name: apache-server
+
+  - name: Install needed packages
+    apt:
+      name:
+      - python3-pip
+      - libapache2-mod-wsgi-py3
+      state: present
+
+  - name: Install sushy-tools
+    pip:
+      name: sushy-tools
+      executable: pip3
+
+  - name: Create a used wsgi will run with
+    user:
+      name: wsgiapp-sushy
+      groups: libvirt
+      state: present
+      system: yes
+
+  - name: Create sushy-emulator wsgi dir
+    file:
+      path: /var/www/sushy-emulator/
+      state: directory
+      owner: wsgiapp-sushy
+      group: wsgiapp-sushy
+      mode: u+rwx,g-w,o-w
+
+  - name: Created sushy-emulator wsgi file
+    template:
+      src: sushy-emulator.wsgi.j2
+      dest: /var/www/sushy-emulator/sushy-emulator.wsgi
+      owner: wsgiapp-sushy
+      group: wsgiapp-sushy
+

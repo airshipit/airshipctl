@@ -11,20 +11,21 @@
 # limitations under the License.
 
 ---
-- hosts: primary
-  tasks:
-    - name: set default roles
-      set_fact:
-        test_subject_roles_default:
-        - libvirt-network
-        - libvirt-pool
-        - libvirt-volume
-        - libvirt-domain
-        - apache-wsgi-sushy-emulator
-        - airship-libvirt-gate
-        - http-fileserver
-    - name: run tests against defined roles
-      include_tasks: "../../roles/{{ role_name }}/tests/main.yaml"
-      with_items: "{{ test_subject_roles | default(test_subject_roles_default) }}"
-      loop_control:
-        loop_var: role_name
+# handlers file for ansible-apache2
+- name: restart apache2
+  service:
+    name: "apache2"
+    state: "restarted"
+  become: true
+
+- name: reload apache2
+  service:
+    name: "apache2"
+    state: "reloaded"
+  become: true
+
+- name: "restart httpd"
+  service:
+    name: "httpd"
+    state: "restarted"
+  become: true

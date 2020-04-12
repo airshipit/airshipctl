@@ -10,14 +10,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: reload systemd configuration
-  become: yes
-  systemd:
-    daemon_reload: yes
-
-- name: restart sushy-emulator
-  become: yes
-  service:
-    name: sushy-tools
-    state: restarted
-    enabled: true
+- include_tasks: "{{ sushy_emulator_action }}.yml"

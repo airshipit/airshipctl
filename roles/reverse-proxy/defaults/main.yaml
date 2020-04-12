@@ -1,9 +1,0 @@
-reverse_proxy_action: install
-
-reverse_proxy_hostname: "redfish-emulator"
-reverse_proxy_username: "username"
-reverse_proxy_password: "password"
-reverse_proxy_frontend_ip: "127.0.0.1"
-reverse_proxy_frontend_port: 443
-reverse_proxy_backend_ip: "127.0.0.1"
-reverse_proxy_backend_port: 8000

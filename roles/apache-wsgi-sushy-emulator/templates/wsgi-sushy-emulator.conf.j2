@@ -1,0 +1,29 @@
+{% if sushy_emulator_frontend_http_port != 80 %}
+Listen {{ sushy_emulator_frontend_http_port }}
+{% endif %}
+<VirtualHost *:{{ sushy_emulator_frontend_http_port }}>
+     # Add machine's IP address (use ifconfig command)
+     ServerName {{ sushy_emulator_frontend_servername }}
+     # Give an alias to to start your website url with
+     WSGIDaemonProcess wsgiapp-{{ sushy_emulator_frontend_name }} user=wsgiapp-sushy processes=2 threads=5
+     WSGIScriptAlias / /var/www/sushy-emulator/sushy-emulator.wsgi
+     <Directory /var/www/sushy-emulator/>
+        # set permissions as per apache2.conf file
+        WSGIProcessGroup wsgiapp-{{ sushy_emulator_frontend_name }}
+        Options FollowSymLinks
+        AllowOverride None
+        Require all granted
+     </Directory>
+{% if sushy_emulator_frontend_user is defined %}
+     <Location />
+        AuthType Basic
+        AuthName "Authentication Required"
+        AuthUserFile /etc/apache2/sites-available/{{ sushy_emulator_frontend_name }}.htpasswd
+        Require valid-user
+     </Location>
+{% endif %}
+     ErrorLog ${APACHE_LOG_DIR}/error.log
+     LogLevel warn
+     CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+
