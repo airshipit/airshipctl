@@ -22,7 +22,6 @@
         - libvirt-devel
         - libvirt-daemon-kvm
         - qemu-kvm
-        - virt-install
       state: present
   - name: Ensuring Libvirt, Qemu and support packages are present
     become: true
@@ -33,11 +32,8 @@
         - libvirt-bin
         - libguestfs-tools
         - qemu-kvm
-        - virtinst
-        - python-lxml
         - python3-lxml
         - python3-libvirt
-        - python-libvirt
         - dnsmasq
         - ebtables
       state: present
