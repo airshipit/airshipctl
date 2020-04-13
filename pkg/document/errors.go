@@ -18,8 +18,13 @@ import (
 	"fmt"
 )
 
-// ErrDocNotFound returned if desired document not found
+// ErrDocNotFound returned if desired document not found by selector
 type ErrDocNotFound struct {
+	Selector Selector
+}
+
+// ErrMultiDocsFound returned if multiple documents were found by selector
+type ErrMultiDocsFound struct {
 	Selector Selector
 }
 
@@ -36,23 +41,18 @@ type ErrDocumentMalformed struct {
 	Message string
 }
 
-// ErrMultipleDocsFound returned if desired document not found
-type ErrMultipleDocsFound struct {
-	Selector Selector
+func (e ErrDocNotFound) Error() string {
+	return fmt.Sprintf("document filtered by selector %v found no documents", e.Selector)
 }
 
-func (e ErrDocNotFound) Error() string {
-	return fmt.Sprintf("Document filtered by selector %v found no documents", e.Selector)
+func (e ErrMultiDocsFound) Error() string {
+	return fmt.Sprintf("document filtered by selector %v found more than one document", e.Selector)
 }
 
 func (e ErrDocumentDataKeyNotFound) Error() string {
-	return fmt.Sprintf("Document %q cannot retrieve data key %q", e.DocName, e.Key)
+	return fmt.Sprintf("document %q cannot retrieve data key %q", e.DocName, e.Key)
 }
 
 func (e ErrDocumentMalformed) Error() string {
-	return fmt.Sprintf("Document %q is malformed: %q", e.DocName, e.Message)
-}
-
-func (e ErrMultipleDocsFound) Error() string {
-	return fmt.Sprintf("Document filtered by selector %v found more than one document", e.Selector)
+	return fmt.Sprintf("document %q is malformed: %q", e.DocName, e.Message)
 }

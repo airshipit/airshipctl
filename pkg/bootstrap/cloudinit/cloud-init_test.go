@@ -54,7 +54,7 @@ func TestGetCloudData(t *testing.T) {
 			labelFilter:      "test=ephemeralduplicate",
 			expectedUserData: nil,
 			expectedNetData:  nil,
-			expectedErr: document.ErrMultipleDocsFound{
+			expectedErr: document.ErrMultiDocsFound{
 				Selector: document.NewSelector().
 					ByLabel(document.EphemeralHostSelector).
 					ByKind("BareMetalHost"),
