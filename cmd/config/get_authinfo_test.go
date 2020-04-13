@@ -36,16 +36,15 @@ const (
 )
 
 func TestGetAuthInfoCmd(t *testing.T) {
-	conf := &config.Config{
-		AuthInfos: map[string]*config.AuthInfo{
-			fooAuthInfo: getTestAuthInfo(),
-			barAuthInfo: getTestAuthInfo(),
-			bazAuthInfo: getTestAuthInfo(),
+	settings := &environment.AirshipCTLSettings{
+		Config: &config.Config{
+			AuthInfos: map[string]*config.AuthInfo{
+				fooAuthInfo: getTestAuthInfo(),
+				barAuthInfo: getTestAuthInfo(),
+				bazAuthInfo: getTestAuthInfo(),
+			},
 		},
 	}
-
-	settings := &environment.AirshipCTLSettings{}
-	settings.SetConfig(conf)
 
 	cmdTests := []*testutil.CmdTest{
 		{
@@ -80,8 +79,7 @@ func TestGetAuthInfoCmd(t *testing.T) {
 }
 
 func TestNoAuthInfosGetAuthInfoCmd(t *testing.T) {
-	settings := &environment.AirshipCTLSettings{}
-	settings.SetConfig(&config.Config{})
+	settings := &environment.AirshipCTLSettings{Config: new(config.Config)}
 	cmdTest := &testutil.CmdTest{
 		Name:    "no-credentials",
 		CmdLine: "",

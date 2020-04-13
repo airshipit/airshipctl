@@ -44,7 +44,7 @@ func NewCmdConfigUseContext(rootSettings *environment.AirshipCTLSettings) *cobra
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			contextName := args[0]
-			err := config.RunUseContext(contextName, rootSettings.Config())
+			err := config.RunUseContext(contextName, rootSettings.Config)
 			if err != nil {
 				return err
 			}

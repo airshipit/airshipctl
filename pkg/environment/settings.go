@@ -30,9 +30,9 @@ import (
 type AirshipCTLSettings struct {
 	// Debug is used for verbose output
 	Debug             bool
-	airshipConfigPath string
-	kubeConfigPath    string
-	config            *config.Config
+	AirshipConfigPath string
+	KubeConfigPath    string
+	Config            *config.Config
 }
 
 // InitFlags adds the default settings flags to cmd
@@ -48,51 +48,27 @@ func (a *AirshipCTLSettings) InitFlags(cmd *cobra.Command) {
 
 	defaultAirshipConfigPath := filepath.Join(defaultAirshipConfigDir, config.AirshipConfig)
 	flags.StringVar(
-		&a.airshipConfigPath,
+		&a.AirshipConfigPath,
 		config.FlagConfigFilePath,
 		"",
 		`Path to file for airshipctl configuration. (default "`+defaultAirshipConfigPath+`")`)
 
 	defaultKubeConfigPath := filepath.Join(defaultAirshipConfigDir, config.AirshipKubeConfig)
 	flags.StringVar(
-		&a.kubeConfigPath,
+		&a.KubeConfigPath,
 		clientcmd.RecommendedConfigPathFlag,
 		"",
 		`Path to kubeconfig associated with airshipctl configuration. (default "`+defaultKubeConfigPath+`")`)
 }
 
-func (a *AirshipCTLSettings) Config() *config.Config {
-	return a.config
-}
-
-func (a *AirshipCTLSettings) SetConfig(conf *config.Config) {
-	a.config = conf
-}
-
-func (a *AirshipCTLSettings) AirshipConfigPath() string {
-	return a.airshipConfigPath
-}
-
-func (a *AirshipCTLSettings) SetAirshipConfigPath(acp string) {
-	a.airshipConfigPath = acp
-}
-
-func (a *AirshipCTLSettings) KubeConfigPath() string {
-	return a.kubeConfigPath
-}
-
-func (a *AirshipCTLSettings) SetKubeConfigPath(kcp string) {
-	a.kubeConfigPath = kcp
-}
-
 // InitConfig - Initializes and loads Config it exists.
 func (a *AirshipCTLSettings) InitConfig() {
-	a.SetConfig(config.NewConfig())
+	a.Config = config.NewConfig()
 
 	a.initAirshipConfigPath()
 	a.initKubeConfigPath()
 
-	err := a.Config().LoadConfig(a.AirshipConfigPath(), a.KubeConfigPath())
+	err := a.Config.LoadConfig(a.AirshipConfigPath, a.KubeConfigPath)
 	if err != nil {
 		// Should stop airshipctl
 		log.Fatal(err)
@@ -101,19 +77,19 @@ func (a *AirshipCTLSettings) InitConfig() {
 
 func (a *AirshipCTLSettings) initAirshipConfigPath() {
 	// The airshipConfigPath may already have been received as a command line argument
-	if a.airshipConfigPath != "" {
+	if a.AirshipConfigPath != "" {
 		return
 	}
 
 	// Otherwise, we can check if we got the path via ENVIRONMENT variable
-	a.airshipConfigPath = os.Getenv(config.AirshipConfigEnv)
-	if a.airshipConfigPath != "" {
+	a.AirshipConfigPath = os.Getenv(config.AirshipConfigEnv)
+	if a.AirshipConfigPath != "" {
 		return
 	}
 
 	// Otherwise, we'll try putting it in the home directory
 	homeDir := userHomeDir()
-	a.airshipConfigPath = filepath.Join(homeDir, config.AirshipConfigDir, config.AirshipConfig)
+	a.AirshipConfigPath = filepath.Join(homeDir, config.AirshipConfigDir, config.AirshipConfig)
 }
 
 func (a *AirshipCTLSettings) initKubeConfigPath() {
@@ -125,19 +101,19 @@ func (a *AirshipCTLSettings) initKubeConfigPath() {
 	// explicitly want airshipctl to use it.
 
 	// The kubeConfigPath may already have been received as a command line argument
-	if a.kubeConfigPath != "" {
+	if a.KubeConfigPath != "" {
 		return
 	}
 
 	// Otherwise, we can check if we got the path via ENVIRONMENT variable
-	a.kubeConfigPath = os.Getenv(config.AirshipKubeConfigEnv)
-	if a.kubeConfigPath != "" {
+	a.KubeConfigPath = os.Getenv(config.AirshipKubeConfigEnv)
+	if a.KubeConfigPath != "" {
 		return
 	}
 
 	// Otherwise, we'll try putting it in the home directory
 	homeDir := userHomeDir()
-	a.kubeConfigPath = filepath.Join(homeDir, config.AirshipConfigDir, config.AirshipKubeConfig)
+	a.KubeConfigPath = filepath.Join(homeDir, config.AirshipConfigDir, config.AirshipKubeConfig)
 }
 
 // userHomeDir is a utility function that wraps os.UserHomeDir and returns no

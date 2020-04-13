@@ -38,17 +38,16 @@ const (
 )
 
 func TestGetContextCmd(t *testing.T) {
-	conf := &config.Config{
-		Contexts: map[string]*config.Context{
-			fooContext: getNamedTestContext(fooContext),
-			barContext: getNamedTestContext(barContext),
-			bazContext: getNamedTestContext(bazContext),
+	settings := &environment.AirshipCTLSettings{
+		Config: &config.Config{
+			Contexts: map[string]*config.Context{
+				fooContext: getNamedTestContext(fooContext),
+				barContext: getNamedTestContext(barContext),
+				bazContext: getNamedTestContext(bazContext),
+			},
+			CurrentContext: bazContext,
 		},
-		CurrentContext: bazContext,
 	}
-
-	settings := &environment.AirshipCTLSettings{}
-	settings.SetConfig(conf)
 
 	cmdTests := []*testutil.CmdTest{
 		{
@@ -88,8 +87,7 @@ found in the configuration.`, missingContext),
 }
 
 func TestNoContextsGetContextCmd(t *testing.T) {
-	settings := &environment.AirshipCTLSettings{}
-	settings.SetConfig(&config.Config{})
+	settings := &environment.AirshipCTLSettings{Config: new(config.Config)}
 	cmdTest := &testutil.CmdTest{
 		Name:    "no-contexts",
 		CmdLine: "",

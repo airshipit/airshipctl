@@ -82,7 +82,7 @@ func TestFlagLoading(t *testing.T) {
 			err = rootCmd.Execute()
 			require.NoError(t, err)
 
-			assert.Equal(t, settings.AirshipConfigPath(), tt.expected)
+			assert.Equal(t, settings.AirshipConfigPath, tt.expected)
 		})
 	}
 }

@@ -39,31 +39,30 @@ const (
 )
 
 func TestGetClusterCmd(t *testing.T) {
-	conf := &config.Config{
-		Clusters: map[string]*config.ClusterPurpose{
-			fooCluster: {
-				ClusterTypes: map[string]*config.Cluster{
-					config.Ephemeral: getNamedTestCluster(fooCluster, config.Ephemeral),
-					config.Target:    getNamedTestCluster(fooCluster, config.Target),
+	settings := &environment.AirshipCTLSettings{
+		Config: &config.Config{
+			Clusters: map[string]*config.ClusterPurpose{
+				fooCluster: {
+					ClusterTypes: map[string]*config.Cluster{
+						config.Ephemeral: getNamedTestCluster(fooCluster, config.Ephemeral),
+						config.Target:    getNamedTestCluster(fooCluster, config.Target),
+					},
 				},
-			},
-			barCluster: {
-				ClusterTypes: map[string]*config.Cluster{
-					config.Ephemeral: getNamedTestCluster(barCluster, config.Ephemeral),
-					config.Target:    getNamedTestCluster(barCluster, config.Target),
+				barCluster: {
+					ClusterTypes: map[string]*config.Cluster{
+						config.Ephemeral: getNamedTestCluster(barCluster, config.Ephemeral),
+						config.Target:    getNamedTestCluster(barCluster, config.Target),
+					},
 				},
-			},
-			bazCluster: {
-				ClusterTypes: map[string]*config.Cluster{
-					config.Ephemeral: getNamedTestCluster(bazCluster, config.Ephemeral),
-					config.Target:    getNamedTestCluster(bazCluster, config.Target),
+				bazCluster: {
+					ClusterTypes: map[string]*config.Cluster{
+						config.Ephemeral: getNamedTestCluster(bazCluster, config.Ephemeral),
+						config.Target:    getNamedTestCluster(bazCluster, config.Target),
+					},
 				},
 			},
 		},
 	}
-
-	settings := &environment.AirshipCTLSettings{}
-	settings.SetConfig(conf)
 
 	cmdTests := []*testutil.CmdTest{
 		{
@@ -121,8 +120,7 @@ func TestGetClusterCmd(t *testing.T) {
 }
 
 func TestNoClustersGetClusterCmd(t *testing.T) {
-	settings := &environment.AirshipCTLSettings{}
-	settings.SetConfig(&config.Config{})
+	settings := &environment.AirshipCTLSettings{Config: new(config.Config)}
 	cmdTest := &testutil.CmdTest{
 		Name:    "no-clusters",
 		CmdLine: "",

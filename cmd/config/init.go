@@ -32,14 +32,7 @@ func NewCmdConfigInit(rootSettings *environment.AirshipCTLSettings) *cobra.Comma
 		Use:   "init",
 		Short: configInitLong,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c := rootSettings.Config()
-
-			err := c.PersistConfig()
-			if err != nil {
-				return err
-			}
-
-			return nil
+			return rootSettings.Config.PersistConfig()
 		},
 	}
 

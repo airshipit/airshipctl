@@ -201,10 +201,7 @@ func TestModifyCluster(t *testing.T) {
 }
 
 func (test setClusterTest) run(t *testing.T) {
-	// Get the Environment
-	settings := &environment.AirshipCTLSettings{}
-	settings.SetConfig(test.givenConfig)
-
+	settings := &environment.AirshipCTLSettings{Config: test.givenConfig}
 	buf := bytes.NewBuffer([]byte{})
 
 	cmd := cmd.NewCmdConfigSetCluster(settings)
@@ -219,7 +216,7 @@ func (test setClusterTest) run(t *testing.T) {
 	require.NoErrorf(t, err, "unexpected error executing command: %v, args: %v, flags: %v", err, test.args, test.flags)
 
 	// Loads the Config File that was updated
-	afterRunConf := settings.Config()
+	afterRunConf := settings.Config
 	// Get ClusterType
 	tctypeFlag := cmd.Flag(config.FlagClusterType)
 	require.NotNil(t, tctypeFlag)

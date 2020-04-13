@@ -64,7 +64,7 @@ func (infra *Infra) Deploy() error {
 		ao.SetPrune(document.InitInfraSelector)
 	}
 
-	globalConf := infra.RootSettings.Config()
+	globalConf := infra.RootSettings.Config
 	if err = globalConf.EnsureComplete(); err != nil {
 		return err
 	}

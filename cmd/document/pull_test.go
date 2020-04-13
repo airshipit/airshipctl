@@ -27,27 +27,26 @@ import (
 )
 
 func getDummyAirshipSettings(t *testing.T) *environment.AirshipCTLSettings {
-	settings := new(environment.AirshipCTLSettings)
-	conf := testutil.DummyConfig()
-	mfst := conf.Manifests["dummy_manifest"]
+	settings := &environment.AirshipCTLSettings{Config: testutil.DummyConfig()}
 
 	err := fixtures.Init()
 	require.NoError(t, err)
 
 	fx := fixtures.Basic().One()
 
-	mfst.Repositories = map[string]*config.Repository{"primary": {
-		URLString: fx.DotGit().Root(),
-		CheckoutOptions: &config.RepoCheckout{
-			Branch:        "master",
-			ForceCheckout: false,
+	mfst := settings.Config.Manifests["dummy_manifest"]
+	mfst.Repositories = map[string]*config.Repository{
+		"primary": {
+			URLString: fx.DotGit().Root(),
+			CheckoutOptions: &config.RepoCheckout{
+				Branch:        "master",
+				ForceCheckout: false,
+			},
+			Auth: &config.RepoAuth{
+				Type: "http-basic",
+			},
 		},
-		Auth: &config.RepoAuth{
-			Type: "http-basic",
-		},
-	},
 	}
-	settings.SetConfig(conf)
 	return settings
 }
 

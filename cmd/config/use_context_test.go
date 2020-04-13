@@ -26,11 +26,7 @@ import (
 )
 
 func TestConfigUseContext(t *testing.T) {
-	conf := testutil.DummyConfig()
-
-	settings := &environment.AirshipCTLSettings{}
-	settings.SetConfig(conf)
-
+	settings := &environment.AirshipCTLSettings{Config: testutil.DummyConfig()}
 	cmdTests := []*testutil.CmdTest{
 		{
 			Name:    "config-use-context",

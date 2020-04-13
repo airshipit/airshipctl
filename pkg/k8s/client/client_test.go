@@ -32,10 +32,8 @@ const (
 )
 
 func TestNewClient(t *testing.T) {
-	settings := &environment.AirshipCTLSettings{}
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
-	settings.SetConfig(conf)
 
 	akp, err := filepath.Abs(kubeconfigPath)
 	require.NoError(t, err)
@@ -43,8 +41,11 @@ func TestNewClient(t *testing.T) {
 	adir, err := filepath.Abs(airshipConfigDir)
 	require.NoError(t, err)
 
-	settings.SetAirshipConfigPath(adir)
-	settings.SetKubeConfigPath(akp)
+	settings := &environment.AirshipCTLSettings{
+		Config:            conf,
+		AirshipConfigPath: adir,
+		KubeConfigPath:    akp,
+	}
 
 	client, err := client.NewClient(settings)
 	assert.NoError(t, err)
