@@ -25,7 +25,7 @@ type Factory struct {
 
 // Document interface
 type Document interface {
-	Annotate(key, value string)
+	Annotate(map[string]string)
 	AsYAML() ([]byte, error)
 	GetAnnotations() map[string]string
 	GetBool(path string) (bool, error)
@@ -40,31 +40,37 @@ type Document interface {
 	GetString(path string) (string, error)
 	GetStringMap(path string) (map[string]string, error)
 	GetStringSlice(path string) ([]string, error)
-	Label(key, value string)
+	Label(map[string]string)
 	MarshalJSON() ([]byte, error)
 }
 
 // Factory implements Document
 var _ Document = &Factory{}
 
-// Annotate document by applying annotation to it
-func (d *Factory) Annotate(key string, value string) {
+// Annotate document by applying annotations as map
+func (d *Factory) Annotate(newAnnotations map[string]string) {
 	annotations := d.GetAnnotations()
 	if annotations == nil {
 		annotations = make(map[string]string)
 	}
-	annotations[key] = value
+	// override Current labels
+	for key, val := range newAnnotations {
+		annotations[key] = val
+	}
 	d.SetAnnotations(annotations)
 }
 
-// Label document by applying label on it
-func (d *Factory) Label(key string, value string) {
-	labels := d.GetKustomizeResource().GetLabels()
+// Label document by applying labels as map
+func (d *Factory) Label(newLabels map[string]string) {
+	labels := d.GetLabels()
 	if labels == nil {
 		labels = make(map[string]string)
 	}
-	labels[key] = value
-	d.GetKustomizeResource().SetLabels(labels)
+	// override Current labels
+	for key, val := range newLabels {
+		labels[key] = val
+	}
+	d.SetLabels(labels)
 }
 
 // GetNamespace returns the namespace the resource thinks it's in.
