@@ -2,9 +2,9 @@ apiVersion: metal3.io/v1alpha1
 kind: BareMetalHost
 metadata:
   annotations:
-    config.kubernetes.io/local-config: "true"
   labels:
     airshipit.org/ephemeral-node: "true"
+    airshipit.org/deploy-k8s: "false"
   name: master-0
 spec:
   online: true

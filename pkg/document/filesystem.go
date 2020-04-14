@@ -17,7 +17,7 @@ package document
 import (
 	"io/ioutil"
 
-	"sigs.k8s.io/kustomize/v3/pkg/fs"
+	fs "sigs.k8s.io/kustomize/api/filesys"
 )
 
 // File extends kustomize File and provide abstraction to creating temporary files

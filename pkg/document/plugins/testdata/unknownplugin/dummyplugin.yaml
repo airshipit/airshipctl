@@ -1,4 +1,0 @@
-apiVersion: builtin
-kind: SomeKind
-metadata:
-  name: notImportantHere

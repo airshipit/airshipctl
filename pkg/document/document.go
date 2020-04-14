@@ -15,7 +15,7 @@
 package document
 
 import (
-	"sigs.k8s.io/kustomize/v3/pkg/resource"
+	"sigs.k8s.io/kustomize/api/resource"
 )
 
 // Factory holds document data

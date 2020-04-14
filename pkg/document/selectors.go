@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"strings"
 
-	"sigs.k8s.io/kustomize/v3/pkg/gvk"
-	"sigs.k8s.io/kustomize/v3/pkg/types"
+	"sigs.k8s.io/kustomize/api/resid"
+	"sigs.k8s.io/kustomize/api/types"
 )
 
 // Selector provides abstraction layer in front of kustomize selector
@@ -49,13 +49,13 @@ func (s Selector) ByNamespace(namespace string) Selector {
 
 // ByGvk select by gvk
 func (s Selector) ByGvk(group, version, kind string) Selector {
-	s.Gvk = gvk.Gvk{Group: group, Version: version, Kind: kind}
+	s.Gvk = resid.Gvk{Group: group, Version: version, Kind: kind}
 	return s
 }
 
 // ByKind select by Kind
 func (s Selector) ByKind(kind string) Selector {
-	s.Gvk = gvk.Gvk{Kind: kind}
+	s.Gvk = resid.Gvk{Kind: kind}
 	return s
 }
 
@@ -155,5 +155,5 @@ func NewNetworkDataSelector(bmhDoc Document) (Selector, error) {
 // NewDeployToK8sSelector returns a selector to get documents that are to be deployed
 // to kubernetes cluster.
 func NewDeployToK8sSelector() Selector {
-	return NewSelector().ByAnnotation(DeployToK8sSelector)
+	return NewSelector().ByLabel(DeployToK8sSelector)
 }
