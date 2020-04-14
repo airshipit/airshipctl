@@ -393,7 +393,7 @@ func TestRunCommand(t *testing.T) {
 					return resC, nil
 				},
 				containerLogs: func() (io.ReadCloser, error) {
-					return nil, fmt.Errorf("Logs error")
+					return nil, fmt.Errorf("logs error")
 				},
 			},
 			expectedErr: ErrRunContainerCommand{Cmd: "docker logs testID"},

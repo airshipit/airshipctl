@@ -25,10 +25,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 )
 
-const (
-	AirshipHostKind string = "BareMetalHost"
-)
-
 // Adapter bridges the gap between out-of-band clients. It can hold any type of OOB client, e.g. Redfish.
 type Adapter struct {
 	OOBClient    Client
@@ -51,7 +47,7 @@ func (a *Adapter) configureClient(remoteURL string) error {
 		}
 
 		baseURL := fmt.Sprintf("%s://%s", rfURL.Scheme, rfURL.Host)
-		schemeSplit := strings.Split(rfURL.Scheme, redfish.RedfishURLSchemeSeparator)
+		schemeSplit := strings.Split(rfURL.Scheme, redfish.URLSchemeSeparator)
 		if len(schemeSplit) > 1 {
 			baseURL = fmt.Sprintf("%s://%s", schemeSplit[len(schemeSplit)-1], rfURL.Host)
 		}

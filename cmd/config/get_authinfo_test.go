@@ -69,7 +69,7 @@ func TestGetAuthInfoCmd(t *testing.T) {
 			CmdLine: fmt.Sprintf("%s", missingAuthInfo),
 			Cmd:     cmd.NewCmdConfigGetAuthInfo(settings),
 			Error: fmt.Errorf("user %s information was not "+
-				"found in the configuration.", missingAuthInfo),
+				"found in the configuration", missingAuthInfo),
 		},
 	}
 

@@ -32,17 +32,17 @@ type FileSystem interface {
 	TempFile(string, string) (File, error)
 }
 
-// DocumentFs is adaptor to TempFile
-type DocumentFs struct {
+// Fs is adaptor to TempFile
+type Fs struct {
 	fs.FileSystem
 }
 
-// NewDocumentFs returns an instalce of DocumentFs
+// NewDocumentFs returns an instance of Fs
 func NewDocumentFs() FileSystem {
-	return &DocumentFs{FileSystem: fs.MakeFsOnDisk()}
+	return &Fs{FileSystem: fs.MakeFsOnDisk()}
 }
 
 // TempFile creates file in temporary filesystem, at default os.TempDir
-func (dfs DocumentFs) TempFile(tmpDir string, prefix string) (File, error) {
+func (dfs Fs) TempFile(tmpDir string, prefix string) (File, error) {
 	return ioutil.TempFile(tmpDir, prefix)
 }

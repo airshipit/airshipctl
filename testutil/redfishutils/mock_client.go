@@ -110,8 +110,8 @@ func (m *MockClient) SystemPowerStatus(ctx context.Context, systemID string) (st
 
 // NewClient returns a mocked Redfish client in order to test functions that use the Redfish client without making any
 // Redfish API calls.
-func NewClient(ephemeralNodeID string, isoPath string, redfishURL string, insecure bool,
-	proxy bool, username string, password string) (context.Context, *MockClient, error) {
+func NewClient(ephemeralNodeID string, isoPath string, redfishURL string, username string,
+	password string) (context.Context, *MockClient, error) {
 	var ctx context.Context
 	if username != "" && password != "" {
 		ctx = context.WithValue(

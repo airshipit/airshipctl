@@ -24,7 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
-	dynamic_fake "k8s.io/client-go/dynamic/fake"
+	dynamicFake "k8s.io/client-go/dynamic/fake"
 
 	"opendev.org/airship/airshipctl/pkg/cluster"
 	"opendev.org/airship/airshipctl/pkg/document"
@@ -149,7 +149,7 @@ func TestGetStatusForResource(t *testing.T) {
 				ByGvk("example.com", "v1", "Missing").
 				ByName("missing-resource"),
 			testClient: makeTestClient(),
-			err:        cluster.ErrResourceNotFound{"missing-resource"},
+			err:        cluster.ErrResourceNotFound{Resource: "missing-resource"},
 		},
 	}
 
@@ -180,7 +180,7 @@ func TestGetStatusForResource(t *testing.T) {
 func makeTestClient(obj ...runtime.Object) fake.Client {
 	testClient := fake.Client{
 		MockDynamicClient: func() dynamic.Interface {
-			return dynamic_fake.NewSimpleDynamicClient(runtime.NewScheme(), obj...)
+			return dynamicFake.NewSimpleDynamicClient(runtime.NewScheme(), obj...)
 		},
 	}
 	return testClient

@@ -113,7 +113,7 @@ func TestDoRemoteDirectRedfish(t *testing.T) {
 	a, err := NewAdapter(settings)
 	assert.NoError(t, err)
 
-	ctx, rMock, err := redfishutils.NewClient(systemID, isoURL, redfishURL, false, false, "admin", "password")
+	ctx, rMock, err := redfishutils.NewClient(systemID, isoURL, redfishURL, "admin", "password")
 	assert.NoError(t, err)
 
 	rMock.On("SetVirtualMedia", a.Context, isoURL).Times(1).Return(nil)
@@ -140,7 +140,7 @@ func TestDoRemoteDirectRedfishVirtualMediaError(t *testing.T) {
 	a, err := NewAdapter(settings)
 	assert.NoError(t, err)
 
-	ctx, rMock, err := redfishutils.NewClient(systemID, isoURL, redfishURL, false, false, "admin", "password")
+	ctx, rMock, err := redfishutils.NewClient(systemID, isoURL, redfishURL, "admin", "password")
 	assert.NoError(t, err)
 
 	expectedErr := redfish.ErrRedfishClient{Message: "Unable to set virtual media."}
@@ -169,7 +169,7 @@ func TestDoRemoteDirectRedfishBootSourceError(t *testing.T) {
 	a, err := NewAdapter(settings)
 	assert.NoError(t, err)
 
-	ctx, rMock, err := redfishutils.NewClient(systemID, isoURL, redfishURL, false, false, "admin", "password")
+	ctx, rMock, err := redfishutils.NewClient(systemID, isoURL, redfishURL, "admin", "password")
 	assert.NoError(t, err)
 
 	rMock.On("SetVirtualMedia", a.Context, isoURL).Times(1).Return(nil)
@@ -199,7 +199,7 @@ func TestDoRemoteDirectRedfishRebootError(t *testing.T) {
 	a, err := NewAdapter(settings)
 	assert.NoError(t, err)
 
-	ctx, rMock, err := redfishutils.NewClient(systemID, isoURL, redfishURL, false, false, "admin", "password")
+	ctx, rMock, err := redfishutils.NewClient(systemID, isoURL, redfishURL, "admin", "password")
 	assert.NoError(t, err)
 
 	rMock.On("SetVirtualMedia", a.Context, isoURL).Times(1).Return(nil)

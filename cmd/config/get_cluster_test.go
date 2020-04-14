@@ -110,7 +110,7 @@ func TestGetClusterCmd(t *testing.T) {
 			CmdLine: fmt.Sprintf("%s %s", targetFlag, missingCluster),
 			Cmd:     cmd.NewCmdConfigGetCluster(settings),
 			Error: fmt.Errorf("cluster clustermissing information was not " +
-				"found in the configuration."),
+				"found in the configuration"),
 		},
 	}
 

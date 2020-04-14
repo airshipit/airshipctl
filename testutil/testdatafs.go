@@ -20,7 +20,7 @@ import (
 func SetupTestFs(t *testing.T, fixtureDir string) document.FileSystem {
 	t.Helper()
 
-	x := &document.DocumentFs{FileSystem: fs.MakeFsInMemory()}
+	x := &document.Fs{FileSystem: fs.MakeFsInMemory()}
 
 	files, err := ioutil.ReadDir(fixtureDir)
 	require.NoErrorf(t, err, "Failed to read fixture directory %s", fixtureDir)

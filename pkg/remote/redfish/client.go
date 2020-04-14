@@ -203,7 +203,7 @@ func NewClient(ephemeralNodeID string,
 	// We clone the default transport to ensure when we customize the transport
 	// that we are providing it sane timeouts and other defaults that we would
 	// normally get when not overriding the transport
-	defaultTransportCopy := (http.DefaultTransport.(*http.Transport))
+	defaultTransportCopy := http.DefaultTransport.(*http.Transport) //nolint:errcheck
 	transport := defaultTransportCopy.Clone()
 
 	if insecure {

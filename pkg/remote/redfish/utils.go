@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	RedfishURLSchemeSeparator = "+"
+	URLSchemeSeparator = "+"
 )
 
 // GetResourceIDFromURL returns a parsed Redfish resource ID
