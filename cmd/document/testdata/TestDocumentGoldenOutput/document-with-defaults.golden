@@ -5,6 +5,7 @@ Usage:
 
 Available Commands:
   help        Help about any command
+  plugin      used as kustomize exec plugin
   pull        pulls documents from remote git repository
   render      Render documents from model
 

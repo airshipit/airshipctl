@@ -1,0 +1,27 @@
+Subcommand reads configuration file CONFIG passed as
+a first argument and determines a particular plugin to execute. Additional
+arguments may be passed to this sub-command abd can be used by the
+particular plugin. CONFIG file must be structured as kubernetes
+manifest (i.e. resource) and must have 'apiVersion' and 'kind' keys.
+
+Example:
+$ cat /tmp/generator.yaml
+---
+apiVersion: airshipit.org/v1alpha1
+kind: BareMetalHostGenerator
+spec:
+  hostList:
+	- mac: 00:aa:bb:cc:dd
+	  powerAddress: redfish+http://1.2.3.4/
+
+$ airshipctl document plugin /tmp/generator.yaml
+
+subcommand will try to identify appropriate plugin using apiVersion and
+kind keys (a.k.a group, version, kind) as an identifier. If appropriate
+plugin was not found command returns an error.
+
+Usage:
+  plugin CONFIG [ARGS] [flags]
+
+Flags:
+  -h, --help   help for plugin

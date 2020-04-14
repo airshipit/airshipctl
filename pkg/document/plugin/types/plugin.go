@@ -12,24 +12,19 @@
  limitations under the License.
 */
 
-package document
+package types
 
 import (
-	"github.com/spf13/cobra"
+	"io"
 
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
-// NewDocumentCommand creates a new command for managing airshipctl documents
-func NewDocumentCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
-	documentRootCmd := &cobra.Command{
-		Use:   "document",
-		Short: "manages deployment documents",
-	}
-
-	documentRootCmd.AddCommand(NewDocumentPullCommand(rootSettings))
-	documentRootCmd.AddCommand(NewRenderCommand(rootSettings))
-	documentRootCmd.AddCommand(NewDocumentPluginCommand(rootSettings))
-
-	return documentRootCmd
+// Plugin interface for airship document plugins
+type Plugin interface {
+	Run(io.Reader, io.Writer) error
 }
+
+// Factory function for plugins. Functions of such type are used in the plugin
+// registry to instantiate a plugin object
+type Factory func(*environment.AirshipCTLSettings, []byte) (Plugin, error)

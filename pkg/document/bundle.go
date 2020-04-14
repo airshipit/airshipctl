@@ -18,7 +18,6 @@ import (
 	"io"
 	"strings"
 
-	"sigs.k8s.io/kustomize/api/konfig"
 	"sigs.k8s.io/kustomize/api/krusty"
 	"sigs.k8s.io/kustomize/api/resmap"
 	"sigs.k8s.io/kustomize/api/types"
@@ -84,8 +83,11 @@ func NewBundle(fSys FileSystem, kustomizePath string) (Bundle, error) {
 	var o = krusty.Options{
 		DoLegacyResourceSort: true, // Default and what we want
 		LoadRestrictions:     options.LoadRestrictions,
-		DoPrune:              false,                         // Default
-		PluginConfig:         konfig.DisabledPluginConfig(), // Default
+		DoPrune:              false, // Default
+		PluginConfig: &types.PluginConfig{
+			AbsPluginHome:      kustomizePath,
+			PluginRestrictions: types.PluginRestrictionsNone,
+		},
 	}
 
 	kustomizer := krusty.MakeKustomizer(fSys, &o)

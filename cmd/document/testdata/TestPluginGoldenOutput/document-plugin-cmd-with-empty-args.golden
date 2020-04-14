@@ -1,0 +1,7 @@
+Error: requires at least 1 arg(s), only received 0
+Usage:
+  plugin CONFIG [ARGS] [flags]
+
+Flags:
+  -h, --help   help for plugin
+

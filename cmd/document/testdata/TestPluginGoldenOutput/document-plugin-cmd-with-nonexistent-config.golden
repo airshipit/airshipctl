@@ -1,0 +1,7 @@
+Error: open /some/random/path.yaml: no such file or directory
+Usage:
+  plugin CONFIG [ARGS] [flags]
+
+Flags:
+  -h, --help   help for plugin
+
