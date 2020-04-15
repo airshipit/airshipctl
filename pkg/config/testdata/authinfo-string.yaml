@@ -1,6 +1,6 @@
 LocationOfOrigin: ""
-client-certificate: dummy_certificate
-client-key: dummy_key
-password: dummy_password
-token: dummy_token
+client-certificate: ZHVtbXlfY2VydGlmaWNhdGU=
+client-key: ZHVtbXlfa2V5
+password: ZHVtbXlfcGFzc3dvcmQ=
+token: ZHVtbXlfdG9rZW4=
 username: dummy_username

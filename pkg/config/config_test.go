@@ -34,6 +34,10 @@ const (
 	stringDelta        = "_changed"
 	currentContextName = "def_ephemeral"
 	defaultString      = "default"
+	newToken           = "dummy_token_changed"
+	newPassword        = "dummy_password_changed"
+	newCertificate     = "dummy_certificate_changed"
+	newKey             = "dummy_key_changed"
 )
 
 func TestString(t *testing.T) {

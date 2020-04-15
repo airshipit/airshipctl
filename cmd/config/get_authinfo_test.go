@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	kubeconfig "k8s.io/client-go/tools/clientcmd/api"
 
 	cmd "opendev.org/airship/airshipctl/cmd/config"
@@ -39,9 +41,15 @@ func TestGetAuthInfoCmd(t *testing.T) {
 	settings := &environment.AirshipCTLSettings{
 		Config: &config.Config{
 			AuthInfos: map[string]*config.AuthInfo{
-				fooAuthInfo: getTestAuthInfo(),
-				barAuthInfo: getTestAuthInfo(),
-				bazAuthInfo: getTestAuthInfo(),
+				fooAuthInfo: getTestAuthInfo(fooAuthInfo),
+			},
+		},
+	}
+	settingsWithMultipleAuth := &environment.AirshipCTLSettings{
+		Config: &config.Config{
+			AuthInfos: map[string]*config.AuthInfo{
+				barAuthInfo: getTestAuthInfo(barAuthInfo),
+				bazAuthInfo: getTestAuthInfo(bazAuthInfo),
 			},
 		},
 	}
@@ -53,8 +61,9 @@ func TestGetAuthInfoCmd(t *testing.T) {
 			Cmd:     cmd.NewGetAuthInfoCommand(settings),
 		},
 		{
-			Name: "get-all-credentials",
-			Cmd:  cmd.NewGetAuthInfoCommand(settings),
+			Name:    "get-all-credentials",
+			CmdLine: "",
+			Cmd:     cmd.NewGetAuthInfoCommand(settingsWithMultipleAuth),
 		},
 		{
 			Name:    "missing",
@@ -80,17 +89,31 @@ func TestNoAuthInfosGetAuthInfoCmd(t *testing.T) {
 	testutil.RunTest(t, cmdTest)
 }
 
-func getTestAuthInfo() *config.AuthInfo {
+func TestDecodeAuthInfo(t *testing.T) {
+	_, err := config.DecodeAuthInfo(&kubeconfig.AuthInfo{Password: "dummy_password"})
+	assert.Error(t, err, config.ErrDecodingCredentials{Given: "dummy_password"})
+
+	_, err = config.DecodeAuthInfo(&kubeconfig.AuthInfo{ClientCertificate: "dummy_certificate"})
+	assert.Error(t, err, config.ErrDecodingCredentials{Given: "dummy_certificate"})
+
+	_, err = config.DecodeAuthInfo(&kubeconfig.AuthInfo{ClientKey: "dummy_key"})
+	assert.Error(t, err, config.ErrDecodingCredentials{Given: "dummy_key"})
+
+	_, err = config.DecodeAuthInfo(&kubeconfig.AuthInfo{Token: "dummy_token"})
+	assert.Error(t, err, config.ErrDecodingCredentials{Given: "dummy_token"})
+}
+
+func getTestAuthInfo(authName string) *config.AuthInfo {
 	kAuthInfo := &kubeconfig.AuthInfo{
-		Username:          "dummy_user",
-		Password:          "dummy_password",
-		ClientCertificate: "dummy_certificate",
-		ClientKey:         "dummy_key",
-		Token:             "dummy_token",
+		Username:          authName + "_user",
+		Password:          authName + "_password",
+		ClientCertificate: authName + "_certificate",
+		ClientKey:         authName + "_key",
+		Token:             authName + "_token",
 	}
 
 	newAuthInfo := &config.AuthInfo{}
-	newAuthInfo.SetKubeAuthInfo(kAuthInfo)
-
+	encodedKAuthInfo := config.EncodeAuthInfo(kAuthInfo)
+	newAuthInfo.SetKubeAuthInfo(encodedKAuthInfo)
 	return newAuthInfo
 }

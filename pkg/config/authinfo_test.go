@@ -29,7 +29,8 @@ func TestGetAuthInfos(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
-	authinfos := conf.GetAuthInfos()
+	authinfos, err := conf.GetAuthInfos()
+	require.NoError(t, err)
 	assert.Len(t, authinfos, 3)
 }
 
@@ -65,15 +66,17 @@ func TestModifyAuthInfo(t *testing.T) {
 	authinfo := conf.AddAuthInfo(co)
 
 	co.Username += stringDelta
-	co.Password += stringDelta
-	co.ClientCertificate += stringDelta
-	co.ClientKey += stringDelta
-	co.Token += stringDelta
+	co.Password = newPassword
+	co.ClientCertificate = newCertificate
+	co.ClientKey = newKey
+	co.Token = newToken
 	conf.ModifyAuthInfo(authinfo, co)
-	assert.EqualValues(t, conf.AuthInfos[co.Name].KubeAuthInfo().Username, co.Username)
-	assert.EqualValues(t, conf.AuthInfos[co.Name].KubeAuthInfo().Password, co.Password)
-	assert.EqualValues(t, conf.AuthInfos[co.Name].KubeAuthInfo().ClientCertificate, co.ClientCertificate)
-	assert.EqualValues(t, conf.AuthInfos[co.Name].KubeAuthInfo().ClientKey, co.ClientKey)
-	assert.EqualValues(t, conf.AuthInfos[co.Name].KubeAuthInfo().Token, co.Token)
-	assert.EqualValues(t, conf.AuthInfos[co.Name], authinfo)
+	modifiedAuthinfo, err := conf.GetAuthInfo(co.Name)
+	assert.NoError(t, err)
+	assert.EqualValues(t, modifiedAuthinfo.KubeAuthInfo().Username, co.Username)
+	assert.EqualValues(t, modifiedAuthinfo.KubeAuthInfo().Password, co.Password)
+	assert.EqualValues(t, modifiedAuthinfo.KubeAuthInfo().ClientCertificate, co.ClientCertificate)
+	assert.EqualValues(t, modifiedAuthinfo.KubeAuthInfo().ClientKey, co.ClientKey)
+	assert.EqualValues(t, modifiedAuthinfo.KubeAuthInfo().Token, co.Token)
+	assert.EqualValues(t, modifiedAuthinfo, authinfo)
 }
