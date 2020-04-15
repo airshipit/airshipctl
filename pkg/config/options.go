@@ -54,21 +54,33 @@ type ClusterOptions struct {
 	EmbedCAData           bool
 }
 
+// TODO(howell): The following functions are tightly coupled with flags passed
+// on the command line. We should find a way to remove this coupling, since it
+// is possible to create (and validate) these objects without using the command
+// line.
+
+// TODO(howell): strongly type the errors in this file
+
 func (o *AuthInfoOptions) Validate() error {
+	// TODO(howell): This prevents a user of airshipctl from creating a
+	// credential with both a bearer-token and a user/password, but it does
+	// not prevent a user from adding a bearer-token to a credential which
+	// already had a user/pass and visa-versa. This could create bugs if a
+	// user at first chooses one method, but later switches to another.
 	if o.Token != "" && (o.Username != "" || o.Password != "") {
-		return fmt.Errorf("you cannot specify more than one authentication method at the same time: --%v or --%v/--%v",
-			FlagBearerToken, FlagUsername, FlagPassword)
+		// TODO(howell): strongly type this error
+		return errors.New("you must specify either token or a username/password")
 	}
 
 	if !o.EmbedCertData {
 		return nil
 	}
 
-	if err := checkExists(FlagCertFile, o.ClientCertificate); err != nil {
+	if err := checkExists("client-certificate", o.ClientCertificate); err != nil {
 		return err
 	}
 
-	if err := checkExists(FlagKeyFile, o.ClientKey); err != nil {
+	if err := checkExists("client-key", o.ClientKey); err != nil {
 		return err
 	}
 
@@ -81,7 +93,7 @@ func (o *ContextOptions) Validate() error {
 	}
 
 	if o.Current && o.Name != "" {
-		return fmt.Errorf("you cannot specify context and --%s Flag at the same time", FlagCurrent)
+		return errors.New("you cannot specify context and --current Flag at the same time")
 	}
 
 	// If the user simply wants to change the current context, no further validation is needed
@@ -111,14 +123,14 @@ func (o *ClusterOptions) Validate() error {
 	}
 
 	if o.InsecureSkipTLSVerify && o.CertificateAuthority != "" {
-		return fmt.Errorf("you cannot specify a %s and %s mode at the same time", FlagCAFile, FlagInsecure)
+		return errors.New("you cannot specify a certificate-authority and insecure-skip-tls-verify mode at the same time")
 	}
 
 	if !o.EmbedCAData {
 		return nil
 	}
 
-	if err := checkExists(FlagCAFile, o.CertificateAuthority); err != nil {
+	if err := checkExists("certificate-authority", o.CertificateAuthority); err != nil {
 		return err
 	}
 

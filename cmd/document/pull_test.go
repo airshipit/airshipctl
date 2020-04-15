@@ -50,12 +50,12 @@ func TestPull(t *testing.T) {
 		{
 			Name:    "document-pull-cmd-with-defaults",
 			CmdLine: "",
-			Cmd:     NewDocumentPullCommand(getDummyAirshipSettings()),
+			Cmd:     NewPullCommand(getDummyAirshipSettings()),
 		},
 		{
 			Name:    "document-pull-cmd-with-help",
 			CmdLine: "--help",
-			Cmd:     NewDocumentPullCommand(nil),
+			Cmd:     NewPullCommand(nil),
 		},
 	}
 

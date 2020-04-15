@@ -52,18 +52,18 @@ func TestConfigSetAuthInfo(t *testing.T) {
 		{
 			Name:    "config-cmd-set-authinfo-with-help",
 			CmdLine: "--help",
-			Cmd:     cmd.NewCmdConfigSetAuthInfo(nil),
+			Cmd:     cmd.NewSetAuthInfoCommand(nil),
 		},
 		{
 			Name:    "config-cmd-set-authinfo-too-many-args",
 			CmdLine: "arg1 arg2",
-			Cmd:     cmd.NewCmdConfigSetAuthInfo(nil),
+			Cmd:     cmd.NewSetAuthInfoCommand(nil),
 			Error:   fmt.Errorf("accepts %d arg(s), received %d", 1, 2),
 		},
 		{
 			Name:    "config-cmd-set-authinfo-too-few-args",
 			CmdLine: "",
-			Cmd:     cmd.NewCmdConfigSetAuthInfo(nil),
+			Cmd:     cmd.NewSetAuthInfoCommand(nil),
 			Error:   fmt.Errorf("accepts %d arg(s), received %d", 1, 0),
 		},
 	}
@@ -89,7 +89,7 @@ func initInputConfig(t *testing.T) (given *config.Config, cleanup func(*testing.
 
 func (test setAuthInfoTest) run(t *testing.T) {
 	settings := &environment.AirshipCTLSettings{Config: test.inputConfig}
-	test.cmdTest.Cmd = cmd.NewCmdConfigSetAuthInfo(settings)
+	test.cmdTest.Cmd = cmd.NewSetAuthInfoCommand(settings)
 	testutil.RunTest(t, test.cmdTest)
 
 	afterRunConf := settings.Config
@@ -122,8 +122,8 @@ func TestSetAuthInfo(t *testing.T) {
 		{
 			testName: "set-auth-info",
 			flags: []string{
-				"--" + config.FlagUsername + "=" + testUsername,
-				"--" + config.FlagPassword + "=" + testPassword,
+				"--username=" + testUsername,
+				"--password=" + testPassword,
 			},
 			userName:     newUserName,
 			userPassword: testPassword,
@@ -132,7 +132,7 @@ func TestSetAuthInfo(t *testing.T) {
 		{
 			testName: "modify-auth-info",
 			flags: []string{
-				"--" + config.FlagPassword + "=" + testPassword + pwdDelta,
+				"--password=" + testPassword + pwdDelta,
 			},
 			userName:     existingUserName,
 			userPassword: testPassword + pwdDelta,

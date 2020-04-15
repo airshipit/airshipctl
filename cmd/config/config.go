@@ -20,23 +20,21 @@ import (
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
-// NewConfigCommand creates a command object for the airshipctl "config" , and adds all child commands to it.
+// NewConfigCommand creates a command for interacting with the airshipctl configuration.
 func NewConfigCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	configRootCmd := &cobra.Command{
 		Use:                   "config",
 		DisableFlagsInUseLine: true,
-		Short:                 "Modify airshipctl config files",
-		Long: `Modify airshipctl config files using subcommands
-like "airshipctl config set-context my-context" `,
+		Short:                 "Manage the airshipctl config file",
 	}
-	configRootCmd.AddCommand(NewCmdConfigSetCluster(rootSettings))
-	configRootCmd.AddCommand(NewCmdConfigGetCluster(rootSettings))
-	configRootCmd.AddCommand(NewCmdConfigSetContext(rootSettings))
-	configRootCmd.AddCommand(NewCmdConfigGetContext(rootSettings))
-	configRootCmd.AddCommand(NewCmdConfigInit(rootSettings))
-	configRootCmd.AddCommand(NewCmdConfigSetAuthInfo(rootSettings))
-	configRootCmd.AddCommand(NewCmdConfigGetAuthInfo(rootSettings))
-	configRootCmd.AddCommand(NewCmdConfigUseContext(rootSettings))
+	configRootCmd.AddCommand(NewSetClusterCommand(rootSettings))
+	configRootCmd.AddCommand(NewGetClusterCommand(rootSettings))
+	configRootCmd.AddCommand(NewSetContextCommand(rootSettings))
+	configRootCmd.AddCommand(NewGetContextCommand(rootSettings))
+	configRootCmd.AddCommand(NewInitCommand(rootSettings))
+	configRootCmd.AddCommand(NewSetAuthInfoCommand(rootSettings))
+	configRootCmd.AddCommand(NewGetAuthInfoCommand(rootSettings))
+	configRootCmd.AddCommand(NewUseContextCommand(rootSettings))
 
 	return configRootCmd
 }

@@ -25,30 +25,31 @@ import (
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
-var (
-	getContextLong = "Display a specific context, the current-context or all defined contexts if no name is provided"
+const (
+	getContextLong = `
+Display information about contexts such as associated manifests, users, and clusters.
+`
 
-	getContextExample = fmt.Sprintf(`# List all the contexts  airshipctl knows about
+	getContextExample = `
+# List all contexts
 airshipctl config get-context
 
 # Display the current context
-airshipctl config get-context --%v
+airshipctl config get-context --current
 
-# Display a specific Context
-airshipctl config get-context e2e`,
-		config.FlagCurrentContext)
+# Display a specific context
+airshipctl config get-context exampleContext
+`
 )
 
-// A Context refers to a particular cluster, however it does not specify which of the cluster types
-// it relates to. Getting explicit  information about a particular context will depend
-// on the ClusterType flag.
-
-// NewCmdConfigGetContext returns a Command instance for 'config -Context' sub command
-func NewCmdConfigGetContext(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+// NewGetContextCommand creates a command for viewing cluster information
+// defined in the airshipctl config file.
+func NewGetContextCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	o := &config.ContextOptions{}
 	cmd := &cobra.Command{
-		Use:     "get-context NAME",
-		Short:   getContextLong,
+		Use:     "get-context [NAME]",
+		Short:   "Get context information from the airshipctl config",
+		Long:    getContextLong[1:],
 		Example: getContextExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			airconfig := rootSettings.Config
@@ -88,7 +89,7 @@ func addGetContextFlags(o *config.ContextOptions, cmd *cobra.Command) {
 
 	flags.BoolVar(
 		&o.CurrentContext,
-		config.FlagCurrentContext,
+		"current",
 		false,
-		"retrieve the current context entry in airshipctl config")
+		"get the current context")
 }

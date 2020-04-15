@@ -21,17 +21,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const completionDesc = `
-Generate autocompletion script for airshipctl for the specified shell (bash or zsh).
-
-This command can generate shell autocompletion. e.g.
-
-	$ airshipctl completion bash
-
-Can be sourced as such
-
-	$ source <(airshipctl completion bash)
+const (
+	completionLong = `
+Generate completion script for airshipctl for the specified shell (bash or zsh).
 `
+
+	completionExample = `
+# Save shell completion to a file
+airshipctl completion bash > $HOME/.airship_completions
+
+# Apply completions to the current shell
+source <(airshipctl completion bash)
+`
+)
 
 var (
 	completionShells = map[string]func(cmd *cobra.Command) error{
@@ -40,6 +42,7 @@ var (
 	}
 )
 
+// NewCompletionCommand creates a cobra command object for generating shell completion scripts.
 func NewCompletionCommand() *cobra.Command {
 	shells := make([]string, 0, len(completionShells))
 	for s := range completionShells {
@@ -48,8 +51,9 @@ func NewCompletionCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:       "completion SHELL",
-		Short:     "Generate autocompletions script for the specified shell (bash or zsh)",
-		Long:      completionDesc,
+		Short:     "Generate completion script for the specified shell (bash or zsh)",
+		Long:      completionLong[1:],
+		Example:   completionExample,
 		Args:      cobra.ExactArgs(1),
 		RunE:      runCompletion,
 		ValidArgs: shells,

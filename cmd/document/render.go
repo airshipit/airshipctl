@@ -46,33 +46,33 @@ func addRenderFlags(settings *render.Settings, cmd *cobra.Command) {
 		"label",
 		"l",
 		nil,
-		"Filter documents by Labels")
+		"filter documents by Labels")
 
 	flags.StringArrayVarP(
 		&settings.Annotation,
 		"annotation",
 		"a",
 		nil,
-		"Filter documents by Annotations")
+		"filter documents by Annotations")
 
 	flags.StringArrayVarP(
 		&settings.GroupVersion,
 		"apiversion",
 		"g",
 		nil,
-		"Filter documents by API version")
+		"filter documents by API version")
 
 	flags.StringArrayVarP(
 		&settings.Kind,
 		"kind",
 		"k",
 		nil,
-		"Filter documents by Kinds")
+		"filter documents by Kinds")
 
 	flags.StringVarP(
 		&settings.RawFilter,
 		"filter",
 		"f",
 		"",
-		"Logical expression for document filtering")
+		"logical expression for document filtering")
 }

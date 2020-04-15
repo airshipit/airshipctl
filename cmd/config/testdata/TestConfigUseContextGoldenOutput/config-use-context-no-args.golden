@@ -4,8 +4,9 @@ Usage:
 
 Examples:
 
-# Switch to a context named "e2e"
-airshipctl config use-context e2e
+# Switch to a context named "exampleContext"
+airshipctl config use-context exampleContext
+
 
 Flags:
   -h, --help   help for use-context

@@ -24,12 +24,12 @@ import (
 func NewDocumentCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	documentRootCmd := &cobra.Command{
 		Use:   "document",
-		Short: "manages deployment documents",
+		Short: "Manage deployment documents",
 	}
 
-	documentRootCmd.AddCommand(NewDocumentPullCommand(rootSettings))
+	documentRootCmd.AddCommand(NewPullCommand(rootSettings))
 	documentRootCmd.AddCommand(NewRenderCommand(rootSettings))
-	documentRootCmd.AddCommand(NewDocumentPluginCommand(rootSettings))
+	documentRootCmd.AddCommand(NewPluginCommand(rootSettings))
 
 	return documentRootCmd
 }

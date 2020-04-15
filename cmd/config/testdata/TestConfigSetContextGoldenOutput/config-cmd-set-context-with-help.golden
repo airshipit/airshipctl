@@ -1,26 +1,28 @@
-
-Sets a context entry in arshipctl config.
-Specifying a name that already exists will merge new fields on top of existing values for those fields.
+Create or modify a context in the airshipctl config files.
 
 Usage:
   set-context NAME [flags]
 
 Examples:
 
-# Create a completely new e2e context entry
-airshipctl config set-context e2e --namespace=kube-system --manifest=manifest --user=auth-info --cluster-type=target
+# Create a new context named "exampleContext"
+airshipctl config set-context exampleContext \
+  --namespace=kube-system \
+  --manifest=exampleManifest \
+  --user=exampleUser
+  --cluster-type=target
 
-# Update the current-context to e2e
-airshipctl config set-context e2e
+# Update the manifest of the current-context
+airshipctl config set-context \
+  --current \
+  --manifest=exampleManifest
 
-# Update attributes of the current-context
-airshipctl config set-context --current --manifest=manifest
 
 Flags:
-      --cluster string        sets the cluster for the specified context in the airshipctl config
-      --cluster-type string   sets the cluster-type for the specified context in the airshipctl config
-      --current               use current context from airshipctl config
+      --cluster string        set the cluster for the specified context
+      --cluster-type string   set the cluster-type for the specified context
+      --current               update the current context
   -h, --help                  help for set-context
-      --manifest string       sets the manifest for the specified context in the airshipctl config
-      --namespace string      sets the namespace for the specified context in the airshipctl config
-      --user string           sets the user for the specified context in the airshipctl config
+      --manifest string       set the manifest for the specified context
+      --namespace string      set the namespace for the specified context
+      --user string           set the user for the specified context

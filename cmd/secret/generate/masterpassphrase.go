@@ -27,7 +27,7 @@ func NewGenerateMasterPassphraseCommand() *cobra.Command {
 	masterPassphraseCmd := &cobra.Command{
 		Use: "masterpassphrase",
 		// TODO(howell): Make this more expressive
-		Short: "generates a secure master passphrase",
+		Short: "Generates a secure master passphrase",
 		Run: func(cmd *cobra.Command, args []string) {
 			engine := secret.NewPassphraseEngine(nil)
 			masterPassphrase := engine.GeneratePassphrase()

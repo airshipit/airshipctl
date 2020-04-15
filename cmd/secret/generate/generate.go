@@ -21,7 +21,7 @@ func NewGenerateCommand() *cobra.Command {
 	generateRootCmd := &cobra.Command{
 		Use: "generate",
 		// TODO(howell): Make this more expressive
-		Short: "generates various secrets",
+		Short: "Generate various secrets",
 	}
 
 	generateRootCmd.AddCommand(NewGenerateMasterPassphraseCommand())

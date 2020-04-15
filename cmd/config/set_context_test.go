@@ -49,17 +49,17 @@ func TestConfigSetContext(t *testing.T) {
 		{
 			Name:    "config-cmd-set-context-with-help",
 			CmdLine: "--help",
-			Cmd:     cmd.NewCmdConfigSetContext(nil),
+			Cmd:     cmd.NewSetContextCommand(nil),
 		},
 		{
 			Name:    "config-cmd-set-context-no-flags",
 			CmdLine: "context",
-			Cmd:     cmd.NewCmdConfigSetContext(nil),
+			Cmd:     cmd.NewSetContextCommand(nil),
 		},
 		{
 			Name:    "config-cmd-set-context-too-many-args",
 			CmdLine: "arg1 arg2",
-			Cmd:     cmd.NewCmdConfigSetContext(nil),
+			Cmd:     cmd.NewSetContextCommand(nil),
 			Error:   fmt.Errorf("accepts at most %d arg(s), received %d", 1, 2),
 		},
 	}
@@ -84,10 +84,10 @@ func TestSetContext(t *testing.T) {
 			testName:    "set-context",
 			contextName: "dummycontext",
 			flags: []string{
-				"--" + config.FlagClusterType + "=" + config.Target,
-				"--" + config.FlagAuthInfoName + "=" + testUser,
-				"--" + config.FlagManifest + "=" + defaultManifest,
-				"--" + config.FlagNamespace + "=" + defaultNamespace,
+				"--cluster-type=target",
+				"--user=" + testUser,
+				"--manifest=" + defaultManifest,
+				"--namespace=" + defaultNamespace,
 			},
 			givenConfig: given,
 			manifest:    defaultManifest,
@@ -102,7 +102,7 @@ func TestSetContext(t *testing.T) {
 			testName:    "modify-context",
 			contextName: "def_target",
 			flags: []string{
-				"--" + config.FlagManifest + "=" + testManifest,
+				"--manifest=" + testManifest,
 			},
 			givenConfig: given,
 			manifest:    testManifest,
@@ -129,7 +129,7 @@ func (test setContextTest) run(t *testing.T) {
 	// Get the Environment
 	settings := &environment.AirshipCTLSettings{Config: test.givenConfig}
 
-	test.cmdTest.Cmd = cmd.NewCmdConfigSetContext(settings)
+	test.cmdTest.Cmd = cmd.NewSetContextCommand(settings)
 	testutil.RunTest(t, test.cmdTest)
 
 	afterRunConf := settings.Config

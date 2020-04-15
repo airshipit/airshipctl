@@ -48,25 +48,18 @@ func TestGetAuthInfoCmd(t *testing.T) {
 
 	cmdTests := []*testutil.CmdTest{
 		{
-			Name:    "get-credentials",
-			CmdLine: fmt.Sprintf("%s", fooAuthInfo),
-			Cmd:     cmd.NewCmdConfigGetAuthInfo(settings),
-		},
-		{
-			Name:    "get-all-credentials",
-			CmdLine: fmt.Sprintf(""),
-			Cmd:     cmd.NewCmdConfigGetAuthInfo(settings),
-		},
-		{
 			Name:    "get-specific-credentials",
-			CmdLine: fmt.Sprintf("%s", fooAuthInfo),
-			Cmd:     cmd.NewCmdConfigGetAuthInfo(settings),
+			CmdLine: fooAuthInfo,
+			Cmd:     cmd.NewGetAuthInfoCommand(settings),
 		},
-
+		{
+			Name: "get-all-credentials",
+			Cmd:  cmd.NewGetAuthInfoCommand(settings),
+		},
 		{
 			Name:    "missing",
-			CmdLine: fmt.Sprintf("%s", missingAuthInfo),
-			Cmd:     cmd.NewCmdConfigGetAuthInfo(settings),
+			CmdLine: missingAuthInfo,
+			Cmd:     cmd.NewGetAuthInfoCommand(settings),
 			Error: fmt.Errorf("user %s information was not "+
 				"found in the configuration", missingAuthInfo),
 		},
@@ -82,7 +75,7 @@ func TestNoAuthInfosGetAuthInfoCmd(t *testing.T) {
 	cmdTest := &testutil.CmdTest{
 		Name:    "no-credentials",
 		CmdLine: "",
-		Cmd:     cmd.NewCmdConfigGetAuthInfo(settings),
+		Cmd:     cmd.NewGetAuthInfoCommand(settings),
 	}
 	testutil.RunTest(t, cmdTest)
 }

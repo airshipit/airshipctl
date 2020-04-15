@@ -12,37 +12,31 @@
  limitations under the License.
 */
 
-package document
+package cluster_test
 
 import (
-	"fmt"
 	"testing"
 
+	"opendev.org/airship/airshipctl/cmd/cluster"
+	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
-func TestPlugin(t *testing.T) {
-	cmdTests := []*testutil.CmdTest{
+func TestNewInitInfraCommand(t *testing.T) {
+	fakeRootSettings := &environment.AirshipCTLSettings{
+		AirshipConfigPath: "../../testdata/k8s/config.yaml",
+		KubeConfigPath:    "../../testdata/k8s/kubeconfig.yaml",
+	}
+	fakeRootSettings.InitConfig()
+
+	tests := []*testutil.CmdTest{
 		{
-			Name:    "document-plugin-cmd-with-help",
+			Name:    "cluster-initinfra-cmd-with-help",
 			CmdLine: "--help",
-			Cmd:     NewPluginCommand(nil),
-		},
-		{
-			Name:    "document-plugin-cmd-with-empty-args",
-			CmdLine: "",
-			Error:   fmt.Errorf("requires at least 1 arg(s), only received 0"),
-			Cmd:     NewPluginCommand(nil),
-		},
-		{
-			Name:    "document-plugin-cmd-with-nonexistent-config",
-			CmdLine: "/some/random/path.yaml",
-			Error:   fmt.Errorf("open /some/random/path.yaml: no such file or directory"),
-			Cmd:     NewPluginCommand(nil),
+			Cmd:     cluster.NewInitInfraCommand(fakeRootSettings),
 		},
 	}
-
-	for _, tt := range cmdTests {
-		testutil.RunTest(t, tt)
+	for _, testcase := range tests {
+		testutil.RunTest(t, testcase)
 	}
 }

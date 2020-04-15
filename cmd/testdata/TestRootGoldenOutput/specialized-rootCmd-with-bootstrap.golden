@@ -1,4 +1,4 @@
-airshipctl is a unified entrypoint to various airship components
+A unified entrypoint to various airship components
 
 Usage:
   airshipctl [command]

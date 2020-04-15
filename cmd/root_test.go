@@ -31,19 +31,19 @@ import (
 func TestRoot(t *testing.T) {
 	tests := []*testutil.CmdTest{
 		{
-			Name:    "rootCmd-with-no-defaults",
-			CmdLine: "-h",
-			Cmd:     getVanillaRootCmd(t),
+			Name:    "rootCmd-with-no-subcommands",
+			CmdLine: "--help",
+			Cmd:     getVanillaRootCommand(t),
 		},
 		{
-			Name:    "rootCmd-with-defaults",
-			CmdLine: "-h",
-			Cmd:     getDefaultRootCmd(t),
+			Name:    "rootCmd-with-default-subcommands",
+			CmdLine: "--help",
+			Cmd:     getDefaultRootCommand(t),
 		},
 		{
 			Name:    "specialized-rootCmd-with-bootstrap",
-			CmdLine: "-h",
-			Cmd:     getSpecializedRootCmd(t),
+			CmdLine: "--help",
+			Cmd:     getSpecializedRootCommand(t),
 		},
 	}
 
@@ -78,7 +78,7 @@ func TestFlagLoading(t *testing.T) {
 		t.Run(tt.name, func(subTest *testing.T) {
 			// We don't care about the output of this test, so toss
 			// it into a throwaway &bytes.buffer{}
-			rootCmd, settings, err := cmd.NewRootCmd(&bytes.Buffer{})
+			rootCmd, settings, err := cmd.NewRootCommand(&bytes.Buffer{})
 			require.NoError(t, err)
 			rootCmd.SetArgs(tt.args)
 
@@ -90,22 +90,22 @@ func TestFlagLoading(t *testing.T) {
 	}
 }
 
-func getVanillaRootCmd(t *testing.T) *cobra.Command {
+func getVanillaRootCommand(t *testing.T) *cobra.Command {
 	t.Helper()
-	rootCmd, _, err := cmd.NewRootCmd(nil)
+	rootCmd, _, err := cmd.NewRootCommand(nil)
 	require.NoError(t, err, "Could not create root commands")
 	return rootCmd
 }
 
-func getDefaultRootCmd(t *testing.T) *cobra.Command {
+func getDefaultRootCommand(t *testing.T) *cobra.Command {
 	t.Helper()
 	rootCmd, _, err := cmd.NewAirshipCTLCommand(nil)
 	require.NoError(t, err, "Could not create root commands")
 	return rootCmd
 }
 
-func getSpecializedRootCmd(t *testing.T) *cobra.Command {
-	rootCmd := getVanillaRootCmd(t)
+func getSpecializedRootCommand(t *testing.T) *cobra.Command {
+	rootCmd := getVanillaRootCommand(t)
 	rootCmd.AddCommand(bootstrap.NewBootstrapCommand(&environment.AirshipCTLSettings{}))
 	return rootCmd
 }

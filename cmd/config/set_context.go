@@ -25,44 +25,40 @@ import (
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
-var (
+const (
 	setContextLong = `
-Sets a context entry in arshipctl config.
-Specifying a name that already exists will merge new fields on top of existing values for those fields.`
+Create or modify a context in the airshipctl config files.
+`
 
-	setContextExample = fmt.Sprintf(`
-# Create a completely new e2e context entry
-airshipctl config set-context e2e --%v=kube-system --%v=manifest --%v=auth-info --%v=%v
+	setContextExample = `
+# Create a new context named "exampleContext"
+airshipctl config set-context exampleContext \
+  --namespace=kube-system \
+  --manifest=exampleManifest \
+  --user=exampleUser
+  --cluster-type=target
 
-# Update the current-context to e2e
-airshipctl config set-context e2e
-
-# Update attributes of the current-context
-airshipctl config set-context --%s --%v=manifest`,
-		config.FlagNamespace,
-		config.FlagManifest,
-		config.FlagAuthInfoName,
-		config.FlagClusterType,
-		config.Target,
-		config.FlagCurrent,
-		config.FlagManifest)
+# Update the manifest of the current-context
+airshipctl config set-context \
+  --current \
+  --manifest=exampleManifest
+`
 )
 
-// NewCmdConfigSetContext creates a command object for the "set-context" action, which
-// creates and modifies contexts in the airshipctl config
-func NewCmdConfigSetContext(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+// NewSetContextCommand creates a command for creating and modifying contexts
+// in the airshipctl config
+func NewSetContextCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	o := &config.ContextOptions{}
-
 	cmd := &cobra.Command{
 		Use:     "set-context NAME",
-		Short:   "Switch to a new context or update context values in the airshipctl config",
-		Long:    setContextLong,
+		Short:   "Manage contexts",
+		Long:    setContextLong[1:],
 		Example: setContextExample,
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			nFlags := cmd.Flags().NFlag()
 			if len(args) == 1 {
-				//context name is made optional with --current flag added
+				// context name is made optional with --current flag added
 				o.Name = args[0]
 			}
 			if o.Name != "" && nFlags == 0 {
@@ -93,37 +89,37 @@ func addSetContextFlags(o *config.ContextOptions, cmd *cobra.Command) {
 
 	flags.StringVar(
 		&o.Cluster,
-		config.FlagClusterName,
+		"cluster",
 		"",
-		"sets the "+config.FlagClusterName+" for the specified context in the airshipctl config")
+		"set the cluster for the specified context")
 
 	flags.StringVar(
 		&o.AuthInfo,
-		config.FlagAuthInfoName,
+		"user",
 		"",
-		"sets the "+config.FlagAuthInfoName+" for the specified context in the airshipctl config")
+		"set the user for the specified context")
 
 	flags.StringVar(
 		&o.Manifest,
-		config.FlagManifest,
+		"manifest",
 		"",
-		"sets the "+config.FlagManifest+" for the specified context in the airshipctl config")
+		"set the manifest for the specified context")
 
 	flags.StringVar(
 		&o.Namespace,
-		config.FlagNamespace,
+		"namespace",
 		"",
-		"sets the "+config.FlagNamespace+" for the specified context in the airshipctl config")
+		"set the namespace for the specified context")
 
 	flags.StringVar(
 		&o.ClusterType,
-		config.FlagClusterType,
+		"cluster-type",
 		"",
-		"sets the "+config.FlagClusterType+" for the specified context in the airshipctl config")
+		"set the cluster-type for the specified context")
 
 	flags.BoolVar(
 		&o.Current,
-		config.FlagCurrent,
+		"current",
 		false,
-		"use current context from airshipctl config")
+		"update the current context")
 }

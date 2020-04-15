@@ -25,23 +25,32 @@ import (
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
-var (
-	getClusterLong = "Display a specific cluster or all defined clusters if no name is provided"
+const (
+	getClusterLong = `
+Display a specific cluster or all defined clusters if no name is provided.
 
-	getClusterExample = fmt.Sprintf(`
-# List all the clusters airshipctl knows about
+Note that if a specific cluster's name is provided, the --cluster-type flag
+must also be provided.
+Valid values for the --cluster-type flag are [ephemeral|target].
+`
+
+	getClusterExample = `
+# List all clusters
 airshipctl config get-cluster
 
 # Display a specific cluster
-airshipctl config get-cluster e2e --%v=ephemeral`, config.FlagClusterType)
+airshipctl config get-cluster --cluster-type=ephemeral exampleCluster
+`
 )
 
-// NewCmdConfigGetCluster returns a Command instance for 'config -Cluster' sub command
-func NewCmdConfigGetCluster(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+// NewGetClusterCommand creates a command for viewing the cluster information
+// defined in the airshipctl config file.
+func NewGetClusterCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	o := &config.ClusterOptions{}
 	cmd := &cobra.Command{
-		Use:     "get-cluster NAME",
-		Short:   getClusterLong,
+		Use:     "get-cluster [NAME]",
+		Short:   "Get cluster information from the airshipctl config",
+		Long:    getClusterLong[1:],
 		Example: getClusterExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			airconfig := rootSettings.Config
@@ -80,9 +89,9 @@ func addGetClusterFlags(o *config.ClusterOptions, cmd *cobra.Command) {
 	flags := cmd.Flags()
 	flags.StringVar(
 		&o.ClusterType,
-		config.FlagClusterType,
+		"cluster-type",
 		"",
-		config.FlagClusterType+" for the cluster entry in airshipctl config")
+		"type of the desired cluster")
 }
 
 func validate(o *config.ClusterOptions) error {

@@ -1,17 +1,17 @@
-airshipctl is a unified entrypoint to various airship components
+A unified entrypoint to various airship components
 
 Usage:
   airshipctl [command]
 
 Available Commands:
   bootstrap   Bootstrap ephemeral Kubernetes cluster
-  cluster     Control Kubernetes cluster
-  completion  Generate autocompletions script for the specified shell (bash or zsh)
-  config      Modify airshipctl config files
-  document    manages deployment documents
+  cluster     Manage Kubernetes clusters
+  completion  Generate completion script for the specified shell (bash or zsh)
+  config      Manage the airshipctl config file
+  document    Manage deployment documents
   help        Help about any command
   remote      Control remote entities, i.e. hosts.
-  secret      manages secrets
+  secret      Manage secrets
   version     Show the version number of airshipctl
 
 Flags:

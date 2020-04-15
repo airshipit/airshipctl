@@ -4,9 +4,9 @@ Usage:
   render [flags]
 
 Flags:
-  -a, --annotation stringArray   Filter documents by Annotations
-  -g, --apiversion stringArray   Filter documents by API version
-  -f, --filter string            Logical expression for document filtering
+  -a, --annotation stringArray   filter documents by Annotations
+  -g, --apiversion stringArray   filter documents by API version
+  -f, --filter string            logical expression for document filtering
   -h, --help                     help for render
-  -k, --kind stringArray         Filter documents by Kinds
-  -l, --label stringArray        Filter documents by Labels
+  -k, --kind stringArray         filter documents by Kinds
+  -l, --label stringArray        filter documents by Labels

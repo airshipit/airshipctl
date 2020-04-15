@@ -23,14 +23,22 @@ import (
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
-var longDescription = `Subcommand reads configuration file CONFIG passed as
-a first argument and determines a particular plugin to execute. Additional
-arguments may be passed to this sub-command abd can be used by the
-particular plugin. CONFIG file must be structured as kubernetes
-manifest (i.e. resource) and must have 'apiVersion' and 'kind' keys.
+const (
+	pluginLong = `
+This command is meant to be used as a kustomize exec plugin.
 
-Example:
-$ cat /tmp/generator.yaml
+The command reads the configuration file CONFIG passed as a first argument and
+determines a particular plugin to execute. Additional arguments may be passed
+to this command and can be used by the particular plugin.
+
+CONFIG must be a structured kubernetes manifest (i.e. resource) and must have
+'apiVersion' and 'kind' keys. If the appropriate plugin was not found, the
+command returns an error.
+`
+
+	pluginExample = `
+# Perform a replacement on a deployment. Prior to running this command,
+# the file '/tmp/replacement.yaml' should be created as follows:
 ---
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
@@ -45,21 +53,20 @@ replacements:
     fieldrefs:
     - spec.template.spec.containers[name=nginx-latest].image
 
-$ airshipctl document plugin /tmp/generator.yaml
-
-subcommand will try to identify appropriate plugin using apiVersion and
-kind keys (a.k.a group, version, kind) as an identifier. If appropriate
-plugin was not found command returns an error.
+# The replacement can then be performed. Output defaults to stdout.
+airshipctl document plugin /tmp/replacement.yaml
 `
+)
 
-// NewDocumentPluginCommand creates a new command which can act as kustomize
+// NewPluginCommand creates a new command which can act as kustomize
 // exec plugin.
-func NewDocumentPluginCommand(rootSetting *environment.AirshipCTLSettings) *cobra.Command {
+func NewPluginCommand(rootSetting *environment.AirshipCTLSettings) *cobra.Command {
 	pluginCmd := &cobra.Command{
-		Use:   "plugin CONFIG [ARGS]",
-		Short: "used as kustomize exec plugin",
-		Long:  longDescription,
-		Args:  cobra.MinimumNArgs(1),
+		Use:     "plugin CONFIG [ARGS]",
+		Short:   "Run as a kustomize exec plugin",
+		Long:    pluginLong[1:],
+		Example: pluginExample,
+		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := ioutil.ReadFile(args[0])
 			if err != nil {

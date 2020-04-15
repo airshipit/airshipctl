@@ -25,38 +25,43 @@ import (
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
-var (
-	setAuthInfoLong = fmt.Sprintf(`Sets a user entry in airshipctl config
-Specifying a name that already exists will merge new fields on top of existing values.`,
-	)
+const (
+	setAuthInfoLong = `
+Create or modify a user credential in the airshipctl config file.
 
-	setAuthInfoExample = fmt.Sprintf(`
-# Set only the "client-key" field on the "cluster-admin"
-# entry, without touching other values:
-airshipctl config set-credentials cluster-admin --%v=~/.kube/admin.key
+Note that specifying more than one authentication method is an error.
+`
 
-# Set basic auth for the "cluster-admin" entry
-airshipctl config set-credentials cluster-admin --%v=admin --%v=uXFGweU9l35qcif
+	setAuthInfoExample = `
+# Create a new user credential with basic auth
+airshipctl config set-credentials exampleUser \
+  --username=exampleUser \
+  --password=examplePassword
 
-# Embed client certificate data in the "cluster-admin" entry
-airshipctl config set-credentials cluster-admin --%v=~/.kube/admin.crt --%v=true`,
-		config.FlagUsername,
-		config.FlagUsername,
-		config.FlagPassword,
-		config.FlagCertFile,
-		config.FlagEmbedCerts,
-	)
+# Change the client-key of a user named admin
+airshipctl config set-credentials admin \
+  --client-key=$HOME/.kube/admin.key
+
+# Change the username and password of the admin user
+airshipctl config set-credentials admin \
+  --username=admin \
+  --password=uXFGweU9l35qcif
+
+# Embed client certificate data of the admin user
+airshipctl config set-credentials admin \
+  --client-certificate=$HOME/.kube/admin.crt \
+  --embed-certs
+`
 )
 
-// NewCmdConfigSetAuthInfo creates a command object for the "set-credentials" action, which
-// defines a new AuthInfo airship config.
-func NewCmdConfigSetAuthInfo(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+// NewSetAuthInfoCommand creates a command for creating and modifying user
+// credentials in the airshipctl config file.
+func NewSetAuthInfoCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	o := &config.AuthInfoOptions{}
-
 	cmd := &cobra.Command{
 		Use:     "set-credentials NAME",
-		Short:   "Sets a user entry in the airshipctl config",
-		Long:    setAuthInfoLong,
+		Short:   "Manage user credentials",
+		Long:    setAuthInfoLong[1:],
 		Example: setAuthInfoExample,
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -83,37 +88,37 @@ func addSetAuthInfoFlags(o *config.AuthInfoOptions, cmd *cobra.Command) {
 
 	flags.StringVar(
 		&o.ClientCertificate,
-		config.FlagCertFile,
+		"client-certificate",
 		"",
-		"Path to "+config.FlagCertFile+" file for the user entry in airshipctl")
+		"path to a certificate")
 
 	flags.StringVar(
 		&o.ClientKey,
-		config.FlagKeyFile,
+		"client-key",
 		"",
-		"Path to "+config.FlagKeyFile+" file for the user entry in airshipctl")
+		"path to a key file")
 
 	flags.StringVar(
 		&o.Token,
-		config.FlagBearerToken,
+		"token",
 		"",
-		config.FlagBearerToken+" for the user entry in airshipctl. Mutually exclusive with username and password flags.")
+		"token to use for the credential; mutually exclusive with username and password flags.")
 
 	flags.StringVar(
 		&o.Username,
-		config.FlagUsername,
+		"username",
 		"",
-		config.FlagUsername+" for the user entry in airshipctl. Mutually exclusive with token flag.")
+		"username for the credential; mutually exclusive with token flag.")
 
 	flags.StringVar(
 		&o.Password,
-		config.FlagPassword,
+		"password",
 		"",
-		config.FlagPassword+" for the user entry in airshipctl. Mutually exclusive with token flag.")
+		"password for the credential; mutually exclusive with token flag.")
 
 	flags.BoolVar(
 		&o.EmbedCertData,
-		config.FlagEmbedCerts,
+		"embed-certs",
 		false,
-		"Embed client cert/key for the user entry in airshipctl")
+		"if set, embed the client certificate/key into the credential")
 }

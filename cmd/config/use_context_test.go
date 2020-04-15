@@ -31,18 +31,18 @@ func TestConfigUseContext(t *testing.T) {
 		{
 			Name:    "config-use-context",
 			CmdLine: "dummy_context",
-			Cmd:     cmd.NewCmdConfigUseContext(settings),
+			Cmd:     cmd.NewUseContextCommand(settings),
 		},
 		{
 			Name:    "config-use-context-no-args",
 			CmdLine: "",
-			Cmd:     cmd.NewCmdConfigUseContext(settings),
+			Cmd:     cmd.NewUseContextCommand(settings),
 			Error:   errors.New("accepts 1 arg(s), received 0"),
 		},
 		{
 			Name:    "config-use-context-does-not-exist",
 			CmdLine: "foo",
-			Cmd:     cmd.NewCmdConfigUseContext(settings),
+			Cmd:     cmd.NewUseContextCommand(settings),
 			Error:   errors.New("missing configuration: context with name 'foo'"),
 		},
 	}

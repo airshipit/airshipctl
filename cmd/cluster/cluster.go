@@ -20,16 +20,23 @@ import (
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
-// NewClusterCommand returns cobra command object of the airshipctl cluster and adds it's subcommands.
+const (
+	// TODO: (kkalynovskyi) Add more description when more subcommands are added
+	clusterLong = `
+This command provides capabilities for interacting with a Kubernetes cluster,
+such as getting status and deploying initial infrastructure.
+`
+)
+
+// NewClusterCommand creates a command for interacting with a Kubernetes cluster.
 func NewClusterCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	clusterRootCmd := &cobra.Command{
-		Use: "cluster",
-		// TODO: (kkalynovskyi) Add more description when more subcommands are added
-		Short: "Control Kubernetes cluster",
-		Long:  "Interactions with Kubernetes cluster, such as get status, deploy initial infrastructure",
+		Use:   "cluster",
+		Short: "Manage Kubernetes clusters",
+		Long:  clusterLong[1:],
 	}
 
-	clusterRootCmd.AddCommand(NewCmdInitInfra(rootSettings))
+	clusterRootCmd.AddCommand(NewInitInfraCommand(rootSettings))
 
 	return clusterRootCmd
 }
