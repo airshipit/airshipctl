@@ -17,6 +17,8 @@ package bootstrap
 import (
 	"github.com/spf13/cobra"
 
+	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/remote"
 )
@@ -27,12 +29,19 @@ func NewRemoteDirectCommand(rootSettings *environment.AirshipCTLSettings) *cobra
 		Use:   "remotedirect",
 		Short: "Bootstrap ephemeral node",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			a, err := remote.NewAdapter(rootSettings)
+			manager, err := remote.NewManager(rootSettings,
+				config.BootstrapPhase,
+				remote.ByLabel(document.EphemeralHostSelector))
 			if err != nil {
 				return err
 			}
 
-			return a.DoRemoteDirect()
+			if len(manager.Hosts) != 1 {
+				return remote.NewRemoteDirectErrorf("more than one node defined as the ephemeral node")
+			}
+
+			ephemeralHost := manager.Hosts[0]
+			return ephemeralHost.DoRemoteDirect(rootSettings)
 		},
 	}
 

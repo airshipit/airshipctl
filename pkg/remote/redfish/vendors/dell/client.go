@@ -69,9 +69,9 @@ type iDRACAPIExtendedInfo struct {
 	Resolution string `json:"Resolution,omitempty"`
 }
 
-// SetEphemeralBootSourceByType sets the boot source of the ephemeral node to a virtual CD, "VCD-DVD".
-func (c *Client) SetEphemeralBootSourceByType(ctx context.Context) error {
-	managerID, err := redfish.GetManagerID(ctx, c.RedfishAPI, c.EphemeralNodeID())
+// SetBootSourceByType sets the boot source of the ephemeral node to a virtual CD, "VCD-DVD".
+func (c *Client) SetBootSourceByType(ctx context.Context) error {
+	managerID, err := redfish.GetManagerID(ctx, c.RedfishAPI, c.NodeID())
 	if err != nil {
 		return err
 	}
@@ -120,15 +120,12 @@ func (c *Client) SetEphemeralBootSourceByType(ctx context.Context) error {
 }
 
 // NewClient returns a client with the capability to make Redfish requests.
-func NewClient(ephemeralNodeID string,
-	isoPath string,
-	redfishURL string,
+func NewClient(redfishURL string,
 	insecure bool,
 	useProxy bool,
 	username string,
 	password string) (context.Context, *Client, error) {
-	ctx, genericClient, err := redfish.NewClient(
-		ephemeralNodeID, isoPath, redfishURL, insecure, useProxy, username, password)
+	ctx, genericClient, err := redfish.NewClient(redfishURL, insecure, useProxy, username, password)
 	if err != nil {
 		return ctx, nil, err
 	}

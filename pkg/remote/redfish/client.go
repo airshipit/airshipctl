@@ -17,7 +17,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -36,20 +35,18 @@ const (
 
 // Client holds details about a Redfish out-of-band system required for out-of-band management.
 type Client struct {
-	ephemeralNodeID string
-	isoPath         string
-	redfishURL      url.URL
-	RedfishAPI      redfishAPI.RedfishAPI
-	RedfishCFG      *redfishClient.Configuration
+	nodeID     string
+	RedfishAPI redfishAPI.RedfishAPI
+	RedfishCFG *redfishClient.Configuration
 }
 
-// EphemeralNodeID retrieves the ephemeral node ID.
-func (c *Client) EphemeralNodeID() string {
-	return c.ephemeralNodeID
+// NodeID retrieves the ephemeral node ID.
+func (c *Client) NodeID() string {
+	return c.nodeID
 }
 
 // RebootSystem power cycles a host by sending a shutdown signal followed by a power on signal.
-func (c *Client) RebootSystem(ctx context.Context, systemID string) error {
+func (c *Client) RebootSystem(ctx context.Context) error {
 	waitForPowerState := func(desiredState redfishClient.PowerState) error {
 		// Check if number of retries is defined in context
 		totalRetries, ok := ctx.Value("numRetries").(int)
@@ -57,8 +54,8 @@ func (c *Client) RebootSystem(ctx context.Context, systemID string) error {
 			totalRetries = systemActionRetries
 		}
 
-		for retry := 0; retry < totalRetries; retry++ {
-			system, httpResp, err := c.RedfishAPI.GetSystem(ctx, systemID)
+		for retry := 0; retry <= totalRetries; retry++ {
+			system, httpResp, err := c.RedfishAPI.GetSystem(ctx, c.nodeID)
 			if err = ScreenRedfishError(httpResp, err); err != nil {
 				return err
 			}
@@ -68,7 +65,7 @@ func (c *Client) RebootSystem(ctx context.Context, systemID string) error {
 			time.Sleep(systemRebootDelay)
 		}
 		return ErrOperationRetriesExceeded{
-			What:    fmt.Sprintf("reboot system %s", c.EphemeralNodeID()),
+			What:    fmt.Sprintf("reboot system %s", c.nodeID),
 			Retries: totalRetries,
 		}
 	}
@@ -77,7 +74,7 @@ func (c *Client) RebootSystem(ctx context.Context, systemID string) error {
 
 	// Send PowerOff request
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
-	_, httpResp, err := c.RedfishAPI.ResetSystem(ctx, systemID, resetReq)
+	_, httpResp, err := c.RedfishAPI.ResetSystem(ctx, c.nodeID, resetReq)
 	if err = ScreenRedfishError(httpResp, err); err != nil {
 		return err
 	}
@@ -89,7 +86,7 @@ func (c *Client) RebootSystem(ctx context.Context, systemID string) error {
 
 	// Send PowerOn request
 	resetReq.ResetType = redfishClient.RESETTYPE_ON
-	_, httpResp, err = c.RedfishAPI.ResetSystem(ctx, systemID, resetReq)
+	_, httpResp, err = c.RedfishAPI.ResetSystem(ctx, c.nodeID, resetReq)
 	if err = ScreenRedfishError(httpResp, err); err != nil {
 		return err
 	}
@@ -98,18 +95,18 @@ func (c *Client) RebootSystem(ctx context.Context, systemID string) error {
 	return waitForPowerState(redfishClient.POWERSTATE_ON)
 }
 
-// SetEphemeralBootSourceByType sets the boot source of the ephemeral node to one that's compatible with the boot
+// SetBootSourceByType sets the boot source of the ephemeral node to one that's compatible with the boot
 // source type.
-func (c *Client) SetEphemeralBootSourceByType(ctx context.Context) error {
-	_, vMediaType, err := GetVirtualMediaID(ctx, c.RedfishAPI, c.ephemeralNodeID)
+func (c *Client) SetBootSourceByType(ctx context.Context) error {
+	_, vMediaType, err := GetVirtualMediaID(ctx, c.RedfishAPI, c.nodeID)
 	if err != nil {
 		return err
 	}
 
 	// Retrieve system information, containing available boot sources
-	system, _, err := c.RedfishAPI.GetSystem(ctx, c.ephemeralNodeID)
+	system, _, err := c.RedfishAPI.GetSystem(ctx, c.nodeID)
 	if err != nil {
-		return ErrRedfishClient{Message: fmt.Sprintf("Get System[%s] failed with err: %v", c.ephemeralNodeID, err)}
+		return ErrRedfishClient{Message: fmt.Sprintf("Get System[%s] failed with err: %v", c.nodeID, err)}
 	}
 
 	allowableValues := system.Boot.BootSourceOverrideTargetRedfishAllowableValues
@@ -118,12 +115,12 @@ func (c *Client) SetEphemeralBootSourceByType(ctx context.Context) error {
 			/* set boot source */
 			systemReq := redfishClient.ComputerSystem{}
 			systemReq.Boot.BootSourceOverrideTarget = bootSource
-			_, httpResp, err := c.RedfishAPI.SetSystem(ctx, c.ephemeralNodeID, systemReq)
+			_, httpResp, err := c.RedfishAPI.SetSystem(ctx, c.nodeID, systemReq)
 			return ScreenRedfishError(httpResp, err)
 		}
 	}
 
-	return ErrRedfishClient{Message: fmt.Sprintf("failed to set system[%s] boot source", c.ephemeralNodeID)}
+	return ErrRedfishClient{Message: fmt.Sprintf("failed to set system[%s] boot source", c.nodeID)}
 }
 
 // SetVirtualMedia injects a virtual media device to an established virtual media ID. This assumes that isoPath is
@@ -151,16 +148,16 @@ func (c *Client) SetVirtualMedia(ctx context.Context, isoPath string) error {
 		return ErrOperationRetriesExceeded{What: fmt.Sprintf("eject media %s", vMediaID), Retries: totalRetries}
 	}
 
-	log.Debugf("Ephemeral Node System ID: '%s'", c.ephemeralNodeID)
+	log.Debugf("Setting virtual media for node: '%s'", c.nodeID)
 
-	managerID, err := GetManagerID(ctx, c.RedfishAPI, c.ephemeralNodeID)
+	managerID, err := getManagerID(ctx, c.RedfishAPI, c.nodeID)
 	if err != nil {
 		return err
 	}
 
 	log.Debugf("Ephemeral node managerID: '%s'", managerID)
 
-	vMediaID, _, err := GetVirtualMediaID(ctx, c.RedfishAPI, c.ephemeralNodeID)
+	vMediaID, _, err := GetVirtualMediaID(ctx, c.RedfishAPI, c.nodeID)
 	if err != nil {
 		return err
 	}
@@ -194,18 +191,18 @@ func (c *Client) SetVirtualMedia(ctx context.Context, isoPath string) error {
 }
 
 // SystemPowerOff shuts down a host.
-func (c *Client) SystemPowerOff(ctx context.Context, systemID string) error {
+func (c *Client) SystemPowerOff(ctx context.Context) error {
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 
-	_, httpResp, err := c.RedfishAPI.ResetSystem(ctx, systemID, resetReq)
+	_, httpResp, err := c.RedfishAPI.ResetSystem(ctx, c.nodeID, resetReq)
 
 	return ScreenRedfishError(httpResp, err)
 }
 
 // SystemPowerStatus retrieves the power status of a host as a human-readable string.
-func (c *Client) SystemPowerStatus(ctx context.Context, systemID string) (string, error) {
-	computerSystem, httpResp, err := c.RedfishAPI.GetSystem(ctx, systemID)
+func (c *Client) SystemPowerStatus(ctx context.Context) (string, error) {
+	computerSystem, httpResp, err := c.RedfishAPI.GetSystem(ctx, c.nodeID)
 	if err = ScreenRedfishError(httpResp, err); err != nil {
 		return "", err
 	}
@@ -214,9 +211,7 @@ func (c *Client) SystemPowerStatus(ctx context.Context, systemID string) (string
 }
 
 // NewClient returns a client with the capability to make Redfish requests.
-func NewClient(ephemeralNodeID string,
-	isoPath string,
-	redfishURL string,
+func NewClient(redfishURL string,
 	insecure bool,
 	useProxy bool,
 	username string,
@@ -236,13 +231,13 @@ func NewClient(ephemeralNodeID string,
 		return ctx, nil, ErrRedfishMissingConfig{What: "Redfish URL"}
 	}
 
-	parsedURL, err := url.Parse(redfishURL)
+	basePath, err := getBasePath(redfishURL)
 	if err != nil {
 		return ctx, nil, err
 	}
 
 	cfg := &redfishClient.Configuration{
-		BasePath:      redfishURL,
+		BasePath:      basePath,
 		DefaultHeader: make(map[string]string),
 		UserAgent:     headerUserAgent,
 	}
@@ -268,12 +263,16 @@ func NewClient(ephemeralNodeID string,
 		Transport: transport,
 	}
 
+	// Retrieve system ID from end of Redfish URL
+	systemID := GetResourceIDFromURL(redfishURL)
+	if len(systemID) == 0 {
+		return ctx, nil, ErrRedfishMissingConfig{What: "management URL system ID"}
+	}
+
 	c := &Client{
-		ephemeralNodeID: ephemeralNodeID,
-		isoPath:         isoPath,
-		redfishURL:      *parsedURL,
-		RedfishAPI:      redfishClient.NewAPIClient(cfg).DefaultApi,
-		RedfishCFG:      cfg,
+		nodeID:     systemID,
+		RedfishAPI: redfishClient.NewAPIClient(cfg).DefaultApi,
+		RedfishCFG: cfg,
 	}
 
 	return ctx, c, nil

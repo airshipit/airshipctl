@@ -29,3 +29,25 @@ func NewRemoteDirectErrorf(format string, v ...interface{}) error {
 	e.Message = fmt.Sprintf(format, v...)
 	return e
 }
+
+// ErrUnknownManagementType is an error that indicates the remote type specified in the airshipctl management
+// configuration (e.g. redfish, redfish-dell) is not supported.
+type ErrUnknownManagementType struct {
+	aerror.AirshipError
+	Type string
+}
+
+func (e ErrUnknownManagementType) Error() string {
+	return fmt.Sprintf("unknown management type: %s", e.Type)
+}
+
+// ErrMissingBootstrapInfoOption is an error that indicates a bootstrap option is missing in the airshipctl
+// bootstrapInfo configuration.
+type ErrMissingBootstrapInfoOption struct {
+	aerror.AirshipError
+	What string
+}
+
+func (e ErrMissingBootstrapInfoOption) Error() string {
+	return fmt.Sprintf("missing bootstrapInfo option: %s", e.What)
+}

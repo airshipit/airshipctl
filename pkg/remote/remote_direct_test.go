@@ -15,205 +15,192 @@
 package remote
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
-	"opendev.org/airship/airshipctl/testutil"
 	"opendev.org/airship/airshipctl/testutil/redfishutils"
 )
 
 const (
-	systemID   = "server-100"
+	systemID   = "System.Embedded.1"
 	isoURL     = "https://localhost:8080/ubuntu.iso"
-	redfishURL = "https://redfish.local"
+	redfishURL = "redfish+https://localhost:2344/Systems/System.Embedded.1"
+	username   = "admin"
+	password   = "password"
 )
 
-func initSettings(t *testing.T, rd *config.RemoteDirect, testdata string) *environment.AirshipCTLSettings {
-	t.Helper()
-	settings := &environment.AirshipCTLSettings{Config: testutil.DummyConfig()}
-	bi, err := settings.Config.CurrentContextBootstrapInfo()
-	require.NoError(t, err)
-	bi.RemoteDirect = rd
-	cm, err := settings.Config.CurrentContextManifest()
-	require.NoError(t, err)
-	cm.TargetPath = "testdata/" + testdata
-	return settings
+// withRemoteDirectConfig initializes the remote direct settings when used as an argument to "initSettings".
+func withRemoteDirectConfig(cfg *config.RemoteDirect) Configuration {
+	return func(settings *environment.AirshipCTLSettings) {
+		bootstrapInfo, err := settings.Config.CurrentContextBootstrapInfo()
+		if err != nil {
+			panic(fmt.Sprintf("Unable to initialize remote direct tests. Current Context error %q", err))
+		}
+
+		bootstrapInfo.RemoteDirect = cfg
+	}
 }
 
-func TestUnknownRemoteType(t *testing.T) {
-	s := initSettings(
-		t,
-		&config.RemoteDirect{
-			RemoteType: "new-remote",
-			IsoURL:     "/test.iso",
-		},
-		"base",
-	)
+func TestDoRemoteDirectMissingConfigOpts(t *testing.T) {
+	ctx, rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
+	assert.NoError(t, err)
 
-	_, err := NewAdapter(s)
-	_, ok := err.(*GenericError)
-	assert.True(t, ok)
+	ephemeralHost := baremetalHost{
+		rMock,
+		ctx,
+		redfishURL,
+		username,
+		password,
+	}
+
+	settings := initSettings(t, withRemoteDirectConfig(nil), withTestDataPath("base"))
+	err = ephemeralHost.DoRemoteDirect(settings)
+	assert.Error(t, err)
 }
 
-func TestRedfishRemoteDirectWithEmptyURL(t *testing.T) {
-	s := initSettings(
-		t,
-		&config.RemoteDirect{
-			RemoteType: "redfish",
-			IsoURL:     "/test.iso",
-		},
-		"emptyurl",
-	)
+func TestDoRemoteDirectMissingISOURL(t *testing.T) {
+	ctx, rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
+	assert.NoError(t, err)
 
-	_, err := NewAdapter(s)
-	_, ok := err.(redfish.ErrRedfishMissingConfig)
-	assert.True(t, ok)
-}
+	rMock.On("NodeID").Times(1).Return(systemID)
 
-func TestRedfishRemoteDirectWithEmptyIsoPath(t *testing.T) {
-	s := initSettings(
-		t,
-		&config.RemoteDirect{
-			RemoteType: "redfish",
-			IsoURL:     "",
-		},
-		"base",
-	)
+	ephemeralHost := baremetalHost{
+		rMock,
+		ctx,
+		redfishURL,
+		username,
+		password,
+	}
 
-	_, err := NewAdapter(s)
-	_, ok := err.(redfish.ErrRedfishMissingConfig)
-	assert.True(t, ok)
-}
+	cfg := &config.RemoteDirect{}
 
-func TestBootstrapRemoteDirectMissingConfigOpts(t *testing.T) {
-	s := initSettings(
-		t,
-		nil,
-		"base",
-	)
-
-	_, err := NewAdapter(s)
-	_, ok := err.(config.ErrMissingConfig)
-	assert.True(t, ok)
+	settings := initSettings(t, withRemoteDirectConfig(cfg), withTestDataPath("base"))
+	err = ephemeralHost.DoRemoteDirect(settings)
+	assert.Error(t, err)
 }
 
 func TestDoRemoteDirectRedfish(t *testing.T) {
-	cfg := &config.RemoteDirect{
-		RemoteType: redfish.ClientType,
-		IsoURL:     isoURL,
+	ctx, rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
+	assert.NoError(t, err)
+
+	rMock.On("NodeID").Times(1).Return(systemID)
+	rMock.On("SetVirtualMedia", ctx, isoURL).Times(1).Return(nil)
+	rMock.On("SetBootSourceByType", ctx).Times(1).Return(nil)
+	rMock.On("NodeID").Times(1).Return(systemID)
+	rMock.On("RebootSystem", ctx).Times(1).Return(nil)
+
+	ephemeralHost := baremetalHost{
+		rMock,
+		ctx,
+		redfishURL,
+		username,
+		password,
 	}
 
-	// Initialize a remote direct adapter
-	settings := initSettings(t, cfg, "base")
-	a, err := NewAdapter(settings)
-	assert.NoError(t, err)
+	cfg := &config.RemoteDirect{
+		IsoURL: isoURL,
+	}
 
-	ctx, rMock, err := redfishutils.NewClient(systemID, isoURL, redfishURL, "admin", "password")
-	assert.NoError(t, err)
-
-	rMock.On("SetVirtualMedia", a.Context, isoURL).Times(1).Return(nil)
-	rMock.On("SetEphemeralBootSourceByType", a.Context).Times(1).Return(nil)
-	rMock.On("EphemeralNodeID").Times(1).Return(systemID)
-	rMock.On("RebootSystem", a.Context, systemID).Times(1).Return(nil)
-
-	// Swap the redfish client initialized by the remote direct adapter with the above mocked client
-	a.Context = ctx
-	a.OOBClient = rMock
-
-	err = a.DoRemoteDirect()
+	settings := initSettings(t, withRemoteDirectConfig(cfg), withTestDataPath("base"))
+	err = ephemeralHost.DoRemoteDirect(settings)
 	assert.NoError(t, err)
 }
 
 func TestDoRemoteDirectRedfishVirtualMediaError(t *testing.T) {
-	cfg := &config.RemoteDirect{
-		RemoteType: redfish.ClientType,
-		IsoURL:     isoURL,
-	}
-
-	// Initialize a remote direct adapter
-	settings := initSettings(t, cfg, "base")
-	a, err := NewAdapter(settings)
-	assert.NoError(t, err)
-
-	ctx, rMock, err := redfishutils.NewClient(systemID, isoURL, redfishURL, "admin", "password")
+	ctx, rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
 	assert.NoError(t, err)
 
 	expectedErr := redfish.ErrRedfishClient{Message: "Unable to set virtual media."}
-	rMock.On("SetVirtualMedia", a.Context, isoURL).Times(1).Return(expectedErr)
-	rMock.On("SetEphemeralBootSourceByType", a.Context).Times(1).Return(nil)
-	rMock.On("EphemeralNodeID").Times(1).Return(systemID)
-	rMock.On("RebootSystem", a.Context, systemID).Times(1).Return(nil)
 
-	// Swap the redfish client initialized by the remote direct adapter with the above mocked client
-	a.Context = ctx
-	a.OOBClient = rMock
+	rMock.On("NodeID").Times(1).Return(systemID)
+	rMock.On("SetVirtualMedia", ctx, isoURL).Times(1).Return(expectedErr)
+	rMock.On("SetBootSourceByType", ctx).Times(1).Return(nil)
+	rMock.On("NodeID").Times(1).Return(systemID)
+	rMock.On("RebootSystem", ctx).Times(1).Return(nil)
 
-	err = a.DoRemoteDirect()
+	ephemeralHost := baremetalHost{
+		rMock,
+		ctx,
+		redfishURL,
+		username,
+		password,
+	}
+
+	cfg := &config.RemoteDirect{
+		IsoURL: isoURL,
+	}
+
+	settings := initSettings(t, withRemoteDirectConfig(cfg), withTestDataPath("base"))
+
+	err = ephemeralHost.DoRemoteDirect(settings)
 	_, ok := err.(redfish.ErrRedfishClient)
 	assert.True(t, ok)
 }
 
 func TestDoRemoteDirectRedfishBootSourceError(t *testing.T) {
-	cfg := &config.RemoteDirect{
-		RemoteType: redfish.ClientType,
-		IsoURL:     isoURL,
-	}
-
-	// Initialize a remote direct adapter
-	settings := initSettings(t, cfg, "base")
-	a, err := NewAdapter(settings)
+	ctx, rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
 	assert.NoError(t, err)
 
-	ctx, rMock, err := redfishutils.NewClient(systemID, isoURL, redfishURL, "admin", "password")
-	assert.NoError(t, err)
-
-	rMock.On("SetVirtualMedia", a.Context, isoURL).Times(1).Return(nil)
+	rMock.On("NodeID").Times(1).Return(systemID)
+	rMock.On("SetVirtualMedia", ctx, isoURL).Times(1).Return(nil)
 
 	expectedErr := redfish.ErrRedfishClient{Message: "Unable to set boot source."}
-	rMock.On("SetEphemeralBootSourceByType", a.Context).Times(1).Return(expectedErr)
-	rMock.On("EphemeralNodeID").Times(1).Return(systemID)
-	rMock.On("RebootSystem", a.Context, systemID).Times(1).Return(nil)
+	rMock.On("SetBootSourceByType", ctx).Times(1).Return(expectedErr)
+	rMock.On("NodeID").Times(1).Return(systemID)
+	rMock.On("RebootSystem", ctx).Times(1).Return(nil)
 
-	// Swap the redfish client initialized by the remote direct adapter with the above mocked client
-	a.Context = ctx
-	a.OOBClient = rMock
+	ephemeralHost := baremetalHost{
+		rMock,
+		ctx,
+		redfishURL,
+		username,
+		password,
+	}
 
-	err = a.DoRemoteDirect()
+	cfg := &config.RemoteDirect{
+		IsoURL: isoURL,
+	}
+
+	settings := initSettings(t, withRemoteDirectConfig(cfg), withTestDataPath("base"))
+
+	err = ephemeralHost.DoRemoteDirect(settings)
 	_, ok := err.(redfish.ErrRedfishClient)
 	assert.True(t, ok)
 }
 
 func TestDoRemoteDirectRedfishRebootError(t *testing.T) {
-	cfg := &config.RemoteDirect{
-		RemoteType: redfish.ClientType,
-		IsoURL:     isoURL,
-	}
-
-	// Initialize a remote direct adapter
-	settings := initSettings(t, cfg, "base")
-	a, err := NewAdapter(settings)
+	ctx, rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
 	assert.NoError(t, err)
 
-	ctx, rMock, err := redfishutils.NewClient(systemID, isoURL, redfishURL, "admin", "password")
-	assert.NoError(t, err)
-
-	rMock.On("SetVirtualMedia", a.Context, isoURL).Times(1).Return(nil)
-	rMock.On("SetEphemeralBootSourceByType", a.Context).Times(1).Return(nil)
-	rMock.On("EphemeralNodeID").Times(1).Return(systemID)
+	rMock.On("NodeID").Times(1).Return(systemID)
+	rMock.On("SetVirtualMedia", ctx, isoURL).Times(1).Return(nil)
+	rMock.On("SetVirtualMedia", ctx, isoURL).Times(1).Return(nil)
+	rMock.On("SetBootSourceByType", ctx).Times(1).Return(nil)
+	rMock.On("NodeID").Times(1).Return(systemID)
 
 	expectedErr := redfish.ErrRedfishClient{Message: "Unable to set boot source."}
-	rMock.On("RebootSystem", a.Context, systemID).Times(1).Return(expectedErr)
+	rMock.On("RebootSystem", ctx).Times(1).Return(expectedErr)
 
-	// Swap the redfish client initialized by the remote direct adapter with the above mocked client
-	a.Context = ctx
-	a.OOBClient = rMock
+	ephemeralHost := baremetalHost{
+		rMock,
+		ctx,
+		redfishURL,
+		username,
+		password,
+	}
 
-	err = a.DoRemoteDirect()
+	cfg := &config.RemoteDirect{
+		IsoURL: isoURL,
+	}
+
+	settings := initSettings(t, withRemoteDirectConfig(cfg), withTestDataPath("base"))
+
+	err = ephemeralHost.DoRemoteDirect(settings)
 	_, ok := err.(redfish.ErrRedfishClient)
 	assert.True(t, ok)
 }

@@ -14,12 +14,19 @@ bootstrapInfo:
       userDataFileName: user-data
       networkConfigFileName: network-config
       outputMetadataFileName: output-metadata.yaml
+managementConfiguration:
+  dummy_management_config:
+    type: {{ remote_type }}
+    insecure: {{ remote_insecure }}
+    useproxy: {{ remote_proxy }}
+
 clusters:
   dummycluster:
     clusterType:
       ephemeral:
         bootstrapInfo: dummy_bootstrap_config
         clusterKubeconf: dummycluster_ephemeral
+        managementConfiguration: dummy_management_config
 contexts:
   dummy_cluster:
     contextKubeconf: dummy_cluster

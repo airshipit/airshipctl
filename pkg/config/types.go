@@ -193,17 +193,6 @@ type Builder struct {
 
 // RemoteDirect configuration options
 type RemoteDirect struct {
-	// RemoteType specifies type of epehemeral node managfement (e.g redfish,
-	// smash e.t.c.)
-	RemoteType string `json:"remoteType,omitempty"`
 	// IsoURL specifies url to download ISO image for epehemeral node
 	IsoURL string `json:"isoUrl,omitempty"`
-	// Ignore SSL certificate check. This options is useful for remote APIs
-	// with non-trusted or self-signed SSL certificates
-	Insecure bool `json:"insecure,omitempty"`
-	// Allow remotedirect requests to be proxied.  This defaults to false
-	// because in general, most users will want to communicate directly
-	// with redfish and other bmc urls directly even if the environment
-	// has a proxy set
-	UseProxy bool `json:"useproxy,omitempty"`
 }

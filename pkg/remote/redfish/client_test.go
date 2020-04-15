@@ -29,18 +29,33 @@ import (
 )
 
 const (
-	ephemeralNodeID = "ephemeral-node-id"
-	isoPath         = "https://localhost:8080/debian.iso"
-	redfishURL      = "https://localhost:1234"
+	nodeID     = "System.Embedded.1"
+	isoPath    = "https://localhost:8080/debian.iso"
+	redfishURL = "redfish+https://localhost:2224/Systems/System.Embedded.1"
 )
 
 func TestNewClient(t *testing.T) {
-	_, _, err := NewClient(ephemeralNodeID, isoPath, redfishURL, false, false, "", "")
+	_, _, err := NewClient(redfishURL, false, false, "", "")
+	assert.NoError(t, err)
+}
+
+func TestNewClientMissingSystemID(t *testing.T) {
+	badURL := "redfish+https://localhost:2224"
+
+	_, _, err := NewClient(badURL, false, false, "", "")
+	_, ok := err.(ErrRedfishMissingConfig)
+	assert.True(t, ok)
+}
+
+func TestNewClientNoRedfishMarking(t *testing.T) {
+	url := "https://localhost:2224/Systems/System.Embedded.1"
+
+	_, _, err := NewClient(url, false, false, "", "")
 	assert.NoError(t, err)
 }
 
 func TestNewClientAuth(t *testing.T) {
-	ctx, _, err := NewClient(ephemeralNodeID, isoPath, redfishURL, false, false, "username", "password")
+	ctx, _, err := NewClient(redfishURL, false, false, "username", "password")
 	assert.NoError(t, err)
 
 	cAuth := ctx.Value(redfishClient.ContextBasicAuth)
@@ -50,7 +65,7 @@ func TestNewClientAuth(t *testing.T) {
 
 func TestNewClientEmptyRedfishURL(t *testing.T) {
 	// Redfish URL cannot be empty when creating a client.
-	_, _, err := NewClient(ephemeralNodeID, isoPath, "", false, false, "", "")
+	_, _, err := NewClient("", false, false, "", "")
 	assert.Error(t, err)
 }
 
@@ -58,29 +73,31 @@ func TestRebootSystem(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient(ephemeralNodeID, isoPath, redfishURL, false, false, "", "")
+	ctx, client, err := NewClient(redfishURL, false, false, "", "")
 	assert.NoError(t, err)
+
+	client.nodeID = nodeID
 
 	// Mock redfish shutdown and status requests
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 	httpResp := &http.Response{StatusCode: 200}
-	m.On("ResetSystem", ctx, ephemeralNodeID, resetReq).Times(1).Return(redfishClient.RedfishError{}, httpResp, nil)
+	m.On("ResetSystem", ctx, client.nodeID, resetReq).Times(1).Return(redfishClient.RedfishError{}, httpResp, nil)
 
-	m.On("GetSystem", ctx, ephemeralNodeID).Times(1).Return(
+	m.On("GetSystem", ctx, client.nodeID).Times(1).Return(
 		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_OFF}, httpResp, nil)
 
 	// Mock redfish startup and status requests
 	resetReq.ResetType = redfishClient.RESETTYPE_ON
-	m.On("ResetSystem", ctx, ephemeralNodeID, resetReq).Times(1).Return(redfishClient.RedfishError{}, httpResp, nil)
+	m.On("ResetSystem", ctx, client.nodeID, resetReq).Times(1).Return(redfishClient.RedfishError{}, httpResp, nil)
 
-	m.On("GetSystem", ctx, ephemeralNodeID).Times(1).
+	m.On("GetSystem", ctx, client.nodeID).Times(1).
 		Return(redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_ON}, httpResp, nil)
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
 
-	err = client.RebootSystem(ctx, ephemeralNodeID)
+	err = client.RebootSystem(ctx)
 	assert.NoError(t, err)
 }
 
@@ -88,20 +105,22 @@ func TestRebootSystemShutdownError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient(ephemeralNodeID, isoPath, redfishURL, false, false, "", "")
+	ctx, client, err := NewClient(redfishURL, false, false, "", "")
 	assert.NoError(t, err)
+
+	client.nodeID = nodeID
 
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 
 	// Mock redfish shutdown request for failure
-	m.On("ResetSystem", ctx, ephemeralNodeID, resetReq).Times(1).Return(redfishClient.RedfishError{},
+	m.On("ResetSystem", ctx, client.nodeID, resetReq).Times(1).Return(redfishClient.RedfishError{},
 		&http.Response{StatusCode: 401}, redfishClient.GenericOpenAPIError{})
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
 
-	err = client.RebootSystem(ctx, ephemeralNodeID)
+	err = client.RebootSystem(ctx)
 	_, ok := err.(ErrRedfishClient)
 	assert.True(t, ok)
 }
@@ -110,18 +129,19 @@ func TestRebootSystemStartupError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient(ephemeralNodeID, isoPath, redfishURL, false, false, "", "")
+	ctx, client, err := NewClient(redfishURL, false, false, "", "")
 	assert.NoError(t, err)
+
+	client.nodeID = nodeID
 
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 
 	// Mock redfish shutdown request
-	systemID := ephemeralNodeID
-	m.On("ResetSystem", ctx, systemID, resetReq).Times(1).Return(redfishClient.RedfishError{},
+	m.On("ResetSystem", ctx, client.nodeID, resetReq).Times(1).Return(redfishClient.RedfishError{},
 		&http.Response{StatusCode: 200}, nil)
 
-	m.On("GetSystem", ctx, systemID).Times(1).Return(
+	m.On("GetSystem", ctx, client.nodeID).Times(1).Return(
 		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_OFF},
 		&http.Response{StatusCode: 200}, nil)
 
@@ -129,13 +149,13 @@ func TestRebootSystemStartupError(t *testing.T) {
 	resetOnReq.ResetType = redfishClient.RESETTYPE_ON
 
 	// Mock redfish startup request for failure
-	m.On("ResetSystem", ctx, systemID, resetOnReq).Times(1).Return(redfishClient.RedfishError{},
+	m.On("ResetSystem", ctx, client.nodeID, resetOnReq).Times(1).Return(redfishClient.RedfishError{},
 		&http.Response{StatusCode: 401}, redfishClient.GenericOpenAPIError{})
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
 
-	err = client.RebootSystem(ctx, systemID)
+	err = client.RebootSystem(ctx)
 	_, ok := err.(ErrRedfishClient)
 	assert.True(t, ok)
 }
@@ -144,75 +164,82 @@ func TestRebootSystemTimeout(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	_, client, err := NewClient(ephemeralNodeID, isoPath, redfishURL, false, false, "", "")
+	_, client, err := NewClient(redfishURL, false, false, "", "")
 	assert.NoError(t, err)
+
+	client.nodeID = nodeID
 
 	ctx := context.WithValue(context.Background(), "numRetries", 1)
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 
-	systemID := ephemeralNodeID
-	m.On("ResetSystem", ctx, systemID, resetReq).
+	m.On("ResetSystem", ctx, client.nodeID, resetReq).
 		Times(1).
 		Return(redfishClient.RedfishError{}, &http.Response{StatusCode: 200}, nil)
 
-	m.On("GetSystem", ctx, systemID).
+	m.On("GetSystem", ctx, client.nodeID).
 		Return(redfishClient.ComputerSystem{}, &http.Response{StatusCode: 200}, nil)
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
 
-	err = client.RebootSystem(ctx, systemID)
-	assert.Equal(t, ErrOperationRetriesExceeded{What: "reboot system ephemeral-node-id", Retries: 1}, err)
+	err = client.RebootSystem(ctx)
+	assert.Equal(t, ErrOperationRetriesExceeded{What: "reboot system System.Embedded.1", Retries: 1}, err)
 }
 
-func TestSetEphemeralBootSourceByTypeGetSystemError(t *testing.T) {
+func TestSetBootSourceByTypeGetSystemError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient("invalid-server", isoPath, redfishURL, false, false, "", "")
+	ctx, client, err := NewClient(redfishURL, false, false, "", "")
 	assert.NoError(t, err)
 
+	client.nodeID = nodeID
+
 	// Mock redfish get system request
-	m.On("GetSystem", ctx, client.ephemeralNodeID).Times(1).Return(redfishClient.ComputerSystem{},
+	m.On("GetSystem", ctx, client.NodeID()).Times(1).Return(redfishClient.ComputerSystem{},
 		&http.Response{StatusCode: 500}, redfishClient.GenericOpenAPIError{})
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
 
-	err = client.SetEphemeralBootSourceByType(ctx)
+	err = client.SetBootSourceByType(ctx)
 	assert.Error(t, err)
 }
 
-func TestSetEphemeralBootSourceByTypeSetSystemError(t *testing.T) {
+func TestSetBootSourceByTypeSetSystemError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient("invalid-server", isoPath, redfishURL, false, false, "", "")
+	ctx, client, err := NewClient(redfishURL, false, false, "", "")
 	assert.NoError(t, err)
 
+	client.nodeID = nodeID
+
 	httpResp := &http.Response{StatusCode: 200}
-	m.On("GetSystem", ctx, client.ephemeralNodeID).Return(testutil.GetTestSystem(), httpResp, nil)
+	m.On("GetSystem", ctx, client.nodeID).Return(testutil.GetTestSystem(), httpResp, nil)
 	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
 		Return(testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil)
 	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
 		Return(testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
-	m.On("SetSystem", ctx, client.ephemeralNodeID, mock.Anything).Times(1).Return(
+	m.On("SetSystem", ctx, client.nodeID, mock.Anything).Times(1).Return(
 		redfishClient.ComputerSystem{}, &http.Response{StatusCode: 401}, redfishClient.GenericOpenAPIError{})
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
 
-	err = client.SetEphemeralBootSourceByType(ctx)
+	err = client.SetBootSourceByType(ctx)
 	assert.Error(t, err)
 }
 
-func TestSetEphemeralBootSourceByTypeBootSourceUnavailable(t *testing.T) {
+func TestSetBootSourceByTypeBootSourceUnavailable(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient("invalid-server", isoPath, redfishURL, false, false, "", "")
+	ctx, client, err := NewClient(redfishURL, false, false, "", "")
 	assert.NoError(t, err)
+
+	client.nodeID = nodeID
 
 	invalidSystem := testutil.GetTestSystem()
 	invalidSystem.Boot.BootSourceOverrideTargetRedfishAllowableValues = []redfishClient.BootSource{
@@ -221,7 +248,7 @@ func TestSetEphemeralBootSourceByTypeBootSourceUnavailable(t *testing.T) {
 	}
 
 	httpResp := &http.Response{StatusCode: 200}
-	m.On("GetSystem", ctx, client.ephemeralNodeID).Return(invalidSystem, httpResp, nil)
+	m.On("GetSystem", ctx, client.nodeID).Return(invalidSystem, httpResp, nil)
 	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
 		Return(testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil)
 	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
@@ -230,7 +257,7 @@ func TestSetEphemeralBootSourceByTypeBootSourceUnavailable(t *testing.T) {
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
 
-	err = client.SetEphemeralBootSourceByType(ctx)
+	err = client.SetBootSourceByType(ctx)
 	_, ok := err.(ErrRedfishClient)
 	assert.True(t, ok)
 }
@@ -239,9 +266,10 @@ func TestSetVirtualMediaEjectVirtualMedia(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	systemID := ephemeralNodeID
-	_, client, err := NewClient(systemID, isoPath, redfishURL, false, false, "", "")
+	_, client, err := NewClient(redfishURL, false, false, "", "")
 	assert.NoError(t, err)
+
+	client.nodeID = nodeID
 
 	// Normal retries are 30. Limit them here for test time.
 	ctx := context.WithValue(context.Background(), "numRetries", 1)
@@ -252,7 +280,7 @@ func TestSetVirtualMediaEjectVirtualMedia(t *testing.T) {
 	testMedia.Inserted = &inserted
 
 	httpResp := &http.Response{StatusCode: 200}
-	m.On("GetSystem", ctx, client.ephemeralNodeID).Return(testutil.GetTestSystem(), httpResp, nil)
+	m.On("GetSystem", ctx, client.nodeID).Return(testutil.GetTestSystem(), httpResp, nil)
 	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
 		Return(testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil)
 	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
@@ -271,7 +299,7 @@ func TestSetVirtualMediaEjectVirtualMedia(t *testing.T) {
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
 
-	err = client.SetVirtualMedia(ctx, client.isoPath)
+	err = client.SetVirtualMedia(ctx, isoPath)
 	assert.NoError(t, err)
 }
 
@@ -279,17 +307,19 @@ func TestSetVirtualMediaGetSystemError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient("invalid-server", isoPath, redfishURL, false, false, "", "")
+	ctx, client, err := NewClient(redfishURL, false, false, "", "")
 	assert.NoError(t, err)
 
+	client.nodeID = nodeID
+
 	// Mock redfish get system request
-	m.On("GetSystem", ctx, client.ephemeralNodeID).Times(1).Return(redfishClient.ComputerSystem{},
+	m.On("GetSystem", ctx, client.nodeID).Times(1).Return(redfishClient.ComputerSystem{},
 		nil, redfishClient.GenericOpenAPIError{})
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
 
-	err = client.SetVirtualMedia(ctx, client.isoPath)
+	err = client.SetVirtualMedia(ctx, isoPath)
 	assert.Error(t, err)
 }
 
@@ -297,9 +327,10 @@ func TestSetVirtualMediaEjectVirtualMediaRetriesExceeded(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	systemID := ephemeralNodeID
-	_, client, err := NewClient(systemID, isoPath, redfishURL, false, false, "", "")
+	_, client, err := NewClient(redfishURL, false, false, "", "")
 	assert.NoError(t, err)
+
+	client.nodeID = nodeID
 
 	ctx := context.WithValue(context.Background(), "numRetries", 1)
 
@@ -309,7 +340,7 @@ func TestSetVirtualMediaEjectVirtualMediaRetriesExceeded(t *testing.T) {
 	testMedia.Inserted = &inserted
 
 	httpResp := &http.Response{StatusCode: 200}
-	m.On("GetSystem", ctx, client.ephemeralNodeID).Return(testutil.GetTestSystem(), httpResp, nil)
+	m.On("GetSystem", ctx, client.nodeID).Return(testutil.GetTestSystem(), httpResp, nil)
 	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
 		Return(testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil)
 	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
@@ -328,7 +359,7 @@ func TestSetVirtualMediaEjectVirtualMediaRetriesExceeded(t *testing.T) {
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
 
-	err = client.SetVirtualMedia(ctx, client.isoPath)
+	err = client.SetVirtualMedia(ctx, isoPath)
 	_, ok := err.(ErrOperationRetriesExceeded)
 	assert.True(t, ok)
 }
@@ -337,12 +368,13 @@ func TestSetVirtualMediaInsertVirtualMediaError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	systemID := ephemeralNodeID
-	ctx, client, err := NewClient(systemID, isoPath, redfishURL, false, false, "", "")
+	ctx, client, err := NewClient(redfishURL, false, false, "", "")
 	assert.NoError(t, err)
 
+	client.nodeID = nodeID
+
 	httpResp := &http.Response{StatusCode: 200}
-	m.On("GetSystem", ctx, client.ephemeralNodeID).Return(testutil.GetTestSystem(), httpResp, nil)
+	m.On("GetSystem", ctx, client.nodeID).Return(testutil.GetTestSystem(), httpResp, nil)
 	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
 		Return(testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil)
 	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
@@ -355,7 +387,7 @@ func TestSetVirtualMediaInsertVirtualMediaError(t *testing.T) {
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
 
-	err = client.SetVirtualMedia(ctx, client.isoPath)
+	err = client.SetVirtualMedia(ctx, isoPath)
 	_, ok := err.(ErrRedfishClient)
 	assert.True(t, ok)
 }

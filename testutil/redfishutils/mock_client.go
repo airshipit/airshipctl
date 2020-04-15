@@ -14,7 +14,6 @@ package redfishutils
 
 import (
 	"context"
-	"net/url"
 
 	"github.com/stretchr/testify/mock"
 	redfishClient "opendev.org/airship/go-redfish/client"
@@ -25,20 +24,18 @@ import (
 // MockClient is a fake Redfish client for unit testing.
 type MockClient struct {
 	mock.Mock
-	ephemeralNodeID string
-	isoPath         string
-	redfishURL      url.URL
+	nodeID string
 }
 
-// EphemeralNodeID provides a stubbed method that can be mocked to test functions that use the Redfish client without
+// NodeID provides a stubbed method that can be mocked to test functions that use the Redfish client without
 // making any Redfish API calls or requiring the appropriate Redfish client settings.
 //
 //     Example usage:
 //         client := redfishutils.NewClient()
-//         client.On("GetEphemeralNodeID").Return(<return values>)
+//         client.On("NodeID").Return(<return values>)
 //
-//         err := client.GetEphemeralNodeID(<args>)
-func (m *MockClient) EphemeralNodeID() string {
+//         err := client.NodeID()
+func (m *MockClient) NodeID() string {
 	args := m.Called()
 	return args.String(0)
 }
@@ -51,20 +48,20 @@ func (m *MockClient) EphemeralNodeID() string {
 //         client.On("RebootSystem").Return(<return values>)
 //
 //         err := client.RebootSystem(<args>)
-func (m *MockClient) RebootSystem(ctx context.Context, systemID string) error {
-	args := m.Called(ctx, systemID)
+func (m *MockClient) RebootSystem(ctx context.Context) error {
+	args := m.Called(ctx)
 	return args.Error(0)
 }
 
-// SetEphemeralBootSourceByType provides a stubbed method that can be mocked to test functions that use the
+// SetBootSourceByType provides a stubbed method that can be mocked to test functions that use the
 // Redfish client without making any Redfish API calls or requiring the appropriate Redfish client settings.
 //
 //     Example usage:
 //         client := redfishutils.NewClient()
-//         client.On("SetEphemeralBootSourceByType").Return(<return values>)
+//         client.On("SetBootSourceByType").Return(<return values>)
 //
-//         err := client.setEphemeralBootSourceByType(<args>)
-func (m *MockClient) SetEphemeralBootSourceByType(ctx context.Context) error {
+//         err := client.SetBootSourceByType(<args>)
+func (m *MockClient) SetBootSourceByType(ctx context.Context) error {
 	args := m.Called(ctx)
 	return args.Error(0)
 }
@@ -90,8 +87,8 @@ func (m *MockClient) SetVirtualMedia(ctx context.Context, isoPath string) error 
 //         client.On("SystemPowerOff").Return(<return values>)
 //
 //         err := client.SystemPowerOff(<args>)
-func (m *MockClient) SystemPowerOff(ctx context.Context, systemID string) error {
-	args := m.Called(ctx, systemID)
+func (m *MockClient) SystemPowerOff(ctx context.Context) error {
+	args := m.Called(ctx)
 	return args.Error(0)
 }
 
@@ -103,14 +100,14 @@ func (m *MockClient) SystemPowerOff(ctx context.Context, systemID string) error 
 //         client.On("SystemPowerStatus").Return(<return values>)
 //
 //         err := client.SystemPowerStatus(<args>)
-func (m *MockClient) SystemPowerStatus(ctx context.Context, systemID string) (string, error) {
-	args := m.Called(ctx, systemID)
+func (m *MockClient) SystemPowerStatus(ctx context.Context) (string, error) {
+	args := m.Called(ctx)
 	return args.String(0), args.Error(1)
 }
 
 // NewClient returns a mocked Redfish client in order to test functions that use the Redfish client without making any
 // Redfish API calls.
-func NewClient(ephemeralNodeID string, isoPath string, redfishURL string, username string,
+func NewClient(redfishURL string, insecure bool, useProxy bool, username string,
 	password string) (context.Context, *MockClient, error) {
 	var ctx context.Context
 	if username != "" && password != "" {
@@ -127,16 +124,13 @@ func NewClient(ephemeralNodeID string, isoPath string, redfishURL string, userna
 		return ctx, nil, redfish.ErrRedfishMissingConfig{What: "Redfish URL"}
 	}
 
-	parsedURL, err := url.Parse(redfishURL)
-	if err != nil {
-		return ctx, nil, err
+	// Retrieve system ID from end of Redfish URL
+	systemID := redfish.GetResourceIDFromURL(redfishURL)
+	if len(systemID) == 0 {
+		return ctx, nil, redfish.ErrRedfishMissingConfig{What: "management URL system ID"}
 	}
 
-	m := &MockClient{
-		ephemeralNodeID: ephemeralNodeID,
-		isoPath:         isoPath,
-		redfishURL:      *parsedURL,
-	}
+	m := &MockClient{nodeID: systemID}
 
 	return ctx, m, nil
 }

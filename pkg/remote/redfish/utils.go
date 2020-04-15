@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	URLSchemeSeparator = "+"
+	redfishURLSchemeSeparator = "+"
 )
 
 // DecodeRawError decodes a raw Redfish HTTP response and retrieves the extended information and available resolutions
@@ -219,4 +219,28 @@ func ScreenRedfishError(httpResp *http.Response, clientErr error) error {
 	}
 
 	return finalError
+}
+
+func getManagerID(ctx context.Context, api redfishAPI.RedfishAPI, systemID string) (string, error) {
+	system, _, err := api.GetSystem(ctx, systemID)
+	if err != nil {
+		return "", err
+	}
+
+	return GetResourceIDFromURL(system.Links.ManagedBy[0].OdataId), nil
+}
+
+func getBasePath(redfishURL string) (string, error) {
+	parsedURL, err := url.Parse(redfishURL)
+	if err != nil {
+		return "", ErrRedfishClient{Message: fmt.Sprintf("Redfish URL malformed %s", err.Error())}
+	}
+
+	baseURL := fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
+	schemeSplit := strings.Split(parsedURL.Scheme, redfishURLSchemeSeparator)
+	if len(schemeSplit) > 1 {
+		baseURL = fmt.Sprintf("%s://%s", schemeSplit[len(schemeSplit)-1], parsedURL.Host)
+	}
+
+	return baseURL, nil
 }
