@@ -17,3 +17,7 @@
   become: yes
   args:
     warn: false
+  environment:
+    http_proxy: "{{ proxy.http }}"
+    https_proxy: "{{ proxy.http }}"
+    no_proxy: "{{ proxy.noproxy }}"
