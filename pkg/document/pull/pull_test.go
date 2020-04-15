@@ -20,7 +20,7 @@ import (
 	"strings"
 	"testing"
 
-	fixtures "gopkg.in/src-d/go-git-fixtures.v3"
+	fixtures "github.com/go-git/go-git-fixtures/v4"
 
 	repo2 "opendev.org/airship/airshipctl/pkg/document/repo"
 
@@ -50,8 +50,6 @@ func TestPull(t *testing.T) {
 		currentManifest, err := dummyPullSettings.Config.CurrentContextManifest()
 		require.NoError(err)
 
-		err = fixtures.Init()
-		require.NoError(err)
 		fx := fixtures.Basic().One()
 
 		dummyGitDir := fx.DotGit().Root()
@@ -90,8 +88,6 @@ func TestPull(t *testing.T) {
 		dummyPullSettings := getDummyPullSettings()
 		conf := dummyPullSettings.AirshipCTLSettings.Config
 
-		err := fixtures.Init()
-		require.NoError(err)
 		fx := fixtures.Basic().One()
 
 		mfst := conf.Manifests["dummy_manifest"]
@@ -114,9 +110,8 @@ func TestPull(t *testing.T) {
 		defer cleanup(t)
 
 		mfst.TargetPath = tmpDir
-		require.NoError(err)
 
-		err = dummyPullSettings.Pull()
+		err := dummyPullSettings.Pull()
 		require.NoError(err)
 
 		dummyRepoDirName := util.GitDirNameFromURL(dummyGitDir)
