@@ -163,7 +163,7 @@ func TestRebootSystemTimeout(t *testing.T) {
 	client.RedfishAPI = m
 
 	err = client.RebootSystem(ctx, systemID)
-	assert.Equal(t, ErrOperationRetriesExceeded{}, err)
+	assert.Equal(t, ErrOperationRetriesExceeded{What: "reboot system ephemeral-node-id", Retries: 1}, err)
 }
 
 func TestSetEphemeralBootSourceByTypeGetSystemError(t *testing.T) {
@@ -235,6 +235,46 @@ func TestSetEphemeralBootSourceByTypeBootSourceUnavailable(t *testing.T) {
 	assert.True(t, ok)
 }
 
+func TestSetVirtualMediaEjectVirtualMedia(t *testing.T) {
+	m := &redfishMocks.RedfishAPI{}
+	defer m.AssertExpectations(t)
+
+	systemID := ephemeralNodeID
+	_, client, err := NewClient(systemID, isoPath, redfishURL, false, false, "", "")
+	assert.NoError(t, err)
+
+	// Normal retries are 30. Limit them here for test time.
+	ctx := context.WithValue(context.Background(), "numRetries", 1)
+
+	// Mark test media as inserted
+	inserted := true
+	testMedia := testutil.GetVirtualMedia([]string{"CD"})
+	testMedia.Inserted = &inserted
+
+	httpResp := &http.Response{StatusCode: 200}
+	m.On("GetSystem", ctx, client.ephemeralNodeID).Return(testutil.GetTestSystem(), httpResp, nil)
+	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
+		Return(testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil)
+	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
+		Return(testMedia, httpResp, nil)
+	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
+		Return(testMedia, httpResp, nil)
+
+	// Verify retry logic
+	m.On("EjectVirtualMedia", ctx, testutil.ManagerID, "Cd", mock.Anything).Times(1).
+		Return(redfishClient.RedfishError{}, httpResp, nil)
+	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
+		Return(testutil.GetVirtualMedia([]string{"Cd"}), httpResp, nil)
+	m.On("InsertVirtualMedia", ctx, testutil.ManagerID, "Cd", mock.Anything).Return(
+		redfishClient.RedfishError{}, httpResp, redfishClient.GenericOpenAPIError{})
+
+	// Replace normal API client with mocked API client
+	client.RedfishAPI = m
+
+	err = client.SetVirtualMedia(ctx, client.isoPath)
+	assert.NoError(t, err)
+}
+
 func TestSetVirtualMediaGetSystemError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
@@ -251,6 +291,46 @@ func TestSetVirtualMediaGetSystemError(t *testing.T) {
 
 	err = client.SetVirtualMedia(ctx, client.isoPath)
 	assert.Error(t, err)
+}
+
+func TestSetVirtualMediaEjectVirtualMediaRetriesExceeded(t *testing.T) {
+	m := &redfishMocks.RedfishAPI{}
+	defer m.AssertExpectations(t)
+
+	systemID := ephemeralNodeID
+	_, client, err := NewClient(systemID, isoPath, redfishURL, false, false, "", "")
+	assert.NoError(t, err)
+
+	ctx := context.WithValue(context.Background(), "numRetries", 1)
+
+	// Mark test media as inserted
+	inserted := true
+	testMedia := testutil.GetVirtualMedia([]string{"CD"})
+	testMedia.Inserted = &inserted
+
+	httpResp := &http.Response{StatusCode: 200}
+	m.On("GetSystem", ctx, client.ephemeralNodeID).Return(testutil.GetTestSystem(), httpResp, nil)
+	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
+		Return(testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil)
+	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
+		Return(testMedia, httpResp, nil)
+	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
+		Return(testMedia, httpResp, nil)
+
+	// Verify retry logic
+	m.On("EjectVirtualMedia", ctx, testutil.ManagerID, "Cd", mock.Anything).Times(1).
+		Return(redfishClient.RedfishError{}, httpResp, nil)
+
+	// Media still inserted on retry. Since retries are 1, this causes failure.
+	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
+		Return(testMedia, httpResp, nil)
+
+	// Replace normal API client with mocked API client
+	client.RedfishAPI = m
+
+	err = client.SetVirtualMedia(ctx, client.isoPath)
+	_, ok := err.(ErrOperationRetriesExceeded)
+	assert.True(t, ok)
 }
 
 func TestSetVirtualMediaInsertVirtualMediaError(t *testing.T) {

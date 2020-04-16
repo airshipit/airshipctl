@@ -30,7 +30,6 @@ import (
 const (
 	// ClientType is used by other packages as the identifier of the Redfish client.
 	ClientType          string = "redfish"
-	mediaEjectDelay            = 30 * time.Second
 	systemActionRetries        = 30
 	systemRebootDelay          = 2 * time.Second
 )
@@ -58,7 +57,7 @@ func (c *Client) RebootSystem(ctx context.Context, systemID string) error {
 			totalRetries = systemActionRetries
 		}
 
-		for retry := 0; retry <= totalRetries; retry++ {
+		for retry := 0; retry < totalRetries; retry++ {
 			system, httpResp, err := c.RedfishAPI.GetSystem(ctx, systemID)
 			if err = ScreenRedfishError(httpResp, err); err != nil {
 				return err
@@ -68,7 +67,10 @@ func (c *Client) RebootSystem(ctx context.Context, systemID string) error {
 			}
 			time.Sleep(systemRebootDelay)
 		}
-		return ErrOperationRetriesExceeded{}
+		return ErrOperationRetriesExceeded{
+			What:    fmt.Sprintf("reboot system %s", c.EphemeralNodeID()),
+			Retries: totalRetries,
+		}
 	}
 
 	resetReq := redfishClient.ResetRequestBody{}
@@ -127,6 +129,28 @@ func (c *Client) SetEphemeralBootSourceByType(ctx context.Context) error {
 // SetVirtualMedia injects a virtual media device to an established virtual media ID. This assumes that isoPath is
 // accessible to the redfish server and virtualMedia device is either of type CD or DVD.
 func (c *Client) SetVirtualMedia(ctx context.Context, isoPath string) error {
+	waitForEjectMedia := func(managerID string, vMediaID string) error {
+		// Check if number of retries is defined in context
+		totalRetries, ok := ctx.Value("numRetries").(int)
+		if !ok {
+			totalRetries = systemActionRetries
+		}
+
+		for retry := 0; retry < totalRetries; retry++ {
+			vMediaMgr, httpResp, err := c.RedfishAPI.GetManagerVirtualMedia(ctx, managerID, vMediaID)
+			if err = ScreenRedfishError(httpResp, err); err != nil {
+				return err
+			}
+
+			if *vMediaMgr.Inserted == false {
+				log.Debugf("Successfully ejected virtual media.")
+				return nil
+			}
+		}
+
+		return ErrOperationRetriesExceeded{What: fmt.Sprintf("eject media %s", vMediaID), Retries: totalRetries}
+	}
+
 	log.Debugf("Ephemeral Node System ID: '%s'", c.ephemeralNodeID)
 
 	managerID, err := GetManagerID(ctx, c.RedfishAPI, c.ephemeralNodeID)
@@ -148,13 +172,17 @@ func (c *Client) SetVirtualMedia(ctx context.Context, isoPath string) error {
 	}
 
 	if *vMediaMgr.Inserted == true {
+		log.Debugf("Manager %s media type %s inserted. Attempting to eject.", managerID, vMediaID)
+
 		var emptyBody map[string]interface{}
 		_, httpResp, err = c.RedfishAPI.EjectVirtualMedia(ctx, managerID, vMediaID, emptyBody)
 		if err = ScreenRedfishError(httpResp, err); err != nil {
 			return err
 		}
 
-		time.Sleep(mediaEjectDelay)
+		if err = waitForEjectMedia(managerID, vMediaID); err != nil {
+			return err
+		}
 	}
 
 	vMediaReq := redfishClient.InsertMediaRequestBody{}

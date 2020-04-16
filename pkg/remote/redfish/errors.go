@@ -41,8 +41,10 @@ func (e ErrRedfishMissingConfig) Error() string {
 
 // ErrOperationRetriesExceeded raised if number of operation retries exceeded
 type ErrOperationRetriesExceeded struct {
+	What    string
+	Retries int
 }
 
 func (e ErrOperationRetriesExceeded) Error() string {
-	return "maximum retries exceeded"
+	return fmt.Sprintf("operation %s failed. Maximum retries (%d) exceeded", e.What, e.Retries)
 }
