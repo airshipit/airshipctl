@@ -76,8 +76,9 @@ func (f *MockKubectlFactory) ClientForMapping(*meta.RESTMapping) (resource.RESTC
 	return f.MockClientForMapping()
 }
 
-func (f *MockKubectlFactory) WithToDiscoveryClientByError(d dynamic.Interface, err error) *MockKubectlFactory {
-	f.MockDynamicClient = func() (dynamic.Interface, error) { return d, err }
+func (f *MockKubectlFactory) WithToDiscoveryClientByError(d discovery.CachedDiscoveryInterface,
+	err error) *MockKubectlFactory {
+	f.MockToDiscoveryClient = func() (discovery.CachedDiscoveryInterface, error) { return d, err }
 	return f
 }
 
@@ -86,9 +87,8 @@ func (f *MockKubectlFactory) WithOpenAPISchemaByError(r openapi.Resources, err e
 	return f
 }
 
-func (f *MockKubectlFactory) WithDynamicClientByError(d discovery.CachedDiscoveryInterface,
-	err error) *MockKubectlFactory {
-	f.MockToDiscoveryClient = func() (discovery.CachedDiscoveryInterface, error) { return d, err }
+func (f *MockKubectlFactory) WithDynamicClientByError(d dynamic.Interface, err error) *MockKubectlFactory {
+	f.MockDynamicClient = func() (dynamic.Interface, error) { return d, err }
 	return f
 }
 
