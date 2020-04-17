@@ -59,7 +59,7 @@ func (mc *mockContainer) GetID() string {
 }
 
 func TestBootstrapIso(t *testing.T) {
-	bundle, err := document.NewBundleByPath("testdata/primary/site/test-site/ephemeral")
+	bundle, err := document.NewBundleByPath("testdata/primary/site/test-site/ephemeral/bootstrap")
 	require.NoError(t, err, "Building Bundle Failed")
 
 	tempVol, cleanup := testutil.TempDir(t, "bootstrap-test")
