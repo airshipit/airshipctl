@@ -25,7 +25,7 @@ manifests:
     ## this is temporary hack, as soon as we use `document pull` command in gate process
     ## this will subpath will be airshipctl/manifests/site/test-bootstrap, as airshipctl
     ## will be primary repository
-    sub-path: "manifests/site/test-bootstrap"
+    sub-path: {{ airship_site_name }}
     target-path: {{ airship_config_manifest_directory }}
 modules-config:
   bootstrapInfo:
@@ -35,7 +35,9 @@ modules-config:
         image: {{ airship_config_iso_builder_docker_image }}
         containerRuntime: docker
       remoteDirect:
-        remoteType: redfish
+        remoteType: {{ remote_type }}
+        insecure: {{ remote_insecure }}
+        useproxy: {{ remote_proxy }}
         isoUrl: http://{{ airship_config_iso_serve_host }}:{{ airship_config_iso_port }}/{{ airship_config_iso_name }}
       builder:
         userDataFileName: user-data

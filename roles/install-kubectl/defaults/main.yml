@@ -10,23 +10,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: make sure serve directory exists
-  file:
-    dest: "{{ serve_dir }}"
-    state: directory
-    mode: "0755"
-    owner: "{{ ansible_user }}"
-  become: true
-
-- name: build ephemeral node iso
-  command: airshipctl bootstrap isogen
-  environment:
-    http_proxy: "{{ proxy.http }}"
-    https_proxy: "{{ proxy.http }}"
-    no_proxy: "{{ proxy.noproxy }}"
-
-- name: cleanup temp dir
-  file:
-    path: "{{ serve_dir }}"
-    state: absent
-  when: airship_cleanup_serve_dir | default(false)
+proxy:
+  http:
+  noproxy:
