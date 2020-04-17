@@ -10,14 +10,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: reload systemd configuration
-  become: yes
-  systemd:
-    daemon_reload: yes
-
-- name: http file server restarted
-  service:
-    name: simple-http-{{ http_fileserver_name | default('default') }}.service
-    state: restarted
-    enabled: true
+- name: Generate htaccess file
   become: true
+  template:
+    src: htaccess.j2
+    dest: "{{ apache_server_htaccess_path }}"
+

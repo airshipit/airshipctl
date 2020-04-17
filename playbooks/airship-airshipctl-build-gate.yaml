@@ -23,6 +23,14 @@
       include_role:
         name: docker-install
 
+    - name: make sure serve directory exists
+      file:
+        dest: "{{ serve_dir }}"
+        state: directory
+        mode: "0755"
+        owner: "{{ ansible_user }}"
+      become: true
+
     - name: deploy-gate
       include_role:
         name: airship-libvirt-gate
@@ -44,20 +52,26 @@
             target_disk_size: 10G
             disk_format: qcow2
             target_vms_count: 1
-
-    - name: make sure serve directory exists
-      file:
-        dest: "{{ serve_dir }}"
-        state: directory
-        mode: "0755"
-        owner: "{{ ansible_user }}"
-      become: true
-
-    - name: serve iso directory
-      include_role:
-        name: http-fileserver
-      vars:
-        http_fileserver_serve_dir: "{{ serve_dir }}"
-        http_fileserver_serve_port: "{{ serve_port }}"
-
+        airship_gate_file_exchanger:
+          servername: "loacalhost"
+          ip:
+          - "127.0.0.1"
+          - "::1"
+          http_port: "{{ serve_port }}"
+          path: "{{ serve_dir }}"
+          user:
+          - username: "username"
+            password: "password"
+          group:
+          - name: writers
+            member:
+            - username
+          rbac:
+            policies:
+            - role:
+              - PUT
+              group:
+              - writers
+            default:
+              all: granted
 

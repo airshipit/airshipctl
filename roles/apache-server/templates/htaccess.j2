@@ -1,0 +1,3 @@
+{% for item in apache_server_htaccess_group %}
+{{ "{}: {}".format(item.name, item.member | join(' ')) }}
+{% endfor %}

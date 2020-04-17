@@ -125,4 +125,15 @@
     sushy_emulator_frontend_https_port: "{{ airship_gate_redfish_auth.https_port }}"
     sushy_emulator_frontend_user: "{{ airship_gate_redfish_auth.user }}"
 
+- name: Add file-exchanger to apache
+  include_role:
+    name: apache-file-exchanger
+  vars:
+    file_exchanger_name: airship_gate_file_exchanger
+    file_exchanger_http_port: "{{ airship_gate_file_exchanger.http_port | default(0) }}"
+    file_exchanger_https_port: "{{ airship_gate_file_exchanger.https_port | default(0) }}"
+    file_exchanger_path: "{{ airship_gate_file_exchanger.path }}"
+    file_exchanger_user: "{{ airship_gate_file_exchanger.user | default(None)}}"
+    file_exchanger_group: "{{ airship_gate_file_exchanger.group | default(None) }}"
+    file_exchanger_rbac: "{{ airship_gate_file_exchanger.rbac | default(None) }}"
 

@@ -1,0 +1,53 @@
+{% from 'macroses.j2' import render_rbac as _render_rbac %}
+
+{% if file_exchanger_http_port != 80 %}
+Listen {{ file_exchanger_http_port }}
+{% endif %}
+<VirtualHost {{ file_exchanger_ip | default(['*']) | ipwrap | map('regex_replace', '(.*)', '\\1:{}'.format(file_exchanger_http_port)) | list | join(' ') }}>
+     # Add machine's IP address (use ifconfig command)
+     ServerName {{ file_exchanger_servername }}
+
+{% if file_exchanger_user is defined and file_exchanger_user != None %}
+     <Directory /var/www/file_exchanger_cgi-bin/>
+        AuthType Basic
+        AuthName "Authorised cgi-bin"
+        AuthUserFile /etc/apache2/sites-available/{{ file_exchanger_name }}.htpasswd
+{%   if file_exchanger_group is defined and file_exchanger_group != None %}
+        AuthGroupFile /etc/apache2/sites-available/{{ file_exchanger_name }}.htaccess
+{%   endif %}
+{%   if file_exchanger_rbac is defined and file_exchanger_rbac != None %}
+{{      _render_rbac(file_exchanger_rbac) }}
+{%   else %}
+        Require valid-user
+{%   endif %}
+     </Directory>
+     ScriptAlias /cgi-bin /var/www/file_exchanger_cgi-bin/
+{% endif %}
+
+     # Give an alias to to start your website url with
+     DocumentRoot "{{ file_exchanger_path }}"
+     <Location />
+        Options Indexes FollowSymLinks
+        AllowOverride None
+{% if file_exchanger_user is defined and file_exchanger_user != None %}
+        AuthType Basic
+        AuthName "Authentication Required"
+        AuthUserFile /etc/apache2/sites-available/{{ file_exchanger_name }}.htpasswd
+{%   if file_exchanger_group is defined and file_exchanger_group != None %}
+        AuthGroupFile /etc/apache2/sites-available/{{ file_exchanger_name }}.htaccess
+{%   endif %}
+{%   if file_exchanger_rbac is defined and file_exchanger_rbac != None %}
+{{      _render_rbac(file_exchanger_rbac) }}
+{%   else %}
+        Require valid-user
+{%   endif %}
+        Script PUT /cgi-bin/put
+{% else %}
+        Require all granted
+{% endif %}
+     </Location>
+     ErrorLog ${APACHE_LOG_DIR}/error.log
+     LogLevel warn
+     CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+

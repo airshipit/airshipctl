@@ -1,7 +1,7 @@
 {% if sushy_emulator_frontend_http_port != 80 %}
 Listen {{ sushy_emulator_frontend_http_port }}
 {% endif %}
-<VirtualHost *:{{ sushy_emulator_frontend_http_port }}>
+<VirtualHost {{ sushy_emulator_frontend_ip | default(['*']) | ipwrap | map('regex_replace', '(.*)', '\\1:{}'.format(sushy_emulator_frontend_http_port)) | list | join(' ') }}>
      # Add machine's IP address (use ifconfig command)
      ServerName {{ sushy_emulator_frontend_servername }}
      # Give an alias to to start your website url with

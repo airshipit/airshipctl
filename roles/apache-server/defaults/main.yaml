@@ -10,9 +10,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: ensure http service is stopped
-  service:
-    name: simple-http-{{ http_fileserver_name | default('default') }}.service
-    state: stopped
-    enabled: false
-  become: true
+# install, htpasswd, ssl
+apache_server_action: install
+
+apache_server_htpasswd_path: /etc/apache2/sites-available/.htpasswd
+apache_server_htpasswd_user:
+  - username: username
+    password: password
+
+apache_server_htaccess_path: /etc/apache2/sites-available/.htaccess
+apache_server_htaccess_group:
+  - name: ReadOnly
+    member:
+      - username
+
+apache_server_ssl_cn: localhost
+apache_server_ssl_alt_name:
+  - "IP:127.0.0.1"
+  - "IP:::1"
+apache_server_ssl_key_path: /etc/ssl/private/.key
+apache_server_ssl_cert_path: /etc/ssl/private/.pem
+
