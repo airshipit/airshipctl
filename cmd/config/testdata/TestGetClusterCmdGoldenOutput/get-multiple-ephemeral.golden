@@ -2,6 +2,7 @@ Cluster: clusterBar
 ephemeral:
 bootstrapInfo: ""
 clusterKubeconf: clusterBar_ephemeral
+managementConfiguration: ""
 
 LocationOfOrigin: ""
 insecure-skip-tls-verify: true
@@ -11,6 +12,7 @@ Cluster: clusterBar
 target:
 bootstrapInfo: ""
 clusterKubeconf: clusterBar_target
+managementConfiguration: ""
 
 LocationOfOrigin: ""
 insecure-skip-tls-verify: true
@@ -20,6 +22,7 @@ Cluster: clusterBaz
 ephemeral:
 bootstrapInfo: ""
 clusterKubeconf: clusterBaz_ephemeral
+managementConfiguration: ""
 
 LocationOfOrigin: ""
 insecure-skip-tls-verify: true
@@ -29,6 +32,7 @@ Cluster: clusterBaz
 target:
 bootstrapInfo: ""
 clusterKubeconf: clusterBaz_target
+managementConfiguration: ""
 
 LocationOfOrigin: ""
 insecure-skip-tls-verify: true
@@ -38,6 +42,7 @@ Cluster: clusterFoo
 ephemeral:
 bootstrapInfo: ""
 clusterKubeconf: clusterFoo_ephemeral
+managementConfiguration: ""
 
 LocationOfOrigin: ""
 insecure-skip-tls-verify: true
@@ -47,6 +52,7 @@ Cluster: clusterFoo
 target:
 bootstrapInfo: ""
 clusterKubeconf: clusterFoo_target
+managementConfiguration: ""
 
 LocationOfOrigin: ""
 insecure-skip-tls-verify: true

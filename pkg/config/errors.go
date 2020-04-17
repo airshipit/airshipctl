@@ -111,6 +111,16 @@ func (e ErrMissingCurrentContext) Error() string {
 	return "Current context must be set before using --current flag"
 }
 
+// ErrMissingManagementConfiguration means the management configuration was not defined for the active cluster.
+type ErrMissingManagementConfiguration struct {
+	cluster *Cluster
+}
+
+func (e ErrMissingManagementConfiguration) Error() string {
+	return fmt.Sprintf("Management configuration %s for cluster %s undefined.", e.cluster.ManagementConfiguration,
+		e.cluster.NameInKubeconf)
+}
+
 // ErrMissingPrimaryRepo returned when Primary Repository is not set in context manifest
 type ErrMissingPrimaryRepo struct {
 }

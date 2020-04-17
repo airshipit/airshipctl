@@ -49,6 +49,9 @@ type Config struct {
 	// CurrentContext is the name of the context that you would like to use by default
 	CurrentContext string `json:"currentContext"`
 
+	// Management configuration defines management information for all baremetal hosts in a cluster.
+	ManagementConfiguration map[string]*ManagementConfiguration `json:"managementConfiguration"`
+
 	// BootstrapInfo is the configuration for container runtime, ISO builder and remote management
 	BootstrapInfo map[string]*Bootstrap `json:"bootstrapInfo"`
 
@@ -79,6 +82,9 @@ type Cluster struct {
 
 	// KubeConfig Cluster Object
 	cluster *kubeconfig.Cluster
+
+	// Management configuration which will be used for all hosts in the cluster
+	ManagementConfiguration string `json:"managementConfiguration"`
 
 	// Bootstrap configuration this clusters ephemeral hosts will rely on
 	Bootstrap string `json:"bootstrapInfo"`
@@ -174,6 +180,18 @@ type RepoCheckout struct {
 type ClusterComplexName struct {
 	Name string
 	Type string
+}
+
+// ManagementConfiguration defines configuration data for all remote systems within a context.
+type ManagementConfiguration struct {
+	// Insecure indicates whether the SSL certificate should be checked on remote management requests.
+	Insecure bool `json:"insecure,omitempty"`
+	// Type indicates the type of out-of-band management that will be used for baremetal orchestration, e.g.
+	// redfish.
+	Type string `json:"type"`
+	// UseProxy indicates whether airshipctl should transmit remote management requests through a proxy server when
+	// one is configured in an environment.
+	UseProxy bool `json:"useproxy,omitempty"`
 }
 
 // Bootstrap holds configurations for bootstrap steps
