@@ -22,9 +22,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/dynamic"
-	dynamicFake "k8s.io/client-go/dynamic/fake"
 
 	"opendev.org/airship/airshipctl/pkg/cluster"
 	"opendev.org/airship/airshipctl/pkg/document"
@@ -107,7 +104,7 @@ func TestGetStatusForResource(t *testing.T) {
 	tests := []struct {
 		name           string
 		selector       document.Selector
-		testClient     fake.Client
+		testClient     *fake.Client
 		expectedStatus cluster.Status
 		err            error
 	}{
@@ -116,7 +113,9 @@ func TestGetStatusForResource(t *testing.T) {
 			selector: document.NewSelector().
 				ByGvk("example.com", "v1", "Resource").
 				ByName("stable-resource"),
-			testClient:     makeTestClient(makeResource("Resource", "stable-resource", "stable")),
+			testClient: fake.NewClient(
+				fake.WithDynamicObjects(makeResource("Resource", "stable-resource", "stable")),
+			),
 			expectedStatus: cluster.Status("Stable"),
 		},
 		{
@@ -124,7 +123,9 @@ func TestGetStatusForResource(t *testing.T) {
 			selector: document.NewSelector().
 				ByGvk("example.com", "v1", "Resource").
 				ByName("pending-resource"),
-			testClient:     makeTestClient(makeResource("Resource", "pending-resource", "pending")),
+			testClient: fake.NewClient(
+				fake.WithDynamicObjects(makeResource("Resource", "pending-resource", "pending")),
+			),
 			expectedStatus: cluster.Status("Pending"),
 		},
 		{
@@ -132,7 +133,9 @@ func TestGetStatusForResource(t *testing.T) {
 			selector: document.NewSelector().
 				ByGvk("example.com", "v1", "Resource").
 				ByName("unknown"),
-			testClient:     makeTestClient(makeResource("Resource", "unknown", "unknown")),
+			testClient: fake.NewClient(
+				fake.WithDynamicObjects(makeResource("Resource", "unknown", "unknown")),
+			),
 			expectedStatus: cluster.UnknownStatus,
 		},
 		{
@@ -140,7 +143,9 @@ func TestGetStatusForResource(t *testing.T) {
 			selector: document.NewSelector().
 				ByGvk("example.com", "v1", "Legacy").
 				ByName("stable-legacy"),
-			testClient:     makeTestClient(makeResource("Legacy", "stable-legacy", "stable")),
+			testClient: fake.NewClient(
+				fake.WithDynamicObjects(makeResource("Legacy", "stable-legacy", "stable")),
+			),
 			expectedStatus: cluster.Status("Stable"),
 		},
 		{
@@ -148,7 +153,7 @@ func TestGetStatusForResource(t *testing.T) {
 			selector: document.NewSelector().
 				ByGvk("example.com", "v1", "Missing").
 				ByName("missing-resource"),
-			testClient: makeTestClient(),
+			testClient: fake.NewClient(),
 			err:        cluster.ErrResourceNotFound{Resource: "missing-resource"},
 		},
 	}
@@ -175,15 +180,6 @@ func TestGetStatusForResource(t *testing.T) {
 			assert.Equal(t, tt.expectedStatus, actualStatus)
 		})
 	}
-}
-
-func makeTestClient(obj ...runtime.Object) fake.Client {
-	testClient := fake.Client{
-		MockDynamicClient: func() dynamic.Interface {
-			return dynamicFake.NewSimpleDynamicClient(runtime.NewScheme(), obj...)
-		},
-	}
-	return testClient
 }
 
 func makeResource(kind, name, state string) *unstructured.Unstructured {

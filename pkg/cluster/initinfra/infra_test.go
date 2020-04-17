@@ -60,9 +60,6 @@ func TestDeploy(t *testing.T) {
 	infra.FileSystem = document.NewDocumentFs()
 
 	kctl := kubectl.NewKubectl(tf)
-	tc := fake.Client{
-		MockKubectl: func() kubectl.Interface { return kctl },
-	}
 
 	tests := []struct {
 		theInfra      *initinfra.Infra
@@ -71,24 +68,22 @@ func TestDeploy(t *testing.T) {
 		expectedError error
 	}{
 		{
-			client: fake.Client{
-				MockKubectl: func() kubectl.Interface {
-					return kubectl.NewKubectl(k8sutils.
-						NewMockKubectlFactory().
-						WithDynamicClientByError(nil, DynamicClientError))
-				},
-			},
+
+			client: fake.NewClient(fake.WithKubectl(
+				kubectl.NewKubectl(k8sutils.
+					NewMockKubectlFactory().
+					WithDynamicClientByError(nil, DynamicClientError)))),
 			expectedError: DynamicClientError,
 		},
 		{
 			expectedError: nil,
 			prune:         false,
-			client:        tc,
+			client:        fake.NewClient(fake.WithKubectl(kctl)),
 		},
 		{
 			expectedError: nil,
 			prune:         true,
-			client:        tc,
+			client:        fake.NewClient(fake.WithKubectl(kctl)),
 		},
 	}
 

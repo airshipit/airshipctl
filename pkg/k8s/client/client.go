@@ -28,11 +28,12 @@ import (
 )
 
 // Interface provides an abstraction layer to interactions with kubernetes
-// clusters by providing a ClientSet which includes all kubernetes core objects
-// with standard operations, a DynamicClient which provides interactions with
-// loosely typed kubernetes resources, and a Kubectl interface that is built on
-// top of kubectl libraries and implements such kubectl subcommands as kubectl
-// apply (more will be added)
+// clusters by providing the following:
+// * A ClientSet which includes all kubernetes core objects with standard operations
+// * A DynamicClient which provides interactions with loosely typed kubernetes resources
+// * An ApiextensionsClientSet which provides interactions with CustomResourceDefinitions
+// * A Kubectl interface that is built on top of kubectl libraries and
+//   implements such kubectl subcommands as kubectl apply (more will be added)
 type Interface interface {
 	ClientSet() kubernetes.Interface
 	DynamicClient() dynamic.Interface
@@ -53,8 +54,13 @@ type Client struct {
 // Client implements Interface
 var _ Interface = &Client{}
 
-// NewClient returns Cluster interface with Kubectl
-// and ClientSet interfaces initialized
+// Factory is a function which creates Interfaces
+type Factory func(*environment.AirshipCTLSettings) (Interface, error)
+
+// DefaultClient is a factory which generates a default client
+var DefaultClient Factory = NewClient
+
+// NewClient creates a Client initialized from the passed in settings
 func NewClient(settings *environment.AirshipCTLSettings) (Interface, error) {
 	client := new(Client)
 	var err error
@@ -88,42 +94,42 @@ func NewClient(settings *environment.AirshipCTLSettings) (Interface, error) {
 	return client, nil
 }
 
-// ClientSet getter for ClientSet interface
+// ClientSet returns the ClientSet interface
 func (c *Client) ClientSet() kubernetes.Interface {
 	return c.clientSet
 }
 
-// SetClientSet setter for ClientSet interface
+// SetClientSet sets the ClientSet interface
 func (c *Client) SetClientSet(clientSet kubernetes.Interface) {
 	c.clientSet = clientSet
 }
 
-// DynamicClient getter for DynamicClient interface
+// DynamicClient returns the DynamicClient interface
 func (c *Client) DynamicClient() dynamic.Interface {
 	return c.dynamicClient
 }
 
-// SetDynamicClient setter for DynamicClient interface
+// SetDynamicClient sets the DynamicClient interface
 func (c *Client) SetDynamicClient(dynamicClient dynamic.Interface) {
 	c.dynamicClient = dynamicClient
 }
 
-// ApiextensionsV1 getter for ApiextensionsV1 interface
+// ApiextensionsClientSet returns the Apiextensions interface
 func (c *Client) ApiextensionsClientSet() apix.Interface {
 	return c.apixClient
 }
 
-// SetApiextensionsV1 setter for ApiextensionsV1 interface
+// SetApiextensionsClientSet sets the ApiextensionsClientSet interface
 func (c *Client) SetApiextensionsClientSet(apixClient apix.Interface) {
 	c.apixClient = apixClient
 }
 
-// Kubectl getter for Kubectl interface
+// Kubectl returns the Kubectl interface
 func (c *Client) Kubectl() kubectl.Interface {
 	return c.kubectl
 }
 
-// SetKubectl setter for Kubectl interface
+// SetKubectl sets the Kubectl interface
 func (c *Client) SetKubectl(kctl kubectl.Interface) {
 	c.kubectl = kctl
 }
