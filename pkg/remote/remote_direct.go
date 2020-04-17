@@ -98,7 +98,7 @@ func (a *Adapter) initializeAdapter(settings *environment.AirshipCTLSettings) er
 		return config.ErrMissingConfig{What: "RemoteDirect options not defined in bootstrap config"}
 	}
 
-	bundlePath, err := cfg.CurrentContextEntryPoint(config.Ephemeral, "")
+	bundlePath, err := cfg.CurrentContextEntryPoint(config.Ephemeral, config.BootstrapPhase)
 	if err != nil {
 		return err
 	}

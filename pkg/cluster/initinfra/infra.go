@@ -69,7 +69,7 @@ func (infra *Infra) Deploy() error {
 		return err
 	}
 
-	kustomizePath, err := globalConf.CurrentContextEntryPoint(infra.ClusterType, config.Initinfra)
+	kustomizePath, err := globalConf.CurrentContextEntryPoint(infra.ClusterType, config.InitinfraPhase)
 	if err != nil {
 		return err
 	}
