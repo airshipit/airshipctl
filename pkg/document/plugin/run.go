@@ -22,12 +22,17 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	"opendev.org/airship/airshipctl/pkg/document/plugin/replacement"
 	"opendev.org/airship/airshipctl/pkg/document/plugin/types"
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
 // Registry contains factory functions for the available plugins
 var Registry = make(map[schema.GroupVersionKind]types.Factory)
+
+func init() {
+	replacement.RegisterPlugin(Registry)
+}
 
 // ConfigureAndRun executes particular plugin based on group, version, kind
 // which have been specified in configuration file. Config file should be
