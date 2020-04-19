@@ -1,0 +1,4 @@
+resources:
+  - ../../../../function/baremetal-operator
+commonLabels:
+  airshipit.org/stage: initinfra

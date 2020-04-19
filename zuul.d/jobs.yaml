@@ -86,6 +86,7 @@
         - airshipctl-build-ephemeral-iso
         - install-kubectl
         - airshipctl-deploy-ephemeral-node
+        - airshipctl-cluster-initinfra
       serve_dir: /srv/iso
       serve_port: 8099
 
@@ -109,6 +110,7 @@
         - airshipctl-build-ephemeral-iso
         - install-kubectl
         - airshipctl-deploy-ephemeral-node
+        - airshipctl-cluster-initinfra
       serve_dir: /srv/iso
       serve_port: 8099
     voting: false
