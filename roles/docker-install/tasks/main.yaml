@@ -62,6 +62,19 @@
   when: proxy.enabled|bool == true
   become: true
 
+- name: Create docker directory
+  file:
+    path: "{{ docker_config_path }}"
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Save docker daemon configuration
+  copy:
+    content: "{{ docker_config | to_nice_json }}"
+    dest: "{{ docker_config_path }}/daemon.json"
+  become: true
+
 - name: Start docker
   become: true
   systemd:
