@@ -1,5 +1,3 @@
-# Copyright 2017 The Openstack-Helm Authors.
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,15 +10,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- hosts: primary
-  vars:
-    logs_dir: "/tmp/logs"
-  roles:
-    - gather-system-logs
-    - airship-gather-apache-logs
-    - airship-gather-libvirt-logs
-    - airship-gather-runtime-logs
-    - airship-airshipctl-gather-configs
-  environment:
-    LIBVIRT_DEFAULT_URI: qemu:///system
+# install, htpasswd, ssl
+apache_server_action: install
+
+apache_server_htpasswd_path: /etc/apache2/sites-available/.htpasswd
+apache_server_htpasswd_user:
+  - username: username
+    password: password
+
+apache_server_ssl_cn: localhost
+apache_server_ssl_alt_name:
+  - "IP:127.0.0.1"
+  - "IP:::1"
+apache_server_ssl_key_path: /etc/ssl/private/.key
+apache_server_ssl_cert_path: /etc/ssl/private/.pem
 

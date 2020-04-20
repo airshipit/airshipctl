@@ -1,0 +1,123 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+- name: ensure OS
+  when: ansible_distribution != 'Debian' and ansible_distribution != 'Ubuntu'
+  fail:
+    msg: "Only Debian|Ubuntu are currently supported"
+
+- name: Confguring sushy-emulator frontend
+  become: true
+  block:
+  - name: Ensure sushy-emulator backend
+    include_role:
+      name: apache-wsgi-sushy-emulator
+    vars:
+      sushy_emulator_action: backend
+
+  - name: Create htpasswd file
+    when: sushy_emulator_frontend_user is defined
+    include_role:
+      name: apache-server
+    vars:
+      apache_server_action: htpasswd
+      apache_server_htpasswd_path: "/etc/apache2/sites-available/{{ sushy_emulator_frontend_name }}.htpasswd"
+      apache_server_htpasswd_user: "{{ sushy_emulator_frontend_user }}"
+
+  - name: Create sushy-emulator HTTP virtual host config
+    when: sushy_emulator_frontend_http_port is defined
+    block:
+    - name: Create sushy-emulator virtual host config for HTTP
+      template:
+        src: wsgi-sushy-emulator.conf.j2
+        dest: "/etc/apache2/sites-available/{{ sushy_emulator_frontend_name }}.conf"
+
+    - name: Enable sushy-emulator virtual host
+      command: "a2ensite {{ sushy_emulator_frontend_name }}"
+
+  - name: Create sushy-emulator HTTPS virtual host config
+    when: sushy_emulator_frontend_https_port is defined
+    block:
+    - name: Generate certs for casewith alt_names
+      when: sushy_emulator_frontend_ip is defined
+      include_role:
+        name: apache-server
+      vars:
+        apache_server_action: ssl
+        apache_server_ssl_key_path: "/etc/ssl/private/{{ sushy_emulator_frontend_name }}.key"
+        apache_server_ssl_cert_path: "/etc/ssl/certs/{{ sushy_emulator_frontend_name }}.pem"
+        apache_server_ssl_cn: "{{ sushy_emulator_frontend_servername }}"
+        apache_server_ssl_alt_name: "{{ sushy_emulator_frontend_ip | map('regex_replace', '(.*)', 'IP:\\1') | list }}"
+
+    - name: Generate certs for case without alt_names
+      when: sushy_emulator_frontend_ip is undefined
+      include_role:
+        name: apache-server
+      vars:
+        apache_server_action: ssl
+        apache_server_ssl_key_path: "/etc/ssl/private/{{ sushy_emulator_frontend_name }}.key"
+        apache_server_ssl_cert_path: "/etc/ssl/certs/{{ sushy_emulator_frontend_name }}.pem"
+        apache_server_ssl_cn: "{{ sushy_emulator_frontend_servername }}"
+
+    - name: Create sushy-emulator virtual host config for HTTPS
+      template:
+        src: wsgi-sushy-emulator-ssl.conf.j2
+        dest: "/etc/apache2/sites-available/{{ sushy_emulator_frontend_name }}-ssl.conf"
+
+    - name: Enable sushy-emulator virtual host
+      command: "a2ensite {{ sushy_emulator_frontend_name }}-ssl"
+
+  - name: Restart Apache to apply all changes
+    include_role:
+      name: apache-server
+    vars:
+      apache_server_action: restart
+
+- name: Sanity check for HTTP
+  when: sushy_emulator_frontend_check and sushy_emulator_frontend_http_port is defined
+  block:
+  - name: Check without auth
+    when: sushy_emulator_frontend_user is undefined
+    uri:
+      url: http://{{ sushy_emulator_frontend_servername }}:{{sushy_emulator_frontend_http_port }}/redfish/v1/Systems?format=json
+      method: GET
+      return_content: yes
+  - name: Check with auth
+    when: sushy_emulator_frontend_user is defined
+    uri:
+      url: http://{{ sushy_emulator_frontend_servername }}:{{sushy_emulator_frontend_http_port }}/redfish/v1/Systems?format=json
+      url_username: "{{ sushy_emulator_frontend_user[0].username }}"
+      url_password: "{{  sushy_emulator_frontend_user[0].password }}"
+      method: GET
+      return_content: yes
+
+- name: Sanity check for HTTPS
+  when: sushy_emulator_frontend_check and sushy_emulator_frontend_https_port is defined
+  block:
+  - name: Check without auth
+    when: sushy_emulator_frontend_user is undefined
+    uri:
+      url: https://{{ sushy_emulator_frontend_servername }}:{{sushy_emulator_frontend_https_port }}/redfish/v1/Systems?format=json
+      method: GET
+      validate_certs: false
+      return_content: yes
+  - name: Check with auth
+    when: sushy_emulator_frontend_user is defined
+    uri:
+      url: https://{{ sushy_emulator_frontend_servername }}:{{sushy_emulator_frontend_https_port }}/redfish/v1/Systems?format=json
+      url_username: "{{ sushy_emulator_frontend_user[0].username }}"
+      url_password: "{{  sushy_emulator_frontend_user[0].password }}"
+      validate_certs: false
+      method: GET
+      return_content: yes
+

@@ -31,12 +31,19 @@
 - name: create libvirt domains
   include_role:
     name: libvirt-domain
-- name: install sushy-tools
+- name: install apache-wsgi-sushy-emulator
   include_role:
-    name: redfish-emulator
+    name: apache-wsgi-sushy-emulator
+  vars:
+    sushy_emulator_frontend_http_port: 80
+    sushy_emulator_frontend_user:
+    - username: "user"
+      password: "password"
 - name: query redfish to make sure it has runnig domains
   uri:
-    url: http://localhost:8000/redfish/v1/Systems?format=json
+    url: http://localhost:80/redfish/v1/Systems?format=json
+    url_username: "user"
+    url_password: "password"
     method: GET
     return_content: yes
   register: sushy_response

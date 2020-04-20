@@ -10,4 +10,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- include_tasks: "{{ redfish_action }}.yaml"
+sushy_emulator_action: frontend
+sushy_emulator_frontend_name: wsgi-sushy-emulator
+sushy_emulator_frontend_ip:
+        - "127.0.0.1"
+        - "::1"
+sushy_emulator_frontend_servername: "localhost"
+sushy_emulator_frontend_check: true

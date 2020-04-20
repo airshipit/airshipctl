@@ -106,23 +106,23 @@
         - network: "{{ airship_gate_names.nat_network }}"
         - network: "{{ airship_gate_names.provision_network }}"
 
-- name: install apache2 reverse proxy
+- name: Add noauth sushy-emulator to apache
   include_role:
-    name: reverse-proxy
+    name: apache-wsgi-sushy-emulator
   vars:
-    reverse_proxy_action: "install"
-    reverse_proxy_hostname: "{{ airship_gate_redfish.hostname }}"
-    reverse_proxy_username: "{{ airship_gate_redfish.username }}"
-    reverse_proxy_password: "{{ airship_gate_redfish.password }}"
-    reverse_proxy_frontend_ip: "{{ airship_gate_redfish.bind_address }}"
-    reverse_proxy_frontend_port: "{{ airship_gate_redfish.secure_port }}"
-    reverse_proxy_backend_ip: "{{ airship_gate_redfish.bind_address }}"
-    reverse_proxy_backend_port: "{{ airship_gate_redfish.port }}"
+    sushy_emulator_frontend_name: airship_gate_redfish_noauth
+    sushy_emulator_frontend_servername: "{{ airship_gate_redfish_noauth.servername }}"
+    sushy_emulator_frontend_ip: "{{ airship_gate_redfish_noauth.ip }}"
+    sushy_emulator_frontend_http_port:  "{{ airship_gate_redfish_noauth.http_port }}"
 
-- name: install and start redfish emulator
+- name: Add auth sushy-emulator to apache
   include_role:
-    name: redfish-emulator
+    name: apache-wsgi-sushy-emulator
   vars:
-    redfish_action: "install"
-    redfish_emulator_bind_ip: "{{ airship_gate_redfish.bind_address }}"
-    redfish_emulator_bind_port: "{{ airship_gate_redfish.port }}"
+    sushy_emulator_frontend_name: airship_gate_redfish_auth
+    sushy_emulator_frontend_servername: "{{ airship_gate_redfish_auth.servername }}"
+    sushy_emulator_frontend_ip: "{{ airship_gate_redfish_auth.ip }}"
+    sushy_emulator_frontend_https_port: "{{ airship_gate_redfish_auth.https_port }}"
+    sushy_emulator_frontend_user: "{{ airship_gate_redfish_auth.user }}"
+
+

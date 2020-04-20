@@ -10,26 +10,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: set redfish log dir
+- name: set apache log dir
   set_fact:
-    redfish_log_dir: "{{ logs_dir }}/redfish"
+    apache_log_dir: "{{ logs_dir }}/apache"
 
-- name: ensure directory for redfish logs exists
+- name: ensure directory for apache logs exists
   file:
     state: directory
-    path: "{{ redfish_log_dir }}"
+    path: "{{ apache_log_dir }}"
 
-- name: dump sushy-tool logs to directory
+- name: dump apache logs to directory
   shell: |-
-    journalctl --unit sushy-tools.service > "{{ redfish_log_dir }}/sushy-tools.log"
+    journalctl --unit apache2.service > "{{ apache_log_dir }}/apache2-service.log"
   args:
     executable: /bin/bash
   ignore_errors: True
   become: true
 
+- name: copy configs
+  command: "cp -r /etc/apache2 {{ apache_log_dir }}/configs"
+  become: true
+
+- name: copy logs
+  command: "cp -r /var/log/apache2 {{ apache_log_dir }}/logs"
+  become: true
+
+- name: Change ownership of the logs dir
+  file:
+    state: directory
+    recurse: true
+    owner: "{{ ansible_user }}"
+    path: "{{ apache_log_dir }}"
+  become: true
+
 - name: "Downloads logs to executor"
   synchronize:
-    src: "{{ redfish_log_dir }}"
+    src: "{{ apache_log_dir }}"
     dest: "{{ zuul.executor.log_root }}/{{ inventory_hostname }}"
     mode: pull
   ignore_errors: True

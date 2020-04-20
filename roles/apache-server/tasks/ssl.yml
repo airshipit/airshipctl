@@ -1,0 +1,53 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- name: Generating ssl key & certificate
+  become: true
+  block:
+  - name: Ensure needed packages
+    apt:
+      name:
+      - python3-passlib
+      - python3-openssl
+      state: present
+
+  - name: Generate private key
+    openssl_privatekey:
+      path: "{{ apache_server_ssl_key_path }}"
+
+  - name: Create temporary CSR file
+    tempfile:
+      state: file
+      suffix: csr
+    register: csr_tempfile
+
+  - name: Generate CSR
+    openssl_csr:
+      path: "{{ csr_tempfile.path }}"
+      privatekey_path: "{{ apache_server_ssl_key_path }}"
+      common_name: "{{ apache_server_ssl_cn }}"
+      subject_alt_name: "{{ apache_server_ssl_alt_name }}"
+
+  - name: Generate the self signed certificate for sushy-emulator
+    openssl_certificate:
+      path: "{{ apache_server_ssl_cert_path }}"
+      privatekey_path: "{{ apache_server_ssl_key_path }}"
+      csr_path: "{{ csr_tempfile.path }}"
+      provider: selfsigned
+
+  always:
+  - name: Cleanup CSR file
+    file:
+      path: "{{ csr_tempfile.path  }}"
+      state: absent
+    when: csr_tempfile.path is defined
+
