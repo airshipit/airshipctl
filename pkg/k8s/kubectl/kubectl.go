@@ -50,6 +50,7 @@ func NewKubectl(f cmdutil.Factory) *Kubectl {
 	}
 }
 
+// WithBufferDir sets buffer dir
 func (kubectl *Kubectl) WithBufferDir(bd string) *Kubectl {
 	kubectl.bufferDir = bd
 	return kubectl

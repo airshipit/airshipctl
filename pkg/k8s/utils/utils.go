@@ -19,6 +19,8 @@ import (
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 )
 
+// FactoryFromKubeConfigPath returns a factory with the
+// default Kubernetes resources for the given kube config path
 func FactoryFromKubeConfigPath(kp string) cmdutil.Factory {
 	kf := genericclioptions.NewConfigFlags(false)
 	kf.KubeConfig = &kp
