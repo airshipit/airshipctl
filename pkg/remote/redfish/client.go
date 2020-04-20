@@ -26,11 +26,16 @@ import (
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
+// contextKey is used by the redfish package as a unique key type in order to prevent collisions
+// with context keys in other packages.
+type contextKey string
+
 const (
 	// ClientType is used by other packages as the identifier of the Redfish client.
-	ClientType          string = "redfish"
-	systemActionRetries        = 30
-	systemRebootDelay          = 30 * time.Second
+	ClientType          string     = "redfish"
+	systemActionRetries            = 30
+	systemRebootDelay              = 30 * time.Second
+	ctxKeyNumRetries    contextKey = "numRetries"
 )
 
 // Client holds details about a Redfish out-of-band system required for out-of-band management.
@@ -49,7 +54,7 @@ func (c *Client) NodeID() string {
 func (c *Client) EjectVirtualMedia(ctx context.Context) error {
 	waitForEjectMedia := func(managerID string, mediaID string) error {
 		// Check if number of retries is defined in context
-		totalRetries, ok := ctx.Value("numRetries").(int)
+		totalRetries, ok := ctx.Value(ctxKeyNumRetries).(int)
 		if !ok {
 			totalRetries = systemActionRetries
 		}
@@ -108,7 +113,7 @@ func (c *Client) EjectVirtualMedia(ctx context.Context) error {
 func (c *Client) RebootSystem(ctx context.Context) error {
 	waitForPowerState := func(desiredState redfishClient.PowerState) error {
 		// Check if number of retries is defined in context
-		totalRetries, ok := ctx.Value("numRetries").(int)
+		totalRetries, ok := ctx.Value(ctxKeyNumRetries).(int)
 		if !ok {
 			totalRetries = systemActionRetries
 		}

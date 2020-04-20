@@ -79,7 +79,7 @@ func TestEjectVirtualMedia(t *testing.T) {
 	client.nodeID = nodeID
 
 	// Normal retries are 30. Limit them here for test time.
-	ctx := context.WithValue(context.Background(), "numRetries", 2)
+	ctx := context.WithValue(context.Background(), ctxKeyNumRetries, 2)
 
 	// Mark CD and DVD test media as inserted
 	inserted := true
@@ -131,7 +131,7 @@ func TestEjectVirtualMediaRetriesExceeded(t *testing.T) {
 
 	client.nodeID = nodeID
 
-	ctx := context.WithValue(context.Background(), "numRetries", 1)
+	ctx := context.WithValue(context.Background(), ctxKeyNumRetries, 1)
 
 	// Mark test media as inserted
 	inserted := true
@@ -260,7 +260,7 @@ func TestRebootSystemTimeout(t *testing.T) {
 
 	client.nodeID = nodeID
 
-	ctx := context.WithValue(context.Background(), "numRetries", 1)
+	ctx := context.WithValue(context.Background(), ctxKeyNumRetries, 1)
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 
@@ -363,7 +363,7 @@ func TestSetVirtualMediaEjectExistingMedia(t *testing.T) {
 	client.nodeID = nodeID
 
 	// Normal retries are 30. Limit them here for test time.
-	ctx := context.WithValue(context.Background(), "numRetries", 1)
+	ctx := context.WithValue(context.Background(), ctxKeyNumRetries, 1)
 
 	// Mark test media as inserted
 	inserted := true
@@ -408,7 +408,7 @@ func TestSetVirtualMediaEjectExistingMediaFailure(t *testing.T) {
 	client.nodeID = nodeID
 
 	// Normal retries are 30. Limit them here for test time.
-	ctx := context.WithValue(context.Background(), "numRetries", 1)
+	ctx := context.WithValue(context.Background(), ctxKeyNumRetries, 1)
 
 	// Mark test media as inserted
 	inserted := true
