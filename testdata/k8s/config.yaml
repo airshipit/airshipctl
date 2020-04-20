@@ -1,42 +1,41 @@
 apiVersion: airshipit.org/v1alpha1
+bootstrapInfo:
+  default:
+    builder:
+      networkConfigFileName: network-config
+      outputMetadataFileName: output-metadata.yaml
+      userDataFileName: user-data
+    container:
+      containerRuntime: docker
+      image: quay.io/airshipit/isogen:latest
+      volume: /srv/iso:/config
+    remoteDirect:
+      isoUrl: http://localhost:8099/debian-custom.iso
+      remoteType: redfish
 clusters:
   default:
-    cluster-type:
+    clusterType:
       target:
-        bootstrap-info: ""
-        cluster-kubeconf: default_target
+        bootstrapInfo: ""
+        clusterKubeconf: default_target
   kubernetes:
-    cluster-type: {}
+    clusterType: {}
 contexts:
   default:
-    context-kubeconf: default_target
+    contextKubeconf: default_target
     manifest: default
-current-context: ""
+currentContext: ""
 kind: Config
 manifests:
   default:
     repository:
       checkout:
         branch: master
-        commit-hash: master
+        commitHash: master
         force: false
-        remote-ref: master
+        remoteRef: master
         tag: ""
       url: https://opendev.org/airship/treasuremap
-    target-path: /tmp/default
-modules-config:
-  bootstrapInfo:
-    default:
-      builder:
-        networkConfigFileName: network-config
-        outputMetadataFileName: output-metadata.yaml
-        userDataFileName: user-data
-      container:
-        containerRuntime: docker
-        image: quay.io/airshipit/isogen:latest
-        volume: /srv/iso:/config
-      remoteDirect:
-        isoUrl: http://localhost:8099/debian-custom.iso
-        remoteType: redfish
+    targetPath: /tmp/default
 users:
   admin: {}

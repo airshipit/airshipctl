@@ -1,7 +1,7 @@
 Cluster: clusterBar
 ephemeral:
-bootstrap-info: ""
-cluster-kubeconf: clusterBar_ephemeral
+bootstrapInfo: ""
+clusterKubeconf: clusterBar_ephemeral
 
 LocationOfOrigin: ""
 insecure-skip-tls-verify: true
@@ -9,8 +9,8 @@ server: ""
 
 Cluster: clusterBar
 target:
-bootstrap-info: ""
-cluster-kubeconf: clusterBar_target
+bootstrapInfo: ""
+clusterKubeconf: clusterBar_target
 
 LocationOfOrigin: ""
 insecure-skip-tls-verify: true
@@ -18,8 +18,8 @@ server: ""
 
 Cluster: clusterBaz
 ephemeral:
-bootstrap-info: ""
-cluster-kubeconf: clusterBaz_ephemeral
+bootstrapInfo: ""
+clusterKubeconf: clusterBaz_ephemeral
 
 LocationOfOrigin: ""
 insecure-skip-tls-verify: true
@@ -27,8 +27,8 @@ server: ""
 
 Cluster: clusterBaz
 target:
-bootstrap-info: ""
-cluster-kubeconf: clusterBaz_target
+bootstrapInfo: ""
+clusterKubeconf: clusterBaz_target
 
 LocationOfOrigin: ""
 insecure-skip-tls-verify: true
@@ -36,8 +36,8 @@ server: ""
 
 Cluster: clusterFoo
 ephemeral:
-bootstrap-info: ""
-cluster-kubeconf: clusterFoo_ephemeral
+bootstrapInfo: ""
+clusterKubeconf: clusterFoo_ephemeral
 
 LocationOfOrigin: ""
 insecure-skip-tls-verify: true
@@ -45,8 +45,8 @@ server: ""
 
 Cluster: clusterFoo
 target:
-bootstrap-info: ""
-cluster-kubeconf: clusterFoo_target
+bootstrapInfo: ""
+clusterKubeconf: clusterFoo_target
 
 LocationOfOrigin: ""
 insecure-skip-tls-verify: true

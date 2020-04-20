@@ -1,42 +1,44 @@
 apiVersion: airshipit.org/v1alpha1
+bootstrapInfo:
+  dummy_bootstrap_config:
+    container:
+      volume: /tmp/airship:/config
+      image: quay.io/airshipit/isogen:latest
+      containerRuntime: docker
+    builder:
+      userDataFileName: user-data
+      networkConfigFileName: network-config
+      outputMetadataFileName: output-metadata.yaml
+    remoteDirect:
+      isoUrl: http://localhost:8099/debian-custom.iso
+      remoteType: redfish
 clusters:
   dummycluster:
-    cluster-type:
+    clusterType:
       ephemeral:
-        bootstrap-info: dummy_bootstrap_config
-        cluster-kubeconf: dummycluster_ephemeral
+        bootstrapInfo: dummy_bootstrap_config
+        clusterKubeconf: dummycluster_ephemeral
 contexts:
   dummy_cluster:
-    context-kubeconf: dummy_cluster
+    contextKubeconf: dummy_cluster
     manifest: dummy_manifest
-current-context: dummy_cluster
+currentContext: dummy_cluster
 kind: Config
 manifests:
   dummy_manifest:
-    primary-repository-name: primary
+    primaryRepositoryName: primary
     repositories:
       primary:
         auth:
-          ssh-key: testdata/test-key.pem
+          sshKey: testdata/test-key.pem
           type: ssh-key
         checkout:
           branch: ""
           force: false
-          remote-ref: ""
+          remoteRef: ""
           tag: v1.0.1
         url: http://dummy.url.com/primary.git
-    sub-path: primary/site/test-site
-    target-path: testdata
-modules-config:
-  bootstrapInfo:
-    dummy_bootstrap_config:
-      container:
-        volume: /tmp/airship:/config
-        image: quay.io/airshipit/isogen:latest
-        containerRuntime: docker
-      builder:
-        userDataFileName: user-data
-        networkConfigFileName: network-config
-        outputMetadataFileName: output-metadata.yaml
+    subPath: primary/site/test-site
+    targetPath: testdata
 users:
   dummy_user: {}

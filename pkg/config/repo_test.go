@@ -42,7 +42,7 @@ const (
     url: git@github.com:go-git/go-git.git
     auth:
       type: ssh-key
-      ssh-key: "testdata/test-key.pem"
+      sshKey: "testdata/test-key.pem"
       username: git
     checkout:
       branch: master
@@ -50,62 +50,62 @@ const (
     url: /home/ubuntu/some-gitrepo
     auth:
       type: ssh-pass
-      ssh-pass: "qwerty123"
+      sshPass: "qwerty123"
       username: deployer
     checkout:
-      commit-hash: 01c4f7f32beb9851ae8f119a6b8e497d2b1e2bb8
+      commitHash: 01c4f7f32beb9851ae8f119a6b8e497d2b1e2bb8
   http-basic-auth:
     url: /home/ubuntu/some-gitrepo
     auth:
       type: http-basic
-      http-pass: "qwerty123"
+      httpPass: "qwerty123"
       username: deployer
     checkout:
-      commit-hash: 01c4f7f32beb9851ae8f119a6b8e497d2b1e2bb8
+      commitHash: 01c4f7f32beb9851ae8f119a6b8e497d2b1e2bb8
   empty-checkout:
     url: /home/ubuntu/some-gitrepo
     auth:
       type: http-basic
-      http-pass: "qwerty123"
+      httpPass: "qwerty123"
       username: deployer
   wrong-type-auth:
     url: /home/ubuntu/some-gitrepo
     auth:
       type: wrong-type
-      http-pass: "qwerty123"
+      httpPass: "qwerty123"
       username: deployer
     checkout:
-      commit-hash: 01c4f7f32beb9851ae8f119a6b8e497d2b1e2bb8
+      commitHash: 01c4f7f32beb9851ae8f119a6b8e497d2b1e2bb8
   mutually-exclusive-auth-opts:
     url: /home/ubuntu/some-gitrepo
     auth:
       type: http-basic
-      ssh-key: "/path-to-key"
+      sshKey: "/path-to-key"
       username: deployer
   mutually-exclusive-checkout-opts:
     url: /home/ubuntu/some-gitrepo
     checkout:
-      commit-hash: 01c4f7f32beb9851ae8f119a6b8e497d2b1e2bb8
+      commitHash: 01c4f7f32beb9851ae8f119a6b8e497d2b1e2bb8
       branch: master
   mutually-exclusive-auth-opts-ssh-key:
     url: /home/ubuntu/some-gitrepo
     auth:
       type: ssh-key
-      http-pass: "qwerty123"
-      ssh-key: "/path-to-key"
+      httpPass: "qwerty123"
+      sshKey: "/path-to-key"
       username: deployer
     checkout:
-      commit-hash: 01c4f7f32beb9851ae8f119a6b8e497d2b1e2bb8
+      commitHash: 01c4f7f32beb9851ae8f119a6b8e497d2b1e2bb8
   mutually-exclusive-auth-opts-ssh-pass:
     url: /home/ubuntu/some-gitrepo
     auth:
       type: ssh-pass
-      ssh-pass: "qwerty123"
-      http-pass: "qwerty123"
-      ssh-key: "/path-to-key"
+      sshPass: "qwerty123"
+      httpPass: "qwerty123"
+      sshKey: "/path-to-key"
       username: deployer
     checkout:
-      commit-hash: 01c4f7f32beb9851ae8f119a6b8e497d2b1e2bb8`
+      commitHash: 01c4f7f32beb9851ae8f119a6b8e497d2b1e2bb8`
 )
 
 var (

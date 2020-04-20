@@ -1,5 +1,5 @@
 Context: ContextBar
-context-kubeconf: ContextBar_ephemeral
+contextKubeconf: ContextBar_ephemeral
 manifest: Manifest_ContextBar
 
 LocationOfOrigin: ""
@@ -9,7 +9,7 @@ user: dummy_user
 
 
 Context: ContextBaz
-context-kubeconf: ContextBaz_ephemeral
+contextKubeconf: ContextBaz_ephemeral
 manifest: Manifest_ContextBaz
 
 LocationOfOrigin: ""
@@ -19,7 +19,7 @@ user: dummy_user
 
 
 Context: ContextFoo
-context-kubeconf: ContextFoo_ephemeral
+contextKubeconf: ContextFoo_ephemeral
 manifest: Manifest_ContextFoo
 
 LocationOfOrigin: ""

@@ -27,8 +27,26 @@ func NewConfig() *Config {
 	return &Config{
 		Kind:       AirshipConfigKind,
 		APIVersion: AirshipConfigAPIVersion,
-		Clusters:   make(map[string]*ClusterPurpose),
-		AuthInfos:  make(map[string]*AuthInfo),
+		BootstrapInfo: map[string]*Bootstrap{
+			AirshipDefaultContext: {
+				Container: &Container{
+					Volume:           "/srv/iso:/config",
+					Image:            AirshipDefaultBootstrapImage,
+					ContainerRuntime: "docker",
+				},
+				Builder: &Builder{
+					UserDataFileName:       "user-data",
+					NetworkConfigFileName:  "network-config",
+					OutputMetadataFileName: "output-metadata.yaml",
+				},
+				RemoteDirect: &RemoteDirect{
+					RemoteType: AirshipDefaultRemoteType,
+					IsoURL:     AirshipDefaultIsoURL,
+				},
+			},
+		},
+		Clusters:  make(map[string]*ClusterPurpose),
+		AuthInfos: make(map[string]*AuthInfo),
 		Contexts: map[string]*Context{
 			AirshipDefaultContext: {
 				Manifest: AirshipDefaultManifest,
@@ -49,26 +67,6 @@ func NewConfig() *Config {
 				TargetPath:            "/tmp/" + AirshipDefaultManifest,
 				PrimaryRepositoryName: DefaultTestPrimaryRepo,
 				SubPath:               AirshipDefaultManifestRepo + "/manifests/site",
-			},
-		},
-		ModulesConfig: &Modules{
-			BootstrapInfo: map[string]*Bootstrap{
-				AirshipDefaultContext: {
-					Container: &Container{
-						Volume:           "/srv/iso:/config",
-						Image:            AirshipDefaultBootstrapImage,
-						ContainerRuntime: "docker",
-					},
-					Builder: &Builder{
-						UserDataFileName:       "user-data",
-						NetworkConfigFileName:  "network-config",
-						OutputMetadataFileName: "output-metadata.yaml",
-					},
-					RemoteDirect: &RemoteDirect{
-						RemoteType: AirshipDefaultRemoteType,
-						IsoURL:     AirshipDefaultIsoURL,
-					},
-				},
 			},
 		},
 	}
@@ -99,12 +97,6 @@ func NewRepository() *Repository {
 
 func NewAuthInfo() *AuthInfo {
 	return &AuthInfo{}
-}
-
-func NewModules() *Modules {
-	return &Modules{
-		BootstrapInfo: make(map[string]*Bootstrap),
-	}
 }
 
 // NewClusterPurpose is a convenience function that returns a new ClusterPurpose

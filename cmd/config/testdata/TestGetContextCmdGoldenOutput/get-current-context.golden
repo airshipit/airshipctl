@@ -1,5 +1,5 @@
 Context: ContextBaz
-context-kubeconf: ContextBaz_ephemeral
+contextKubeconf: ContextBaz_ephemeral
 manifest: Manifest_ContextBaz
 
 LocationOfOrigin: ""

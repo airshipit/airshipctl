@@ -47,12 +47,10 @@ type Config struct {
 	Manifests map[string]*Manifest `json:"manifests"`
 
 	// CurrentContext is the name of the context that you would like to use by default
-	CurrentContext string `json:"current-context"`
+	CurrentContext string `json:"currentContext"`
 
-	// Modules Section
-	// Will store configuration required by the different airshipctl modules
-	// Such as Bootstrap, Workflows, Document, etc
-	ModulesConfig *Modules `json:"modules-config"`
+	// BootstrapInfo is the configuration for container runtime, ISO builder and remote management
+	BootstrapInfo map[string]*Bootstrap `json:"bootstrapInfo"`
 
 	// loadedConfigPath is the full path to the the location of the config
 	// file from which this config was loaded
@@ -71,34 +69,26 @@ type Config struct {
 // ClusterPurpose encapsulates the Cluster Type as an enumeration
 type ClusterPurpose struct {
 	// Cluster map of referenceable names to cluster configs
-	ClusterTypes map[string]*Cluster `json:"cluster-type"`
+	ClusterTypes map[string]*Cluster `json:"clusterType"`
 }
 
 // Cluster contains information about how to communicate with a kubernetes cluster
 type Cluster struct {
 	// Complex cluster name defined by the using <cluster name>_<cluster type>)
-	NameInKubeconf string `json:"cluster-kubeconf"`
+	NameInKubeconf string `json:"clusterKubeconf"`
 
 	// KubeConfig Cluster Object
 	cluster *kubeconfig.Cluster
 
 	// Bootstrap configuration this clusters ephemeral hosts will rely on
-	Bootstrap string `json:"bootstrap-info"`
-}
-
-// Modules encapsulates all module configurations
-// Configuration that the Bootstrap Module would need
-// Configuration that the Document Module would need
-// Configuration that the Workflows Module would need
-type Modules struct {
-	BootstrapInfo map[string]*Bootstrap `json:"bootstrapInfo"`
+	Bootstrap string `json:"bootstrapInfo"`
 }
 
 // Context is a tuple of references to a cluster (how do I communicate with a kubernetes context),
 // a user (how do I identify myself), and a namespace (what subset of resources do I want to work with)
 type Context struct {
 	// Context name in kubeconf
-	NameInKubeconf string `json:"context-kubeconf"`
+	NameInKubeconf string `json:"contextKubeconf"`
 
 	// Manifest is the default manifest to be use with this context
 	// +optional
@@ -118,18 +108,18 @@ type AuthInfo struct {
 type Manifest struct {
 	// PrimaryRepositoryName is a name of the repo, that contains site/<site-name> directory
 	// and is a starting point for building document bundle
-	PrimaryRepositoryName string `json:"primary-repository-name"`
+	PrimaryRepositoryName string `json:"primaryRepositoryName"`
 	// ExtraRepositories is the map of extra repositories addressable by a name
 	Repositories map[string]*Repository `json:"repositories,omitempty"`
 	// TargetPath Local Target path for working or home dirctory for all Manifest Cloned/Returned/Generated
-	TargetPath string `json:"target-path"`
+	TargetPath string `json:"targetPath"`
 	// SubPath is a path relative to TargetPath + Path where PrimaryRepository is cloned and contains
 	// directories with ClusterType and Phase bundles, example:
 	// Repositories[PrimaryRepositoryName].Url = 'https://github.com/airshipit/treasuremap'
 	// SubPath = "manifests"
 	// you would expect that at treasuremap/manifests you would have ephemeral/initinfra and
 	// ephemera/target directories, containing kustomize.yaml.
-	SubPath string `json:"sub-path"`
+	SubPath string `json:"subPath"`
 }
 
 // Repository is a tuple that holds the information for the remote sources of manifest yaml documents.
@@ -150,13 +140,13 @@ type RepoAuth struct {
 	// supported types are "ssh-key", "ssh-pass", "http-basic"
 	Type string `json:"type,omitempty"`
 	//KeyPassword is a password decrypt ssh private key (used with ssh-key auth type)
-	KeyPassword string `json:"key-pass,omitempty"`
+	KeyPassword string `json:"keyPass,omitempty"`
 	// KeyPath is path to private ssh key on disk (used with ssh-key auth type)
-	KeyPath string `json:"ssh-key,omitempty"`
+	KeyPath string `json:"sshKey,omitempty"`
 	//HTTPPassword is password for basic http authentication (used with http-basic auth type)
-	HTTPPassword string `json:"http-pass,omitempty"`
+	HTTPPassword string `json:"httpPass,omitempty"`
 	// SSHPassword is password for ssh password authentication (used with ssh-pass)
-	SSHPassword string `json:"ssh-pass,omitempty"`
+	SSHPassword string `json:"sshPass,omitempty"`
 	// Username to authenticate against git remote (used with any type)
 	Username string `json:"username,omitempty"`
 }
@@ -165,7 +155,7 @@ type RepoAuth struct {
 // Each field is mutually exclusive
 type RepoCheckout struct {
 	// CommitHash is full hash of the commit that will be used to checkout
-	CommitHash string `json:"commit-hash,omitempty"`
+	CommitHash string `json:"commitHash,omitempty"`
 	// Branch is the branch name to checkout
 	Branch string `json:"branch"`
 	// Tag is the tag name to checkout
@@ -174,7 +164,7 @@ type RepoCheckout struct {
 	// RemoteRef is used for remote checkouts such as gerrit change requests/github pull request
 	// for example refs/changes/04/691202/5
 	// TODO Add support for fetching remote refs
-	RemoteRef string `json:"remote-ref"`
+	RemoteRef string `json:"remoteRef"`
 	// ForceCheckout is a boolean to indicate whether to use the `--force` option when checking out
 	ForceCheckout bool `json:"force"`
 }
