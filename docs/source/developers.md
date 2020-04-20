@@ -25,6 +25,27 @@ Additionally, there is a script in the airshipctl directory named as
 `00_setup.sh`. This script will download all the required binaries and
 packages. This script can be checked [here][1].
 
+### Proxy
+
+If your organization requires development behind a proxy server, you will need
+to define the following environment variables with your organization's
+information:
+
+```
+http_proxy=http://username:password@host:port
+https_proxy=http://username:password@host:port
+no_proxy="localhost,127.0.0.1"
+HTTP_PROXY=http://username:password@host:port
+HTTPS_PROXY=http://username:password@host:port
+NO_PROXY="localhost,127.0.0.1"
+PROXY=http://username:password@host:port
+USE_PROXY=true
+```
+
+When running the gate scripts in `tools/gate` locally, you will need to add your
+proxy information to
+`roles/airshipctl-systemwide-executable/defaults/main.yaml`.
+
 ## Building airshipctl
 
 The simplest way to get started is:
