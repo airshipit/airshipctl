@@ -30,6 +30,7 @@ import (
 const (
 	// ClientType is used by other packages as the identifier of the Redfish client.
 	ClientType          string = "redfish"
+	mediaEjectDelay            = 30 * time.Second
 	systemActionRetries        = 30
 	systemRebootDelay          = 2 * time.Second
 )
@@ -140,10 +141,27 @@ func (c *Client) SetVirtualMedia(ctx context.Context, isoPath string) error {
 		return err
 	}
 
+	// Eject virtual media if it is already inserted
+	vMediaMgr, httpResp, err := c.RedfishAPI.GetManagerVirtualMedia(ctx, managerID, vMediaID)
+	if err = ScreenRedfishError(httpResp, err); err != nil {
+		return err
+	}
+
+	if *vMediaMgr.Inserted == true {
+		var emptyBody map[string]interface{}
+		_, httpResp, err = c.RedfishAPI.EjectVirtualMedia(ctx, managerID, vMediaID, emptyBody)
+		if err = ScreenRedfishError(httpResp, err); err != nil {
+			return err
+		}
+
+		time.Sleep(mediaEjectDelay)
+	}
+
 	vMediaReq := redfishClient.InsertMediaRequestBody{}
 	vMediaReq.Image = isoPath
 	vMediaReq.Inserted = true
-	_, httpResp, err := c.RedfishAPI.InsertVirtualMedia(ctx, managerID, vMediaID, vMediaReq)
+	_, httpResp, err = c.RedfishAPI.InsertVirtualMedia(ctx, managerID, vMediaID, vMediaReq)
+
 	return ScreenRedfishError(httpResp, err)
 }
 
