@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"opendev.org/airship/airshipctl/pkg/document/plugin/replacement"
+	"opendev.org/airship/airshipctl/pkg/document/plugin/templater"
 	"opendev.org/airship/airshipctl/pkg/document/plugin/types"
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
@@ -32,6 +33,7 @@ var Registry = make(map[schema.GroupVersionKind]types.Factory)
 
 func init() {
 	replacement.RegisterPlugin(Registry)
+	templater.RegisterPlugin(Registry)
 }
 
 // ConfigureAndRun executes particular plugin based on group, version, kind
