@@ -37,6 +37,8 @@ type Container interface {
 //   * docker
 func NewContainer(ctx *context.Context, driver string, url string) (Container, error) {
 	switch driver {
+	case "":
+		return nil, ErrNoContainerDriver{}
 	case "docker":
 		cli, err := NewDockerClient(ctx)
 		if err != nil {
