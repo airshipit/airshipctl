@@ -8,11 +8,17 @@ Example:
 $ cat /tmp/generator.yaml
 ---
 apiVersion: airshipit.org/v1alpha1
-kind: BareMetalHostGenerator
-spec:
-  hostList:
-	- mac: 00:aa:bb:cc:dd
-	  powerAddress: redfish+http://1.2.3.4/
+kind: ReplacementTransformer
+metadata:
+  name: notImportantHere
+replacements:
+- source:
+    value: nginx:newtag
+  target:
+    objref:
+      kind: Deployment
+    fieldrefs:
+    - spec.template.spec.containers[name=nginx-latest].image
 
 $ airshipctl document plugin /tmp/generator.yaml
 
