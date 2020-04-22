@@ -90,6 +90,30 @@
       serve_port: 8099
 
 - job:
+    name: airship-airshipctl-32GB-gate-test
+    nodeset: airship-airshipctl-single-32GB-bionic-node
+    pre-run:
+      - playbooks/airship-airshipctl-deploy-docker.yaml
+      - playbooks/airship-airshipctl-build-gate.yaml
+    post-run: playbooks/airship-collect-logs.yaml
+    run: playbooks/airship-airshipctl-test-runner.yaml
+    timeout: 3600
+    vars:
+      site_name: test-bootstrap
+      var_files:
+        - airship-ipam.yaml
+        - test-config.yaml
+      test_roles:
+        - airshipctl-systemwide-executable
+        - airshipctl-test-configs
+        - airshipctl-build-ephemeral-iso
+        - install-kubectl
+        - airshipctl-deploy-ephemeral-node
+      serve_dir: /srv/iso
+      serve_port: 8099
+    voting: false
+
+- job:
     name: airship-airshipctl-publish-image
     parent: airship-airshipctl-build-image
     post-run: playbooks/airship-airshipctl-publish-images.yaml
