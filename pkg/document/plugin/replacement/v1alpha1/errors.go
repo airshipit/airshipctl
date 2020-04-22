@@ -91,3 +91,13 @@ type ErrIndexOutOfBound struct {
 func (e ErrIndexOutOfBound) Error() string {
 	return fmt.Sprintf("index %v is out of bound", e.Index)
 }
+
+// ErrMapNotFound returned if map specified in fieldRef option was not found in a list
+type ErrMapNotFound struct {
+	Key, Value, ListKey string
+}
+
+func (e ErrMapNotFound) Error() string {
+	return fmt.Sprintf("unable to find map key '%s' with the value '%s' in list under '%s' key",
+		e.Key, e.Value, e.ListKey)
+}

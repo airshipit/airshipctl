@@ -28,6 +28,10 @@ var (
 	substringPatternRegex = regexp.MustCompile(`(\S+)%(\S+)%$`)
 )
 
+const (
+	dotReplacer = "$$$$"
+)
+
 // GetGVK returns group, version, kind object used to register version
 // of the plugin
 func GetGVK() schema.GroupVersionKind {
@@ -151,7 +155,23 @@ func substitute(m resmap.ResMap, to *types.ReplTarget, replacement interface{}) 
 	}
 	for _, r := range resources {
 		for _, p := range to.FieldRefs {
+			// TODO (dukov) rework this using k8s.io/client-go/util/jsonpath
+			parts := strings.Split(p, "[")
+			var tmp []string
+			for _, part := range parts {
+				if strings.Contains(part, "]") {
+					filter := strings.Split(part, "]")
+					filter[0] = strings.ReplaceAll(filter[0], ".", dotReplacer)
+					part = strings.Join(filter, "]")
+				}
+				tmp = append(tmp, part)
+			}
+			p = strings.Join(tmp, "[")
+
 			pathSlice := strings.Split(p, ".")
+			for i, part := range pathSlice {
+				pathSlice[i] = strings.ReplaceAll(part, dotReplacer, ".")
+			}
 			if err := updateField(r.Map(), pathSlice, replacement); err != nil {
 				return err
 			}
@@ -246,15 +266,15 @@ func updateMapField(m map[string]interface{}, pathToField []string, replacement 
 		}
 		switch typedV := v.(type) {
 		case []interface{}:
-			for _, item := range typedV {
+			for i, item := range typedV {
 				typedItem, ok := item.(map[string]interface{})
 				if !ok {
 					return ErrTypeMismatch{Actual: item, Expectation: fmt.Sprintf("is expected to be %T", typedItem)}
 				}
 				if actualValue, ok := typedItem[key]; ok {
 					if value == actualValue {
-						// TODO (dukov) should not we do 'item = replacement' here?
-						typedItem[key] = value
+						typedV[i] = replacement
+						return nil
 					}
 				}
 			}
@@ -273,7 +293,7 @@ func updateSliceField(m []interface{}, pathToField []string, replacement interfa
 	if len(pathToField) == 0 {
 		return nil
 	}
-	_, key, value, isArray := getFirstPathSegment(pathToField[0])
+	path, key, value, isArray := getFirstPathSegment(pathToField[0])
 
 	if isArray {
 		for _, item := range m {
@@ -287,6 +307,7 @@ func updateSliceField(m []interface{}, pathToField []string, replacement interfa
 				}
 			}
 		}
+		return ErrMapNotFound{Key: key, Value: value, ListKey: path}
 	}
 
 	index, err := strconv.Atoi(pathToField[0])
