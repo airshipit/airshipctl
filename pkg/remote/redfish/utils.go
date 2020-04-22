@@ -15,6 +15,7 @@ package redfish
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -31,8 +32,8 @@ const (
 
 // GetManagerID retrieves the manager ID for a redfish system.
 func GetManagerID(ctx context.Context, api redfishAPI.RedfishAPI, systemID string) (string, error) {
-	system, _, err := api.GetSystem(ctx, systemID)
-	if err != nil {
+	system, httpResp, err := api.GetSystem(ctx, systemID)
+	if err = ScreenRedfishError(httpResp, err); err != nil {
 		return "", err
 	}
 
@@ -96,34 +97,65 @@ func GetVirtualMediaID(ctx context.Context, api redfishAPI.RedfishAPI, systemID 
 	return "", "", ErrRedfishClient{Message: "Unable to find virtual media with type CD or DVD"}
 }
 
-// ScreenRedfishError provides detailed error checking on a Redfish client response.
+// ScreenRedfishError provides a detailed error message for end user consumption by inspecting all Redfish client
+// responses and errors.
 func ScreenRedfishError(httpResp *http.Response, clientErr error) error {
 	if httpResp == nil {
-		return ErrRedfishClient{Message: "HTTP request failed. Please try again."}
+		return ErrRedfishClient{
+			Message: "HTTP request failed. Redfish may be temporarily unavailable. Please try again.",
+		}
 	}
 
-	// NOTE(drewwalters96): clientErr may not be nil even though the request was successful. The HTTP status code
-	// has to be verified for success on each request. The Redfish client uses HTTP codes 200 and 204 to indicate
-	// success.
-	if httpResp.StatusCode >= http.StatusOK && httpResp.StatusCode <= http.StatusNoContent {
-		// This range of status codes indicate success
+	// NOTE(drewwalters96): The error, clientErr, may not be nil even though the request was successful. The HTTP
+	// status code is the most reliable way to determine the result of a Redfish request using the go-redfish
+	// library. The Redfish client uses HTTP codes 200 and 204 to indicate success.
+	var finalError ErrRedfishClient
+	switch httpResp.StatusCode {
+	case http.StatusOK:
 		return nil
+	case http.StatusNoContent:
+		return nil
+	case http.StatusNotFound:
+		finalError = ErrRedfishClient{Message: "System not found. Correct the system name and try again."}
+	case http.StatusBadRequest:
+		finalError = ErrRedfishClient{Message: "Invalid request. Verify the system name and try again."}
+	case http.StatusMethodNotAllowed:
+		finalError = ErrRedfishClient{
+			Message: fmt.Sprintf("%s. BMC returned status '%s'.",
+				"This operation is likely unsupported by the BMC Redfish version, or the BMC is busy",
+				httpResp.Status),
+		}
+	default:
+		finalError = ErrRedfishClient{Message: fmt.Sprintf("BMC responded '%s'.", httpResp.Status)}
+		log.Debugf("BMC responded '%s'. Attempting to unmarshal the raw BMC error response.",
+			httpResp.Status)
 	}
 
-	if clientErr == nil {
-		return ErrRedfishClient{Message: http.StatusText(httpResp.StatusCode)}
-	}
+	// NOTE(drewwalters96) Check for error messages with extended information, as they often accompany more
+	// general error descriptions provided in "clientErr". Since there can be multiple errors, wrap them in a
+	// single error.
+	var redfishErr redfishClient.RedfishError
+	var additionalInfo string
 
 	oAPIErr, ok := clientErr.(redfishClient.GenericOpenAPIError)
-	if !ok {
-		return ErrRedfishClient{Message: "Unable to decode client error."}
+	if ok {
+		if err := json.Unmarshal(oAPIErr.Body(), &redfishErr); err == nil {
+			additionalInfo = ""
+			for _, extendedInfo := range redfishErr.Error.MessageExtendedInfo {
+				additionalInfo = fmt.Sprintf("%s %s %s", additionalInfo, extendedInfo.Message,
+					extendedInfo.Resolution)
+			}
+		} else {
+			log.Debugf("Unable to unmarshal the raw BMC error response. %s", err.Error())
+		}
 	}
 
-	var resp redfishClient.RedfishError
-	if err := json.Unmarshal(oAPIErr.Body(), &resp); err != nil {
-		// No JSON response included; use generic error text.
-		return ErrRedfishClient{Message: err.Error()}
+	if strings.TrimSpace(additionalInfo) != "" {
+		finalError.Message = fmt.Sprintf("%s %s", finalError.Message, additionalInfo)
+	} else if redfishErr.Error.Message != "" {
+		// Provide the general error message when there were no messages containing extended information.
+		finalError.Message = fmt.Sprintf("%s %s", finalError.Message, redfishErr.Error.Message)
 	}
 
-	return ErrRedfishClient{Message: resp.Error.Message}
+	return finalError
 }
