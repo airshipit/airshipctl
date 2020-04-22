@@ -71,8 +71,10 @@ type iDRACAPIExtendedInfo struct {
 
 // SetBootSourceByType sets the boot source of the ephemeral node to a virtual CD, "VCD-DVD".
 func (c *Client) SetBootSourceByType(ctx context.Context) error {
+	log.Debug("Setting boot device to 'VCD-DVD'.")
 	managerID, err := redfish.GetManagerID(ctx, c.RedfishAPI, c.NodeID())
 	if err != nil {
+		log.Debugf("Failed to retrieve manager ID for node '%s'.", c.NodeID())
 		return err
 	}
 
@@ -114,6 +116,7 @@ func (c *Client) SetBootSourceByType(ctx context.Context) error {
 		return redfish.ErrRedfishClient{Message: fmt.Sprintf("Unable to set boot device. %v", err)}
 	}
 
+	log.Debug("Successfully set boot device.")
 	defer httpResp.Body.Close()
 
 	return nil

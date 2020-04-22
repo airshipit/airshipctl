@@ -33,9 +33,9 @@ func (b baremetalHost) DoRemoteDirect(settings *environment.AirshipCTLSettings) 
 		return config.ErrMissingConfig{What: "RemoteDirect options not defined in bootstrap config"}
 	}
 
-	log.Debugf("Using ephemeral node %s with BMC Address %s", b.NodeID(), b.BMCAddress)
+	log.Debugf("Bootstrapping ephemeral host '%s' with ID '%s' and BMC Address '%s'.", b.HostName, b.NodeID(),
+		b.BMCAddress)
 
-	// Perform remote direct operations
 	if remoteConfig.IsoURL == "" {
 		return ErrMissingBootstrapInfoOption{What: "isoURL"}
 	}
@@ -44,8 +44,6 @@ func (b baremetalHost) DoRemoteDirect(settings *environment.AirshipCTLSettings) 
 	if err != nil {
 		return err
 	}
-
-	log.Debugf("Successfully loaded virtual media: %q", remoteConfig.IsoURL)
 
 	err = b.SetBootSourceByType(b.Context)
 	if err != nil {
@@ -57,7 +55,7 @@ func (b baremetalHost) DoRemoteDirect(settings *environment.AirshipCTLSettings) 
 		return err
 	}
 
-	log.Debugf("Restarted ephemeral host %s", b.NodeID())
+	log.Printf("Successfully bootstrapped ephemeral host '%s'.", b.HostName)
 
 	return nil
 }

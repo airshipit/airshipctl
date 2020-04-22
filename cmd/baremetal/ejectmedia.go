@@ -45,7 +45,7 @@ func NewEjectMediaCommand(rootSettings *environment.AirshipCTLSettings) *cobra.C
 					return err
 				}
 
-				fmt.Fprintf(cmd.OutOrStdout(), "All media ejected from host %s\n", host.HostName)
+				fmt.Fprintf(cmd.OutOrStdout(), "All media ejected from host '%s'.\n", host.HostName)
 			}
 
 			return nil
