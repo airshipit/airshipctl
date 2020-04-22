@@ -1,0 +1,7 @@
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Testversion
+metadata:
+  name: version-3
+spec:
+  version: v0.0.3
