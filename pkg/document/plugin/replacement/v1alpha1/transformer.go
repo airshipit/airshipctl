@@ -79,35 +79,31 @@ func (p *plugin) Run(in io.Reader, out io.Writer) error {
 	return nil
 }
 
+// Config function reads replacements configuration
 func (p *plugin) Config(
-	_ *resmap.PluginHelpers, c []byte) (err error) {
+	_ *resmap.PluginHelpers, c []byte) error {
 	p.Replacements = []types.Replacement{}
-	err = yaml.Unmarshal(c, p)
+	err := yaml.Unmarshal(c, p)
 	if err != nil {
 		return err
 	}
 	for _, r := range p.Replacements {
 		if r.Source == nil {
-			return fmt.Errorf("`from` must be specified in one replacement")
+			return ErrBadConfiguration{Msg: "`from` must be specified in one replacement"}
 		}
 		if r.Target == nil {
-			return fmt.Errorf("`to` must be specified in one replacement")
+			return ErrBadConfiguration{Msg: "`to` must be specified in one replacement"}
 		}
-		count := 0
-		if r.Source.ObjRef != nil {
-			count += 1
-		}
-		if r.Source.Value != "" {
-			count += 1
-		}
-		if count > 1 {
-			return fmt.Errorf("only one of fieldref and value is allowed in one replacement")
+		if r.Source.ObjRef != nil && r.Source.Value != "" {
+			return ErrBadConfiguration{Msg: "only one of fieldref and value is allowed in one replacement"}
 		}
 	}
 	return nil
 }
 
-func (p *plugin) Transform(m resmap.ResMap) (err error) {
+// Transform resources using configured replacements
+func (p *plugin) Transform(m resmap.ResMap) error {
+	var err error
 	for _, r := range p.Replacements {
 		var replacement interface{}
 		if r.Source.ObjRef != nil {
@@ -119,8 +115,7 @@ func (p *plugin) Transform(m resmap.ResMap) (err error) {
 		if r.Source.Value != "" {
 			replacement = r.Source.Value
 		}
-		err = substitute(m, r.Target, replacement)
-		if err != nil {
+		if err = substitute(m, r.Target, replacement); err != nil {
 			return err
 		}
 	}
@@ -135,16 +130,16 @@ func getReplacement(m resmap.ResMap, objRef *types.Target, fieldRef string) (int
 	}
 	resources, err := m.Select(s)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if len(resources) > 1 {
-		return "", fmt.Errorf("found more than one resources matching from %v", resources)
+		return nil, ErrMultipleResources{ResList: resources}
 	}
 	if len(resources) == 0 {
-		return "", fmt.Errorf("failed to find one resource matching from %v", objRef)
+		return nil, ErrResourceNotFound{ObjRef: objRef}
 	}
 	if fieldRef == "" {
-		fieldRef = ".metadata.name"
+		fieldRef = "metadata.name"
 	}
 	return resources[0].GetFieldValue(fieldRef)
 }
@@ -165,7 +160,7 @@ func substitute(m resmap.ResMap, to *types.ReplTarget, replacement interface{}) 
 	return nil
 }
 
-func getFirstPathSegment(path string) (field string, key string, value string, array bool) {
+func getFirstPathSegment(path string) (field string, key string, value string, isArray bool) {
 	groups := pattern.FindStringSubmatch(path)
 	if len(groups) != 4 {
 		return path, "", "", false
@@ -184,20 +179,17 @@ func updateField(m interface{}, pathToField []string, replacement interface{}) e
 	case []interface{}:
 		return updateSliceField(typedM, pathToField, replacement)
 	default:
-		return fmt.Errorf("%#v is not expected to be a primitive type", typedM)
+		return ErrTypeMismatch{Actual: typedM, Expectation: "is not expected be a primitive type"}
 	}
 }
 
 // Extract the substring pattern (if present) from the target path spec
-//nolint:unparam // TODO (dukov) refactor this or remove
-func extractSubstringPattern(path string) (extractedPath string, substringPattern string, err error) {
-	substringPattern = ""
+func extractSubstringPattern(path string) (extractedPath string, substringPattern string) {
 	groups := substringPatternRegex.FindStringSubmatch(path)
-	if groups != nil {
-		path = groups[1]
-		substringPattern = groups[2]
+	if len(groups) != 3 {
+		return path, ""
 	}
-	return path, substringPattern, nil
+	return groups[1], groups[2]
 }
 
 // apply a substring substitution based on a pattern
@@ -208,116 +200,106 @@ func applySubstringPattern(target interface{}, replacement interface{},
 		return replacement, nil
 	}
 
-	switch replacement.(type) {
-	case string:
-	default:
-		return nil, fmt.Errorf("pattern-based substitution can only be applied with string replacement values")
+	repl, ok := replacement.(string)
+	if !ok {
+		return nil, ErrPatternSubstring{Msg: "pattern-based substitution can only be applied with string replacement values"}
 	}
 
-	switch target.(type) {
-	case string:
-	default:
-		return nil, fmt.Errorf("pattern-based substitution can only be applied to string target fields")
+	tgt, ok := target.(string)
+	if !ok {
+		return nil, ErrPatternSubstring{Msg: "pattern-based substitution can only be applied to string target fields"}
 	}
 
 	p := regexp.MustCompile(substringPattern)
-	if !p.MatchString(target.(string)) {
-		return nil, fmt.Errorf("pattern %s not found in target value %s", substringPattern, target.(string))
+	if !p.MatchString(tgt) {
+		return nil, ErrPatternSubstring{
+			Msg: fmt.Sprintf("pattern '%s' is defined in configuration but was not found in target value %s",
+				substringPattern, tgt),
+		}
 	}
-	return p.ReplaceAllString(target.(string), replacement.(string)), nil
+	return p.ReplaceAllString(tgt, repl), nil
 }
 
-//nolint:gocyclo // TODO (dukov) Refactor this or remove
 func updateMapField(m map[string]interface{}, pathToField []string, replacement interface{}) error {
 	path, key, value, isArray := getFirstPathSegment(pathToField[0])
 
-	path, substringPattern, err := extractSubstringPattern(path)
-	if err != nil {
-		return err
-	}
+	path, substringPattern := extractSubstringPattern(path)
 
 	v, found := m[path]
 	if !found {
-		m[path] = map[string]interface{}{}
+		m[path] = make(map[string]interface{})
 		v = m[path]
+	}
+
+	if v == nil {
+		return ErrTypeMismatch{Actual: v, Expectation: "is not expected be nil"}
 	}
 
 	if len(pathToField) == 1 {
 		if !isArray {
-			replacement, err = applySubstringPattern(m[path], replacement, substringPattern)
+			renderedRepl, err := applySubstringPattern(m[path], replacement, substringPattern)
 			if err != nil {
 				return err
 			}
-			m[path] = replacement
+			m[path] = renderedRepl
 			return nil
 		}
 		switch typedV := v.(type) {
-		case nil:
-			fmt.Printf("nil value at `%s` ignored in mutation attempt", strings.Join(pathToField, "."))
 		case []interface{}:
-			for i := range typedV {
-				item := typedV[i]
+			for _, item := range typedV {
 				typedItem, ok := item.(map[string]interface{})
 				if !ok {
-					return fmt.Errorf("%#v is expected to be %T", item, typedItem)
+					return ErrTypeMismatch{Actual: item, Expectation: fmt.Sprintf("is expected to be %T", typedItem)}
 				}
 				if actualValue, ok := typedItem[key]; ok {
 					if value == actualValue {
+						// TODO (dukov) should not we do 'item = replacement' here?
 						typedItem[key] = value
 					}
 				}
 			}
 		default:
-			return fmt.Errorf("%#v is not expected to be a primitive type", typedV)
+			return ErrTypeMismatch{Actual: typedV, Expectation: "is not expected be a primitive type"}
 		}
 	}
 
-	newPathToField := pathToField[1:]
-	switch typedV := v.(type) {
-	case nil:
-		fmt.Printf(
-			"nil value at `%s` ignored in mutation attempt",
-			strings.Join(pathToField, "."))
-		return nil
-	case map[string]interface{}:
-		return updateField(typedV, newPathToField, replacement)
-	case []interface{}:
-		if !isArray {
-			return updateField(typedV, newPathToField, replacement)
-		}
-		for i := range typedV {
-			item := typedV[i]
-			typedItem, ok := item.(map[string]interface{})
-			if !ok {
-				return fmt.Errorf("%#v is expected to be %T", item, typedItem)
-			}
-			if actualValue, ok := typedItem[key]; ok {
-				if value == actualValue {
-					return updateField(typedItem, newPathToField, replacement)
-				}
-			}
-		}
-	default:
-		return fmt.Errorf("%#v is not expected to be a primitive type", typedV)
+	if isArray {
+		return updateField(v, pathToField, replacement)
 	}
-	return nil
+	return updateField(v, pathToField[1:], replacement)
 }
 
 func updateSliceField(m []interface{}, pathToField []string, replacement interface{}) error {
 	if len(pathToField) == 0 {
 		return nil
 	}
+	_, key, value, isArray := getFirstPathSegment(pathToField[0])
+
+	if isArray {
+		for _, item := range m {
+			typedItem, ok := item.(map[string]interface{})
+			if !ok {
+				return ErrTypeMismatch{Actual: item, Expectation: fmt.Sprintf("is expected to be %T", typedItem)}
+			}
+			if actualValue, ok := typedItem[key]; ok {
+				if value == actualValue {
+					return updateField(typedItem, pathToField[1:], replacement)
+				}
+			}
+		}
+	}
+
 	index, err := strconv.Atoi(pathToField[0])
 	if err != nil {
 		return err
 	}
-	if len(m) > index && index >= 0 {
-		if len(pathToField) == 1 {
-			m[index] = replacement
-			return nil
-		} else {
-			return updateField(m[index], pathToField[1:], replacement)
-		}
+
+	if len(m) < index || index < 0 {
+		return ErrIndexOutOfBound{Index: index}
 	}
-	return fmt.Errorf("index %v is out of bound", index)
+	if len(pathToField) == 1 {
+		m[index] = replacement
+		return nil
+	}
+	return updateField(m[index], pathToField[1:], replacement)
 }

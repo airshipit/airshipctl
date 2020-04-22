@@ -18,9 +18,6 @@ import (
 	"sigs.k8s.io/kustomize/api/types"
 )
 
-//noinspection GoUnusedGlobalVariable
-var KustomizePlugin plugin
-
 // Find matching image declarations and replace
 // the name, tag and/or digest.
 type plugin struct {
