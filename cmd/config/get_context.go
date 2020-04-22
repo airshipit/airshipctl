@@ -51,10 +51,31 @@ func NewCmdConfigGetContext(rootSettings *environment.AirshipCTLSettings) *cobra
 		Short:   getContextLong,
 		Example: getContextExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			airconfig := rootSettings.Config
 			if len(args) == 1 {
 				o.Name = args[0]
 			}
-			return config.RunGetContext(o, cmd.OutOrStdout(), rootSettings.Config)
+			if o.Name == "" && !o.CurrentContext {
+				contexts := airconfig.GetContexts()
+				if len(contexts) == 0 {
+					fmt.Fprintln(cmd.OutOrStdout(), "No Contexts found in the configuration.")
+				}
+				for _, context := range contexts {
+					fmt.Fprintln(cmd.OutOrStdout(), context.PrettyString())
+				}
+				return nil
+			}
+
+			if o.CurrentContext {
+				o.Name = airconfig.CurrentContext
+			}
+
+			context, err := airconfig.GetContext(o.Name)
+			if err != nil {
+				return err
+			}
+			fmt.Fprintln(cmd.OutOrStdout(), context.PrettyString())
+			return nil
 		},
 	}
 

@@ -17,6 +17,8 @@ limitations under the License.
 package config
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
@@ -42,11 +44,26 @@ func NewCmdConfigGetAuthInfo(rootSettings *environment.AirshipCTLSettings) *cobr
 		Short:   "Gets a user entry from the airshipctl config",
 		Long:    getAuthInfoLong,
 		Example: getAuthInfoExample,
+		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			airconfig := rootSettings.Config
 			if len(args) == 1 {
 				o.Name = args[0]
+				authinfo, err := airconfig.GetAuthInfo(o.Name)
+				if err != nil {
+					return err
+				}
+				fmt.Fprintln(cmd.OutOrStdout(), authinfo)
+			} else {
+				authinfos := airconfig.GetAuthInfos()
+				if len(authinfos) == 0 {
+					fmt.Fprintln(cmd.OutOrStdout(), "No User credentials found in the configuration.")
+				}
+				for _, authinfo := range authinfos {
+					fmt.Fprintln(cmd.OutOrStdout(), authinfo)
+				}
 			}
-			return config.RunGetAuthInfo(o, cmd.OutOrStdout(), rootSettings.Config)
+			return nil
 		},
 	}
 
