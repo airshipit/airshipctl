@@ -111,15 +111,6 @@ func TestString(t *testing.T) {
 	}
 }
 
-func TestPrettyString(t *testing.T) {
-	fSys := testutil.SetupTestFs(t, "testdata")
-	data, err := fSys.ReadFile("/prettycluster-string.yaml")
-	require.NoError(t, err)
-
-	cluster := testutil.DummyCluster()
-	assert.EqualValues(t, cluster.PrettyString(), string(data))
-}
-
 func TestLoadConfig(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
@@ -303,11 +294,6 @@ func TestPurge(t *testing.T) {
 	assert.Falsef(t, os.IsExist(err), "Purge failed to remove file at %v", conf.LoadedConfigPath())
 }
 
-func TestValidClusterTypeFail(t *testing.T) {
-	err := config.ValidClusterType("Fake")
-	assert.Error(t, err)
-}
-
 func TestSetLoadedConfigPath(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
@@ -328,37 +314,6 @@ func TestSetKubeConfigPath(t *testing.T) {
 	assert.NotEqual(t, testPath, conf.KubeConfigPath())
 	conf.SetKubeConfigPath(testPath)
 	assert.Equal(t, testPath, conf.KubeConfigPath())
-}
-
-func TestGetCluster(t *testing.T) {
-	conf, cleanup := testutil.InitConfig(t)
-	defer cleanup(t)
-
-	cluster, err := conf.GetCluster("def", config.Ephemeral)
-	require.NoError(t, err)
-
-	// Test Positives
-	assert.EqualValues(t, cluster.NameInKubeconf, "def_ephemeral")
-	assert.EqualValues(t, cluster.KubeCluster().Server, "http://5.6.7.8")
-
-	// Test Wrong Cluster
-	_, err = conf.GetCluster("unknown", config.Ephemeral)
-	assert.Error(t, err)
-
-	// Test Wrong Cluster Type
-	_, err = conf.GetCluster("def", "Unknown")
-	assert.Error(t, err)
-}
-
-func TestAddCluster(t *testing.T) {
-	conf, cleanup := testutil.InitConfig(t)
-	defer cleanup(t)
-
-	co := testutil.DummyClusterOptions()
-	cluster, err := conf.AddCluster(co)
-	require.NoError(t, err)
-
-	assert.EqualValues(t, conf.Clusters[co.Name].ClusterTypes[co.ClusterType], cluster)
 }
 
 func TestModifyCluster(t *testing.T) {
@@ -585,61 +540,6 @@ func TestCurrentContextClusterName(t *testing.T) {
 	actualClusterName, err := conf.CurrentContextClusterName()
 	require.NoError(t, err)
 	assert.Equal(t, expectedClusterName, actualClusterName)
-}
-
-// AuthInfo Related
-
-func TestGetAuthInfos(t *testing.T) {
-	conf, cleanup := testutil.InitConfig(t)
-	defer cleanup(t)
-
-	authinfos := conf.GetAuthInfos()
-	assert.Len(t, authinfos, 3)
-}
-
-func TestGetAuthInfo(t *testing.T) {
-	conf, cleanup := testutil.InitConfig(t)
-	defer cleanup(t)
-
-	authinfo, err := conf.GetAuthInfo("def-user")
-	require.NoError(t, err)
-
-	// Test Positives
-	assert.EqualValues(t, authinfo.KubeAuthInfo().Username, "dummy_username")
-
-	// Test Wrong Cluster
-	_, err = conf.GetAuthInfo("unknown")
-	assert.Error(t, err)
-}
-
-func TestAddAuthInfo(t *testing.T) {
-	conf, cleanup := testutil.InitConfig(t)
-	defer cleanup(t)
-
-	co := testutil.DummyAuthInfoOptions()
-	authinfo := conf.AddAuthInfo(co)
-	assert.EqualValues(t, conf.AuthInfos[co.Name], authinfo)
-}
-
-func TestModifyAuthInfo(t *testing.T) {
-	conf, cleanup := testutil.InitConfig(t)
-	defer cleanup(t)
-
-	co := testutil.DummyAuthInfoOptions()
-	authinfo := conf.AddAuthInfo(co)
-
-	co.Username += stringDelta
-	co.Password += stringDelta
-	co.ClientCertificate += stringDelta
-	co.ClientKey += stringDelta
-	co.Token += stringDelta
-	conf.ModifyAuthInfo(authinfo, co)
-	assert.EqualValues(t, conf.AuthInfos[co.Name].KubeAuthInfo().Username, co.Username)
-	assert.EqualValues(t, conf.AuthInfos[co.Name].KubeAuthInfo().Password, co.Password)
-	assert.EqualValues(t, conf.AuthInfos[co.Name].KubeAuthInfo().ClientCertificate, co.ClientCertificate)
-	assert.EqualValues(t, conf.AuthInfos[co.Name].KubeAuthInfo().ClientKey, co.ClientKey)
-	assert.EqualValues(t, conf.AuthInfos[co.Name].KubeAuthInfo().Token, co.Token)
-	assert.EqualValues(t, conf.AuthInfos[co.Name], authinfo)
 }
 
 func TestNewClusterComplexNameFromKubeClusterName(t *testing.T) {

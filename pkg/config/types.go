@@ -69,27 +69,6 @@ type Config struct {
 	kubeConfig *kubeconfig.Config
 }
 
-// ClusterPurpose encapsulates the Cluster Type as an enumeration
-type ClusterPurpose struct {
-	// Cluster map of referenceable names to cluster configs
-	ClusterTypes map[string]*Cluster `json:"clusterType"`
-}
-
-// Cluster contains information about how to communicate with a kubernetes cluster
-type Cluster struct {
-	// Complex cluster name defined by the using <cluster name>_<cluster type>)
-	NameInKubeconf string `json:"clusterKubeconf"`
-
-	// KubeConfig Cluster Object
-	cluster *kubeconfig.Cluster
-
-	// Management configuration which will be used for all hosts in the cluster
-	ManagementConfiguration string `json:"managementConfiguration"`
-
-	// Bootstrap configuration this clusters ephemeral hosts will rely on
-	Bootstrap string `json:"bootstrapInfo"`
-}
-
 // Context is a tuple of references to a cluster (how do I communicate with a kubernetes context),
 // a user (how do I identify myself), and a namespace (what subset of resources do I want to work with)
 type Context struct {
@@ -102,11 +81,6 @@ type Context struct {
 
 	// KubeConfig Context Object
 	context *kubeconfig.Context
-}
-
-type AuthInfo struct {
-	// KubeConfig AuthInfo Object
-	authInfo *kubeconfig.AuthInfo
 }
 
 // Manifest is a tuple of references to a Manifest (how do Identify, collect ,
@@ -173,13 +147,6 @@ type RepoCheckout struct {
 	RemoteRef string `json:"remoteRef"`
 	// ForceCheckout is a boolean to indicate whether to use the `--force` option when checking out
 	ForceCheckout bool `json:"force"`
-}
-
-// ClusterComplexName holds the complex cluster name information
-// Encapsulates the different operations around using it.
-type ClusterComplexName struct {
-	Name string
-	Type string
 }
 
 // ManagementConfiguration defines configuration data for all remote systems within a context.

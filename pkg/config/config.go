@@ -24,7 +24,6 @@ import (
 	"path"
 	"path/filepath"
 	"sort"
-	"strings"
 
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
@@ -769,32 +768,6 @@ func (c *Config) Purge() error {
 	return os.Remove(c.loadedConfigPath)
 }
 
-func (c *Cluster) String() string {
-	cyaml, err := yaml.Marshal(&c)
-	if err != nil {
-		return ""
-	}
-	kcluster := c.KubeCluster()
-	kyaml, err := yaml.Marshal(&kcluster)
-	if err != nil {
-		return string(cyaml)
-	}
-
-	return fmt.Sprintf("%s\n%s", string(cyaml), string(kyaml))
-}
-
-func (c *Cluster) PrettyString() string {
-	clusterName := NewClusterComplexNameFromKubeClusterName(c.NameInKubeconf)
-	return fmt.Sprintf("Cluster: %s\n%s:\n%s", clusterName.Name, clusterName.Type, c)
-}
-
-func (c *Cluster) KubeCluster() *clientcmdapi.Cluster {
-	return c.cluster
-}
-func (c *Cluster) SetKubeCluster(kc *clientcmdapi.Cluster) {
-	c.cluster = kc
-}
-
 // Context functions
 func (c *Context) String() string {
 	cyaml, err := yaml.Marshal(&c)
@@ -828,23 +801,6 @@ func (c *Context) ClusterType() string {
 
 func (c *Context) ClusterName() string {
 	return NewClusterComplexNameFromKubeClusterName(c.NameInKubeconf).Name
-}
-
-// AuthInfo functions
-func (c *AuthInfo) String() string {
-	kauthinfo := c.KubeAuthInfo()
-	kyaml, err := yaml.Marshal(&kauthinfo)
-	if err != nil {
-		return ""
-	}
-	return string(kyaml)
-}
-
-func (c *AuthInfo) KubeAuthInfo() *clientcmdapi.AuthInfo {
-	return c.authInfo
-}
-func (c *AuthInfo) SetKubeAuthInfo(kc *clientcmdapi.AuthInfo) {
-	c.authInfo = kc
 }
 
 // Manifest functions
@@ -890,17 +846,4 @@ func (b *Builder) String() string {
 		return ""
 	}
 	return string(yamlData)
-}
-
-func (c *ClusterComplexName) String() string {
-	return strings.Join([]string{c.Name, c.Type}, AirshipClusterNameSeparator)
-}
-
-func ValidClusterType(clusterType string) error {
-	for _, validType := range AllClusterTypes {
-		if clusterType == validType {
-			return nil
-		}
-	}
-	return fmt.Errorf("cluster type must be one of %v", AllClusterTypes)
 }
