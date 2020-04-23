@@ -31,7 +31,7 @@ const (
 	// ClientType is used by other packages as the identifier of the Redfish client.
 	ClientType          string = "redfish"
 	systemActionRetries        = 30
-	systemRebootDelay          = 2 * time.Second
+	systemRebootDelay          = 30 * time.Second
 )
 
 // Client holds details about a Redfish out-of-band system required for out-of-band management.
