@@ -62,10 +62,6 @@ func TestString(t *testing.T) {
 			stringer: testutil.DummyManifest(),
 		},
 		{
-			name:     "modules",
-			stringer: testutil.DummyModules(),
-		},
-		{
 			name:     "repository",
 			stringer: testutil.DummyRepository(),
 		},
@@ -78,12 +74,8 @@ func TestString(t *testing.T) {
 			stringer: testutil.DummyRepoCheckout(),
 		},
 		{
-			name:     "bootstrap",
-			stringer: testutil.DummyBootstrap(),
-		},
-		{
-			name:     "bootstrap",
-			stringer: testutil.DummyBootstrap(),
+			name:     "bootstrapinfo",
+			stringer: testutil.DummyBootstrapInfo(),
 		},
 		{
 			name: "builder",
@@ -282,7 +274,7 @@ func TestCurrentContextBootstrapInfo(t *testing.T) {
 
 	bootstrapInfo, err = conf.CurrentContextBootstrapInfo()
 	require.NoError(t, err)
-	assert.Equal(t, conf.ModulesConfig.BootstrapInfo[defaultString], bootstrapInfo)
+	assert.Equal(t, conf.BootstrapInfo[defaultString], bootstrapInfo)
 }
 
 func TestPurge(t *testing.T) {

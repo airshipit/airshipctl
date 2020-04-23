@@ -47,7 +47,9 @@ func DummyConfig() *config.Config {
 		Manifests: map[string]*config.Manifest{
 			"dummy_manifest": DummyManifest(),
 		},
-		ModulesConfig:  DummyModules(),
+		BootstrapInfo: map[string]*config.Bootstrap{
+			"dummy_bootstrap_config": DummyBootstrapInfo(),
+		},
 		CurrentContext: "dummy_context",
 	}
 	conf.SetKubeConfig(kubeconfig.NewConfig())
@@ -154,13 +156,6 @@ func DummyKubeAuthInfo() *kubeconfig.AuthInfo {
 	return authinfo
 }
 
-// DummyModules returns Modules config objects for unit testing
-func DummyModules() *config.Modules {
-	m := config.NewModules()
-	m.BootstrapInfo["dummy_bootstrap_config"] = DummyBootstrap()
-	return m
-}
-
 // DummyClusterPurpose creates ClusterPurpose config object for unit testing
 func DummyClusterPurpose() *config.ClusterPurpose {
 	cp := config.NewClusterPurpose()
@@ -234,8 +229,7 @@ func DummyAuthInfoOptions() *config.AuthInfoOptions {
 	return authinfo
 }
 
-// DummyBootstrap creates Bootstrap config object for unit testing
-func DummyBootstrap() *config.Bootstrap {
+func DummyBootstrapInfo() *config.Bootstrap {
 	bs := &config.Bootstrap{}
 	cont := config.Container{
 		Volume:           "/dummy:dummy",
@@ -256,43 +250,43 @@ func DummyBootstrap() *config.Bootstrap {
 
 const (
 	testConfigYAML = `apiVersion: airshipit.org/v1alpha1
+bootstrapInfo:
+  default: {}
 clusters:
   straggler:
-    cluster-type:
+    clusterType:
       ephemeral:
-        cluster-kubeconf: notThere
+        clusterKubeconf: notThere
   def:
-    cluster-type:
+    clusterType:
       ephemeral:
-        bootstrap-info: ""
-        cluster-kubeconf: def_ephemeral
+        bootstrapInfo: ""
+        clusterKubeconf: def_ephemeral
       target:
-        bootstrap-info: ""
-        cluster-kubeconf: def_target
+        bootstrapInfo: ""
+        clusterKubeconf: def_target
   onlyinkubeconf:
-    cluster-type:
+    clusterType:
       target:
-        bootstrap-info: ""
-        cluster-kubeconf: onlyinkubeconf_target
+        bootstrapInfo: ""
+        clusterKubeconf: onlyinkubeconf_target
   wrongonlyinconfig:
-    cluster-type: {}
+    clusterType: {}
   wrongonlyinkubeconf:
-    cluster-type:
+    clusterType:
       target:
-        bootstrap-info: ""
-        cluster-kubeconf: wrongonlyinkubeconf_target
+        bootstrapInfo: ""
+        clusterKubeconf: wrongonlyinkubeconf_target
 contexts:
   def_ephemeral:
-    context-kubeconf: def_ephemeral
+    contextKubeconf: def_ephemeral
   def_target:
-    context-kubeconf: def_target
+    contextKubeconf: def_target
   onlyink:
-    context-kubeconf: onlyinkubeconf_target
-current-context: ""
+    contextKubeconf: onlyinkubeconf_target
+currentContext: ""
 kind: Config
 manifests: {}
-modules-config:
-  dummy-for-tests: ""
 users:
   k-admin: {}
   k-other: {}

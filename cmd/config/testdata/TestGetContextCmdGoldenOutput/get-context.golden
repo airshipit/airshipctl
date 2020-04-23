@@ -1,5 +1,5 @@
 Context: ContextFoo
-context-kubeconf: ContextFoo_ephemeral
+contextKubeconf: ContextFoo_ephemeral
 manifest: Manifest_ContextFoo
 
 LocationOfOrigin: ""

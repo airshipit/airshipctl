@@ -1,4 +1,4 @@
 branch: ""
 force: false
-remote-ref: ""
+remoteRef: ""
 tag: v1.0.1

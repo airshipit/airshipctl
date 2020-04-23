@@ -716,11 +716,11 @@ func (c *Config) CurrentContextBootstrapInfo() (*Bootstrap, error) {
 
 	if currentCluster.Bootstrap == "" {
 		return nil, ErrMissingConfig{
-			What: fmt.Sprintf("No bootstrap-info defined for context %q", c.CurrentContext),
+			What: fmt.Sprintf("No bootstrapInfo defined for context %q", c.CurrentContext),
 		}
 	}
 
-	bootstrap, exists := c.ModulesConfig.BootstrapInfo[currentCluster.Bootstrap]
+	bootstrap, exists := c.BootstrapInfo[currentCluster.Bootstrap]
 	if !exists {
 		return nil, ErrBootstrapInfoNotFound{Name: currentCluster.Bootstrap}
 	}
@@ -808,15 +808,6 @@ func (c *AuthInfo) SetKubeAuthInfo(kc *clientcmdapi.AuthInfo) {
 
 // Manifest functions
 func (m *Manifest) String() string {
-	yamlData, err := yaml.Marshal(&m)
-	if err != nil {
-		return ""
-	}
-	return string(yamlData)
-}
-
-// Modules functions
-func (m *Modules) String() string {
 	yamlData, err := yaml.Marshal(&m)
 	if err != nil {
 		return ""
