@@ -31,11 +31,6 @@ func TestNewClusterCommandReturn(t *testing.T) {
 
 	tests := []*testutil.CmdTest{
 		{
-			Name:    "cluster-cmd-with-defaults",
-			CmdLine: "",
-			Cmd:     cluster.NewClusterCommand(fakeRootSettings),
-		},
-		{
 			Name:    "cluster-initinfra-cmd-with-defaults",
 			CmdLine: "--help",
 			Cmd:     cluster.NewCmdInitInfra(fakeRootSettings),

@@ -20,7 +20,7 @@ require (
 	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/morikuni/aec v0.0.0-20170113033406-39771216ff4c // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
-	github.com/spf13/cobra v0.0.5
+	github.com/spf13/cobra v0.0.6
 	github.com/stretchr/testify v1.4.0
 	k8s.io/api v0.17.3
 	k8s.io/apiextensions-apiserver v0.17.3
