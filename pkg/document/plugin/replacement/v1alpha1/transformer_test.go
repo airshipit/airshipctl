@@ -17,7 +17,7 @@ import (
 
 func samplePlugin(t *testing.T) plugtypes.Plugin {
 	plugin, err := replv1alpha1.New(nil, []byte(`
-apiVersion: airshipit.org/v1beta1
+apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
   name: notImportantHere
@@ -74,10 +74,11 @@ func TestReplacementTransformer(t *testing.T) {
 		cfg         string
 		in          string
 		expectedOut string
+		expectedErr string
 	}{
 		{
 			cfg: `
-apiVersion: airshipit.org/v1beta1
+apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
   name: notImportantHere
@@ -152,7 +153,7 @@ spec:
 		},
 		{
 			cfg: `
-apiVersion: airshipit.org/v1beta1
+apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
   name: notImportantHere
@@ -221,7 +222,7 @@ spec:
 		},
 		{
 			cfg: `
-apiVersion: airshipit.org/v1beta1
+apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
   name: notImportantHere
@@ -320,7 +321,7 @@ metadata:
 		},
 		{
 			cfg: `
-apiVersion: airshipit.org/v1beta1
+apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
   name: notImportantHere
@@ -390,15 +391,410 @@ spec:
         name: init-alpine
 `,
 		},
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: notImportantHere
+replacements:
+- source:
+    objref:
+      kind: Pod
+      name: pod1
+  target:
+    objref:
+      kind: Pod
+      name: pod2
+    fieldrefs:
+    - spec.non.existent.field`,
+			in: `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod2
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox`,
+			expectedOut: `apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+spec:
+  containers:
+  - image: busybox
+    name: myapp-container
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod2
+spec:
+  containers:
+  - image: busybox
+    name: myapp-container
+  non:
+    existent:
+      field: pod1
+`,
+		},
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: notImportantHere
+replacements:
+- source:
+    objref:
+      kind: Pod
+  target:
+    objref:
+      kind: Deployment
+    fieldrefs:
+    - spec.template.spec.containers[name=nginx-latest].image`,
+			in: `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod2
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox`,
+			expectedErr: "found more than one resources matching from " +
+				"[{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"name\":\"pod1\"}," +
+				"\"spec\":{\"containers\":[{\"image\":\"busybox\",\"name\":\"myapp-container\"" +
+				"}]}}{nsfx:false,beh:unspecified} {\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":" +
+				"{\"name\":\"pod2\"},\"spec\":{\"containers\":[{\"image\":\"busybox\",\"name\":\"myapp-container\"}]}}" +
+				"{nsfx:false,beh:unspecified}]",
+		},
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: notImportantHere
+replacements:
+- source:
+    objref:
+      kind: Pod
+      name: pod1
+      namespace: default
+  target:
+    objref:
+      kind: Deployment
+    fieldrefs:
+    - spec.template.spec.containers[name=nginx-latest].image`,
+			expectedErr: "failed to find any resources identified by Kind:Pod Name:pod1 Namespace:default",
+		},
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: notImportantHere
+replacements:
+- source:
+    objref:
+      kind: Pod
+      name: pod1
+  target:
+    objref:
+      kind: Pod
+      name: pod2
+    fieldrefs:
+    - labels.somelabel.key1.subkey1`,
+			in: `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox
+---
+apiVersion: v1
+kind: Pod
+labels:
+  somelabel: 'some string value'
+metadata:
+  name: pod2
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox`,
+			expectedErr: `"some string value" is not expected be a primitive type`,
+		},
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: notImportantHere
+replacements:
+- source:
+    objref:
+      kind: Pod
+      name: pod1
+  target:
+    objref:
+      kind: Pod
+      name: pod2
+    fieldrefs:
+    - labels.somelabel[subkey1=val1]`,
+			in: `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox
+---
+apiVersion: v1
+kind: Pod
+labels:
+  somelabel: 'some string value'
+metadata:
+  name: pod2
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox`,
+			expectedErr: `"some string value" is not expected be a primitive type`,
+		},
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: notImportantHere
+replacements:
+- source:
+    objref:
+      kind: Pod
+      name: pod1
+  target:
+    objref:
+      kind: Pod
+      name: pod2
+    fieldrefs:
+    - spec[subkey1=val1]`,
+			in: `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox
+---
+apiVersion: v1
+kind: Pod
+labels:
+  somelabel: 'some string value'
+metadata:
+  name: pod2
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox`,
+			expectedErr: "map[string]interface {}{\"containers\":[]interface " +
+				"{}{map[string]interface {}{\"image\":\"busybox\", \"name\":\"myapp-container\"}}} " +
+				"is not expected be a primitive type",
+		},
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: notImportantHere
+replacements:
+- source:
+    objref:
+      kind: Pod
+      name: pod1
+  target:
+    objref:
+      kind: Pod
+      name: pod2
+    fieldrefs:
+    - spec.containers.10`,
+			in: `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox
+---
+apiVersion: v1
+kind: Pod
+labels:
+  somelabel: 'some string value'
+metadata:
+  name: pod2
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox`,
+			expectedErr: "index 10 is out of bound",
+		},
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: notImportantHere
+replacements:
+- source:
+    objref:
+      kind: Pod
+      name: pod1
+  target:
+    objref:
+      kind: Pod
+      name: pod2
+    fieldrefs:
+    - spec.containers.notInteger.name`,
+			in: `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox
+---
+apiVersion: v1
+kind: Pod
+labels:
+  somelabel: 'some string value'
+metadata:
+  name: pod2
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox`,
+			expectedErr: `strconv.Atoi: parsing "notInteger": invalid syntax`,
+		},
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: notImportantHere
+replacements:
+- source:
+    objref:
+      kind: Pod
+      name: pod1
+  target:
+    objref:
+      kind: Deployment
+    fieldrefs:
+    - spec.template.spec.containers%TAG%`,
+			in: `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox
+---
+group: apps
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: deploy1
+spec:
+  template:
+    spec:
+      containers:
+      - image: nginx:TAG
+        name: nginx-latest`,
+			expectedErr: "pattern-based substitution can only be applied to string target fields",
+		},
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: notImportantHere
+replacements:
+- source:
+    objref:
+      kind: Pod
+      name: pod1
+  target:
+    objref:
+      kind: Deployment
+    fieldrefs:
+    - spec.template.spec.containers[name=nginx-latest].image%TAG%`,
+			in: `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox
+---
+group: apps
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: deploy1
+spec:
+  template:
+    spec:
+      containers:
+      - image: nginx:latest
+        name: nginx-latest`,
+			expectedErr: "pattern 'TAG' is defined in configuration but was not found in target value nginx:latest",
+		},
 	}
 
 	for _, tc := range testCases {
-		plugun, err := replv1alpha1.New(nil, []byte(tc.cfg))
+		plugin, err := replv1alpha1.New(nil, []byte(tc.cfg))
 		require.NoError(t, err)
 
 		buf := &bytes.Buffer{}
-		err = plugun.Run(strings.NewReader(tc.in), buf)
-		require.NoError(t, err)
+		err = plugin.Run(strings.NewReader(tc.in), buf)
+		errString := ""
+		if err != nil {
+			errString = err.Error()
+		}
+		assert.Equal(t, tc.expectedErr, errString)
 		assert.Equal(t, tc.expectedOut, buf.String())
 	}
 }
