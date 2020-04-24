@@ -180,6 +180,10 @@ func (c *Config) reconcileClusters() (map[string]string, bool) {
 			c.Clusters[clusterComplexName.Name] = NewClusterPurpose()
 		}
 		if c.Clusters[clusterComplexName.Name].ClusterTypes[clusterComplexName.Type] == nil {
+			// We have to make sure that ClusterTypes map is initialized properly before assignment
+			if c.Clusters[clusterComplexName.Name].ClusterTypes == nil {
+				c.Clusters[clusterComplexName.Name].ClusterTypes = make(map[string]*Cluster)
+			}
 			c.Clusters[clusterComplexName.Name].ClusterTypes[clusterComplexName.Type] = NewCluster()
 		}
 		configCluster := c.Clusters[clusterComplexName.Name].ClusterTypes[clusterComplexName.Type]

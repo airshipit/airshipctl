@@ -291,6 +291,8 @@ clusters:
       target:
         bootstrapInfo: ""
         clusterKubeconf: wrongonlyinkubeconf_target
+  clustertypenil:
+    clusterType: null
 contexts:
   def_ephemeral:
     contextKubeconf: def_ephemeral
@@ -329,6 +331,10 @@ clusters:
     insecure-skip-tls-verify: true
     server: http://9.10.11.12
   name: invalidName
+- cluster:
+    insecure-skip-tls-verify: true
+    server: http://9.10.11.12
+  name: clustertypenil_target
 contexts:
 - context:
     cluster: def_ephemeral

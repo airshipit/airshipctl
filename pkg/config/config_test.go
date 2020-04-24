@@ -117,7 +117,7 @@ func TestLoadConfig(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
-	assert.Len(t, conf.Clusters, 5)
+	assert.Len(t, conf.Clusters, 6)
 	require.Contains(t, conf.Clusters, "def")
 	assert.Len(t, conf.Clusters["def"].ClusterTypes, 2)
 	assert.Len(t, conf.Contexts, 3)
@@ -345,7 +345,7 @@ func TestGetClusters(t *testing.T) {
 	defer cleanup(t)
 
 	clusters := conf.GetClusters()
-	assert.Len(t, clusters, 5)
+	assert.Len(t, clusters, 6)
 }
 
 func TestGetContexts(t *testing.T) {
@@ -673,7 +673,7 @@ users:
 		// Verify that only 3 clusters have been added (original 5 plus 3 new clusters)
 		// This is important since the above kubeconfig actually has 4
 		// clusters, but one was already defined in the airship config
-		assert.Len(t, conf.Clusters, 5+3)
+		assert.Len(t, conf.Clusters, 6+3)
 
 		// verify that the new clusters have been added to the config
 		_, err := conf.GetCluster("cluster", config.Target)
