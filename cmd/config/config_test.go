@@ -26,11 +26,6 @@ import (
 func TestConfig(t *testing.T) {
 	cmdTests := []*testutil.CmdTest{
 		{
-			Name:    "config-cmd-with-defaults",
-			CmdLine: "",
-			Cmd:     cmd.NewConfigCommand(nil),
-		},
-		{
 			Name:    "config-cmd-with-help",
 			CmdLine: "--help",
 			Cmd:     cmd.NewConfigCommand(nil),

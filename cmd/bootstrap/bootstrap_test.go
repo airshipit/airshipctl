@@ -24,11 +24,6 @@ import (
 func TestBootstrap(t *testing.T) {
 	tests := []*testutil.CmdTest{
 		{
-			Name:    "bootstrap-cmd-with-defaults",
-			CmdLine: "",
-			Cmd:     bootstrap.NewBootstrapCommand(nil),
-		},
-		{
 			Name:    "bootstrap-isogen-cmd-with-help",
 			CmdLine: "isogen --help",
 			Cmd:     bootstrap.NewBootstrapCommand(nil),

@@ -32,17 +32,17 @@ func TestRoot(t *testing.T) {
 	tests := []*testutil.CmdTest{
 		{
 			Name:    "rootCmd-with-no-defaults",
-			CmdLine: "",
+			CmdLine: "-h",
 			Cmd:     getVanillaRootCmd(t),
 		},
 		{
 			Name:    "rootCmd-with-defaults",
-			CmdLine: "",
+			CmdLine: "-h",
 			Cmd:     getDefaultRootCmd(t),
 		},
 		{
 			Name:    "specialized-rootCmd-with-bootstrap",
-			CmdLine: "",
+			CmdLine: "-h",
 			Cmd:     getSpecializedRootCmd(t),
 		},
 	}
@@ -57,16 +57,19 @@ func TestFlagLoading(t *testing.T) {
 		name     string
 		args     []string
 		expected string
+		Error    error
 	}{
 		{
 			name:     "default, no flags",
 			args:     []string{},
 			expected: "",
+			Error:    cobra.ErrSubCommandRequired,
 		},
 		{
 			name:     "alternate airshipconfig",
 			args:     []string{"--airshipconf", "/custom/path/to/airshipconfig"},
 			expected: "/custom/path/to/airshipconfig",
+			Error:    cobra.ErrSubCommandRequired,
 		},
 	}
 
@@ -80,7 +83,7 @@ func TestFlagLoading(t *testing.T) {
 			rootCmd.SetArgs(tt.args)
 
 			err = rootCmd.Execute()
-			require.NoError(t, err)
+			assert.Equal(t, tt.Error, err)
 
 			assert.Equal(t, settings.AirshipConfigPath, tt.expected)
 		})
