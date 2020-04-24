@@ -32,13 +32,9 @@ to define the following environment variables with your organization's
 information:
 
 ```
-http_proxy=http://username:password@host:port
-https_proxy=http://username:password@host:port
-no_proxy="localhost,127.0.0.1"
 HTTP_PROXY=http://username:password@host:port
 HTTPS_PROXY=http://username:password@host:port
 NO_PROXY="localhost,127.0.0.1"
-PROXY=http://username:password@host:port
 USE_PROXY=true
 ```
 

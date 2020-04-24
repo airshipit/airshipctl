@@ -24,3 +24,8 @@ zuul:
    log_root: "$TMP_DIR"
  project:
    src_dir: "$AIRSHIPCTL_WS"
+proxy:
+ enabled: "$USE_PROXY"
+ http: "$HTTP_PROXY"
+ https: "$HTTPS_PROXY"
+ noproxy: "$NO_PROXY"
