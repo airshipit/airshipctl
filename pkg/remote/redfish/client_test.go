@@ -221,7 +221,7 @@ func TestSetEphemeralBootSourceByTypeBootSourceUnavailable(t *testing.T) {
 	}
 
 	httpResp := &http.Response{StatusCode: 200}
-	m.On("GetSystem", ctx, client.ephemeralNodeID).Return(invalidSystem, nil, nil)
+	m.On("GetSystem", ctx, client.ephemeralNodeID).Return(invalidSystem, httpResp, nil)
 	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
 		Return(testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil)
 	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
