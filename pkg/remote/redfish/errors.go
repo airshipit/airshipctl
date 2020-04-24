@@ -48,3 +48,13 @@ type ErrOperationRetriesExceeded struct {
 func (e ErrOperationRetriesExceeded) Error() string {
 	return fmt.Sprintf("operation %s failed. Maximum retries (%d) exceeded", e.What, e.Retries)
 }
+
+// ErrUnrecognizedRedfishResponse is a debug error that describes unexpected formats in a Redfish error response.
+type ErrUnrecognizedRedfishResponse struct {
+	aerror.AirshipError
+	Key string
+}
+
+func (e ErrUnrecognizedRedfishResponse) Error() string {
+	return fmt.Sprintf("Unable to decode Redfish response. Key '%s' is missing or has unknown format.", e.Key)
+}
