@@ -486,6 +486,25 @@ func TestCurrentContextManifest(t *testing.T) {
 	assert.Equal(t, conf.Manifests[defaultString], manifest)
 }
 
+func TestCurrentTargetPath(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	clusterName := "def"
+
+	manifest, err := conf.CurrentContextManifest()
+	require.Error(t, err)
+	assert.Nil(t, manifest)
+
+	conf.CurrentContext = currentContextName
+	conf.Contexts[currentContextName].Manifest = defaultString
+	conf.Contexts[currentContextName].KubeContext().Cluster = clusterName
+
+	targetPath, err := conf.CurrentContextTargetPath()
+	require.NoError(t, err)
+	assert.Equal(t, conf.Manifests[defaultString].TargetPath, targetPath)
+}
+
 func TestCurrentContextEntryPoint(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)

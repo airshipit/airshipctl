@@ -675,6 +675,15 @@ func (c *Config) CurrentContextEntryPoint(phase string) (string, error) {
 		phase), nil
 }
 
+// CurrentContextTargetPath returns target path from current context's manifest
+func (c *Config) CurrentContextTargetPath() (string, error) {
+	ccm, err := c.CurrentContextManifest()
+	if err != nil {
+		return "", err
+	}
+	return ccm.TargetPath, nil
+}
+
 func (c *Config) CurrentContextClusterType() (string, error) {
 	context, err := c.GetCurrentContext()
 	if err != nil {
