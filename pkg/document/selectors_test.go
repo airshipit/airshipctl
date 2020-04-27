@@ -54,6 +54,12 @@ func TestSelectorsPositive(t *testing.T) {
 		require.NoError(t, err)
 		assert.Len(t, doc, 1)
 	})
+
+	t.Run("TestNewClusterctlSelector", func(t *testing.T) {
+		docs, err := bundle.Select(document.NewClusterctlSelector())
+		require.NoError(t, err)
+		assert.Len(t, docs, 1)
+	})
 }
 
 func TestSelectorsNegative(t *testing.T) {
