@@ -78,6 +78,10 @@ func TestString(t *testing.T) {
 			stringer: testutil.DummyBootstrapInfo(),
 		},
 		{
+			name:     "managementconfiguration",
+			stringer: testutil.DummyManagementConfiguration(),
+		},
+		{
 			name: "builder",
 			stringer: &config.Builder{
 				UserDataFileName:       "user-data",

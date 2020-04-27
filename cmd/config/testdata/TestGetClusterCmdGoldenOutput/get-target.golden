@@ -2,6 +2,7 @@ Cluster: clusterFoo
 target:
 bootstrapInfo: ""
 clusterKubeconf: clusterFoo_target
+managementConfiguration: ""
 
 LocationOfOrigin: ""
 insecure-skip-tls-verify: true

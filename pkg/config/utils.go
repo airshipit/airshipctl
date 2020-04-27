@@ -16,7 +16,11 @@ limitations under the License.
 
 package config
 
-import "strings"
+import (
+	"strings"
+
+	"opendev.org/airship/airshipctl/pkg/remote/redfish"
+)
 
 const (
 	DefaultTestPrimaryRepo = "primary"
@@ -50,6 +54,13 @@ func NewConfig() *Config {
 		Contexts: map[string]*Context{
 			AirshipDefaultContext: {
 				Manifest: AirshipDefaultManifest,
+			},
+		},
+		ManagementConfiguration: map[string]*ManagementConfiguration{
+			AirshipDefaultContext: {
+				Type:     redfish.ClientType,
+				Insecure: true,
+				UseProxy: false,
 			},
 		},
 		Manifests: map[string]*Manifest{

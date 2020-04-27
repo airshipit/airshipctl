@@ -2,6 +2,7 @@ Cluster: clusterFoo
 ephemeral:
 bootstrapInfo: ""
 clusterKubeconf: clusterFoo_ephemeral
+managementConfiguration: ""
 
 LocationOfOrigin: ""
 insecure-skip-tls-verify: true

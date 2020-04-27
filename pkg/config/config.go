@@ -743,6 +743,27 @@ func (c *Config) CurrentContextBootstrapInfo() (*Bootstrap, error) {
 	return bootstrap, nil
 }
 
+// CurrentContextManagementConfig returns the management options for the current context
+func (c *Config) CurrentContextManagementConfig() (*ManagementConfiguration, error) {
+	currentCluster, err := c.CurrentContextCluster()
+	if err != nil {
+		return nil, err
+	}
+
+	if currentCluster.ManagementConfiguration == "" {
+		return nil, ErrMissingConfig{
+			What: fmt.Sprintf("No management config listed for cluster %s", currentCluster.NameInKubeconf),
+		}
+	}
+
+	managementCfg, exists := c.ManagementConfiguration[currentCluster.ManagementConfiguration]
+	if !exists {
+		return nil, ErrMissingManagementConfiguration{cluster: currentCluster}
+	}
+
+	return managementCfg, nil
+}
+
 // Purge removes the config file
 func (c *Config) Purge() error {
 	return os.Remove(c.loadedConfigPath)
@@ -838,6 +859,15 @@ func (m *Manifest) String() string {
 // Bootstrap functions
 func (b *Bootstrap) String() string {
 	yamlData, err := yaml.Marshal(&b)
+	if err != nil {
+		return ""
+	}
+	return string(yamlData)
+}
+
+// Management Configuration functions
+func (m *ManagementConfiguration) String() string {
+	yamlData, err := yaml.Marshal(&m)
 	if err != nil {
 		return ""
 	}

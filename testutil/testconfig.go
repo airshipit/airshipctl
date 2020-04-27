@@ -26,6 +26,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 )
 
 // types cloned directory from pkg/config/types to prevent circular import
@@ -41,14 +42,17 @@ func DummyConfig() *config.Config {
 		AuthInfos: map[string]*config.AuthInfo{
 			"dummy_user": DummyAuthInfo(),
 		},
+		BootstrapInfo: map[string]*config.Bootstrap{
+			"dummy_bootstrap_config": DummyBootstrapInfo(),
+		},
 		Contexts: map[string]*config.Context{
 			"dummy_context": DummyContext(),
 		},
 		Manifests: map[string]*config.Manifest{
 			"dummy_manifest": DummyManifest(),
 		},
-		BootstrapInfo: map[string]*config.Bootstrap{
-			"dummy_bootstrap_config": DummyBootstrapInfo(),
+		ManagementConfiguration: map[string]*config.ManagementConfiguration{
+			"dummy_management_config": DummyManagementConfiguration(),
 		},
 		CurrentContext: "dummy_context",
 	}
@@ -85,6 +89,7 @@ func DummyCluster() *config.Cluster {
 	c.SetKubeCluster(cluster)
 	c.NameInKubeconf = "dummy_cluster_target"
 	c.Bootstrap = "dummy_bootstrap_config"
+	c.ManagementConfiguration = "dummy_management_config"
 	return c
 }
 
@@ -246,6 +251,15 @@ func DummyBootstrapInfo() *config.Bootstrap {
 	bs.Builder = &builder
 
 	return bs
+}
+
+// DummyManagementConfiguration creates a management configuration for unit testing
+func DummyManagementConfiguration() *config.ManagementConfiguration {
+	return &config.ManagementConfiguration{
+		Type:     redfish.ClientType,
+		Insecure: true,
+		UseProxy: false,
+	}
 }
 
 const (
