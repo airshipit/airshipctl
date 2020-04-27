@@ -796,83 +796,9 @@ func (c *Config) Purge() error {
 	return os.Remove(c.loadedConfigPath)
 }
 
-func (c *Context) String() string {
-	cyaml, err := yaml.Marshal(&c)
-	if err != nil {
-		return ""
-	}
-	kcluster := c.KubeContext()
-	kyaml, err := yaml.Marshal(&kcluster)
-	if err != nil {
-		return string(cyaml)
-	}
-	return fmt.Sprintf("%s\n%s", string(cyaml), string(kyaml))
-}
-
-// PrettyString returns cluster name in a formatted string
-func (c *Context) PrettyString() string {
-	clusterName := NewClusterComplexNameFromKubeClusterName(c.NameInKubeconf)
-	return fmt.Sprintf("Context: %s\n%s\n", clusterName.Name, c)
-}
-
-// KubeContext returns kube context object
-func (c *Context) KubeContext() *clientcmdapi.Context {
-	return c.context
-}
-
-// SetKubeContext updates kube contect with given context details
-func (c *Context) SetKubeContext(kc *clientcmdapi.Context) {
-	c.context = kc
-}
-
-// ClusterType returns cluster type by extracting the type portion from
-// the complex cluster name
-func (c *Context) ClusterType() string {
-	return NewClusterComplexNameFromKubeClusterName(c.NameInKubeconf).Type
-}
-
-func (c *Context) ClusterName() string {
-	return NewClusterComplexNameFromKubeClusterName(c.NameInKubeconf).Name
-}
-
-func (m *Manifest) String() string {
-	yamlData, err := yaml.Marshal(&m)
-	if err != nil {
-		return ""
-	}
-	return string(yamlData)
-}
-
-// Bootstrap functions
-func (b *Bootstrap) String() string {
-	yamlData, err := yaml.Marshal(&b)
-	if err != nil {
-		return ""
-	}
-	return string(yamlData)
-}
-
 // Management Configuration functions
 func (m *ManagementConfiguration) String() string {
 	yamlData, err := yaml.Marshal(&m)
-	if err != nil {
-		return ""
-	}
-	return string(yamlData)
-}
-
-// String returns Container object in a serialized string format
-func (c *Container) String() string {
-	yamlData, err := yaml.Marshal(&c)
-	if err != nil {
-		return ""
-	}
-	return string(yamlData)
-}
-
-// String returns Builder object in a serialized string format
-func (b *Builder) String() string {
-	yamlData, err := yaml.Marshal(&b)
 	if err != nil {
 		return ""
 	}
