@@ -16,20 +16,25 @@ package container
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewContainer(t *testing.T) {
+	assert := assert.New(t)
+
 	ctx := context.Background()
-	_, actualErr := NewContainer(&ctx, "test_drv", "")
-	expectedErr := ErrContainerDrvNotSupported{Driver: "test_drv"}
-	errS := fmt.Sprintf(
-		"Call NewContainer should have returned error %s, got %s",
-		expectedErr,
-		actualErr,
-	)
-	assert.Equal(t, actualErr, expectedErr, errS)
+
+	t.Run("not-supported-container", func(t *testing.T) {
+		cnt, err := NewContainer(&ctx, "test_drv", "")
+		assert.Equal(nil, cnt)
+		assert.Equal(ErrContainerDrvNotSupported{Driver: "test_drv"}, err)
+	})
+
+	t.Run("empty-container", func(t *testing.T) {
+		cnt, err := NewContainer(&ctx, "", "")
+		assert.Equal(nil, cnt)
+		assert.Equal(ErrNoContainerDriver{}, err)
+	})
 }

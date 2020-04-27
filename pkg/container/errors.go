@@ -44,3 +44,11 @@ type ErrContainerDrvNotSupported struct {
 func (e ErrContainerDrvNotSupported) Error() string {
 	return fmt.Sprintf("Driver %s is not supported", e.Driver)
 }
+
+// ErrNoContainerDriver returned if no runtime defined in config
+type ErrNoContainerDriver struct {
+}
+
+func (e ErrNoContainerDriver) Error() string {
+	return fmt.Sprintf("container runtime is not defined in airshipctl config")
+}
