@@ -29,6 +29,78 @@ import (
 	testutil "opendev.org/airship/airshipctl/testutil/redfishutils/helpers"
 )
 
+const (
+	redfishHTTPErrDMTF = `
+{
+  "error": {
+    "message": "A general error has occurred. See Resolution for information on how to resolve the error.",
+    "@Message.ExtendedInfo": [
+      {
+        "Message": "Extended error message.",
+        "Resolution": "Resolution message."
+      },
+      {
+        "Message": "Extended message 2.",
+        "Resolution": "Resolution message 2."
+      }
+    ]
+  }
+}`
+	redfishHTTPErrOther = `
+{
+  "error": {
+    "message": "A general error has occurred. See Resolution for information on how to resolve the error.",
+    "@Message.ExtendedInfo": {
+      "Message": "Extended error message.",
+      "Resolution": "Resolution message."
+    }
+  }
+}`
+	redfishHTTPErrMalformatted = `
+{
+  "error": {
+    "message": "A general error has occurred. See Resolution for information on how to resolve the error.",
+    "@Message.ExtendedInfo": {}
+  }
+}`
+	redfishHTTPErrEmptyList = `
+{
+  "error": {
+    "message": "A general error has occurred. See Resolution for information on how to resolve the error.",
+    "@Message.ExtendedInfo": []
+  }
+}`
+)
+
+func TestDecodeRawErrorEmptyInput(t *testing.T) {
+	_, err := redfish.DecodeRawError([]byte("{}"))
+	assert.Error(t, err)
+}
+
+func TestDecodeRawErrorEmptyList(t *testing.T) {
+	_, err := redfish.DecodeRawError([]byte(redfishHTTPErrEmptyList))
+	assert.Error(t, err)
+}
+
+func TestDecodeRawErrorEmptyMalformatted(t *testing.T) {
+	_, err := redfish.DecodeRawError([]byte(redfishHTTPErrMalformatted))
+	assert.Error(t, err)
+}
+
+func TestDecodeRawErrorDMTF(t *testing.T) {
+	message, err := redfish.DecodeRawError([]byte(redfishHTTPErrDMTF))
+	assert.NoError(t, err)
+	assert.Equal(t, "Extended message 2. Resolution message 2.\nExtended error message. Resolution message.\n",
+		message)
+}
+
+func TestDecodeRawErrorOther(t *testing.T) {
+	message, err := redfish.DecodeRawError([]byte(redfishHTTPErrOther))
+	assert.NoError(t, err)
+	assert.Equal(t, "Extended error message. Resolution message.",
+		message)
+}
+
 func TestRedfishErrorNoError(t *testing.T) {
 	err := redfish.ScreenRedfishError(&http.Response{StatusCode: 200}, nil)
 	assert.NoError(t, err)

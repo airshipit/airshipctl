@@ -30,6 +30,80 @@ const (
 	URLSchemeSeparator = "+"
 )
 
+// DecodeRawError decodes a raw Redfish HTTP response and retrieves the extended information and available resolutions
+// returned by the BMC.
+func DecodeRawError(rawResponse []byte) (string, error) {
+	processExtendedInfo := func(extendedInfo map[string]interface{}) (string, error) {
+		message, ok := extendedInfo["Message"]
+		if !ok {
+			return "", ErrUnrecognizedRedfishResponse{Key: "error.@Message.ExtendedInfo.Message"}
+		}
+
+		messageContent, ok := message.(string)
+		if !ok {
+			return "", ErrUnrecognizedRedfishResponse{Key: "error.@Message.ExtendedInfo.Message"}
+		}
+
+		// Resolution may be omitted in some responses
+		if resolution, ok := extendedInfo["Resolution"]; ok {
+			return fmt.Sprintf("%s %s", messageContent, resolution), nil
+		}
+
+		return messageContent, nil
+	}
+
+	// Unmarshal raw Redfish response as arbitrary JSON map
+	var arbitraryJSON map[string]interface{}
+	if err := json.Unmarshal(rawResponse, &arbitraryJSON); err != nil {
+		return "", ErrUnrecognizedRedfishResponse{Key: "error"}
+	}
+
+	errObject, ok := arbitraryJSON["error"]
+	if !ok {
+		return "", ErrUnrecognizedRedfishResponse{Key: "error"}
+	}
+
+	errContent, ok := errObject.(map[string]interface{})
+	if !ok {
+		return "", ErrUnrecognizedRedfishResponse{Key: "error"}
+	}
+
+	extendedInfoContent, ok := errContent["@Message.ExtendedInfo"]
+	if !ok {
+		return "", ErrUnrecognizedRedfishResponse{Key: "error.@Message.ExtendedInfo"}
+	}
+
+	// NOTE(drewwalters96): The official specification dictates that "@Message.ExtendedInfo" should be a JSON array;
+	// however, some BMCs have returned a single JSON dictionary. Handle both types here.
+	switch extendedInfo := extendedInfoContent.(type) {
+	case []interface{}:
+		if len(extendedInfo) == 0 {
+			return "", ErrUnrecognizedRedfishResponse{Key: "error.@MessageExtendedInfo"}
+		}
+
+		var errorMessage string
+		for _, info := range extendedInfo {
+			infoContent, ok := info.(map[string]interface{})
+			if !ok {
+				return "", ErrUnrecognizedRedfishResponse{Key: "error.@Message.ExtendedInfo"}
+			}
+
+			message, err := processExtendedInfo(infoContent)
+			if err != nil {
+				return "", err
+			}
+
+			errorMessage = fmt.Sprintf("%s\n%s", message, errorMessage)
+		}
+
+		return errorMessage, nil
+	case map[string]interface{}:
+		return processExtendedInfo(extendedInfo)
+	default:
+		return "", ErrUnrecognizedRedfishResponse{Key: "error.@Message.ExtendedInfo"}
+	}
+}
+
 // GetManagerID retrieves the manager ID for a redfish system.
 func GetManagerID(ctx context.Context, api redfishAPI.RedfishAPI, systemID string) (string, error) {
 	system, httpResp, err := api.GetSystem(ctx, systemID)
@@ -131,30 +205,17 @@ func ScreenRedfishError(httpResp *http.Response, clientErr error) error {
 			httpResp.Status)
 	}
 
-	// NOTE(drewwalters96) Check for error messages with extended information, as they often accompany more
-	// general error descriptions provided in "clientErr". Since there can be multiple errors, wrap them in a
-	// single error.
-	var redfishErr redfishClient.RedfishError
-	var additionalInfo string
-
+	// Retrieve the raw HTTP response body
 	oAPIErr, ok := clientErr.(redfishClient.GenericOpenAPIError)
-	if ok {
-		if err := json.Unmarshal(oAPIErr.Body(), &redfishErr); err == nil {
-			additionalInfo = ""
-			for _, extendedInfo := range redfishErr.Error.MessageExtendedInfo {
-				additionalInfo = fmt.Sprintf("%s %s %s", additionalInfo, extendedInfo.Message,
-					extendedInfo.Resolution)
-			}
-		} else {
-			log.Debugf("Unable to unmarshal the raw BMC error response. %s", err.Error())
-		}
+	if !ok {
+		log.Debug("Unable to decode BMC response.")
 	}
 
-	if strings.TrimSpace(additionalInfo) != "" {
-		finalError.Message = fmt.Sprintf("%s %s", finalError.Message, additionalInfo)
-	} else if redfishErr.Error.Message != "" {
-		// Provide the general error message when there were no messages containing extended information.
-		finalError.Message = fmt.Sprintf("%s %s", finalError.Message, redfishErr.Error.Message)
+	// Attempt to decode the BMC response from the raw HTTP response
+	if bmcResponse, err := DecodeRawError(oAPIErr.Body()); err == nil {
+		finalError.Message = fmt.Sprintf("%s BMC responded: '%s'", finalError.Message, bmcResponse)
+	} else {
+		log.Debugf("Unable to decode BMC response. %q", err)
 	}
 
 	return finalError
