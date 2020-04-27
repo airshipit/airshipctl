@@ -54,26 +54,3 @@ const (
 	AirshipDefaultIsoURL         = "http://localhost:8099/debian-custom.iso"
 	AirshipDefaultRemoteType     = redfish.ClientType
 )
-
-const (
-	FlagAPIServer    = "server"
-	FlagAuthInfoName = "user"
-	FlagBearerToken  = "token"
-	FlagCAFile       = "certificate-authority"
-	FlagCertFile     = "client-certificate"
-	FlagClusterName  = "cluster"
-	FlagClusterType  = "cluster-type"
-
-	FlagCurrentContext = "current-context"
-	FlagConfigFilePath = "airshipconf"
-	FlagEmbedCerts     = "embed-certs"
-
-	FlagInsecure  = "insecure-skip-tls-verify"
-	FlagKeyFile   = "client-key"
-	FlagManifest  = "manifest"
-	FlagNamespace = "namespace"
-	FlagPassword  = "password"
-
-	FlagUsername = "username"
-	FlagCurrent  = "current"
-)

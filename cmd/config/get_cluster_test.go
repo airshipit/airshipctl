@@ -29,8 +29,8 @@ import (
 )
 
 const (
-	ephemeralFlag = "--" + config.FlagClusterType + "=" + config.Ephemeral
-	targetFlag    = "--" + config.FlagClusterType + "=" + config.Target
+	ephemeralFlag = "--cluster-type=ephemeral"
+	targetFlag    = "--cluster-type=target"
 
 	fooCluster     = "clusterFoo"
 	barCluster     = "clusterBar"
@@ -68,12 +68,12 @@ func TestGetClusterCmd(t *testing.T) {
 		{
 			Name:    "get-ephemeral",
 			CmdLine: fmt.Sprintf("%s %s", ephemeralFlag, fooCluster),
-			Cmd:     cmd.NewCmdConfigGetCluster(settings),
+			Cmd:     cmd.NewGetClusterCommand(settings),
 		},
 		{
 			Name:    "get-target",
 			CmdLine: fmt.Sprintf("%s %s", targetFlag, fooCluster),
-			Cmd:     cmd.NewCmdConfigGetCluster(settings),
+			Cmd:     cmd.NewGetClusterCommand(settings),
 		},
 
 		// FIXME(howell): "airshipctl config get-cluster foo bar" will
@@ -84,12 +84,12 @@ func TestGetClusterCmd(t *testing.T) {
 		{
 			Name:    "get-multiple-ephemeral",
 			CmdLine: fmt.Sprintf("%s %s %s", ephemeralFlag, fooCluster, barCluster),
-			Cmd:     cmd.NewCmdConfigGetCluster(settings),
+			Cmd:     cmd.NewGetClusterCommand(settings),
 		},
 		{
 			Name:    "get-multiple-target",
 			CmdLine: fmt.Sprintf("%s %s %s", targetFlag, fooCluster, barCluster),
-			Cmd:     cmd.NewCmdConfigGetCluster(settings),
+			Cmd:     cmd.NewGetClusterCommand(settings),
 		},
 
 		// FIXME(howell): "airshipctl config get-cluster
@@ -98,17 +98,17 @@ func TestGetClusterCmd(t *testing.T) {
 		{
 			Name:    "get-all-ephemeral",
 			CmdLine: ephemeralFlag,
-			Cmd:     cmd.NewCmdConfigGetCluster(settings),
+			Cmd:     cmd.NewGetClusterCommand(settings),
 		},
 		{
 			Name:    "get-all-target",
 			CmdLine: targetFlag,
-			Cmd:     cmd.NewCmdConfigGetCluster(settings),
+			Cmd:     cmd.NewGetClusterCommand(settings),
 		},
 		{
 			Name:    "missing",
 			CmdLine: fmt.Sprintf("%s %s", targetFlag, missingCluster),
-			Cmd:     cmd.NewCmdConfigGetCluster(settings),
+			Cmd:     cmd.NewGetClusterCommand(settings),
 			Error: fmt.Errorf("cluster clustermissing information was not " +
 				"found in the configuration"),
 		},
@@ -124,7 +124,7 @@ func TestNoClustersGetClusterCmd(t *testing.T) {
 	cmdTest := &testutil.CmdTest{
 		Name:    "no-clusters",
 		CmdLine: "",
-		Cmd:     cmd.NewCmdConfigGetCluster(settings),
+		Cmd:     cmd.NewGetClusterCommand(settings),
 	}
 	testutil.RunTest(t, cmdTest)
 }

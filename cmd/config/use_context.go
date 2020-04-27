@@ -25,21 +25,23 @@ import (
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
-var (
-	useContextLong = "Switch to a new context defined in the airshipctl config file."
+const (
+	useContextLong = `
+Switch to a different context defined in the airshipctl config file.
+`
 
 	useContextExample = `
-# Switch to a context named "e2e"
-airshipctl config use-context e2e`
+# Switch to a context named "exampleContext"
+airshipctl config use-context exampleContext
+`
 )
 
-// NewCmdConfigUseContext creates a command object for the "use-context" action, which
-// switches to a defined airshipctl context.
-func NewCmdConfigUseContext(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+// NewUseContextCommand creates a command for switching to a defined airshipctl context.
+func NewUseContextCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "use-context NAME",
-		Short:   "Switch to a different airshipctl context.",
-		Long:    useContextLong,
+		Short:   "Switch to a different context",
+		Long:    useContextLong[1:],
 		Example: useContextExample,
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

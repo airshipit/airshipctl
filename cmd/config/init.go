@@ -22,19 +22,31 @@ import (
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
-var (
-	configInitLong = "Generate initial configuration files for airshipctl"
+const (
+	initLong = `
+Generate an airshipctl config file and its associated kubeConfig file.
+These files will be written to the $HOME/.airship directory, and will contain
+default configurations.
+
+NOTE: This will overwrite any existing config files in $HOME/.airship
+`
 )
 
-// NewCmdConfigInit returns a Command instance for 'config init' sub command
-func NewCmdConfigInit(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
-	configInitCmd := &cobra.Command{
+// NewInitCommand creates a command for generating default airshipctl config files.
+func NewInitCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+	// TODO(howell): It'd be nice to have a flag to tell
+	// airshipctl where to store the new files.
+	// TODO(howell): Currently, this command overwrites whatever the user
+	// has in their airship directory. We should remove that functionality
+	// as default and provide and optional --overwrite flag.
+	cmd := &cobra.Command{
 		Use:   "init",
-		Short: configInitLong,
+		Short: "Generate initial configuration files for airshipctl",
+		Long:  initLong[1:],
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return rootSettings.Config.PersistConfig()
 		},
 	}
 
-	return configInitCmd
+	return cmd
 }

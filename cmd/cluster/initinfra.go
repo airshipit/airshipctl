@@ -25,20 +25,24 @@ import (
 
 const (
 	// TODO add labels in description, when we have them designed
-	getInitInfraLong = `Deploy initial infrastructure to kubernetes cluster such as ` +
-		`metal3.io, argo, tiller and other manifest documents with appropriate labels`
-	getInitInfraExample = `#deploy infra to cluster
-	airshipctl cluster initinfra`
+	initInfraLong = `
+Deploy initial infrastructure to kubernetes cluster such as
+metal3.io, argo, tiller and other manifest documents with appropriate labels
+`
+	initInfraExample = `
+# Deploy infrastructure to a cluster
+airshipctl cluster initinfra
+`
 )
 
-// NewCmdInitInfra creates a command to deploy initial airship infrastructure
-func NewCmdInitInfra(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+// NewInitInfraCommand creates a command to deploy initial airship infrastructure.
+func NewInitInfraCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	i := initinfra.NewInfra(rootSettings)
 	initinfraCmd := &cobra.Command{
 		Use:     "initinfra",
-		Short:   "deploy initinfra components to cluster",
-		Long:    getInitInfraLong,
-		Example: getInitInfraExample,
+		Short:   "Deploy initinfra components to cluster",
+		Long:    initInfraLong[1:],
+		Example: initInfraExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return i.Run()
 		},
@@ -53,19 +57,19 @@ func addInitinfraFlags(i *initinfra.Infra, cmd *cobra.Command) {
 		&i.DryRun,
 		"dry-run",
 		false,
-		"Don't deliver documents to the cluster, simulate the changes instead")
+		"don't deliver documents to the cluster, simulate the changes instead")
 
 	flags.BoolVar(
 		&i.Prune,
 		"prune",
 		false,
-		`If set to true, command will delete all kubernetes resources that are not`+
+		`if set to true, command will delete all kubernetes resources that are not`+
 			` defined in airship documents and have airshipit.org/deployed=initinfra label`)
 
 	flags.StringVar(
 		&i.ClusterType,
 		"cluster-type",
 		"ephemeral",
-		`Select cluster type to deploy initial infastructure to;`+
+		`select cluster type to deploy initial infrastructure to;`+
 			` currently only ephemeral is supported`)
 }

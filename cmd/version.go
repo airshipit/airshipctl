@@ -22,7 +22,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/util"
 )
 
-// NewVersionCommand prints out the versions of airshipctl and its underlying tools
+// NewVersionCommand creates a command for displaying the version of airshipctl.
 func NewVersionCommand() *cobra.Command {
 	versionCmd := &cobra.Command{
 		Use:   "version",

@@ -73,10 +73,9 @@ func TestSetClusterWithCAFile(t *testing.T) {
 		givenConfig: given,
 		args:        []string{tname},
 		flags: []string{
-			"--" + config.FlagClusterType + "=" + config.Ephemeral,
-			"--" + config.FlagEmbedCerts + "=false",
-			"--" + config.FlagCAFile + "=" + certFile,
-			"--" + config.FlagInsecure + "=false",
+			"--cluster-type=ephemeral",
+			"--certificate-authority=" + certFile,
+			"--insecure-skip-tls-verify=false",
 		},
 		expectedOutput: fmt.Sprintf("Cluster %q of type %q created.\n", testCluster, config.Ephemeral),
 		expectedConfig: expected,
@@ -113,10 +112,10 @@ func TestSetClusterWithCAFileData(t *testing.T) {
 		givenConfig: given,
 		args:        []string{tname},
 		flags: []string{
-			"--" + config.FlagClusterType + "=" + config.Ephemeral,
-			"--" + config.FlagEmbedCerts + "=true",
-			"--" + config.FlagCAFile + "=" + certFile,
-			"--" + config.FlagInsecure + "=false",
+			"--cluster-type=ephemeral",
+			"--embed-certs",
+			"--certificate-authority=" + certFile,
+			"--insecure-skip-tls-verify=false",
 		},
 		expectedOutput: fmt.Sprintf("Cluster %q of type %q created.\n", tname, config.Ephemeral),
 		expectedConfig: expected,
@@ -149,9 +148,8 @@ func TestSetCluster(t *testing.T) {
 		givenConfig: given,
 		args:        []string{tname},
 		flags: []string{
-			"--" + config.FlagClusterType + "=" + config.Ephemeral,
-			"--" + config.FlagAPIServer + "=https://192.168.0.11",
-			"--" + config.FlagInsecure + "=false",
+			"--cluster-type=ephemeral",
+			"--server=https://192.168.0.11",
 		},
 		expectedOutput: fmt.Sprintf("Cluster %q of type %q created.\n", tname, config.Ephemeral),
 		expectedConfig: expected,
@@ -191,8 +189,8 @@ func TestModifyCluster(t *testing.T) {
 		givenConfig: given,
 		args:        []string{tname},
 		flags: []string{
-			"--" + config.FlagClusterType + "=" + config.Ephemeral,
-			"--" + config.FlagAPIServer + "=https://192.168.0.99",
+			"--cluster-type=ephemeral",
+			"--server=https://192.168.0.99",
 		},
 		expectedOutput: fmt.Sprintf("Cluster %q of type %q modified.\n", tname, tctype),
 		expectedConfig: expected,
@@ -204,7 +202,7 @@ func (test setClusterTest) run(t *testing.T) {
 	settings := &environment.AirshipCTLSettings{Config: test.givenConfig}
 	buf := bytes.NewBuffer([]byte{})
 
-	cmd := cmd.NewCmdConfigSetCluster(settings)
+	cmd := cmd.NewSetClusterCommand(settings)
 	cmd.SetOut(buf)
 	cmd.SetArgs(test.args)
 	err := cmd.Flags().Parse(test.flags)
@@ -218,7 +216,7 @@ func (test setClusterTest) run(t *testing.T) {
 	// Loads the Config File that was updated
 	afterRunConf := settings.Config
 	// Get ClusterType
-	tctypeFlag := cmd.Flag(config.FlagClusterType)
+	tctypeFlag := cmd.Flag("cluster-type")
 	require.NotNil(t, tctypeFlag)
 	tctype := tctypeFlag.Value.String()
 

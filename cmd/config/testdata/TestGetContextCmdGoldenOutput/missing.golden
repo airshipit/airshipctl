@@ -1,18 +1,20 @@
 Error: Missing configuration: Context with name 'contextMissing'
 Usage:
-  get-context NAME [flags]
+  get-context [NAME] [flags]
 
 Examples:
-# List all the contexts  airshipctl knows about
+
+# List all contexts
 airshipctl config get-context
 
 # Display the current context
-airshipctl config get-context --current-context
+airshipctl config get-context --current
 
-# Display a specific Context
-airshipctl config get-context e2e
+# Display a specific context
+airshipctl config get-context exampleContext
+
 
 Flags:
-      --current-context   retrieve the current context entry in airshipctl config
-  -h, --help              help for get-context
+      --current   get the current context
+  -h, --help      help for get-context
 

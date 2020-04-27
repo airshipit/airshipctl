@@ -29,8 +29,6 @@ import (
 )
 
 const (
-	currentContextFlag = "--" + config.FlagCurrentContext
-
 	fooContext     = "ContextFoo"
 	barContext     = "ContextBar"
 	bazContext     = "ContextBaz"
@@ -53,31 +51,31 @@ func TestGetContextCmd(t *testing.T) {
 		{
 			Name:    "get-context",
 			CmdLine: fmt.Sprintf("%s", fooContext),
-			Cmd:     cmd.NewCmdConfigGetContext(settings),
+			Cmd:     cmd.NewGetContextCommand(settings),
 		},
 		{
 			Name:    "get-all-contexts",
 			CmdLine: fmt.Sprintf("%s %s", fooContext, barContext),
-			Cmd:     cmd.NewCmdConfigGetContext(settings),
+			Cmd:     cmd.NewGetContextCommand(settings),
 		},
 		// This is not implemented yet
 		{
 			Name:    "get-multiple-contexts",
 			CmdLine: fmt.Sprintf("%s %s", fooContext, barContext),
-			Cmd:     cmd.NewCmdConfigGetContext(settings),
+			Cmd:     cmd.NewGetContextCommand(settings),
 		},
 
 		{
 			Name:    "missing",
 			CmdLine: fmt.Sprintf("%s", missingContext),
-			Cmd:     cmd.NewCmdConfigGetContext(settings),
+			Cmd:     cmd.NewGetContextCommand(settings),
 			Error: fmt.Errorf(`Context %s information was not
 found in the configuration.`, missingContext),
 		},
 		{
 			Name:    "get-current-context",
-			CmdLine: fmt.Sprintf("%s", currentContextFlag),
-			Cmd:     cmd.NewCmdConfigGetContext(settings),
+			CmdLine: "--current",
+			Cmd:     cmd.NewGetContextCommand(settings),
 		},
 	}
 
@@ -91,7 +89,7 @@ func TestNoContextsGetContextCmd(t *testing.T) {
 	cmdTest := &testutil.CmdTest{
 		Name:    "no-contexts",
 		CmdLine: "",
-		Cmd:     cmd.NewCmdConfigGetContext(settings),
+		Cmd:     cmd.NewGetContextCommand(settings),
 	}
 	testutil.RunTest(t, cmdTest)
 }

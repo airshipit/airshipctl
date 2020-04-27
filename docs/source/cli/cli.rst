@@ -19,8 +19,9 @@
 AirshipCTL CLI
 ==============
 
-The AirshipCTL CLI is used in conjunction with the binary created by running ``make build``.  This binary, by default,
-is created in the ``airshipctl/bin/`` directory.
+The AirshipCTL CLI is used in conjunction with the binary created by running
+``make build``.  This binary, by default, is created in the ``airshipctl/bin/``
+directory.
 
 
 CLI Options
@@ -30,15 +31,15 @@ CLI Options
 
 Prints help for a specific command or command group.
 
-**\\-\\-debug** (Optional, default: false)
+**\\-\\-debug** (default: false)
 
 Enables verbose output of commands.
 
-**\\-\\-airshipconf** (Optional, default: `$HOME/.airship/config`)
+**\\-\\-airshipconf** (default: `$HOME/.airship/config`)
 
 Path to file for airshipctl configuration.
 
-**\\-\\-kubeconfig** (Optional, default: `$HOME/.airship/kubeconfig`)
+**\\-\\-kubeconfig** (default: `$HOME/.airship/kubeconfig`)
 
 Path to kubeconfig associated with airshipctl configuration.
 
@@ -67,11 +68,11 @@ Usage:
 Completion
 ----------
 
-Generate autocompletion script for airshipctl for the specified shell (bash or zsh).
+Generate completion script for airshipctl for the specified shell (bash or zsh).
 
 **shell** (Required)
 
-Shell to generate autocompletion script for.  Supported values are `bash` and `zsh`
+Shell to generate completion script for.  Supported values are `bash` and `zsh`
 
 Usage:
 
@@ -82,13 +83,13 @@ Usage:
 Examples
 ^^^^^^^^
 
-This command can generate bash autocompletion. e.g.
+Save shell completion to a file
 
 ::
 
-    $ airshipctl completion bash
+    $ airshipctl completion bash > $HOME/.airship_completions
 
-Which can be sourced as such:
+Apply completions to the current shell
 
 ::
 
@@ -128,22 +129,23 @@ Usage:
 Cluster Group
 =============
 
-Control Kubernetes cluster.
+This command provides capabilities for interacting with a Kubernetes cluster,
+such as getting status and deploying initial infrastructure.
 
 InitInfra
 ------------
 
 Deploy initinfra components to cluster.
 
-**cluster-type** (Optional, default:"ephemeral")
+**cluster-type** (default:"ephemeral")
 
 Select cluster type to deploy initial infrastructure to, currently only ephemeral is supported.
 
-**\\-\\-dry-run** (Optional).
+**\\-\\-dry-run**
 
 Don't deliver documents to the cluster, simulate the changes instead.
 
-**\\-\\-prune** (Optional, default:false)
+**\\-\\-prune** (default: false)
 
 If set to true, command will delete all kubernetes resources that are not defined in airship documents and have
 airshipit.org/deployed=initinfra label
@@ -159,20 +161,20 @@ Usage:
 Config Group
 ============
 
-Modify airshipctl config files
+Manage the airshipctl config file
 
 Get-Cluster
 -----------
 
-Display cluster information.
+Get cluster information from the airshipctl config.
 
 **name** (Optional, default: all defined clusters)
 
-Displays a specific cluster if specified, or if left blank all defined clusters.
+Display a specific cluster or all defined clusters if no name is provided.
 
-**\\-\\-cluster-type** (Required).
+**\\-\\-cluster-type** (Required if **name** is provided).
 
-cluster-type for the cluster-entry in airshipctl config. Currently only ephemeral cluster types are supported.
+The type of the desired cluster. Valid values are from [ephemeral|target].
 
 Usage:
 
@@ -183,7 +185,7 @@ Usage:
 Examples
 ^^^^^^^^
 
-List all the clusters airshipctl knows about:
+List all the clusters:
 
 ::
 
@@ -198,13 +200,13 @@ Display a specific cluster:
 Get-Context
 -----------
 
-Displays context information
+Display information about contexts such as associated manifests, users, and clusters.
 
 **name** (Optional, default: all defined contexts)
 
 Displays a named context, if no name is provided display all defined contexts.
 
-**\\-\\-current-context** (Optional, default:false)
+**\\-\\-current-context** (default: false)
 
 Display the current context, supersedes the `name` argument.
 
@@ -233,43 +235,47 @@ For a named context:
 
 ::
 
-    airshipctl config get-context e2e
+    airshipctl config get-context exampleContext
 
 
 Get-Credentials
 ---------------
 
-Display a user's information.
+Get user credentials from the airshipctl config.
 
 **name** (Optional, default: all defined users)
 
-Display a specific user's information.  If no name is specified, list all defined users.
+Display a specific user's credentials, or all defined user credentials if no name is provided.
 
 Usage:
 
 ::
 
-    airshipctl config get-credentials <NAME>
+    airshipctl config get-credentials <name>
 
 Examples
 ^^^^^^^^
 
-List all the users airshipctl knows about:
+List all user credentials:
 
 ::
 
     airshipctl config get-credentials
 
-Display a specific user's information:
+Display a specific user's credentials:
 
 ::
 
-    airshipctl config get-credentials e2e
+    airshipctl config get-credentials exampleUser
 
 Init
 ----
 
-Generate initial configuration files for airshipctl
+Generate an airshipctl config file and its associated kubeConfig file.
+These files will be written to the $HOME/.airship directory, and will contain
+default configurations.
+
+.. note:: This will overwrite any existing config files in $HOME/.airship
 
 Usage:
 
@@ -280,35 +286,34 @@ Usage:
 Set-Cluster
 -----------
 
-Sets a cluster entry in the airshipctl config.
+Create or modify a cluster in the airshipctl config files.
+
+Since a cluster can be either "ephemeral" or "target", you must specify
+cluster-type when managing clusters.
 
 **name** (Required)
 
-The name of the cluster to add to airshipctl config.
+The name of the cluster to add or modify in the airshipctl config file.
 
-.. note::
+**\\-\\-certificate-authority**
 
-    Specifying a name that already exists will merge new fields on top of existing values for those fields.
-
-**\\-\\-certificate-authority** (Optional)
-
-Path to certificate-authority file for the cluster entry in airshipctl config
+Path to a certificate authority file
 
 **\\-\\-certificate-authority** (Required)
 
-Cluster-type for the cluster entry in airshipctl config
+The type of the cluster to add or modify
 
-**\\-\\-embed-certs** (Optional)
+**\\-\\-embed-certs** (default: false)
 
-Embed-certs for the cluster entry in airshipctl config
+If set, embed the client certificate/key into the cluster
 
-**\\-\\-insecure-skip-tls-verify** (Optional, default:true)
+**\\-\\-insecure-skip-tls-verify** (default: true)
 
-Insecure-skip-tls-verify for the cluster entry in airshipctl config
+If set, disable certificate checking
 
-**\\-\\-server** (Optional)
+**\\-\\-server**
 
-Server for the cluster entry in airshipctl config
+Server to use for the cluster
 
 Usage:
 
@@ -319,62 +324,72 @@ Usage:
 Examples
 ^^^^^^^^
 
-Set only the server field on the e2e cluster entry without touching other values:
+Set the server field on the ephemeral exampleCluster:
 
 ::
 
-    airshipctl config set-cluster e2e --cluster-type=ephemeral --server=https://1.2.3.4
+    airshipctl config set-cluster exampleCluster \
+      --cluster-type=ephemeral \
+      --server=https://1.2.3.4
 
-Embed certificate authority data for the e2e cluster entry:
-
-::
-
-    airshipctl config set-cluster e2e --cluster-type=target --certificate-authority-authority=~/.airship/e2e/kubernetes.ca.crt
-
-Disable cert checking for the dev cluster entry:
+Embed certificate authority data for the target exampleCluster:
 
 ::
 
-    airshipctl config set-cluster e2e --cluster-type=target --insecure-skip-tls-verify=true
+    airshipctl config set-cluster exampleCluster \
+      --cluster-type=target \
+      --client-certificate-authority=$HOME/.airship/ca/kubernetes.ca.crt \
+      --embed-certs
 
-Configure client certificate:
+Disable certificate checking for the target exampleCluster:
 
 ::
 
-    airshipctl config set-cluster e2e --cluster-type=target --embed-certs=true --client-certificate=".airship/cert_file"
+    airshipctl config set-cluster exampleCluster
+      --cluster-type=target \
+      --insecure-skip-tls-verify
+
+Configure client certificate for the target exampleCluster:
+
+::
+
+    airshipctl config set-cluster exampleCluster \
+      --cluster-type=target \
+      --embed-certs \
+      --client-certificate=$HOME/.airship/cert_file
 
 Set-Context
 -----------
 
-Switch to a new context, or update context values in the airshipctl config
+Create or modify a context in the airshipctl config files.
 
 **name** (Required)
 
-The name of the context to set.
+The name of the context to add or modify in the airshipctl config file.
 
-**\\-\\-cluster-string**
+**\\-\\-cluster**
 
-Sets the cluster for the specified context in the airshipctl config.
+Set the cluster for the specified context.
 
 **\\-\\-cluster-type**
 
-Sets the cluster-type for the specified context in the airshipctl config.
+Set the cluster-type for the specified context.
 
 **\\-\\-current**
 
-Use current context from airshipctl config.
+Update the current context.
 
 **\\-\\-manifest**
 
-Sets the manifest for the specified context in the airshipctl config.
+Set the manifest for the specified context.
 
 **\\-\\-namespace**
 
-Sets the namespace for the specified context in the airshipctl config.
+Set the namespace for the specified context.
 
 **\\-\\-user**
 
-Sets the user for the specified context in the airshipctl config.
+Set the user for the specified context.
 
 Usage:
 
@@ -385,63 +400,63 @@ Usage:
 Examples
 ^^^^^^^^
 
-Create a completely new e2e context entry:
+Create a new context named "exampleContext":
 
 ::
 
-    airshipctl config set-context e2e --namespace=kube-system --manifest=manifest --user=auth-info --cluster-type=target
+    airshipctl config set-context exampleContext \
+      --namespace=kube-system \
+      --manifest=exampleManifest \
+      --user=exampleUser
+      --cluster-type=target
 
-Update the current-context to e2e:
-
-::
-
-    airshipctl config set-context e2e
-
-Update attributes of the current-context:
+Update the manifest of the current-context:
 
 ::
 
-    airshipctl config set-context --current --manifest=manifest
+   airshipctl config set-context \
+     --current \
+     --manifest=exampleManifest
 
 
 Set-Credentials
 ---------------
 
-Sets a user entry in the airshipctl config.
+Create or modify a user credential in the airshipctl config file.
+
+.. note:: Specifying more than one authentication method is an error.
 
 **name** (Required)
 
 The user entry to update in airshipctl config.
 
-.. note:: Specifying a name that already exists will merge new fields on top of existing values.
-
 **\\-\\-client-certificate**
 
-Path to client-certificate file for the user entry in airshipctl
+Path to a certificate file.
 
 **\\-\\-client-key**
 
-Path to client-key file for the user entry in airshipctl
+Path to a key file.
 
 **\\-\\-embed-certs**
 
-Embed client cert/key for the user entry in airshipctl
+If set, embed the client certificate/key into the credential.
 
 **\\-\\-password**
 
-Password for the user entry in airshipctl
+Password for the credential
 
 .. note:: Username and Password flags are mutually exclusive with Token flag
 
 **\\-\\-token**
 
-Token for the user entry in airshipctl
+Token to use for the credential
 
 .. note:: Username and Password flags are mutually exclusive with Token flag
 
 **\\-\\-username**
 
-Username for the user entry in airshipctl
+Username for the credential
 
 .. note:: Username and Password flags are mutually exclusive with Token flag
 
@@ -454,23 +469,36 @@ Usage:
 Examples
 ^^^^^^^^
 
-Set only the "client-key" field on the "cluster-admin" entry, without touching other values:
+Create a new user credential with basic auth:
 
 ::
 
-    airshipctl config set-credentials cluster-admin --username=~/.kube/admin.key
+    airshipctl config set-credentials exampleUser \
+      --username=exampleUser \
+      --password=examplePassword
 
-Set basic auth for the "cluster-admin" entry
-
-::
-
-    airshipctl config set-credentials cluster-admin --username=admin --password=uXFGweU9l35qcif
-
-Embed client certificate data in the "cluster-admin" entry
+Change the client-key of a user named admin
 
 ::
 
-    airshipctl config set-credentials cluster-admin --client-certificate=~/.kube/admin.crt --embed-certs=true
+    airshipctl config set-credentials admin \
+      --client-key=$HOME/.kube/admin.key
+
+Change the username and password of the admin user
+
+::
+
+    airshipctl config set-credentials admin \
+      --username=admin \
+      --password=uXFGweU9l35qcif
+
+Embed client certificate data of the admin user
+
+::
+
+    airshipctl config set-credentials admin \
+      --client-certificate=$HOME/.kube/admin.crt \
+      --embed-certs
 
 .. _document-group:
 

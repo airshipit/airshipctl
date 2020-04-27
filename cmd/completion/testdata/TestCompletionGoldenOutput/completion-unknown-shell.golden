@@ -2,6 +2,15 @@ Error: unsupported shell type "fish"
 Usage:
   completion SHELL [flags]
 
+Examples:
+
+# Save shell completion to a file
+airshipctl completion bash > $HOME/.airship_completions
+
+# Apply completions to the current shell
+source <(airshipctl completion bash)
+
+
 Flags:
   -h, --help   help for completion
 

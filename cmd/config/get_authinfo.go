@@ -25,24 +25,29 @@ import (
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
-var (
-	getAuthInfoLong = `Display a specific user's information, or all defined users if no name is provided`
+const (
+	getAuthInfoLong = `
+Display a specific user's credentials, or all defined user
+credentials if no name is provided.
+`
 
-	getAuthInfoExample = `# List all the users airshipctl knows about
+	getAuthInfoExample = `
+# List all user credentials
 airshipctl config get-credentials
 
-# Display a specific user information
-airshipctl config get-credentials e2e`
+# Display a specific user's credentials
+airshipctl config get-credentials exampleUser
+`
 )
 
-// NewCmdConfigGetAuthInfo returns a Command instance for 'config -AuthInfo' sub command
-// An AuthInfo refers to a particular user for a cluster
-func NewCmdConfigGetAuthInfo(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+// NewGetAuthInfoCommand creates a command for viewing the user credentials
+// defined in the airshipctl config file.
+func NewGetAuthInfoCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	o := &config.AuthInfoOptions{}
 	cmd := &cobra.Command{
-		Use:     "get-credentials NAME",
-		Short:   "Gets a user entry from the airshipctl config",
-		Long:    getAuthInfoLong,
+		Use:     "get-credentials [NAME]",
+		Short:   "Get user credentials from the airshipctl config",
+		Long:    getAuthInfoLong[1:],
 		Example: getAuthInfoExample,
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

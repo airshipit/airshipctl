@@ -1,4 +1,4 @@
-pulls documents from remote git repository
+Pulls documents from remote git repository
 
 Usage:
   pull [flags]

@@ -1,26 +1,37 @@
-Sets a user entry in airshipctl config
-Specifying a name that already exists will merge new fields on top of existing values.
+Create or modify a user credential in the airshipctl config file.
+
+Note that specifying more than one authentication method is an error.
 
 Usage:
   set-credentials NAME [flags]
 
 Examples:
 
-# Set only the "client-key" field on the "cluster-admin"
-# entry, without touching other values:
-airshipctl config set-credentials cluster-admin --username=~/.kube/admin.key
+# Create a new user credential with basic auth
+airshipctl config set-credentials exampleUser \
+  --username=exampleUser \
+  --password=examplePassword
 
-# Set basic auth for the "cluster-admin" entry
-airshipctl config set-credentials cluster-admin --username=admin --password=uXFGweU9l35qcif
+# Change the client-key of a user named admin
+airshipctl config set-credentials admin \
+  --client-key=$HOME/.kube/admin.key
 
-# Embed client certificate data in the "cluster-admin" entry
-airshipctl config set-credentials cluster-admin --client-certificate=~/.kube/admin.crt --embed-certs=true
+# Change the username and password of the admin user
+airshipctl config set-credentials admin \
+  --username=admin \
+  --password=uXFGweU9l35qcif
+
+# Embed client certificate data of the admin user
+airshipctl config set-credentials admin \
+  --client-certificate=$HOME/.kube/admin.crt \
+  --embed-certs
+
 
 Flags:
-      --client-certificate string   Path to client-certificate file for the user entry in airshipctl
-      --client-key string           Path to client-key file for the user entry in airshipctl
-      --embed-certs                 Embed client cert/key for the user entry in airshipctl
+      --client-certificate string   path to a certificate
+      --client-key string           path to a key file
+      --embed-certs                 if set, embed the client certificate/key into the credential
   -h, --help                        help for set-credentials
-      --password string             password for the user entry in airshipctl. Mutually exclusive with token flag.
-      --token string                token for the user entry in airshipctl. Mutually exclusive with username and password flags.
-      --username string             username for the user entry in airshipctl. Mutually exclusive with token flag.
+      --password string             password for the credential; mutually exclusive with token flag.
+      --token string                token to use for the credential; mutually exclusive with username and password flags.
+      --username string             username for the credential; mutually exclusive with token flag.

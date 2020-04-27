@@ -49,7 +49,7 @@ func (a *AirshipCTLSettings) InitFlags(cmd *cobra.Command) {
 	defaultAirshipConfigPath := filepath.Join(defaultAirshipConfigDir, config.AirshipConfig)
 	flags.StringVar(
 		&a.AirshipConfigPath,
-		config.FlagConfigFilePath,
+		"airshipconf",
 		"",
 		`Path to file for airshipctl configuration. (default "`+defaultAirshipConfigPath+`")`)
 

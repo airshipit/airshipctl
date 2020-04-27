@@ -1,4 +1,8 @@
-Generate initial configuration files for airshipctl
+Generate an airshipctl config file and its associated kubeConfig file.
+These files will be written to the $HOME/.airship directory, and will contain
+default configurations.
+
+NOTE: This will overwrite any existing config files in $HOME/.airship
 
 Usage:
   init [flags]

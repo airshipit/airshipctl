@@ -26,42 +26,47 @@ import (
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
-var (
+const (
 	setClusterLong = `
-Sets a cluster entry in arshipctl config.
-Specifying a name that already exists will merge new fields on top of existing values for those fields.`
+Create or modify a cluster in the airshipctl config files.
 
-	setClusterExample = fmt.Sprintf(`
-# Set only the server field on the e2e cluster entry without touching other values.
-airshipctl config set-cluster e2e --%v=ephemeral --%v=https://1.2.3.4
+Since a cluster can be either "ephemeral" or "target", you must specify
+cluster-type when managing clusters.
+`
 
-# Embed certificate authority data for the e2e cluster entry
-airshipctl config set-cluster e2e --%v=target --%v-authority=~/.airship/e2e/kubernetes.ca.crt
+	setClusterExample = `
+# Set the server field on the ephemeral exampleCluster
+airshipctl config set-cluster exampleCluster \
+  --cluster-type=ephemeral \
+  --server=https://1.2.3.4
 
-# Disable cert checking for the dev cluster entry
-airshipctl config set-cluster e2e --%v=target --%v=true
+# Embed certificate authority data for the target exampleCluster
+airshipctl config set-cluster exampleCluster \
+  --cluster-type=target \
+  --client-certificate-authority=$HOME/.airship/ca/kubernetes.ca.crt \
+  --embed-certs
 
-# Configure Client Certificate
-airshipctl config set-cluster e2e --%v=target --%v=true --%v=".airship/cert_file"`,
-		config.FlagClusterType,
-		config.FlagAPIServer,
-		config.FlagClusterType,
-		config.FlagCAFile,
-		config.FlagClusterType,
-		config.FlagInsecure,
-		config.FlagClusterType,
-		config.FlagEmbedCerts,
-		config.FlagCertFile)
+# Disable certificate checking for the target exampleCluster
+airshipctl config set-cluster exampleCluster
+  --cluster-type=target \
+  --insecure-skip-tls-verify
+
+# Configure client certificate for the target exampleCluster
+airshipctl config set-cluster exampleCluster \
+  --cluster-type=target \
+  --embed-certs \
+  --client-certificate=$HOME/.airship/cert_file
+`
 )
 
-// NewCmdConfigSetCluster creates a command object for the "set-cluster" action, which
-// defines a new cluster airshipctl config.
-func NewCmdConfigSetCluster(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+// NewSetClusterCommand creates a command for creating and modifying clusters
+// in the airshipctl config file.
+func NewSetClusterCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	o := &config.ClusterOptions{}
 	cmd := &cobra.Command{
 		Use:     "set-cluster NAME",
-		Short:   "Sets a cluster entry in the airshipctl config",
-		Long:    setClusterLong,
+		Short:   "Manage clusters",
+		Long:    setClusterLong[1:],
 		Example: setClusterExample,
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -90,36 +95,36 @@ func addSetClusterFlags(o *config.ClusterOptions, cmd *cobra.Command) {
 
 	flags.StringVar(
 		&o.Server,
-		config.FlagAPIServer,
+		"server",
 		"",
-		config.FlagAPIServer+" for the cluster entry in airshipctl config")
+		"server to use for the cluster")
 
 	flags.StringVar(
 		&o.ClusterType,
-		config.FlagClusterType,
+		"cluster-type",
 		"",
-		config.FlagClusterType+" for the cluster entry in airshipctl config")
+		"the type of the cluster to add or modify")
 
-	err := cmd.MarkFlagRequired(config.FlagClusterType)
+	err := cmd.MarkFlagRequired("cluster-type")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	flags.BoolVar(
 		&o.InsecureSkipTLSVerify,
-		config.FlagInsecure,
+		"insecure-skip-tls-verify",
 		true,
-		config.FlagInsecure+" for the cluster entry in airshipctl config")
+		"if set, disable certificate checking")
 
 	flags.StringVar(
 		&o.CertificateAuthority,
-		config.FlagCAFile,
+		"certificate-authority",
 		"",
-		"Path to "+config.FlagCAFile+" file for the cluster entry in airshipctl config")
+		"path to a certificate authority")
 
 	flags.BoolVar(
 		&o.EmbedCAData,
-		config.FlagEmbedCerts,
+		"embed-certs",
 		false,
-		config.FlagEmbedCerts+" for the cluster entry in airshipctl config")
+		"if set, embed the client certificate/key into the cluster")
 }
