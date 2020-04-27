@@ -1,0 +1,11 @@
+namespace: capi-system
+
+resources:
+- namespace.yaml
+
+bases:
+- ../rbac
+- ../manager
+
+patchesStrategicMerge:
+- manager_role_aggregation_patch.yaml
