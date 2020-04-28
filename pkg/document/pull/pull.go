@@ -19,10 +19,13 @@ import (
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
+// Settings is a reference to environment.AirshipCTLSettings
+// AirshipCTLSettings is a container for all of the settings needed by airshipctl
 type Settings struct {
 	*environment.AirshipCTLSettings
 }
 
+// Pull clones repositories
 func (s *Settings) Pull() error {
 	err := s.cloneRepositories()
 	if err != nil {

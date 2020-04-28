@@ -206,6 +206,7 @@ func (c *DockerContainer) getImageID(url string) (string, error) {
 	return img[0].ID, nil
 }
 
+// GetID returns ID of the container
 func (c *DockerContainer) GetID() string {
 	return c.id
 }

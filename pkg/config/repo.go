@@ -27,6 +27,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/errors"
 )
 
+// Constants for possible repo authentication types
 const (
 	SSHAuth   = "ssh-key"
 	SSHPass   = "ssh-pass"
@@ -43,6 +44,9 @@ func (c *RepoCheckout) String() string {
 	return string(yaml)
 }
 
+// Validate checks for possible values for
+// repository checkout and returns Error for incorrect values
+// returns nil when there are no errors
 func (c *RepoCheckout) Validate() error {
 	possibleValues := []string{c.CommitHash, c.Branch, c.Tag, c.RemoteRef}
 	var count int
@@ -65,6 +69,7 @@ var (
 	AllowedAuthTypes = []string{SSHAuth, SSHPass, HTTPBasic}
 )
 
+// String returns repository authentication details in string format
 func (auth *RepoAuth) String() string {
 	yaml, err := yaml.Marshal(&auth)
 	if err != nil {
@@ -73,6 +78,9 @@ func (auth *RepoAuth) String() string {
 	return string(yaml)
 }
 
+// Validate checks for possible values for
+// repository authentication and returns Error for incorrect values
+// returns nil when there are no errors
 func (auth *RepoAuth) Validate() error {
 	if !stringInSlice(auth.Type, AllowedAuthTypes) {
 		return ErrAuthTypeNotSupported{}
@@ -104,8 +112,7 @@ func stringInSlice(a string, list []string) bool {
 	return false
 }
 
-// Repository functions
-
+// String returns repository details in a string format
 func (repo *Repository) String() string {
 	yaml, err := yaml.Marshal(&repo)
 	if err != nil {
@@ -114,6 +121,9 @@ func (repo *Repository) String() string {
 	return string(yaml)
 }
 
+// Validate check possible values for repository and
+// returns Error when incorrect value is given
+// retruns nill when there are no errors
 func (repo *Repository) Validate() error {
 	if repo.URLString == "" {
 		return ErrRepoSpecRequiresURL{}
@@ -136,6 +146,8 @@ func (repo *Repository) Validate() error {
 	return nil
 }
 
+// ToAuth returns an implementation of transport.AuthMethod for
+// the given auth type to establish an ssh connection
 func (repo *Repository) ToAuth() (transport.AuthMethod, error) {
 	if repo.Auth == nil {
 		return nil, nil
@@ -152,6 +164,9 @@ func (repo *Repository) ToAuth() (transport.AuthMethod, error) {
 	}
 }
 
+// ToCheckoutOptions returns an instance of git.CheckoutOptions with
+// respective values(Branch/Tag/Hash) in checkout options initialized
+// CheckoutOptions describes how a checkout operation should be performed
 func (repo *Repository) ToCheckoutOptions(force bool) *git.CheckoutOptions {
 	co := &git.CheckoutOptions{
 		Force: force,
@@ -168,6 +183,9 @@ func (repo *Repository) ToCheckoutOptions(force bool) *git.CheckoutOptions {
 	return co
 }
 
+// ToCloneOptions returns an instance of git.CloneOptions with
+// authentication and URL set
+// CloneOptions describes how a clone should be performed
 func (repo *Repository) ToCloneOptions(auth transport.AuthMethod) *git.CloneOptions {
 	return &git.CloneOptions{
 		Auth: auth,
@@ -175,10 +193,13 @@ func (repo *Repository) ToCloneOptions(auth transport.AuthMethod) *git.CloneOpti
 	}
 }
 
+// ToFetchOptions returns an instance of git.FetchOptions for given authentication
+// FetchOptions describes how a fetch should be performed
 func (repo *Repository) ToFetchOptions(auth transport.AuthMethod) *git.FetchOptions {
 	return &git.FetchOptions{Auth: auth}
 }
 
+// URL returns the repository URL in a string format
 func (repo *Repository) URL() string {
 	return repo.URLString
 }
