@@ -24,12 +24,17 @@ import (
 func TestBaremetal(t *testing.T) {
 	tests := []*testutil.CmdTest{
 		{
-			Name:    "isogen",
+			Name:    "baremetal-with-help",
+			CmdLine: "-h",
+			Cmd:     baremetal.NewBaremetalCommand(nil),
+		},
+		{
+			Name:    "baremetal-isogen-with-help",
 			CmdLine: "-h",
 			Cmd:     baremetal.NewISOGenCommand(nil),
 		},
 		{
-			Name:    "remotedirect",
+			Name:    "baremetal-remotedirect-with-help",
 			CmdLine: "-h",
 			Cmd:     baremetal.NewRemoteDirectCommand(nil),
 		},

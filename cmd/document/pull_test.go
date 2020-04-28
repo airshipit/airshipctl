@@ -48,14 +48,9 @@ func getDummyAirshipSettings() *environment.AirshipCTLSettings {
 func TestPull(t *testing.T) {
 	cmdTests := []*testutil.CmdTest{
 		{
-			Name:    "document-pull-cmd-with-defaults",
+			Name:    "document-pull-cmd",
 			CmdLine: "",
 			Cmd:     NewPullCommand(getDummyAirshipSettings()),
-		},
-		{
-			Name:    "document-pull-cmd-with-help",
-			CmdLine: "--help",
-			Cmd:     NewPullCommand(nil),
 		},
 	}
 
