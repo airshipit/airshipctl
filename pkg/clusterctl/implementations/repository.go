@@ -12,9 +12,7 @@ import (
 )
 
 const (
-	// TODO Add metadata support. Clusterctl uses repository to read metadata.yaml file
-	// to get clusterctl metadata which is a link between provider version and api version
-	// that it supports, for example v0.3.0 --> v1alpha3
+	metaDataFilePath   = "metadata.yaml"
 	dummyComponentPath = "components.yaml"
 )
 
@@ -57,10 +55,7 @@ func (r *Repository) RootPath() string {
 }
 
 // GetFile returns all kubernetes resources that belong to cluster-api
-// TODO Add metadata support(don't ignore filepath). Clusterctl uses repository to read
-// metadata.yaml file to get clusterctl metadata which is a link between provider version
-// and api version that it supports, for example v0.3.0 --> v1alpha3
-func (r *Repository) GetFile(version string, _ string) ([]byte, error) {
+func (r *Repository) GetFile(version string, filePath string) ([]byte, error) {
 	if version == "latest" {
 		// default should be latest
 		version = r.defaultVersion
@@ -74,10 +69,21 @@ func (r *Repository) GetFile(version string, _ string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	// TODO when clusterctl will have a defined set of expected files in repository
+	// revisit this implementation
+	// metadata.yaml should return a bytes containing clusterctlv1.Metadata or error
+	if filePath == metaDataFilePath {
+		doc, errMeta := bundle.SelectOne(document.NewClusterctlMetadataSelector())
+		if errMeta != nil {
+			return nil, errMeta
+		}
+		return doc.AsYAML()
+	}
 	filteredBundle, err := bundle.SelectBundle(document.NewDeployToK8sSelector())
 	if err != nil {
 		return nil, err
 	}
+
 	buffer := bytes.NewBuffer([]byte{})
 	err = filteredBundle.Write(buffer)
 	if err != nil {

@@ -26,8 +26,12 @@ const (
 	DeployToK8sSelector = "airshipit.org/deploy-k8s notin (False, false)"
 )
 
-// Kinds
+// GVKs
 const (
 	SecretKind        = "Secret"
 	BareMetalHostKind = "BareMetalHost"
+
+	ClusterctlMetadataKind    = "Metadata"
+	ClusterctlMetadataVersion = "v1alpha3"
+	ClusterctlMetadataGroup   = "clusterctl.cluster.x-k8s.io"
 )
