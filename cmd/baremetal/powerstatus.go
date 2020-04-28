@@ -26,13 +26,16 @@ import (
 
 // NewPowerStatusCommand provides a command to retrieve the power status of a baremetal host.
 func NewPowerStatusCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+	var labels string
+	var name string
 	var phase string
+
 	cmd := &cobra.Command{
-		Use:   "powerstatus BAREMETAL_HOST_DOC_NAME",
+		Use:   "powerstatus",
 		Short: "Retrieve the power status of a baremetal host",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			m, err := remote.NewManager(rootSettings, phase, remote.ByName(args[0]))
+			m, err := remote.NewManager(rootSettings, phase, remote.ByLabel(labels), remote.ByName(name))
 			if err != nil {
 				return err
 			}
@@ -52,6 +55,8 @@ func NewPowerStatusCommand(rootSettings *environment.AirshipCTLSettings) *cobra.
 	}
 
 	flags := cmd.Flags()
+	flags.StringVarP(&labels, flagLabel, flagLabelShort, "", flagLabelDescription)
+	flags.StringVarP(&name, flagName, flagNameShort, "", flagNameDescription)
 	flags.StringVar(&phase, flagPhase, config.BootstrapPhase, flagPhaseDescription)
 
 	return cmd

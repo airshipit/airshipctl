@@ -26,13 +26,16 @@ import (
 
 // NewPowerOnCommand provides a command with the capability to power on baremetal hosts.
 func NewPowerOnCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+	var labels string
+	var name string
 	var phase string
+
 	cmd := &cobra.Command{
-		Use:   "poweron BAREMETAL_HOST_DOC_NAME",
+		Use:   "poweron",
 		Short: "Power on a host",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			m, err := remote.NewManager(rootSettings, phase, remote.ByName(args[0]))
+			m, err := remote.NewManager(rootSettings, phase, remote.ByLabel(labels), remote.ByName(name))
 			if err != nil {
 				return err
 			}
@@ -42,7 +45,7 @@ func NewPowerOnCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comm
 					return err
 				}
 
-				fmt.Fprintf(cmd.OutOrStdout(), "Powered on remote host %s\n", args[0])
+				fmt.Fprintf(cmd.OutOrStdout(), "Powered on remote host %s\n", host.HostName)
 			}
 
 			return nil
@@ -50,6 +53,8 @@ func NewPowerOnCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comm
 	}
 
 	flags := cmd.Flags()
+	flags.StringVarP(&labels, flagLabel, flagLabelShort, "", flagLabelDescription)
+	flags.StringVarP(&name, flagName, flagNameShort, "", flagNameDescription)
 	flags.StringVar(&phase, flagPhase, config.BootstrapPhase, flagPhaseDescription)
 
 	return cmd

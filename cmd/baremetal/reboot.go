@@ -26,13 +26,16 @@ import (
 
 // NewRebootCommand provides a command with the capability to reboot baremetal hosts.
 func NewRebootCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+	var labels string
+	var name string
 	var phase string
+
 	cmd := &cobra.Command{
-		Use:   "reboot BAREMETAL_HOST_DOC_NAME",
+		Use:   "reboot",
 		Short: "Reboot a host",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			m, err := remote.NewManager(rootSettings, phase, remote.ByName(args[0]))
+			m, err := remote.NewManager(rootSettings, phase, remote.ByLabel(labels), remote.ByName(name))
 			if err != nil {
 				return err
 			}
@@ -50,6 +53,8 @@ func NewRebootCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comma
 	}
 
 	flags := cmd.Flags()
+	flags.StringVarP(&labels, flagLabel, flagLabelShort, "", flagLabelDescription)
+	flags.StringVarP(&name, flagName, flagNameShort, "", flagNameDescription)
 	flags.StringVar(&phase, flagPhase, config.BootstrapPhase, flagPhaseDescription)
 
 	return cmd
