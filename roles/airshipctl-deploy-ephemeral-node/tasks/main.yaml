@@ -20,8 +20,8 @@
     --kubeconfig {{ airshipctl_config_dir_default | default(ansible_env.HOME) }}/.airship/kubeconfig \
     version
   register: airship_kubecofig_version
-  retries: 50
-  delay: 20
+  retries: 100
+  delay: 50
   until: airship_kubecofig_version.rc == 0
 
 - name: debug kubectl version

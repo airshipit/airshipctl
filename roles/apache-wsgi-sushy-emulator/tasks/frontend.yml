@@ -92,6 +92,11 @@
       url: http://{{ sushy_emulator_frontend_servername }}:{{sushy_emulator_frontend_http_port }}/redfish/v1/Systems?format=json
       method: GET
       return_content: yes
+    register: sushy_get_result
+    until: sushy_get_result.status == 200
+    retries: 18
+    delay: 10
+
   - name: Check with auth
     when: sushy_emulator_frontend_user is defined
     uri:

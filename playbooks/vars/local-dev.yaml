@@ -11,3 +11,8 @@
 # limitations under the License.
 
 remote_work_dir: "/tmp/airship"
+proxy:
+  enabled: "{{ lookup('env', 'USE_PROXY', default='false') }}"
+  http: "{{ lookup('env', 'HTTP_PROXY', default='') }}"
+  https: "{{ lookup('env', 'HTTPS_PROXY', default='') }}"
+  noproxy: "{{ lookup('env', 'NO_PROXY', default='') }}"

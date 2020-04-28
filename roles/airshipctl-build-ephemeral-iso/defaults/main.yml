@@ -11,5 +11,7 @@
 # limitations under the License.
 
 proxy:
+  enabled: false
   http:
+  https:
   noproxy:
