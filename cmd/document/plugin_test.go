@@ -24,11 +24,6 @@ import (
 func TestPlugin(t *testing.T) {
 	cmdTests := []*testutil.CmdTest{
 		{
-			Name:    "document-plugin-cmd-with-help",
-			CmdLine: "--help",
-			Cmd:     NewPluginCommand(nil),
-		},
-		{
 			Name:    "document-plugin-cmd-with-empty-args",
 			CmdLine: "",
 			Error:   fmt.Errorf("requires at least 1 arg(s), only received 0"),

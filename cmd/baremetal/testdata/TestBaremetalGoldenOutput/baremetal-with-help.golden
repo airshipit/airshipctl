@@ -1,0 +1,14 @@
+Perform actions on baremetal hosts
+
+Usage:
+  baremetal [command]
+
+Available Commands:
+  help         Help about any command
+  isogen       Generate baremetal host ISO image
+  remotedirect Bootstrap the ephemeral host
+
+Flags:
+  -h, --help   help for baremetal
+
+Use "baremetal [command] --help" for more information about a command.

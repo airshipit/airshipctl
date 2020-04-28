@@ -24,9 +24,24 @@ import (
 func TestDocument(t *testing.T) {
 	tests := []*testutil.CmdTest{
 		{
+			Name:    "document-with-help",
+			CmdLine: "-h",
+			Cmd:     document.NewDocumentCommand(nil),
+		},
+		{
 			Name:    "document-render-with-help",
 			CmdLine: "-h",
 			Cmd:     document.NewRenderCommand(nil),
+		},
+		{
+			Name:    "document-plugin-with-help",
+			CmdLine: "-h",
+			Cmd:     document.NewPluginCommand(nil),
+		},
+		{
+			Name:    "document-pull-with-help",
+			CmdLine: "-h",
+			Cmd:     document.NewPluginCommand(nil),
 		},
 	}
 	for _, tt := range tests {

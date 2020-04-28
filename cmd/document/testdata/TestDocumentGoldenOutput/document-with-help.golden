@@ -1,0 +1,15 @@
+Manage deployment documents
+
+Usage:
+  document [command]
+
+Available Commands:
+  help        Help about any command
+  plugin      Run as a kustomize exec plugin
+  pull        Pulls documents from remote git repository
+  render      Render documents from model
+
+Flags:
+  -h, --help   help for document
+
+Use "document [command] --help" for more information about a command.
