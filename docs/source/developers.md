@@ -38,10 +38,35 @@ NO_PROXY="localhost,127.0.0.1"
 USE_PROXY=true
 ```
 
-When running the gate scripts in `tools/gate` locally, you will need to add your
+When running the gate scripts in `tools/gate` locally, if you have not set proxy
+information in user's environment or profile then you will need to add your
 proxy information to
-`roles/airshipctl-systemwide-executable/defaults/main.yaml`.
+`playbooks/vars/local-dev.yaml`.
 
+Apart from adding proxy information to playbook, we have to add proxy information
+to site definations documents. For ephemeral iso to pull docker images behind
+proxy, user-data section for ephemeral iso has to be updated in the below file
+`manifests/function/ephemeral/secret.yaml`.
+
+Add the following contents to the file in runcmd section
+```
+    - export http_proxy=http://username:password@host:port
+    - export https_proxy=$http_proxy
+    - export HTTP_PROXY=$http_proxy
+    - export HTTPS_PROXY=$http_proxy
+```
+
+Add the following contents to the file in write_files section
+```
+    - path: /etc/systemd/system/docker.service.d/http-proxy.conf
+      permissions: '0644'
+      owner: root:root
+      content: |
+        [Service]
+        Environment="HTTP_PROXY=http://username:password@host:port"
+        Environment="HTTPS_PROXY=http://username:password@host:port"
+        Environment="NO_PROXY=127.0.0.1,localhost,10.23.25.0/24"
+```
 ## Building airshipctl
 
 The simplest way to get started is:
