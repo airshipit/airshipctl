@@ -35,6 +35,11 @@ func TestNewClusterCommand(t *testing.T) {
 			CmdLine: "--help",
 			Cmd:     cluster.NewClusterCommand(fakeRootSettings),
 		},
+		{
+			Name:    "cluster-init-cmd-with-help",
+			CmdLine: "--help",
+			Cmd:     cluster.NewInitCommand(fakeRootSettings),
+		},
 	}
 	for _, testcase := range tests {
 		testutil.RunTest(t, testcase)
