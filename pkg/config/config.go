@@ -650,8 +650,13 @@ func (c *Config) CurrentContextManifest() (*Manifest, error) {
 
 // CurrentContextEntryPoint returns path to build bundle based on clusterType and phase
 // example CurrentContextEntryPoint("ephemeral", "initinfra")
-func (c *Config) CurrentContextEntryPoint(clusterType string, phase string) (string, error) {
-	err := ValidClusterType(clusterType)
+func (c *Config) CurrentContextEntryPoint(phase string) (string, error) {
+	clusterType, err := c.CurrentContextClusterType()
+	if err != nil {
+		return "", err
+	}
+
+	err = ValidClusterType(clusterType)
 	if err != nil {
 		return "", err
 	}

@@ -114,18 +114,12 @@ func ByName(name string) HostSelector {
 // NewManager provides a manager that exposes the capability to perform remote direct functionality and other
 // out-of-band management on multiple hosts.
 func NewManager(settings *environment.AirshipCTLSettings, phase string, hosts ...HostSelector) (*Manager, error) {
-	configContext, err := settings.Config.GetCurrentContext()
-	if err != nil {
-		return nil, err
-	}
-
 	managementCfg, err := settings.Config.CurrentContextManagementConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	clusterType := configContext.ClusterType()
-	entrypoint, err := settings.Config.CurrentContextEntryPoint(clusterType, phase)
+	entrypoint, err := settings.Config.CurrentContextEntryPoint(phase)
 	if err != nil {
 		return nil, err
 	}

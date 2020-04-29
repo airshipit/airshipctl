@@ -54,7 +54,7 @@ func GenerateBootstrapIso(settings *environment.AirshipCTLSettings) error {
 
 	// TODO (dukov) replace with the appropriate function once it's available
 	// in document module
-	root, err := globalConf.CurrentContextEntryPoint(config.Ephemeral, config.BootstrapPhase)
+	root, err := globalConf.CurrentContextEntryPoint(config.BootstrapPhase)
 	if err != nil {
 		return err
 	}

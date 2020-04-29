@@ -491,9 +491,8 @@ func TestCurrentContextEntryPoint(t *testing.T) {
 	defer cleanup(t)
 
 	clusterName := "def"
-	clusterType := "ephemeral"
 
-	entryPoint, err := conf.CurrentContextEntryPoint(clusterType, defaultString)
+	entryPoint, err := conf.CurrentContextEntryPoint(defaultString)
 	require.Error(t, err)
 	assert.Equal(t, "", entryPoint)
 
@@ -501,7 +500,7 @@ func TestCurrentContextEntryPoint(t *testing.T) {
 	conf.Contexts[currentContextName].Manifest = defaultString
 	conf.Contexts[currentContextName].KubeContext().Cluster = clusterName
 
-	entryPoint, err = conf.CurrentContextEntryPoint(clusterType, defaultString)
+	entryPoint, err = conf.CurrentContextEntryPoint(defaultString)
 	require.NoError(t, err)
 	assert.Nil(t, nil, entryPoint)
 }
