@@ -22,7 +22,7 @@
           - airshipctl-build-ephemeral-iso
           - install-kubectl
           - airshipctl-deploy-ephemeral-node
-          - airshipctl-cluster-initinfra
+          - airshipctl-phase-apply-initinfra
         var_files_default:
           - local-dev.yaml
           - airship-ipam.yaml
