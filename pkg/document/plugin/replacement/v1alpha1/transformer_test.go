@@ -89,7 +89,7 @@ replacements:
     objref:
       kind: Deployment
     fieldrefs:
-    - spec.template.spec.containers[name=nginx-latest].image
+    - spec.template.spec.containers[name=nginx.latest].image
 - source:
     value: postgres:latest
   target:
@@ -112,7 +112,7 @@ spec:
       - image: nginx:1.7.9
         name: nginx-tagged
       - image: nginx:latest
-        name: nginx-latest
+        name: nginx.latest
       - image: foobar:1
         name: replaced-with-digest
       - image: postgres:1.8.0
@@ -137,7 +137,7 @@ spec:
       - image: nginx:1.7.9
         name: nginx-tagged
       - image: nginx:newtag
-        name: nginx-latest
+        name: nginx.latest
       - image: foobar:1
         name: replaced-with-digest
       - image: postgres:latest
@@ -446,6 +446,65 @@ spec:
   non:
     existent:
       field: pod1
+`,
+		},
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: notImportantHere
+replacements:
+- source:
+    objref:
+      kind: Pod
+      name: pod
+    fieldref: spec.containers[0]
+  target:
+    objref:
+      kind: Deployment
+    fieldrefs:
+    - spec.template.spec.containers[name=myapp-container]`,
+			in: `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod
+spec:
+  containers:
+  - name: repl
+    image: repl
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy2
+spec:
+  template:
+    spec:
+      containers:
+      - image: busybox
+        name: myapp-container
+`,
+			expectedOut: `apiVersion: v1
+kind: Pod
+metadata:
+  name: pod
+spec:
+  containers:
+  - image: repl
+    name: repl
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy2
+spec:
+  template:
+    spec:
+      containers:
+      - image: repl
+        name: repl
 `,
 		},
 		{
@@ -781,6 +840,44 @@ spec:
       - image: nginx:latest
         name: nginx-latest`,
 			expectedErr: "pattern 'TAG' is defined in configuration but was not found in target value nginx:latest",
+		},
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: notImportantHere
+replacements:
+- source:
+    value: 12345678
+  target:
+    objref:
+      kind: KubeadmControlPlane
+    fieldrefs:
+    - spec.kubeadmConfigSpec.files[path=konfigadm].content%{k8s-version}%
+`,
+
+			in: `
+kind: KubeadmControlPlane
+metadata:
+  name: cluster-controlplane
+spec:
+  infrastructureTemplate:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+    kind: Metal3MachineTemplate
+    name: $(cluster-name)
+  kubeadmConfigSpec:
+    files:
+    - content: |
+        kubernetes:
+          version: {k8s-version}
+        container_runtime:
+          type: docker
+      owner: root:root
+      path: konfigadm_bug_
+      permissions: "0640"
+`,
+			expectedErr: "unable to find map key 'path' with the value 'konfigadm' in list under 'files' key",
 		},
 	}
 
