@@ -75,7 +75,7 @@
     run: playbooks/airship-airshipctl-test-runner.yaml
     nodeset: airship-airshipctl-single-16GB-bionic-node
     vars:
-      site_name: test-bootstrap
+      site_name: test-site
 ## var files are the files that are located at playbooks/vars directory
       var_files:
         - airship-ipam.yaml
@@ -100,7 +100,7 @@
     run: playbooks/airship-airshipctl-test-runner.yaml
     timeout: 3600
     vars:
-      site_name: test-bootstrap
+      site_name: test-site
       var_files:
         - airship-ipam.yaml
         - test-config.yaml
