@@ -1,0 +1,8 @@
+Power on a host
+
+Usage:
+  poweron BAREMETAL_HOST_DOC_NAME [flags]
+
+Flags:
+  -h, --help           help for poweron
+      --phase string   airshipctl phase that contains the desired baremetal host document(s) (default "bootstrap")

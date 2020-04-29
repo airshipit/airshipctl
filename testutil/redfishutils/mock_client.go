@@ -92,6 +92,19 @@ func (m *MockClient) SystemPowerOff(ctx context.Context) error {
 	return args.Error(0)
 }
 
+// SystemPowerOn provides a stubbed method that can be mocked to test functions that use the
+// Redfish client without making any Redfish API calls or requiring the appropriate Redfish client settings.
+//
+//     Example usage:
+//         client := redfishutils.NewClient()
+//         client.On("SystemPowerOn").Return(<return values>)
+//
+//         err := client.SystemPowerOn(<args>)
+func (m *MockClient) SystemPowerOn(ctx context.Context) error {
+	args := m.Called(ctx)
+	return args.Error(0)
+}
+
 // SystemPowerStatus provides a stubbed method that can be mocked to test functions that use the
 // Redfish client without making any Redfish API calls or requiring the appropriate Redfish client settings.
 //

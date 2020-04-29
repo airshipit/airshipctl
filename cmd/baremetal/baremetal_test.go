@@ -39,6 +39,11 @@ func TestBaremetal(t *testing.T) {
 			Cmd:     baremetal.NewPowerOffCommand(nil),
 		},
 		{
+			Name:    "baremetal-poweron-with-help",
+			CmdLine: "-h",
+			Cmd:     baremetal.NewPowerOnCommand(nil),
+		},
+		{
 			Name:    "baremetal-powerstatus-with-help",
 			CmdLine: "-h",
 			Cmd:     baremetal.NewPowerStatusCommand(nil),

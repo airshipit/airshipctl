@@ -28,8 +28,8 @@ import (
 // functions within client are used by power management commands and remote direct functionality.
 type Client interface {
 	RebootSystem(context.Context) error
-
 	SystemPowerOff(context.Context) error
+	SystemPowerOn(context.Context) error
 
 	// TODO(drewwalters96): Should this be a string forever? We may want to define our own custom type, as the
 	// string format will be client dependent when we add new clients.
