@@ -34,7 +34,9 @@
         - airship-airshipctl-gate-test
     post:
       jobs:
-        - trigger-readthedocs-webhook
         - airship-airshipctl-publish-image
         - airship-airshipctl-upload-git-mirror
         - airship-airshipctl-update-github-issues
+    promote:
+      jobs:
+        - promote-airship-project-docs
