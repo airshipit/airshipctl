@@ -12,7 +12,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
  limitations under the License.
 */
 
-package remote
+package baremetal
 
 import (
 	"fmt"
@@ -24,11 +24,11 @@ import (
 	"opendev.org/airship/airshipctl/pkg/remote"
 )
 
-// NewRebootCommand provides a command with the capability to reboot hosts.
+// NewRebootCommand provides a command with the capability to reboot baremetal hosts.
 func NewRebootCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	var phase string
 	cmd := &cobra.Command{
-		Use:   "reboot SYSTEM_ID",
+		Use:   "reboot BAREMETAL_HOST_DOC_NAME",
 		Short: "Reboot a host",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -42,7 +42,7 @@ func NewRebootCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comma
 					return err
 				}
 
-				fmt.Fprintf(cmd.OutOrStdout(), "Rebooted remote host %s\n", args[0])
+				fmt.Fprintf(cmd.OutOrStdout(), "Rebooted remote host at %s\n", host.HostName)
 			}
 
 			return nil

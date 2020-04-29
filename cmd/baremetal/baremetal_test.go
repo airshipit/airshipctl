@@ -34,6 +34,21 @@ func TestBaremetal(t *testing.T) {
 			Cmd:     baremetal.NewISOGenCommand(nil),
 		},
 		{
+			Name:    "baremetal-poweroff-with-help",
+			CmdLine: "-h",
+			Cmd:     baremetal.NewPowerOffCommand(nil),
+		},
+		{
+			Name:    "baremetal-powerstatus-with-help",
+			CmdLine: "-h",
+			Cmd:     baremetal.NewPowerStatusCommand(nil),
+		},
+		{
+			Name:    "baremetal-reboot-with-help",
+			CmdLine: "-h",
+			Cmd:     baremetal.NewRebootCommand(nil),
+		},
+		{
 			Name:    "baremetal-remotedirect-with-help",
 			CmdLine: "-h",
 			Cmd:     baremetal.NewRemoteDirectCommand(nil),

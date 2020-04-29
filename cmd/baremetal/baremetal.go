@@ -20,6 +20,11 @@ import (
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
+const (
+	flagPhase            = "phase"
+	flagPhaseDescription = "airshipctl phase that contains the desired baremetal host document(s)"
+)
+
 // NewBaremetalCommand creates a new command for interacting with baremetal using airshipctl.
 func NewBaremetalCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	cmd := &cobra.Command{
@@ -29,6 +34,15 @@ func NewBaremetalCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Co
 
 	isoGenCmd := NewISOGenCommand(rootSettings)
 	cmd.AddCommand(isoGenCmd)
+
+	powerOffCmd := NewPowerOffCommand(rootSettings)
+	cmd.AddCommand(powerOffCmd)
+
+	powerStatusCmd := NewPowerStatusCommand(rootSettings)
+	cmd.AddCommand(powerStatusCmd)
+
+	rebootCmd := NewRebootCommand(rootSettings)
+	cmd.AddCommand(rebootCmd)
 
 	remoteDirectCmd := NewRemoteDirectCommand(rootSettings)
 	cmd.AddCommand(remoteDirectCmd)
