@@ -21,6 +21,14 @@ import (
 )
 
 const (
+	flagLabel            = "labels"
+	flagLabelShort       = "l"
+	flagLabelDescription = "Label(s) to filter desired baremetal host documents"
+
+	flagName            = "name"
+	flagNameShort       = "n"
+	flagNameDescription = "Name to filter desired baremetal host document"
+
 	flagPhase            = "phase"
 	flagPhaseDescription = "airshipctl phase that contains the desired baremetal host document(s)"
 )

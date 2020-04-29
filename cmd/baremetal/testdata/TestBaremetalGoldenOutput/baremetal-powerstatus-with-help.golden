@@ -1,8 +1,10 @@
 Retrieve the power status of a baremetal host
 
 Usage:
-  powerstatus BAREMETAL_HOST_DOC_NAME [flags]
+  powerstatus [flags]
 
 Flags:
-  -h, --help           help for powerstatus
-      --phase string   airshipctl phase that contains the desired baremetal host document(s) (default "bootstrap")
+  -h, --help            help for powerstatus
+  -l, --labels string   Label(s) to filter desired baremetal host documents
+  -n, --name string     Name to filter desired baremetal host document
+      --phase string    airshipctl phase that contains the desired baremetal host document(s) (default "bootstrap")

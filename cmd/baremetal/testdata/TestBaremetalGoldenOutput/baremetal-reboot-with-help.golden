@@ -1,8 +1,10 @@
 Reboot a host
 
 Usage:
-  reboot BAREMETAL_HOST_DOC_NAME [flags]
+  reboot [flags]
 
 Flags:
-  -h, --help           help for reboot
-      --phase string   airshipctl phase that contains the desired baremetal host document(s) (default "bootstrap")
+  -h, --help            help for reboot
+  -l, --labels string   Label(s) to filter desired baremetal host documents
+  -n, --name string     Name to filter desired baremetal host document
+      --phase string    airshipctl phase that contains the desired baremetal host document(s) (default "bootstrap")
