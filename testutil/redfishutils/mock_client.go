@@ -40,6 +40,20 @@ func (m *MockClient) NodeID() string {
 	return args.String(0)
 }
 
+// EjectVirtualMedia provides a stubbed method that can be mocked to test functions that use the
+// Redfish client without making any Redfish API calls or requiring the appropriate Redfish client
+// settings.
+//
+//     Example usage:
+//         client := redfishutils.NewClient()
+//         client.On("EjectVirtualMedia").Return(<return values>)
+//
+//         err := client.EjectEphemeralVirtualMedia(<args>)
+func (m *MockClient) EjectVirtualMedia(ctx context.Context) error {
+	args := m.Called()
+	return args.Error(0)
+}
+
 // RebootSystem provides a stubbed method that can be mocked to test functions that use the Redfish client without
 // making any Redfish API calls or requiring the appropriate Redfish client settings.
 //

@@ -27,6 +27,7 @@ import (
 // Client is a set of functions that clients created for out-of-band power management and control should implement. The
 // functions within client are used by power management commands and remote direct functionality.
 type Client interface {
+	EjectVirtualMedia(context.Context) error
 	RebootSystem(context.Context) error
 	SystemPowerOff(context.Context) error
 	SystemPowerOn(context.Context) error

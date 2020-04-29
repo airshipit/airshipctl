@@ -40,6 +40,9 @@ func NewBaremetalCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Co
 		Short: "Perform actions on baremetal hosts",
 	}
 
+	ejectMediaCmd := NewEjectMediaCommand(rootSettings)
+	cmd.AddCommand(ejectMediaCmd)
+
 	isoGenCmd := NewISOGenCommand(rootSettings)
 	cmd.AddCommand(isoGenCmd)
 
