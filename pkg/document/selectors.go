@@ -157,3 +157,10 @@ func NewNetworkDataSelector(bmhDoc Document) (Selector, error) {
 func NewDeployToK8sSelector() Selector {
 	return NewSelector().ByLabel(DeployToK8sSelector)
 }
+
+// NewClusterctlMetadataSelector returns selector to get clusterctl metadata documents
+func NewClusterctlMetadataSelector() Selector {
+	return NewSelector().ByGvk(ClusterctlMetadataGroup,
+		ClusterctlMetadataVersion,
+		ClusterctlMetadataKind)
+}

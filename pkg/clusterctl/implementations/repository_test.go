@@ -6,6 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	versionclient "k8s.io/apimachinery/pkg/util/version"
+	clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
 	"sigs.k8s.io/yaml"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -90,12 +92,14 @@ func TestNewRepository(t *testing.T) {
 
 func TestGetFile(t *testing.T) {
 	tests := []struct {
-		name          string
-		root          string
-		versions      map[string]string
-		expectErr     bool
-		resultVersion string
-		versionToUse  string
+		name           string
+		root           string
+		versions       map[string]string
+		expectErr      bool
+		resultVersion  string
+		versionToUse   string
+		fileToUse      string
+		resultContract string
 	}{
 		{
 			name: "single version",
@@ -149,6 +153,28 @@ func TestGetFile(t *testing.T) {
 			versionToUse: "v1.3.3",
 			expectErr:    true,
 		},
+		{
+			name: "test valid metadata",
+			root: "testdata",
+			versions: map[string]string{
+				"v0.2.3": "functions/2",
+			},
+			expectErr:      false,
+			versionToUse:   "v0.2.3",
+			fileToUse:      "metadata.yaml",
+			resultContract: "v1alpha2",
+		},
+		{
+			name: "test valid metadata",
+			root: "testdata",
+			versions: map[string]string{
+				"v0.2.0": "functions/1",
+			},
+			expectErr:      true,
+			versionToUse:   "v0.2.3",
+			fileToUse:      "metadata.yaml",
+			resultContract: "v1alpha2",
+		},
 	}
 	for _, tt := range tests {
 		root := tt.root
@@ -156,19 +182,26 @@ func TestGetFile(t *testing.T) {
 		resultVersion := tt.resultVersion
 		versionToUse := tt.versionToUse
 		expectErr := tt.expectErr
+		fileToUse := tt.fileToUse
+		resultContract := tt.resultContract
 		t.Run(tt.name, func(t *testing.T) {
 			repo, err := implementations.NewRepository(root, versions)
 			require.NoError(t, err)
-
-			assert.NoError(t, err)
 			assert.NotNil(t, repo)
-			b, err := repo.GetFile(versionToUse, "")
+			b, err := repo.GetFile(versionToUse, fileToUse)
 			if expectErr {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				gotVersion := version(t, b)
-				assert.Equal(t, resultVersion, gotVersion.Spec.Version)
+				if fileToUse == "metadata.yaml" {
+					gotMetdata := metadata(t, b)
+					parsedVersion, err := versionclient.ParseSemantic(versionToUse)
+					require.NoError(t, err)
+					assert.Equal(t, resultContract, gotMetdata.GetReleaseSeriesForVersion(parsedVersion).Contract)
+				} else {
+					gotVersion := version(t, b)
+					assert.Equal(t, resultVersion, gotVersion.Spec.Version)
+				}
 			}
 		})
 	}
@@ -181,6 +214,14 @@ func version(t *testing.T, versionBytes []byte) *Version {
 	err := yaml.Unmarshal(versionBytes, ver)
 	require.NoError(t, err)
 	return ver
+}
+
+func metadata(t *testing.T, metadataBytes []byte) *clusterctlv1.Metadata {
+	t.Helper()
+	m := &clusterctlv1.Metadata{}
+	err := yaml.Unmarshal(metadataBytes, m)
+	require.NoError(t, err)
+	return m
 }
 
 func TestComponentsPath(t *testing.T) {
