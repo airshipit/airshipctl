@@ -27,10 +27,12 @@ type ApplyOptions struct {
 	ApplyOptions *apply.ApplyOptions
 }
 
+// SetDryRun enables/disables the dry run flag in kubectl apply options
 func (ao *ApplyOptions) SetDryRun(dryRun bool) {
 	ao.ApplyOptions.DryRun = dryRun
 }
 
+// SetPrune enables/disables the prune flag in kubectl apply options
 func (ao *ApplyOptions) SetPrune(label string) {
 	if label != "" {
 		ao.ApplyOptions.Prune = true
@@ -45,6 +47,7 @@ func (ao *ApplyOptions) SetSourceFiles(fileNames []string) {
 	ao.ApplyOptions.DeleteOptions.Filenames = fileNames
 }
 
+// Run executes the `apply` command.
 func (ao *ApplyOptions) Run() error {
 	return ao.ApplyOptions.Run()
 }

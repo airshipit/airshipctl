@@ -20,10 +20,15 @@ import (
 	aerror "opendev.org/airship/airshipctl/pkg/errors"
 )
 
+// TODO: This need to be refactored to match the error format used elsewhere in airshipctl
+// Usage of this error should be deprecated as it doesn't provide meaningful feedback to the user.
+
+// GenericError provides general feedback about an error that occurred in a remote operation
 type GenericError struct {
 	aerror.AirshipError
 }
 
+// NewRemoteDirectErrorf retruns formatted remote direct errors
 func NewRemoteDirectErrorf(format string, v ...interface{}) error {
 	e := &GenericError{}
 	e.Message = fmt.Sprintf(format, v...)

@@ -26,6 +26,8 @@ import (
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
+// URLSchemeSeparator holds the separator for URL scheme
+// Example: git+ssh
 const (
 	redfishURLSchemeSeparator = "+"
 )
