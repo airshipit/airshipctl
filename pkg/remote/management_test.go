@@ -24,6 +24,8 @@ import (
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/remote/redfish"
+	redfishdell "opendev.org/airship/airshipctl/pkg/remote/redfish/vendors/dell"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
@@ -105,6 +107,22 @@ func TestNewManagerByLabelNoHostsFound(t *testing.T) {
 
 	_, err := NewManager(settings, config.BootstrapPhase, ByLabel("bad-label=true"))
 	assert.Error(t, err)
+}
+
+func TestNewManagerRedfish(t *testing.T) {
+	cfg := &config.ManagementConfiguration{Type: redfish.ClientType}
+	settings := initSettings(t, withManagementConfig(cfg), withTestDataPath("base"))
+
+	_, err := NewManager(settings, config.BootstrapPhase, ByLabel(document.EphemeralHostSelector))
+	assert.NoError(t, err)
+}
+
+func TestNewManagerRedfishDell(t *testing.T) {
+	cfg := &config.ManagementConfiguration{Type: redfishdell.ClientType}
+	settings := initSettings(t, withManagementConfig(cfg), withTestDataPath("base"))
+
+	_, err := NewManager(settings, config.BootstrapPhase, ByLabel(document.EphemeralHostSelector))
+	assert.NoError(t, err)
 }
 
 func TestNewManagerUnknownRemoteType(t *testing.T) {

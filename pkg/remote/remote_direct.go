@@ -33,7 +33,7 @@ func (b baremetalHost) DoRemoteDirect(settings *environment.AirshipCTLSettings) 
 		return config.ErrMissingConfig{What: "RemoteDirect options not defined in bootstrap config"}
 	}
 
-	log.Debugf("Using ephemeral node %s with BMCAddress %s", b.NodeID(), b.BMCAddress)
+	log.Debugf("Using ephemeral node %s with BMC Address %s", b.NodeID(), b.BMCAddress)
 
 	// Perform remote direct operations
 	if remoteConfig.IsoURL == "" {
