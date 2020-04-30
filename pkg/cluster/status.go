@@ -39,35 +39,35 @@ const (
 // a resource may be in, as well as the Expression used to check for that
 // status.
 type StatusMap struct {
+	client     client.Interface
 	mapping    map[schema.GroupVersionResource]map[Status]Expression
 	restMapper *meta.DefaultRESTMapper
 }
 
-// NewStatusMap creates a StatusMap for a given document bundle. It iterates
-// over all CustomResourceDefinitions that are annotated with the
+// NewStatusMap creates a cluster-wide StatusMap. It iterates over all
+// CustomResourceDefinitions in the cluster that are annotated with the
 // airshipit.org/status-check annotation and creates a mapping from the
 // GroupVersionResource to the various statuses and their associated
 // expressions.
-func NewStatusMap(docBundle document.Bundle) (*StatusMap, error) {
+func NewStatusMap(client client.Interface) (*StatusMap, error) {
 	statusMap := &StatusMap{
+		client:     client,
 		mapping:    make(map[schema.GroupVersionResource]map[Status]Expression),
 		restMapper: meta.NewDefaultRESTMapper([]schema.GroupVersion{}),
 	}
 
-	v1CRDS, err := docBundle.GetByGvk("apiextensions.k8s.io", "v1", "CustomResourceDefinition")
+	crds, err := statusMap.client.ApiextensionsClientSet().
+		ApiextensionsV1().
+		CustomResourceDefinitions().
+		List(metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	// for legacy support
-	v1beta1CRDS, err := docBundle.GetByGvk("apiextensions.k8s.io", "v1beta1", "CustomResourceDefinition")
-	if err != nil {
-		return nil, err
-	}
-
-	crds := append(v1CRDS, v1beta1CRDS...)
-	if err = statusMap.addCRDs(crds); err != nil {
-		return nil, err
+	for _, crd := range crds.Items {
+		if err = statusMap.addCRD(crd); err != nil {
+			return nil, err
+		}
 	}
 
 	return statusMap, nil
@@ -75,7 +75,7 @@ func NewStatusMap(docBundle document.Bundle) (*StatusMap, error) {
 
 // GetStatusForResource iterates over all of the stored conditions for the
 // resource and returns the first status whose conditions are met.
-func (sm *StatusMap) GetStatusForResource(client client.Interface, resource document.Document) (Status, error) {
+func (sm *StatusMap) GetStatusForResource(resource document.Document) (Status, error) {
 	gvk, err := getGVK(resource)
 	if err != nil {
 		return "", err
@@ -87,7 +87,7 @@ func (sm *StatusMap) GetStatusForResource(client client.Interface, resource docu
 	}
 
 	gvr := restMapping.Resource
-	obj, err := client.DynamicClient().Resource(gvr).Namespace(resource.GetNamespace()).
+	obj, err := sm.client.DynamicClient().Resource(gvr).Namespace(resource.GetNamespace()).
 		Get(resource.GetName(), metav1.GetOptions{})
 	if err != nil {
 		return "", err
@@ -109,39 +109,28 @@ func (sm *StatusMap) GetStatusForResource(client client.Interface, resource docu
 	return UnknownStatus, nil
 }
 
-// addCRDs adds the mappings from each crd to their associated statuses.
-func (sm *StatusMap) addCRDs(crdDocs []document.Document) error {
-	for _, crdDoc := range crdDocs {
-		annotations := crdDoc.GetAnnotations()
-		rawStatusChecks, ok := annotations["airshipit.org/status-check"]
-		if !ok {
-			// This crdDoc doesn't have a status-check
-			// annotation, so we should skip it.
-			continue
-		}
-		statusChecks, err := parseStatusChecks(rawStatusChecks)
-		if err != nil {
-			return err
-		}
-
-		jsonData, err := crdDoc.MarshalJSON()
-		if err != nil {
-			return err
-		}
-		var crd apiextensions.CustomResourceDefinition
-		err = json.Unmarshal(jsonData, &crd)
-		if err != nil {
-			return err
-		}
-
-		gvrs := getGVRs(crd)
-		for _, gvr := range gvrs {
-			gvk := gvr.GroupVersion().WithKind(crd.Spec.Names.Kind)
-			gvrSingular := gvr.GroupVersion().WithResource(crd.Spec.Names.Singular)
-			sm.mapping[gvr] = statusChecks
-			sm.restMapper.AddSpecific(gvk, gvr, gvrSingular, meta.RESTScopeNamespace)
-		}
+// addCRD adds the mappings from the CRD to its associated statuses
+func (sm *StatusMap) addCRD(crd apiextensions.CustomResourceDefinition) error {
+	annotations := crd.GetAnnotations()
+	rawStatusChecks, ok := annotations["airshipit.org/status-check"]
+	if !ok {
+		// This crd doesn't have a status-check
+		// annotation, so we should skip it.
+		return nil
 	}
+	statusChecks, err := parseStatusChecks(rawStatusChecks)
+	if err != nil {
+		return err
+	}
+
+	gvrs := getGVRs(crd)
+	for _, gvr := range gvrs {
+		gvk := gvr.GroupVersion().WithKind(crd.Spec.Names.Kind)
+		gvrSingular := gvr.GroupVersion().WithResource(crd.Spec.Names.Singular)
+		sm.mapping[gvr] = statusChecks
+		sm.restMapper.AddSpecific(gvk, gvr, gvrSingular, meta.RESTScopeNamespace)
+	}
+
 	return nil
 }
 
