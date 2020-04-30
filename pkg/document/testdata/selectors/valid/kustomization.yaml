@@ -3,3 +3,4 @@ resources:
  - secret.yaml
  - argo.yaml
  - metadata.yaml
+ - clusterctl.yaml

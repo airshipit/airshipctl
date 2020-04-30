@@ -20,6 +20,8 @@ import (
 
 	"sigs.k8s.io/kustomize/api/resid"
 	"sigs.k8s.io/kustomize/api/types"
+
+	airshipv1 "opendev.org/airship/airshipctl/pkg/clusterctl/api/v1alpha1"
 )
 
 // Selector provides abstraction layer in front of kustomize selector
@@ -163,4 +165,13 @@ func NewClusterctlMetadataSelector() Selector {
 	return NewSelector().ByGvk(ClusterctlMetadataGroup,
 		ClusterctlMetadataVersion,
 		ClusterctlMetadataKind)
+}
+
+// NewClusterctlSelector returns a selector to get document that controls how clusterctl
+// components will be applied
+func NewClusterctlSelector() Selector {
+	return NewSelector().ByGvk(
+		airshipv1.GroupVersionKind.Group,
+		airshipv1.GroupVersionKind.Version,
+		airshipv1.GroupVersionKind.Kind)
 }
