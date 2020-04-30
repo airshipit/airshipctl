@@ -33,7 +33,7 @@ require (
 	k8s.io/kubectl v0.17.3
 	opendev.org/airship/go-redfish v0.0.0-20200318103738-db034d1d753a
 	opendev.org/airship/go-redfish/client v0.0.0-20200318103738-db034d1d753a
-	sigs.k8s.io/cluster-api v0.3.3
+	sigs.k8s.io/cluster-api v0.3.5
 	sigs.k8s.io/kustomize/api v0.3.1
 	sigs.k8s.io/yaml v1.2.0
 )

@@ -1,0 +1,12 @@
+resources:
+ - resources.yaml
+
+generatorOptions:
+ disableNameSuffixHash: true
+
+## this contains a variable that matches a regexp for clusterctl variable subsitution
+## check the regexp here https://github.com/kubernetes-sigs/cluster-api/blob/v0.3.5/cmd/clusterctl/client/repository/components.go#L55
+configMapGenerator:
+- name: ironic-config-files
+  files:
+    - dnsmasq.conf
