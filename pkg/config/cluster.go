@@ -66,22 +66,29 @@ func (c *Cluster) String() string {
 	return fmt.Sprintf("%s\n%s", string(cyaml), string(kyaml))
 }
 
+// PrettyString returns cluster information in a formatted string
 func (c *Cluster) PrettyString() string {
 	clusterName := NewClusterComplexNameFromKubeClusterName(c.NameInKubeconf)
 	return fmt.Sprintf("Cluster: %s\n%s:\n%s", clusterName.Name, clusterName.Type, c)
 }
 
+// KubeCluster returns KubeConfig Cluster Object
 func (c *Cluster) KubeCluster() *api.Cluster {
 	return c.cluster
 }
+
+// SetKubeCluster sets cluster in KubeConfig
 func (c *Cluster) SetKubeCluster(kc *api.Cluster) {
 	c.cluster = kc
 }
 
+// String returns cluster's complex name, formed by combining name and type with a delimiter('_')
 func (c *ClusterComplexName) String() string {
 	return strings.Join([]string{c.Name, c.Type}, AirshipClusterNameSeparator)
 }
 
+// ValidClusterType checks for the possible options for cluster type
+// Returns error when invalid cluster type is given
 func ValidClusterType(clusterType string) error {
 	for _, validType := range AllClusterTypes {
 		if clusterType == validType {

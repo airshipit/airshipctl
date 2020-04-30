@@ -684,6 +684,7 @@ func (c *Config) CurrentContextTargetPath() (string, error) {
 	return ccm.TargetPath, nil
 }
 
+// CurrentContextClusterType returns cluster type of current context
 func (c *Config) CurrentContextClusterType() (string, error) {
 	context, err := c.GetCurrentContext()
 	if err != nil {
@@ -692,6 +693,7 @@ func (c *Config) CurrentContextClusterType() (string, error) {
 	return context.ClusterType(), nil
 }
 
+// CurrentContextClusterName returns cluster name of current context
 func (c *Config) CurrentContextClusterName() (string, error) {
 	context, err := c.GetCurrentContext()
 	if err != nil {
