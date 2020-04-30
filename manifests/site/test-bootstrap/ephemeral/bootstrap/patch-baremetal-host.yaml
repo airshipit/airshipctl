@@ -1,7 +1,0 @@
-apiVersion: metal3.io/v1alpha1
-kind: BareMetalHost
-metadata:
-  name: master-0
-spec:
-  bmc:
-    address: redfish+https://localhost:8443/redfish/v1/Systems/air-ephemeral
