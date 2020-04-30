@@ -12,64 +12,48 @@
  limitations under the License.
 */
 
-package initinfra
+package apply
 
 import (
-	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/k8s/client"
 )
 
-// Infra is an abstraction used to initialize base infrastructure
-type Infra struct {
-	FileSystem   document.FileSystem
+// Options is an abstraction used to apply the phase
+type Options struct {
 	RootSettings *environment.AirshipCTLSettings
 	Client       client.Interface
 
-	DryRun      bool
-	Prune       bool
-	ClusterType string
+	DryRun    bool
+	Prune     bool
+	PhaseName string
 }
 
-// NewInfra return instance of Infra
-func NewInfra(rs *environment.AirshipCTLSettings) *Infra {
+// NewOptions return instance of Options
+func NewOptions(settings *environment.AirshipCTLSettings) *Options {
 	// At this point AirshipCTLSettings may not be fully initialized
-	infra := &Infra{RootSettings: rs}
-	return infra
+	applyOptions := &Options{RootSettings: settings}
+	return applyOptions
 }
 
-// Run intinfra subcommand logic
-func (infra *Infra) Run() error {
-	infra.FileSystem = document.NewDocumentFs()
-	var err error
-	infra.Client, err = client.NewClient(infra.RootSettings)
-	if err != nil {
-		return err
-	}
-	return infra.Deploy()
-}
-
-// Deploy method deploys documents
-func (infra *Infra) Deploy() error {
-	kctl := infra.Client.Kubectl()
+// Run apply subcommand logic
+func (applyOptions *Options) Run() error {
+	kctl := applyOptions.Client.Kubectl()
 	ao, err := kctl.ApplyOptions()
 	if err != nil {
 		return err
 	}
 
-	ao.SetDryRun(infra.DryRun)
-	// If prune is true, set selector for purning
-	if infra.Prune {
-		ao.SetPrune(document.ApplyPhaseSelector + "initinfra")
+	ao.SetDryRun(applyOptions.DryRun)
+	// If prune is true, set selector for pruning
+	if applyOptions.Prune {
+		ao.SetPrune(document.ApplyPhaseSelector + applyOptions.PhaseName)
 	}
 
-	globalConf := infra.RootSettings.Config
-	if err = globalConf.EnsureComplete(); err != nil {
-		return err
-	}
+	globalConf := applyOptions.RootSettings.Config
 
-	kustomizePath, err := globalConf.CurrentContextEntryPoint(config.InitinfraPhase)
+	kustomizePath, err := globalConf.CurrentContextEntryPoint(applyOptions.PhaseName)
 	if err != nil {
 		return err
 	}

@@ -1,0 +1,14 @@
+This command provides capabilities for interacting with phases,
+such as getting list and applying specific one.
+
+Usage:
+  phase [command]
+
+Available Commands:
+  apply       Apply phase to a cluster
+  help        Help about any command
+
+Flags:
+  -h, --help   help for phase
+
+Use "phase [command] --help" for more information about a command.
