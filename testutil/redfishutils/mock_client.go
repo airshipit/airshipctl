@@ -18,6 +18,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	redfishClient "opendev.org/airship/go-redfish/client"
 
+	"opendev.org/airship/airshipctl/pkg/remote/power"
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 )
 
@@ -127,9 +128,14 @@ func (m *MockClient) SystemPowerOn(ctx context.Context) error {
 //         client.On("SystemPowerStatus").Return(<return values>)
 //
 //         err := client.SystemPowerStatus(<args>)
-func (m *MockClient) SystemPowerStatus(ctx context.Context) (string, error) {
+func (m *MockClient) SystemPowerStatus(ctx context.Context) (power.Status, error) {
 	args := m.Called(ctx)
-	return args.String(0), args.Error(1)
+	powerStatus, ok := args.Get(0).(power.Status)
+	if !ok {
+		return power.StatusUnknown, args.Error(2)
+	}
+
+	return powerStatus, args.Error(1)
 }
 
 // NewClient returns a mocked Redfish client in order to test functions that use the Redfish client without making any
