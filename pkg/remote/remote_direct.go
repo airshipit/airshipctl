@@ -18,6 +18,8 @@ import (
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/log"
+
+	"opendev.org/airship/airshipctl/pkg/remote/power"
 )
 
 // DoRemoteDirect bootstraps the ephemeral node.
@@ -36,6 +38,20 @@ func (b baremetalHost) DoRemoteDirect(settings *environment.AirshipCTLSettings) 
 	log.Debugf("Bootstrapping ephemeral host '%s' with ID '%s' and BMC Address '%s'.", b.HostName, b.NodeID(),
 		b.BMCAddress)
 
+	powerStatus, err := b.SystemPowerStatus(b.Context)
+	if err != nil {
+		return err
+	}
+
+	// Power on node if it is off
+	if powerStatus != power.StatusOn {
+		log.Debugf("Ephemeral node has power status '%s'. Attempting to power on.", powerStatus.String())
+		if err = b.SystemPowerOn(b.Context); err != nil {
+			return err
+		}
+	}
+
+	// Perform remote direct operations
 	if remoteConfig.IsoURL == "" {
 		return ErrMissingBootstrapInfoOption{What: "isoURL"}
 	}
