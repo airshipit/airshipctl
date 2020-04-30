@@ -21,7 +21,9 @@ import (
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
+	redfishdell "opendev.org/airship/airshipctl/pkg/remote/redfish/vendors/dell"
 )
 
 // Client is a set of functions that clients created for out-of-band power management and control should implement. The
@@ -167,7 +169,22 @@ func newBaremetalHost(mgmtCfg config.ManagementConfiguration,
 	// Select the client that corresponds to the management type specified in the airshipctl config.
 	switch mgmtCfg.Type {
 	case redfish.ClientType:
+		log.Debug("Remote type: Redfish")
 		ctx, client, err := redfish.NewClient(
+			address,
+			mgmtCfg.Insecure,
+			mgmtCfg.UseProxy,
+			username,
+			password)
+
+		if err != nil {
+			return host, err
+		}
+
+		host = baremetalHost{client, ctx, address, hostDoc.GetName(), username, password}
+	case redfishdell.ClientType:
+		log.Debug("Remote type: Redfish for Integrated Dell Remote Access Controller (iDrac) systems")
+		ctx, client, err := redfishdell.NewClient(
 			address,
 			mgmtCfg.Insecure,
 			mgmtCfg.UseProxy,
