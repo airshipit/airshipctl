@@ -46,4 +46,10 @@ func TestWriteFiles(t *testing.T) {
 	// check if files are readable
 	_, err = ioutil.ReadFile(testFile1)
 	assert.NoError(t, err)
+
+	// test to fail WriteFiles with NonExistent Dir Path
+	testFile3 := filepath.Join("NonExistentDir", "testFile3")
+	fls[testFile3] = dummyData
+	err = util.WriteFiles(fls, 0600)
+	assert.Error(t, err)
 }
