@@ -16,10 +16,7 @@ limitations under the License.
 
 package config
 
-// TODO(howell): Switch to strongly-typed errors
-
 import (
-	"errors"
 	"fmt"
 	"os"
 )
@@ -75,8 +72,7 @@ func (o *AuthInfoOptions) Validate() error {
 	// already had a user/pass and visa-versa. This could create bugs if a
 	// user at first chooses one method, but later switches to another.
 	if o.Token != "" && (o.Username != "" || o.Password != "") {
-		// TODO(howell): strongly type this error
-		return errors.New("you must specify either token or a username/password")
+		return ErrConflictingAuthOptions{}
 	}
 
 	if !o.EmbedCertData {
@@ -98,11 +94,11 @@ func (o *AuthInfoOptions) Validate() error {
 // Error when invalid value or incompatible choice of values given
 func (o *ContextOptions) Validate() error {
 	if !o.Current && o.Name == "" {
-		return errors.New("you must specify a non-empty context name")
+		return ErrEmptyContextName{}
 	}
 
 	if o.Current && o.Name != "" {
-		return errors.New("you cannot specify context and --current Flag at the same time")
+		return ErrConflictingContextOptions{}
 	}
 
 	// If the user simply wants to change the current context, no further validation is needed
@@ -125,7 +121,7 @@ func (o *ContextOptions) Validate() error {
 // Error when invalid value or incompatible choice of values given
 func (o *ClusterOptions) Validate() error {
 	if o.Name == "" {
-		return errors.New("you must specify a non-empty cluster name")
+		return ErrEmptyClusterName{}
 	}
 
 	err := ValidClusterType(o.ClusterType)
@@ -134,7 +130,7 @@ func (o *ClusterOptions) Validate() error {
 	}
 
 	if o.InsecureSkipTLSVerify && o.CertificateAuthority != "" {
-		return errors.New("you cannot specify a certificate-authority and insecure-skip-tls-verify mode at the same time")
+		return ErrConflictingClusterOptions{}
 	}
 
 	if !o.EmbedCAData {

@@ -128,3 +128,44 @@ type ErrMissingPrimaryRepo struct {
 func (e ErrMissingPrimaryRepo) Error() string {
 	return "Current context manifest must have primary repository set"
 }
+
+// ErrConflictingAuthOptions returned in case both token and username/password is set at same time
+type ErrConflictingAuthOptions struct {
+}
+
+func (e ErrConflictingAuthOptions) Error() string {
+	return "you cannot specify token and username/password at the same time"
+}
+
+// ErrConflictingClusterOptions returned when both certificate-authority and
+// insecure-skip-tls-verify is set at same time
+type ErrConflictingClusterOptions struct {
+}
+
+func (e ErrConflictingClusterOptions) Error() string {
+	return "you cannot specify a certificate-authority and insecure-skip-tls-verify mode at the same time"
+}
+
+// ErrEmptyClusterName returned when empty cluster name is set
+type ErrEmptyClusterName struct {
+}
+
+func (e ErrEmptyClusterName) Error() string {
+	return "you must specify a non-empty cluster name"
+}
+
+// ErrConflictingContextOptions returned when both context and --current is set at same time
+type ErrConflictingContextOptions struct {
+}
+
+func (e ErrConflictingContextOptions) Error() string {
+	return "you cannot specify context and --current Flag at the same time"
+}
+
+// ErrEmptyContextName returned when empty context name is set
+type ErrEmptyContextName struct {
+}
+
+func (e ErrEmptyContextName) Error() string {
+	return "you must specify a non-empty context name"
+}
