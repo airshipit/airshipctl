@@ -26,8 +26,9 @@ const (
 
 // Constants related to Phases
 const (
-	InitinfraPhase = "initinfra"
-	BootstrapPhase = "bootstrap"
+	InitinfraPhase  = "initinfra"
+	ClusterctlPhase = InitinfraPhase
+	BootstrapPhase  = "bootstrap"
 )
 
 // AllClusterTypes holds cluster types

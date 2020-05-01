@@ -1,0 +1,22 @@
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Clusterctl
+metadata:
+  labels:
+    airshipit.org/deploy-k8s: "false"
+  name: clusterctl-v1
+init-options: {}
+providers:
+- name: "aws"
+  type: "InfrastructureProvider"
+  url: "/manifests/capi/infra/aws/v0.3.0"
+  clusterctl-repository: true
+- name: "custom-infra"
+  type: "InfrastructureProvider"
+  url: "/manifests/capi/custom-infra/aws/v0.3.0"
+  clusterctl-repository: true
+- name: "custom-airship-infra"
+  type: "InfrastructureProvider"
+  versions:
+    v0.3.1: functions/capi/infrastructure/v0.3.1
+    v0.3.2: functions/capi/infrastructure/v0.3.2
