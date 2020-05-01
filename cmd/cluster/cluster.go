@@ -44,6 +44,7 @@ func NewClusterCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comm
 	}
 
 	clusterRootCmd.AddCommand(NewInitCommand(rootSettings))
+	clusterRootCmd.AddCommand(NewMoveCommand(rootSettings))
 
 	return clusterRootCmd
 }

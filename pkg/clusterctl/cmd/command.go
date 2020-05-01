@@ -55,6 +55,7 @@ func NewCommand(rs *environment.AirshipCTLSettings) (*Command, error) {
 		return nil, err
 	}
 	kubeConfigPath := rs.Config.KubeConfigPath()
+
 	return &Command{
 		kubeconfigPath:    kubeConfigPath,
 		documentRoot:      root,
@@ -93,4 +94,13 @@ func getBundle(conf *config.Config) (document.Bundle, error) {
 		return nil, err
 	}
 	return document.NewBundleByPath(path)
+}
+
+// Move runs clusterctl move
+func (c *Command) Move(toKubeconfigContext string) error {
+	if c.options.MoveOptions != nil {
+		return c.client.Move(c.kubeconfigPath, c.kubeconfigContext,
+			c.kubeconfigPath, toKubeconfigContext, c.options.MoveOptions.Namespace)
+	}
+	return c.client.Move(c.kubeconfigPath, c.kubeconfigContext, c.kubeconfigPath, toKubeconfigContext, "")
 }

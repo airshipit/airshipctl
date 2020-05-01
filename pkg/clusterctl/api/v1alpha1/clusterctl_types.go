@@ -34,6 +34,7 @@ type Clusterctl struct {
 
 	Providers   []*Provider  `json:"providers,omitempty"`
 	InitOptions *InitOptions `json:"init-options,omitempty"`
+	MoveOptions *MoveOptions `json:"move-options,omitempty"`
 }
 
 // Provider is part of clusterctl config
@@ -78,4 +79,10 @@ func (c *Clusterctl) Provider(name string, providerType clusterctlv1.ProviderTyp
 		}
 	}
 	return nil
+}
+
+// MoveOptions carries the options supported by move.
+type MoveOptions struct {
+	// The namespace where the workload cluster is hosted. If unspecified, the target context's namespace is used.
+	Namespace string `json:"namespace,omitempty"`
 }

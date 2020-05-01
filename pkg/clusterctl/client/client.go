@@ -34,12 +34,14 @@ var _ Interface = &Client{}
 // Interface is abstraction to Clusterctl
 type Interface interface {
 	Init(kubeconfigPath, kubeconfigContext string) error
+	Move(fromKubeconfigPath, fromKubeconfigContext, toKubeconfigPath, toKubeconfigContext, namespace string) error
 }
 
 // Client Implements interface to Clusterctl
 type Client struct {
 	clusterctlClient clusterctlclient.Client
 	initOptions      clusterctlclient.InitOptions
+	moveOptions      clusterctlclient.MoveOptions
 }
 
 // NewClient returns instance of clusterctl client

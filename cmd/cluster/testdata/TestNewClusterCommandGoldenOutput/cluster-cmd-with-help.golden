@@ -7,6 +7,7 @@ Usage:
 Available Commands:
   help        Help about any command
   init        Deploy cluster-api provider components
+  move        Move Cluster API objects, provider specific objects and all dependencies to the target cluster
 
 Flags:
   -h, --help   help for cluster
