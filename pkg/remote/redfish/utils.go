@@ -251,3 +251,32 @@ func getBasePath(redfishURL string) (string, error) {
 
 	return baseURL, nil
 }
+
+func (c Client) waitForPowerState(ctx context.Context, desiredState redfishClient.PowerState) error {
+	log.Debugf("Waiting for node '%s' to reach power state '%s'.", c.nodeID, desiredState)
+
+	// Check if number of retries is defined in context
+	totalRetries, ok := ctx.Value(ctxKeyNumRetries).(int)
+	if !ok {
+		totalRetries = systemActionRetries
+	}
+
+	for retry := 0; retry <= totalRetries; retry++ {
+		system, httpResp, err := c.RedfishAPI.GetSystem(ctx, c.NodeID())
+		if err = ScreenRedfishError(httpResp, err); err != nil {
+			return err
+		}
+
+		if system.PowerState == desiredState {
+			log.Debugf("Node '%s' reached power state '%s'.", c.nodeID, desiredState)
+			return nil
+		}
+
+		c.Sleep(systemRebootDelay)
+	}
+
+	return ErrOperationRetriesExceeded{
+		What:    fmt.Sprintf("reach desired power state %s", desiredState),
+		Retries: totalRetries,
+	}
+}

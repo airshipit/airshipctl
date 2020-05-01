@@ -46,7 +46,7 @@ type ErrOperationRetriesExceeded struct {
 }
 
 func (e ErrOperationRetriesExceeded) Error() string {
-	return fmt.Sprintf("operation %s failed. Maximum retries (%d) exceeded", e.What, e.Retries)
+	return fmt.Sprintf("Unable to %s. Maximum retries (%d) exceeded.", e.What, e.Retries)
 }
 
 // ErrUnrecognizedRedfishResponse is a debug error that describes unexpected formats in a Redfish error response.

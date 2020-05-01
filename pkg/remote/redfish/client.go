@@ -117,30 +117,6 @@ func (c *Client) EjectVirtualMedia(ctx context.Context) error {
 
 // RebootSystem power cycles a host by sending a shutdown signal followed by a power on signal.
 func (c *Client) RebootSystem(ctx context.Context) error {
-	waitForPowerState := func(desiredState redfishClient.PowerState) error {
-		// Check if number of retries is defined in context
-		totalRetries, ok := ctx.Value(ctxKeyNumRetries).(int)
-		if !ok {
-			totalRetries = systemActionRetries
-		}
-
-		for retry := 0; retry <= totalRetries; retry++ {
-			system, httpResp, err := c.RedfishAPI.GetSystem(ctx, c.nodeID)
-			if err = ScreenRedfishError(httpResp, err); err != nil {
-				return err
-			}
-			if system.PowerState == desiredState {
-				log.Debugf("Node '%s' reached power state '%s'.", c.nodeID, desiredState)
-				return nil
-			}
-			c.Sleep(systemRebootDelay)
-		}
-		return ErrOperationRetriesExceeded{
-			What:    fmt.Sprintf("reboot system %s", c.nodeID),
-			Retries: totalRetries,
-		}
-	}
-
 	log.Debugf("Rebooting node '%s': powering off.", c.nodeID)
 	resetReq := redfishClient.ResetRequestBody{}
 
@@ -153,7 +129,7 @@ func (c *Client) RebootSystem(ctx context.Context) error {
 	}
 
 	// Check that node is powered off
-	if err = waitForPowerState(redfishClient.POWERSTATE_OFF); err != nil {
+	if err = c.waitForPowerState(ctx, redfishClient.POWERSTATE_OFF); err != nil {
 		return err
 	}
 
@@ -168,7 +144,7 @@ func (c *Client) RebootSystem(ctx context.Context) error {
 	}
 
 	// Check that node is powered on and return
-	return waitForPowerState(redfishClient.POWERSTATE_ON)
+	return c.waitForPowerState(ctx, redfishClient.POWERSTATE_ON)
 }
 
 // SetBootSourceByType sets the boot source of the ephemeral node to one that's compatible with the boot
@@ -246,8 +222,11 @@ func (c *Client) SystemPowerOff(ctx context.Context) error {
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 
 	_, httpResp, err := c.RedfishAPI.ResetSystem(ctx, c.nodeID, resetReq)
+	if err = ScreenRedfishError(httpResp, err); err != nil {
+		return err
+	}
 
-	return ScreenRedfishError(httpResp, err)
+	return c.waitForPowerState(ctx, redfishClient.POWERSTATE_OFF)
 }
 
 // SystemPowerOn powers on a host.
@@ -256,8 +235,11 @@ func (c *Client) SystemPowerOn(ctx context.Context) error {
 	resetReq.ResetType = redfishClient.RESETTYPE_ON
 
 	_, httpResp, err := c.RedfishAPI.ResetSystem(ctx, c.nodeID, resetReq)
+	if err = ScreenRedfishError(httpResp, err); err != nil {
+		return err
+	}
 
-	return ScreenRedfishError(httpResp, err)
+	return c.waitForPowerState(ctx, redfishClient.POWERSTATE_ON)
 }
 
 // SystemPowerStatus retrieves the power status of a host as a human-readable string.
