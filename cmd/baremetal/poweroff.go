@@ -45,7 +45,7 @@ func NewPowerOffCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Com
 					return err
 				}
 
-				fmt.Fprintf(cmd.OutOrStdout(), "Remote host %s powered off\n", host.HostName)
+				fmt.Fprintf(cmd.OutOrStdout(), "Powered off host '%s'.\n", host.HostName)
 			}
 
 			return nil

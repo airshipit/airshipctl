@@ -12,7 +12,7 @@
 
 - name: deploy ephemeral node using redfish
   command: >-
-    airshipctl baremetal remotedirect
+    airshipctl baremetal remotedirect --debug
 
 - name: check kubectl version
   command: >-

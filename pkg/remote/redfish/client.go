@@ -94,6 +94,8 @@ func (c *Client) EjectVirtualMedia(ctx context.Context) error {
 		}
 
 		if *vMediaMgr.Inserted == true {
+			log.Debugf("'%s' has virtual media inserted. Attempting to eject.", vMediaMgr.Name)
+
 			var emptyBody map[string]interface{}
 			_, httpResp, err = c.RedfishAPI.EjectVirtualMedia(ctx, managerID, mediaID, emptyBody)
 			if err = ScreenRedfishError(httpResp, err); err != nil {
@@ -124,6 +126,7 @@ func (c *Client) RebootSystem(ctx context.Context) error {
 				return err
 			}
 			if system.PowerState == desiredState {
+				log.Debugf("Node '%s' reached power state '%s'.", c.nodeID, desiredState)
 				return nil
 			}
 			time.Sleep(systemRebootDelay)
@@ -134,12 +137,14 @@ func (c *Client) RebootSystem(ctx context.Context) error {
 		}
 	}
 
+	log.Debugf("Rebooting node '%s': powering off.", c.nodeID)
 	resetReq := redfishClient.ResetRequestBody{}
 
 	// Send PowerOff request
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 	_, httpResp, err := c.RedfishAPI.ResetSystem(ctx, c.nodeID, resetReq)
 	if err = ScreenRedfishError(httpResp, err); err != nil {
+		log.Debugf("Failed to reboot node '%s': shutdown failure.", c.nodeID)
 		return err
 	}
 
@@ -148,10 +153,13 @@ func (c *Client) RebootSystem(ctx context.Context) error {
 		return err
 	}
 
+	log.Debugf("Rebooting node '%s': powering on.", c.nodeID)
+
 	// Send PowerOn request
 	resetReq.ResetType = redfishClient.RESETTYPE_ON
 	_, httpResp, err = c.RedfishAPI.ResetSystem(ctx, c.nodeID, resetReq)
 	if err = ScreenRedfishError(httpResp, err); err != nil {
+		log.Debugf("Failed to reboot node '%s': startup failure.", c.nodeID)
 		return err
 	}
 
@@ -167,6 +175,8 @@ func (c *Client) SetBootSourceByType(ctx context.Context) error {
 		return err
 	}
 
+	log.Debugf("Setting boot device to '%s'.", vMediaType)
+
 	// Retrieve system information, containing available boot sources
 	system, _, err := c.RedfishAPI.GetSystem(ctx, c.nodeID)
 	if err != nil {
@@ -180,7 +190,12 @@ func (c *Client) SetBootSourceByType(ctx context.Context) error {
 			systemReq := redfishClient.ComputerSystem{}
 			systemReq.Boot.BootSourceOverrideTarget = bootSource
 			_, httpResp, err := c.RedfishAPI.SetSystem(ctx, c.nodeID, systemReq)
-			return ScreenRedfishError(httpResp, err)
+			if err = ScreenRedfishError(httpResp, err); err != nil {
+				return err
+			}
+
+			log.Debug("Successfully set boot device.")
+			return nil
 		}
 	}
 
@@ -190,6 +205,7 @@ func (c *Client) SetBootSourceByType(ctx context.Context) error {
 // SetVirtualMedia injects a virtual media device to an established virtual media ID. This assumes that isoPath is
 // accessible to the redfish server and virtualMedia device is either of type CD or DVD.
 func (c *Client) SetVirtualMedia(ctx context.Context, isoPath string) error {
+	log.Debugf("Inserting virtual media '%s'.", isoPath)
 	// Eject all previously-inserted media
 	if err := c.EjectVirtualMedia(ctx); err != nil {
 		return err
@@ -212,7 +228,12 @@ func (c *Client) SetVirtualMedia(ctx context.Context, isoPath string) error {
 	vMediaReq.Inserted = true
 	_, httpResp, err := c.RedfishAPI.InsertVirtualMedia(ctx, managerID, vMediaID, vMediaReq)
 
-	return ScreenRedfishError(httpResp, err)
+	if err = ScreenRedfishError(httpResp, err); err != nil {
+		return err
+	}
+
+	log.Debug("Successfully set virtual media.")
+	return nil
 }
 
 // SystemPowerOff shuts down a host.

@@ -110,6 +110,7 @@ func DecodeRawError(rawResponse []byte) (string, error) {
 func GetManagerID(ctx context.Context, api redfishAPI.RedfishAPI, systemID string) (string, error) {
 	system, httpResp, err := api.GetSystem(ctx, systemID)
 	if err = ScreenRedfishError(httpResp, err); err != nil {
+		log.Debugf("Unable to find manager for node '%s'.", systemID)
 		return "", err
 	}
 
@@ -144,6 +145,7 @@ func IsIDInList(idRefList []redfishClient.IdRef, id string) bool {
 
 // GetVirtualMediaID retrieves the ID of a Redfish virtual media resource if it supports type "CD" or "DVD".
 func GetVirtualMediaID(ctx context.Context, api redfishAPI.RedfishAPI, systemID string) (string, string, error) {
+	log.Debug("Searching for compatible media types.")
 	managerID, err := GetManagerID(ctx, api, systemID)
 	if err != nil {
 		return "", "", err
@@ -165,12 +167,15 @@ func GetVirtualMediaID(ctx context.Context, api redfishAPI.RedfishAPI, systemID 
 
 		for _, mediaType := range vMedia.MediaTypes {
 			if mediaType == "CD" || mediaType == "DVD" {
+				log.Debugf("Found virtual media type '%s' with ID '%s' on manager '%s'.", mediaType,
+					mediaID, managerID)
 				return mediaID, mediaType, nil
 			}
 		}
 	}
 
-	return "", "", ErrRedfishClient{Message: "Unable to find virtual media with type CD or DVD"}
+	return "", "", ErrRedfishClient{Message: fmt.Sprintf("Manager '%s' does not have virtual media type CD or DVD.",
+		managerID)}
 }
 
 // ScreenRedfishError provides a detailed error message for end user consumption by inspecting all Redfish client

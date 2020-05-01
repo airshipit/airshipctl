@@ -45,7 +45,7 @@ func NewPowerOnCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comm
 					return err
 				}
 
-				fmt.Fprintf(cmd.OutOrStdout(), "Powered on remote host %s\n", host.HostName)
+				fmt.Fprintf(cmd.OutOrStdout(), "Powered on host '%s'.\n", host.HostName)
 			}
 
 			return nil

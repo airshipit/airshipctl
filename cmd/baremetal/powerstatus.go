@@ -46,8 +46,8 @@ func NewPowerStatusCommand(rootSettings *environment.AirshipCTLSettings) *cobra.
 					return err
 				}
 
-				fmt.Fprintf(cmd.OutOrStdout(), "Remote host %s has power status: %s\n", host.HostName,
-					powerStatus)
+				fmt.Fprintf(cmd.OutOrStdout(), "Host '%s' has power status: '%s'\n",
+					host.HostName, powerStatus)
 			}
 
 			return nil

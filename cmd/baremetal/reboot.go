@@ -45,7 +45,7 @@ func NewRebootCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comma
 					return err
 				}
 
-				fmt.Fprintf(cmd.OutOrStdout(), "Rebooted remote host at %s\n", host.HostName)
+				fmt.Fprintf(cmd.OutOrStdout(), "Rebooted host '%s'.\n", host.HostName)
 			}
 
 			return nil
