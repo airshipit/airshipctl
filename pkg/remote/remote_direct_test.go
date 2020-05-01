@@ -22,6 +22,7 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/remote/power"
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 	"opendev.org/airship/airshipctl/testutil/redfishutils"
 )
@@ -69,6 +70,7 @@ func TestDoRemoteDirectMissingISOURL(t *testing.T) {
 	assert.NoError(t, err)
 
 	rMock.On("NodeID").Times(1).Return(systemID)
+	rMock.On("SystemPowerStatus", ctx).Times(1).Return(power.StatusOn, nil)
 
 	ephemeralHost := baremetalHost{
 		rMock,
@@ -91,6 +93,37 @@ func TestDoRemoteDirectRedfish(t *testing.T) {
 	assert.NoError(t, err)
 
 	rMock.On("NodeID").Times(1).Return(systemID)
+	rMock.On("SystemPowerStatus", ctx).Times(1).Return(power.StatusOn, nil)
+	rMock.On("SetVirtualMedia", ctx, isoURL).Times(1).Return(nil)
+	rMock.On("SetBootSourceByType", ctx).Times(1).Return(nil)
+	rMock.On("NodeID").Times(1).Return(systemID)
+	rMock.On("RebootSystem", ctx).Times(1).Return(nil)
+
+	ephemeralHost := baremetalHost{
+		rMock,
+		ctx,
+		redfishURL,
+		"doc-name",
+		username,
+		password,
+	}
+
+	cfg := &config.RemoteDirect{
+		IsoURL: isoURL,
+	}
+
+	settings := initSettings(t, withRemoteDirectConfig(cfg), withTestDataPath("base"))
+	err = ephemeralHost.DoRemoteDirect(settings)
+	assert.NoError(t, err)
+}
+
+func TestDoRemoteDirectRedfishNodePoweredOff(t *testing.T) {
+	ctx, rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
+	assert.NoError(t, err)
+
+	rMock.On("NodeID").Times(1).Return(systemID)
+	rMock.On("SystemPowerStatus", ctx).Times(1).Return(power.StatusOff, nil)
+	rMock.On("SystemPowerOn", ctx).Times(1).Return(nil)
 	rMock.On("SetVirtualMedia", ctx, isoURL).Times(1).Return(nil)
 	rMock.On("SetBootSourceByType", ctx).Times(1).Return(nil)
 	rMock.On("NodeID").Times(1).Return(systemID)
@@ -121,6 +154,7 @@ func TestDoRemoteDirectRedfishVirtualMediaError(t *testing.T) {
 	expectedErr := redfish.ErrRedfishClient{Message: "Unable to set virtual media."}
 
 	rMock.On("NodeID").Times(1).Return(systemID)
+	rMock.On("SystemPowerStatus", ctx).Times(1).Return(power.StatusOn, nil)
 	rMock.On("SetVirtualMedia", ctx, isoURL).Times(1).Return(expectedErr)
 	rMock.On("SetBootSourceByType", ctx).Times(1).Return(nil)
 	rMock.On("NodeID").Times(1).Return(systemID)
@@ -151,6 +185,7 @@ func TestDoRemoteDirectRedfishBootSourceError(t *testing.T) {
 	assert.NoError(t, err)
 
 	rMock.On("NodeID").Times(1).Return(systemID)
+	rMock.On("SystemPowerStatus", ctx).Times(1).Return(power.StatusOn, nil)
 	rMock.On("SetVirtualMedia", ctx, isoURL).Times(1).Return(nil)
 
 	expectedErr := redfish.ErrRedfishClient{Message: "Unable to set boot source."}
@@ -183,6 +218,7 @@ func TestDoRemoteDirectRedfishRebootError(t *testing.T) {
 	assert.NoError(t, err)
 
 	rMock.On("NodeID").Times(1).Return(systemID)
+	rMock.On("SystemPowerStatus", ctx).Times(1).Return(power.StatusOn, nil)
 	rMock.On("SetVirtualMedia", ctx, isoURL).Times(1).Return(nil)
 	rMock.On("SetVirtualMedia", ctx, isoURL).Times(1).Return(nil)
 	rMock.On("SetBootSourceByType", ctx).Times(1).Return(nil)
