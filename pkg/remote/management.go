@@ -78,14 +78,17 @@ func ByLabel(label string) HostSelector {
 			return document.ErrDocNotFound{Selector: selector}
 		}
 
+		var matchingHosts []baremetalHost
 		for _, doc := range docs {
 			host, err := newBaremetalHost(mgmtCfg, doc, docBundle)
 			if err != nil {
 				return err
 			}
 
-			a.Hosts = append(a.Hosts, host)
+			matchingHosts = append(matchingHosts, host)
 		}
+
+		a.Hosts = reconcileHosts(a.Hosts, matchingHosts...)
 
 		return nil
 	}
@@ -105,7 +108,7 @@ func ByName(name string) HostSelector {
 			return err
 		}
 
-		a.Hosts = append(a.Hosts, host)
+		a.Hosts = reconcileHosts(a.Hosts, host)
 
 		return nil
 	}
@@ -201,4 +204,26 @@ func newBaremetalHost(mgmtCfg config.ManagementConfiguration,
 	}
 
 	return host, nil
+}
+
+// reconcileHosts produces the intersection of two baremetal host arrays.
+func reconcileHosts(existingHosts []baremetalHost, newHosts ...baremetalHost) []baremetalHost {
+	if len(existingHosts) == 0 {
+		return newHosts
+	}
+
+	// Create a map of host document names for efficient filtering
+	hostMap := make(map[string]bool)
+	for _, host := range existingHosts {
+		hostMap[host.HostName] = true
+	}
+
+	var reconciledHosts []baremetalHost
+	for _, host := range newHosts {
+		if _, exists := hostMap[host.HostName]; exists {
+			reconciledHosts = append(reconciledHosts, host)
+		}
+	}
+
+	return reconciledHosts
 }
