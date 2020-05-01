@@ -18,6 +18,7 @@ import (
 	"context"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -118,6 +119,8 @@ func TestEjectVirtualMedia(t *testing.T) {
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
+	// Mock out the Sleep function so we don't have to wait on it
+	client.Sleep = func(_ time.Duration) {}
 
 	err = client.EjectVirtualMedia(ctx)
 	assert.NoError(t, err)
@@ -155,6 +158,8 @@ func TestEjectVirtualMediaRetriesExceeded(t *testing.T) {
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
+	// Mock out the Sleep function so we don't have to wait on it
+	client.Sleep = func(_ time.Duration) {}
 
 	err = client.EjectVirtualMedia(ctx)
 	_, ok := err.(ErrOperationRetriesExceeded)
@@ -187,6 +192,8 @@ func TestRebootSystem(t *testing.T) {
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
+	// Mock out the Sleep function so we don't have to wait on it
+	client.Sleep = func(_ time.Duration) {}
 
 	err = client.RebootSystem(ctx)
 	assert.NoError(t, err)
@@ -210,6 +217,8 @@ func TestRebootSystemShutdownError(t *testing.T) {
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
+	// Mock out the Sleep function so we don't have to wait on it
+	client.Sleep = func(_ time.Duration) {}
 
 	err = client.RebootSystem(ctx)
 	_, ok := err.(ErrRedfishClient)
@@ -245,6 +254,8 @@ func TestRebootSystemStartupError(t *testing.T) {
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
+	// Mock out the Sleep function so we don't have to wait on it
+	client.Sleep = func(_ time.Duration) {}
 
 	err = client.RebootSystem(ctx)
 	_, ok := err.(ErrRedfishClient)
@@ -273,6 +284,8 @@ func TestRebootSystemTimeout(t *testing.T) {
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
+	// Mock out the Sleep function so we don't have to wait on it
+	client.Sleep = func(_ time.Duration) {}
 
 	err = client.RebootSystem(ctx)
 	assert.Equal(t, ErrOperationRetriesExceeded{What: "reboot system System.Embedded.1", Retries: 1}, err)
@@ -293,6 +306,8 @@ func TestSetBootSourceByTypeGetSystemError(t *testing.T) {
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
+	// Mock out the Sleep function so we don't have to wait on it
+	client.Sleep = func(_ time.Duration) {}
 
 	err = client.SetBootSourceByType(ctx)
 	assert.Error(t, err)
@@ -318,6 +333,8 @@ func TestSetBootSourceByTypeSetSystemError(t *testing.T) {
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
+	// Mock out the Sleep function so we don't have to wait on it
+	client.Sleep = func(_ time.Duration) {}
 
 	err = client.SetBootSourceByType(ctx)
 	assert.Error(t, err)
@@ -347,6 +364,8 @@ func TestSetBootSourceByTypeBootSourceUnavailable(t *testing.T) {
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
+	// Mock out the Sleep function so we don't have to wait on it
+	client.Sleep = func(_ time.Duration) {}
 
 	err = client.SetBootSourceByType(ctx)
 	_, ok := err.(ErrRedfishClient)
@@ -393,6 +412,8 @@ func TestSetVirtualMediaEjectExistingMedia(t *testing.T) {
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
+	// Mock out the Sleep function so we don't have to wait on it
+	client.Sleep = func(_ time.Duration) {}
 
 	err = client.SetVirtualMedia(ctx, isoPath)
 	assert.NoError(t, err)
@@ -430,6 +451,8 @@ func TestSetVirtualMediaEjectExistingMediaFailure(t *testing.T) {
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
+	// Mock out the Sleep function so we don't have to wait on it
+	client.Sleep = func(_ time.Duration) {}
 
 	err = client.SetVirtualMedia(ctx, isoPath)
 	assert.Error(t, err)
@@ -449,6 +472,8 @@ func TestSetVirtualMediaGetSystemError(t *testing.T) {
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
+	// Mock out the Sleep function so we don't have to wait on it
+	client.Sleep = func(_ time.Duration) {}
 
 	err = client.SetVirtualMedia(ctx, isoPath)
 	assert.Error(t, err)
@@ -480,6 +505,8 @@ func TestSetVirtualMediaInsertVirtualMediaError(t *testing.T) {
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
+	// Mock out the Sleep function so we don't have to wait on it
+	client.Sleep = func(_ time.Duration) {}
 
 	err = client.SetVirtualMedia(ctx, isoPath)
 	_, ok := err.(ErrRedfishClient)
