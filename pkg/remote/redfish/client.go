@@ -24,6 +24,7 @@ import (
 	redfishClient "opendev.org/airship/go-redfish/client"
 
 	"opendev.org/airship/airshipctl/pkg/log"
+	"opendev.org/airship/airshipctl/pkg/remote/power"
 )
 
 // contextKey is used by the redfish package as a unique key type in order to prevent collisions
@@ -257,13 +258,24 @@ func (c *Client) SystemPowerOn(ctx context.Context) error {
 }
 
 // SystemPowerStatus retrieves the power status of a host as a human-readable string.
-func (c *Client) SystemPowerStatus(ctx context.Context) (string, error) {
+func (c *Client) SystemPowerStatus(ctx context.Context) (power.Status, error) {
 	computerSystem, httpResp, err := c.RedfishAPI.GetSystem(ctx, c.nodeID)
 	if err = ScreenRedfishError(httpResp, err); err != nil {
-		return "", err
+		return power.StatusUnknown, err
 	}
 
-	return string(computerSystem.PowerState), nil
+	switch computerSystem.PowerState {
+	case redfishClient.POWERSTATE_ON:
+		return power.StatusOn, nil
+	case redfishClient.POWERSTATE_OFF:
+		return power.StatusOff, nil
+	case redfishClient.POWERSTATE_POWERING_ON:
+		return power.StatusPoweringOn, nil
+	case redfishClient.POWERSTATE_POWERING_OFF:
+		return power.StatusPoweringOff, nil
+	default:
+		return power.StatusUnknown, nil
+	}
 }
 
 // NewClient returns a client with the capability to make Redfish requests.

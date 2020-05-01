@@ -22,6 +22,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/log"
+	"opendev.org/airship/airshipctl/pkg/remote/power"
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 	redfishdell "opendev.org/airship/airshipctl/pkg/remote/redfish/vendors/dell"
 )
@@ -30,17 +31,12 @@ import (
 // functions within client are used by power management commands and remote direct functionality.
 type Client interface {
 	EjectVirtualMedia(context.Context) error
+	NodeID() string
 	RebootSystem(context.Context) error
+	SetBootSourceByType(context.Context) error
 	SystemPowerOff(context.Context) error
 	SystemPowerOn(context.Context) error
-
-	// TODO(drewwalters96): Should this be a string forever? We may want to define our own custom type, as the
-	// string format will be client dependent when we add new clients.
-	SystemPowerStatus(context.Context) (string, error)
-
-	NodeID() string
-
-	SetBootSourceByType(context.Context) error
+	SystemPowerStatus(context.Context) (power.Status, error)
 
 	// TODO(drewwalters96): This function is tightly coupled to Redfish. It should be combined with the
 	// SetBootSource operation and removed from the client interface.
