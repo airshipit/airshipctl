@@ -31,6 +31,7 @@ const (
 	toAuthTestName           = "ToAuth"
 	toAuthNilTestName        = "ToAuthNil"
 	ToFetchOptionsTestName   = "ToFetchOptions"
+	ToCloneOptionsTestName   = "ToCloneOptions"
 	toAuthNilError           = "toAuthNilError"
 	URLTestName              = "URLTest"
 	StringTestData           = `test-data:
@@ -147,6 +148,11 @@ var (
 			dataMapEntry: []string{"no-auth"},
 			expectedNil:  false,
 		},
+		ToCloneOptionsTestName: {
+			expectError:  false,
+			dataMapEntry: []string{"http-basic-auth", "ssh-key-auth", "no-auth", "empty-checkout"},
+			expectedNil:  false,
+		},
 		URLTestName: {
 			expectError:  false,
 			expectedNil:  false,
@@ -253,12 +259,18 @@ func TestToCloneOptions(t *testing.T) {
 	err := yaml.Unmarshal([]byte(StringTestData), data)
 	require.NoError(t, err)
 
-	testCase := TestCaseMap[ToFetchOptionsTestName]
+	testCase := TestCaseMap[ToCloneOptionsTestName]
 
 	for _, name := range testCase.dataMapEntry {
 		repo := data.TestData[name]
 		require.NotNil(t, repo)
-		assert.NotNil(t, repo.ToCloneOptions(nil))
+		cl := repo.ToCloneOptions(nil)
+		if testCase.expectedNil {
+			assert.Nil(t, cl)
+		} else {
+			assert.NotNil(t, cl)
+			assert.NoError(t, cl.Validate())
+		}
 	}
 }
 

@@ -21,13 +21,11 @@ import (
 	"testing"
 
 	fixtures "github.com/go-git/go-git-fixtures/v4"
-
-	repo2 "opendev.org/airship/airshipctl/pkg/document/repo"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/document/repo"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/util"
 	"opendev.org/airship/airshipctl/testutil"
@@ -45,82 +43,97 @@ func TestPull(t *testing.T) {
 	require := require.New(t)
 	assert := assert.New(t)
 
-	t.Run("cloneRepositories", func(t *testing.T) {
-		dummyPullSettings := getDummyPullSettings()
-		currentManifest, err := dummyPullSettings.Config.CurrentContextManifest()
-		require.NoError(err)
-
-		fx := fixtures.Basic().One()
-
-		dummyGitDir := fx.DotGit().Root()
-		currentManifest.Repositories = map[string]*config.Repository{currentManifest.PrimaryRepositoryName: {
-			URLString: dummyGitDir,
-			CheckoutOptions: &config.RepoCheckout{
+	tests := []struct {
+		name         string
+		url          string
+		checkoutOpts *config.RepoCheckout
+		error        error
+	}{
+		{
+			name: "TestCloneRepositoriesValidOpts",
+			checkoutOpts: &config.RepoCheckout{
 				Branch:        "master",
 				ForceCheckout: false,
 			},
-			Auth: &config.RepoAuth{
-				Type: "http-basic",
-			},
+			error: nil,
 		},
-		}
-
-		tmpDir, cleanup := testutil.TempDir(t, "airshipctlPullTest-")
-		defer cleanup(t)
-
-		currentManifest.TargetPath = tmpDir
-
-		_, err = repo2.NewRepository(".", currentManifest.Repositories[currentManifest.PrimaryRepositoryName])
-		require.NoError(err)
-
-		err = dummyPullSettings.cloneRepositories()
-
-		require.NoError(err)
-		dummyRepoDirName := util.GitDirNameFromURL(dummyGitDir)
-		assert.FileExists(path.Join(tmpDir, dummyRepoDirName, "go/example.go"))
-		assert.FileExists(path.Join(tmpDir, dummyRepoDirName, ".git/HEAD"))
-		contents, err := ioutil.ReadFile(path.Join(tmpDir, dummyRepoDirName, ".git/HEAD"))
-		require.NoError(err)
-		assert.Equal("ref: refs/heads/master", strings.TrimRight(string(contents), "\t \n"))
-	})
-
-	t.Run("Pull", func(t *testing.T) {
-		dummyPullSettings := getDummyPullSettings()
-		conf := dummyPullSettings.AirshipCTLSettings.Config
-
-		fx := fixtures.Basic().One()
-
-		mfst := conf.Manifests["dummy_manifest"]
-		dummyGitDir := fx.DotGit().Root()
-		mfst.Repositories = map[string]*config.Repository{
-			mfst.PrimaryRepositoryName: {
-				URLString: dummyGitDir,
-				CheckoutOptions: &config.RepoCheckout{
-					Branch:        "master",
-					ForceCheckout: false,
-				},
-				Auth: &config.RepoAuth{
-					Type: "http-basic",
-				},
+		{
+			name:  "TestCloneRepositoriesMissingCheckoutOptions",
+			error: nil,
+		},
+		{
+			name: "TestCloneRepositoriesNonMasterBranch",
+			checkoutOpts: &config.RepoCheckout{
+				Branch:        "branch",
+				ForceCheckout: false,
 			},
-		}
-		dummyPullSettings.Config = conf
+			error: nil,
+		},
+		{
+			name: "TestCloneRepositoriesInvalidOpts",
+			checkoutOpts: &config.RepoCheckout{
+				Branch:        "master",
+				Tag:           "someTag",
+				ForceCheckout: false,
+			},
+			error: config.ErrMutuallyExclusiveCheckout{},
+		},
+	}
+	dummyPullSettings := getDummyPullSettings()
+	currentManifest, err := dummyPullSettings.Config.CurrentContextManifest()
+	require.NoError(err)
 
-		tmpDir, cleanup := testutil.TempDir(t, "airshipctlPullTest-")
-		defer cleanup(t)
+	testGitURL := fixtures.Basic().One().URL
+	dirNameFromURL := util.GitDirNameFromURL(testGitURL)
+	globalTmpDir, cleanup := testutil.TempDir(t, "airshipctlCloneTest-")
+	defer cleanup(t)
 
-		mfst.TargetPath = tmpDir
+	for _, tt := range tests {
+		tmpDir := path.Join(globalTmpDir, tt.name)
+		expectedErr := tt.error
+		chkOutOpts := tt.checkoutOpts
+		t.Run(tt.name, func(t *testing.T) {
+			currentManifest.Repositories = map[string]*config.Repository{
+				currentManifest.PrimaryRepositoryName: {
+					URLString:       testGitURL,
+					CheckoutOptions: chkOutOpts,
+					Auth: &config.RepoAuth{
+						Type: "http-basic",
+					},
+				},
+			}
 
-		err := dummyPullSettings.Pull()
-		require.NoError(err)
+			currentManifest.TargetPath = tmpDir
 
-		dummyRepoDirName := util.GitDirNameFromURL(dummyGitDir)
-		assert.FileExists(path.Join(tmpDir, dummyRepoDirName, "go/example.go"))
-		assert.FileExists(path.Join(tmpDir, dummyRepoDirName, ".git/HEAD"))
-		contents, err := ioutil.ReadFile(path.Join(tmpDir, dummyRepoDirName, ".git/HEAD"))
-		require.NoError(err)
-		assert.Equal("ref: refs/heads/master", strings.TrimRight(string(contents), "\t \n"))
-	})
+			_, err = repo.NewRepository(
+				".",
+				currentManifest.Repositories[currentManifest.PrimaryRepositoryName],
+			)
+			require.NoError(err)
 
+			err = dummyPullSettings.Pull()
+			if expectedErr != nil {
+				assert.NotNil(err)
+				assert.Equal(expectedErr, err)
+			} else {
+				require.NoError(err)
+				assert.FileExists(path.Join(currentManifest.TargetPath, dirNameFromURL, "go/example.go"))
+				assert.FileExists(path.Join(currentManifest.TargetPath, dirNameFromURL, ".git/HEAD"))
+				contents, err := ioutil.ReadFile(path.Join(currentManifest.TargetPath, dirNameFromURL, ".git/HEAD"))
+				require.NoError(err)
+				if chkOutOpts == nil {
+					assert.Equal(
+						"ref: refs/heads/master",
+						strings.TrimRight(string(contents), "\t \n"),
+					)
+				} else {
+					assert.Equal(
+						"ref: refs/heads/"+chkOutOpts.Branch,
+						strings.TrimRight(string(contents), "\t \n"),
+					)
+				}
+			}
+		})
+	}
 	testutil.CleanUpGitFixtures(t)
 }
