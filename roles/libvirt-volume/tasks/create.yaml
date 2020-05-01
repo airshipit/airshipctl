@@ -55,8 +55,8 @@
   register: libvirt_create_volume
   failed_when:
     - "libvirt_create_volume.rc != 0"
-    - "'exists already' not in libvirt_create_volume.stderr"
-    - "'exists already' not in libvirt_create_volume.stdout"
+    - "'exists already' in libvirt_create_volume.stderr"
+    - "'exists already' in libvirt_create_volume.stdout"
   changed_when:
     - "libvirt_create_volume.rc != 1"
     - "'exists already' not in libvirt_create_volume.stderr"
