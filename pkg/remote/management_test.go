@@ -102,6 +102,13 @@ func TestNewManagerByNameNoHostFound(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestNewManagerNoSelectors(t *testing.T) {
+	settings := initSettings(t, withTestDataPath("base"))
+
+	_, err := NewManager(settings, config.BootstrapPhase)
+	assert.Error(t, err)
+}
+
 func TestNewManagerByLabelNoHostsFound(t *testing.T) {
 	settings := initSettings(t, withTestDataPath("base"))
 

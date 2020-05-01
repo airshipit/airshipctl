@@ -146,6 +146,10 @@ func NewManager(settings *environment.AirshipCTLSettings, phase string, hosts ..
 		}
 	}
 
+	if len(manager.Hosts) == 0 {
+		return manager, ErrNoHostsFound{}
+	}
+
 	return manager, nil
 }
 

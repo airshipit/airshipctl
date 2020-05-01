@@ -17,6 +17,8 @@ package baremetal_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"opendev.org/airship/airshipctl/cmd/baremetal"
 	"opendev.org/airship/airshipctl/testutil"
 )
@@ -68,4 +70,19 @@ func TestBaremetal(t *testing.T) {
 	for _, tt := range tests {
 		testutil.RunTest(t, tt)
 	}
+}
+
+func TestGetHostSelectionsOneSelector(t *testing.T) {
+	selectors := baremetal.GetHostSelections("node0", "")
+	assert.Len(t, selectors, 1)
+}
+
+func TestGetHostSelectionsBothSelectors(t *testing.T) {
+	selectors := baremetal.GetHostSelections("node0", "airshipit.org/ephemeral-node=true")
+	assert.Len(t, selectors, 2)
+}
+
+func TestGetHostSelectionsNone(t *testing.T) {
+	selectors := baremetal.GetHostSelections("", "")
+	assert.Len(t, selectors, 0)
 }

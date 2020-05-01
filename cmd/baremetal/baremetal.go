@@ -18,6 +18,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/remote"
 )
 
 const (
@@ -62,4 +63,19 @@ func NewBaremetalCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Co
 	cmd.AddCommand(remoteDirectCmd)
 
 	return cmd
+}
+
+// getHostSelections builds a list of selectors that can be passed to a manager using the name and label flags passed to
+// airshipctl.
+func GetHostSelections(name string, labels string) []remote.HostSelector {
+	var selectors []remote.HostSelector
+	if name != "" {
+		selectors = append(selectors, remote.ByName(name))
+	}
+
+	if labels != "" {
+		selectors = append(selectors, remote.ByLabel(labels))
+	}
+
+	return selectors
 }

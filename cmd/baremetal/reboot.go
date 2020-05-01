@@ -35,7 +35,8 @@ func NewRebootCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comma
 		Short: "Reboot a host",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			m, err := remote.NewManager(rootSettings, phase, remote.ByLabel(labels), remote.ByName(name))
+			selectors := GetHostSelections(name, labels)
+			m, err := remote.NewManager(rootSettings, phase, selectors...)
 			if err != nil {
 				return err
 			}

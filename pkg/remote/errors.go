@@ -56,3 +56,10 @@ type ErrMissingBootstrapInfoOption struct {
 func (e ErrMissingBootstrapInfoOption) Error() string {
 	return fmt.Sprintf("missing bootstrapInfo option: %s", e.What)
 }
+
+// ErrNoHostsFound is an error that indicates that no hosts matched the selection criteria passed to a manager.
+type ErrNoHostsFound struct{}
+
+func (e ErrNoHostsFound) Error() string {
+	return "no hosts selected"
+}
