@@ -22,7 +22,7 @@ import (
 
 var (
 	debug      = false
-	airshipLog = log.New(os.Stderr, "", log.LstdFlags)
+	airshipLog = log.New(os.Stderr, "[airshipctl] ", log.LstdFlags)
 )
 
 // Init initializes settings related to logging
