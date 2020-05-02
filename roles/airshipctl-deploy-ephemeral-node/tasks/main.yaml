@@ -27,3 +27,26 @@
 - name: debug kubectl version
   debug:
     var: airship_kubecofig_version.stdout
+
+- name: Wait for all control pods to be created
+  command: >-
+    kubectl get po -n kube-system --selector tier=control-plane \
+    --kubeconfig {{ airshipctl_config_dir_default | default(ansible_env.HOME) }}/.airship/kubeconfig \
+    --output=jsonpath='{.items[*].metadata.name}'
+  register: control_pods_created
+  until: item in control_pods_created.stdout
+  retries: 10
+  delay: 30
+  with_items:
+    - etcd
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+
+- name: Wait for control pods become ready
+  command: >-
+    kubectl wait -n kube-system --for=condition=Ready pods --selector tier=control-plane --timeout=600s \
+    --kubeconfig {{ airshipctl_config_dir_default | default(ansible_env.HOME) }}/.airship/kubeconfig \
+  register: control_pods_ready
+
+- debug: var=control_pods_ready.stdout_lines
