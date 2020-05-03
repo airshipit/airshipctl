@@ -1,3 +1,17 @@
+/*
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     https://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+*/
+
 package implementations
 
 import (
@@ -60,12 +74,14 @@ func (r *Repository) GetFile(version string, filePath string) ([]byte, error) {
 		// default should be latest
 		version = r.defaultVersion
 	}
+
 	path, ok := r.versions[version]
 	if !ok {
 		return nil, ErrVersionNotDefined{Version: version}
 	}
-
-	bundle, err := document.NewBundleByPath(filepath.Join(r.root, path))
+	kustomizePath := filepath.Join(r.root, path)
+	log.Debugf("Building cluster-api provider component documents from kustomize path at %s", kustomizePath)
+	bundle, err := document.NewBundleByPath(kustomizePath)
 	if err != nil {
 		return nil, err
 	}
@@ -101,8 +117,9 @@ func NewRepository(root string, versions map[string]string) (repository.Reposito
 		availableSemVersion, err := version.ParseSemantic(ver)
 		if err != nil {
 			// ignore and delete version if we can't parse it.
-			log.Debugf(`Invalid version %s in repository versions map %q, ignoring it. Version must obey the syntax,
-semantics of the "Semantic Versioning" specification (http://semver.org/)`, ver, versions)
+			fmtMsg := "Invalid version %s in repository versions map %q, ignoring it. " +
+				"Version must obey the the Semantic Versioning specification (http://semver.org/)"
+			log.Debugf(fmtMsg, ver, versions)
 			// delete the version so actual version list is clean
 			delete(versions, ver)
 			continue
