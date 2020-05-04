@@ -22,10 +22,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	redfishMocks "opendev.org/airship/go-redfish/api/mocks"
 	redfishClient "opendev.org/airship/go-redfish/client"
 
+	"opendev.org/airship/airshipctl/pkg/remote/power"
 	testutil "opendev.org/airship/airshipctl/testutil/redfishutils/helpers"
 )
 
@@ -511,4 +513,135 @@ func TestSetVirtualMediaInsertVirtualMediaError(t *testing.T) {
 	err = client.SetVirtualMedia(ctx, isoPath)
 	_, ok := err.(ErrRedfishClient)
 	assert.True(t, ok)
+}
+
+func TestSystemPowerStatusUnknown(t *testing.T) {
+	m := &redfishMocks.RedfishAPI{}
+	defer m.AssertExpectations(t)
+
+	ctx, client, err := NewClient(redfishURL, false, false, "", "")
+	require.NoError(t, err)
+
+	client.nodeID = nodeID
+
+	var unknownState redfishClient.PowerState = "unknown"
+	m.On("GetSystem", ctx, client.nodeID).Return(
+		redfishClient.ComputerSystem{PowerState: unknownState},
+		&http.Response{StatusCode: 200},
+		redfishClient.GenericOpenAPIError{})
+
+	client.RedfishAPI = m
+
+	status, err := client.SystemPowerStatus(ctx)
+	require.NoError(t, err)
+
+	assert.Equal(t, power.StatusUnknown, status)
+}
+
+func TestSystemPowerStatusOn(t *testing.T) {
+	m := &redfishMocks.RedfishAPI{}
+	defer m.AssertExpectations(t)
+
+	ctx, client, err := NewClient(redfishURL, false, false, "", "")
+	require.NoError(t, err)
+
+	client.nodeID = nodeID
+
+	m.On("GetSystem", ctx, client.nodeID).Return(
+		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_ON},
+		&http.Response{StatusCode: 200},
+		redfishClient.GenericOpenAPIError{})
+
+	client.RedfishAPI = m
+
+	status, err := client.SystemPowerStatus(ctx)
+	require.NoError(t, err)
+
+	assert.Equal(t, power.StatusOn, status)
+}
+
+func TestSystemPowerStatusOff(t *testing.T) {
+	m := &redfishMocks.RedfishAPI{}
+	defer m.AssertExpectations(t)
+
+	ctx, client, err := NewClient(redfishURL, false, false, "", "")
+	require.NoError(t, err)
+
+	client.nodeID = nodeID
+
+	m.On("GetSystem", ctx, client.nodeID).Return(
+		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_OFF},
+		&http.Response{StatusCode: 200},
+		redfishClient.GenericOpenAPIError{})
+
+	client.RedfishAPI = m
+
+	status, err := client.SystemPowerStatus(ctx)
+	require.NoError(t, err)
+
+	assert.Equal(t, power.StatusOff, status)
+}
+
+func TestSystemPowerStatusPoweringOn(t *testing.T) {
+	m := &redfishMocks.RedfishAPI{}
+	defer m.AssertExpectations(t)
+
+	ctx, client, err := NewClient(redfishURL, false, false, "", "")
+	require.NoError(t, err)
+
+	client.nodeID = nodeID
+
+	m.On("GetSystem", ctx, client.nodeID).Return(
+		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_POWERING_ON},
+		&http.Response{StatusCode: 200},
+		redfishClient.GenericOpenAPIError{})
+
+	client.RedfishAPI = m
+
+	status, err := client.SystemPowerStatus(ctx)
+	require.NoError(t, err)
+
+	assert.Equal(t, power.StatusPoweringOn, status)
+}
+
+func TestSystemPowerStatusPoweringOff(t *testing.T) {
+	m := &redfishMocks.RedfishAPI{}
+	defer m.AssertExpectations(t)
+
+	ctx, client, err := NewClient(redfishURL, false, false, "", "")
+	require.NoError(t, err)
+
+	client.nodeID = nodeID
+
+	m.On("GetSystem", ctx, client.nodeID).Return(
+		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_POWERING_OFF},
+		&http.Response{StatusCode: 200},
+		redfishClient.GenericOpenAPIError{})
+
+	client.RedfishAPI = m
+
+	status, err := client.SystemPowerStatus(ctx)
+	require.NoError(t, err)
+
+	assert.Equal(t, power.StatusPoweringOff, status)
+}
+
+func TestSystemPowerStatusGetSystemError(t *testing.T) {
+	m := &redfishMocks.RedfishAPI{}
+	defer m.AssertExpectations(t)
+
+	ctx, client, err := NewClient(redfishURL, false, false, "", "")
+	require.NoError(t, err)
+
+	client.nodeID = nodeID
+
+	m.On("GetSystem", ctx, client.nodeID).Return(
+		redfishClient.ComputerSystem{},
+		&http.Response{StatusCode: 500},
+		redfishClient.GenericOpenAPIError{})
+
+	client.RedfishAPI = m
+
+	_, err = client.SystemPowerStatus(ctx)
+	assert.Error(t, err)
 }
