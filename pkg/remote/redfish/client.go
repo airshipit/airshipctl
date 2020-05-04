@@ -44,6 +44,9 @@ type Client struct {
 	nodeID     string
 	RedfishAPI redfishAPI.RedfishAPI
 	RedfishCFG *redfishClient.Configuration
+
+	// Sleep is meant to be mocked out for tests
+	Sleep func(d time.Duration)
 }
 
 // NodeID retrieves the ephemeral node ID.
@@ -130,7 +133,7 @@ func (c *Client) RebootSystem(ctx context.Context) error {
 				log.Debugf("Node '%s' reached power state '%s'.", c.nodeID, desiredState)
 				return nil
 			}
-			time.Sleep(systemRebootDelay)
+			c.Sleep(systemRebootDelay)
 		}
 		return ErrOperationRetriesExceeded{
 			What:    fmt.Sprintf("reboot system %s", c.nodeID),
@@ -341,6 +344,9 @@ func NewClient(redfishURL string,
 		nodeID:     systemID,
 		RedfishAPI: redfishClient.NewAPIClient(cfg).DefaultApi,
 		RedfishCFG: cfg,
+		Sleep: func(d time.Duration) {
+			time.Sleep(d)
+		},
 	}
 
 	return ctx, c, nil
