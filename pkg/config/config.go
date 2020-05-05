@@ -568,6 +568,16 @@ func (c *Config) GetContexts() []*Context {
 	return contexts
 }
 
+// GetManagementConfiguration retrieves a management configuration by name.
+func (c *Config) GetManagementConfiguration(name string) (*ManagementConfiguration, error) {
+	managementCfg, exists := c.ManagementConfiguration[name]
+	if !exists {
+		return nil, ErrManagementConfigurationNotFound{Name: name}
+	}
+
+	return managementCfg, nil
+}
+
 // AddContext creates a new context and returns the instance of
 // newly created context
 func (c *Config) AddContext(theContext *ContextOptions) *Context {

@@ -4,16 +4,17 @@ Usage:
   config [command]
 
 Available Commands:
-  get-cluster     Get cluster information from the airshipctl config
-  get-context     Get context information from the airshipctl config
-  get-credential  Get user credentials from the airshipctl config
-  help            Help about any command
-  import          Merge information from a kubernetes config file
-  init            Generate initial configuration files for airshipctl
-  set-cluster     Manage clusters
-  set-context     Manage contexts
-  set-credentials Manage user credentials
-  use-context     Switch to a different context
+  get-cluster           Get cluster information from the airshipctl config
+  get-context           Get context information from the airshipctl config
+  get-credential        Get user credentials from the airshipctl config
+  help                  Help about any command
+  import                Merge information from a kubernetes config file
+  init                  Generate initial configuration files for airshipctl
+  set-cluster           Manage clusters
+  set-context           Manage contexts
+  set-credentials       Manage user credentials
+  set-management-config Modify an out-of-band management configuration
+  use-context           Switch to a different context
 
 Flags:
   -h, --help   help for config
