@@ -515,6 +515,122 @@ func TestSetVirtualMediaInsertVirtualMediaError(t *testing.T) {
 	assert.True(t, ok)
 }
 
+func TestSystemPowerOff(t *testing.T) {
+	m := &redfishMocks.RedfishAPI{}
+	defer m.AssertExpectations(t)
+
+	_, client, err := NewClient(redfishURL, false, false, "", "")
+	require.NoError(t, err)
+
+	client.nodeID = nodeID
+
+	ctx := context.WithValue(context.Background(), ctxKeyNumRetries, 1)
+
+	m.On("ResetSystem", ctx, client.nodeID, mock.Anything).Return(
+		redfishClient.RedfishError{},
+		&http.Response{StatusCode: 200}, nil)
+
+	m.On("GetSystem", ctx, client.nodeID).Return(
+		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_ON},
+		&http.Response{StatusCode: 200}, nil).Times(1)
+
+	m.On("GetSystem", ctx, client.nodeID).Return(
+		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_OFF},
+		&http.Response{StatusCode: 200}, nil).Times(1)
+
+	// Replace normal API client with mocked API client
+	client.RedfishAPI = m
+
+	// Mock out the Sleep function so we don't have to wait on it
+	client.Sleep = func(_ time.Duration) {}
+
+	err = client.SystemPowerOff(ctx)
+	assert.NoError(t, err)
+}
+
+func TestSystemPowerOffResetSystemError(t *testing.T) {
+	m := &redfishMocks.RedfishAPI{}
+	defer m.AssertExpectations(t)
+
+	_, client, err := NewClient(redfishURL, false, false, "", "")
+	require.NoError(t, err)
+
+	client.nodeID = nodeID
+
+	ctx := context.WithValue(context.Background(), ctxKeyNumRetries, 1)
+
+	m.On("ResetSystem", ctx, client.nodeID, mock.Anything).Return(
+		redfishClient.RedfishError{},
+		&http.Response{StatusCode: 500}, nil)
+
+	// Replace normal API client with mocked API client
+	client.RedfishAPI = m
+
+	// Mock out the Sleep function so we don't have to wait on it
+	client.Sleep = func(_ time.Duration) {}
+
+	err = client.SystemPowerOff(ctx)
+	assert.Error(t, err)
+}
+
+func TestSystemPowerOn(t *testing.T) {
+	m := &redfishMocks.RedfishAPI{}
+	defer m.AssertExpectations(t)
+
+	_, client, err := NewClient(redfishURL, false, false, "", "")
+	require.NoError(t, err)
+
+	client.nodeID = nodeID
+
+	ctx := context.WithValue(context.Background(), ctxKeyNumRetries, 1)
+
+	m.On("ResetSystem", ctx, client.nodeID, mock.Anything).Return(
+		redfishClient.RedfishError{},
+		&http.Response{StatusCode: 200}, nil)
+
+	m.On("GetSystem", ctx, client.nodeID).Return(
+		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_OFF},
+		&http.Response{StatusCode: 200}, nil).Times(1)
+
+	m.On("GetSystem", ctx, client.nodeID).Return(
+		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_ON},
+		&http.Response{StatusCode: 200}, nil).Times(1)
+
+	// Replace normal API client with mocked API client
+	client.RedfishAPI = m
+
+	// Mock out the Sleep function so we don't have to wait on it
+	client.Sleep = func(_ time.Duration) {}
+
+	err = client.SystemPowerOn(ctx)
+	assert.NoError(t, err)
+}
+
+func TestSystemPowerOnResetSystemError(t *testing.T) {
+	m := &redfishMocks.RedfishAPI{}
+	defer m.AssertExpectations(t)
+
+	_, client, err := NewClient(redfishURL, false, false, "", "")
+	require.NoError(t, err)
+
+	client.nodeID = nodeID
+
+	ctx := context.WithValue(context.Background(), ctxKeyNumRetries, 1)
+
+	m.On("ResetSystem", ctx, client.nodeID, mock.Anything).Return(
+		redfishClient.RedfishError{},
+		&http.Response{StatusCode: 500}, nil)
+
+	// Replace normal API client with mocked API client
+	client.RedfishAPI = m
+
+	// Mock out the Sleep function so we don't have to wait on it
+	client.Sleep = func(_ time.Duration) {}
+
+	err = client.SystemPowerOn(ctx)
+	assert.Error(t, err)
+}
+
 func TestSystemPowerStatusUnknown(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
