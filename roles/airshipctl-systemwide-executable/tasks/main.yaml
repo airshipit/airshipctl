@@ -12,7 +12,7 @@
 
 - name: "make docker-image"
   make:
-    chdir: "{{ remote_work_dir | default(zuul.project.src_dir) }}"
+    chdir: "{{ remote_work_dir + '/airshipctl' if remote_work_dir is defined else zuul.project.src_dir }}"
     target: docker-image
     params:
       USE_PROXY: "{{ proxy.enabled }}"
@@ -27,7 +27,7 @@
     sudo docker cp "${CONTAINER}:/usr/local/bin/airshipctl" "/usr/local/bin/airshipctl"
     docker rm "${CONTAINER}"
   args:
-    chdir: "{{ remote_work_dir | default(zuul.project.src_dir) }}"
+    chdir: "{{ remote_work_dir + '/airshipctl' if remote_work_dir is defined else zuul.project.src_dir }}"
 
 - name: "make sure airshipctl is executable"
   command: airshipctl version

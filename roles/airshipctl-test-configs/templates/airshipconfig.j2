@@ -39,15 +39,12 @@ manifests:
     repositories:
       primary:
         checkout:
-          branch: "master"
+          branch: {{ airship_config_primary_repo_branch }}
           force: false
           remoteRef: ""
           tag: ""
         url: {{ airship_config_primary_repo_url }}
-    ## this is temporary hack, as soon as we use `document pull` command in gate process
-    ## this will subpath will be airshipctl/manifests/site/test-site, as airshipctl
-    ## will be primary repository
-    subPath: {{ airship_site_name }}
+    subPath: "{{ 'airshipctl/' if remote_work_dir is defined else '' }}{{ airship_site_name }}"
     targetPath: {{ airship_config_manifest_directory }}
 users:
   dummy_user: {}

@@ -12,7 +12,9 @@
 
 airship_config_iso_gen_target_path: /srv/iso
 airship_config_manifest_directory: /tmp/airship
-airship_config_primary_repo_url: dummy.url.com
+# the git repo url or local file system path to a cloned repo, e.g., /home/stack/airshipctl
+airship_config_primary_repo_url: "https://review.opendev.org/airship/airshipctl"
+airship_config_primary_repo_branch: "master"
 airship_config_ephemeral_ip: "10.23.25.101"
 airship_config_iso_builder_docker_image: quay.io/airshipit/isogen:latest
 airship_config_iso_port: 8099
