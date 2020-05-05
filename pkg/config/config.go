@@ -764,6 +764,93 @@ func (c *Config) ModifyAuthInfo(authinfo *AuthInfo, theAuthInfo *AuthInfoOptions
 	}
 }
 
+// ImportFromKubeconfig absorbs the clusters, contexts and credentials from the
+// given kubeConfig
+func (c *Config) ImportFromKubeConfig(kubeConfigPath string) error {
+	_, err := os.Stat(kubeConfigPath)
+	if err != nil {
+		return err
+	}
+
+	kubeConfig, err := clientcmd.LoadFromFile(kubeConfigPath)
+	if err != nil {
+		return err
+	}
+	c.importClusters(kubeConfig)
+	c.importContexts(kubeConfig)
+	c.importAuthInfos(kubeConfig)
+	return c.PersistConfig()
+}
+
+func (c *Config) importClusters(importKubeConfig *clientcmdapi.Config) {
+	for clusterName, cluster := range importKubeConfig.Clusters {
+		clusterComplexName := NewClusterComplexNameFromKubeClusterName(clusterName)
+		if _, err := c.GetCluster(clusterComplexName.Name, clusterComplexName.Type); err == nil {
+			// err == nil implies that we were successfully able to
+			// get the cluster from the existing configuration.
+			// Since existing clusters takes precedence, skip this cluster
+			continue
+		}
+
+		// Initialize the new cluster for the airship configuration
+		airshipCluster := NewCluster()
+		airshipCluster.NameInKubeconf = clusterComplexName.String()
+		// Store the reference to the KubeConfig Cluster in the Airship Config
+		airshipCluster.SetKubeCluster(cluster)
+
+		// Update the airship configuration
+		if _, ok := c.Clusters[clusterComplexName.Name]; !ok {
+			c.Clusters[clusterComplexName.Name] = NewClusterPurpose()
+		}
+		c.Clusters[clusterComplexName.Name].ClusterTypes[clusterComplexName.Type] = airshipCluster
+		c.kubeConfig.Clusters[clusterComplexName.String()] = cluster
+	}
+}
+
+func (c *Config) importContexts(importKubeConfig *clientcmdapi.Config) {
+	// TODO(howell): This function doesn't handle the case when an incoming
+	// context refers to a cluster that doesn't exist in the airship
+	// configuration.
+	for kubeContextName, kubeContext := range importKubeConfig.Contexts {
+		if _, ok := c.kubeConfig.Contexts[kubeContextName]; ok {
+			// Since existing contexts take precedence, skip this context
+			continue
+		}
+
+		clusterComplexName := NewClusterComplexNameFromKubeClusterName(kubeContext.Cluster)
+		if kubeContext.Cluster != clusterComplexName.String() {
+			// If the name of cluster from the kubeConfig doesn't
+			// match the clusterComplexName, it needs to be updated
+			kubeContext.Cluster = clusterComplexName.String()
+		}
+
+		airshipContext, ok := c.Contexts[kubeContextName]
+		if !ok {
+			airshipContext = NewContext()
+		}
+		airshipContext.NameInKubeconf = kubeContext.Cluster
+		airshipContext.Manifest = AirshipDefaultManifest
+		airshipContext.SetKubeContext(kubeContext)
+
+		// Store the contexts in the airship configuration
+		c.Contexts[kubeContextName] = airshipContext
+		c.kubeConfig.Contexts[kubeContextName] = kubeContext
+	}
+}
+
+func (c *Config) importAuthInfos(importKubeConfig *clientcmdapi.Config) {
+	for key, authinfo := range importKubeConfig.AuthInfos {
+		if _, ok := c.AuthInfos[key]; ok {
+			// Since existing credentials take precedence, skip this credential
+			continue
+		}
+
+		c.AuthInfos[key] = NewAuthInfo()
+		c.AuthInfos[key].SetKubeAuthInfo(authinfo)
+		c.kubeConfig.AuthInfos[key] = authinfo
+	}
+}
+
 // CurrentContextBootstrapInfo returns bootstrap info for current context
 func (c *Config) CurrentContextBootstrapInfo() (*Bootstrap, error) {
 	currentCluster, err := c.CurrentContextCluster()

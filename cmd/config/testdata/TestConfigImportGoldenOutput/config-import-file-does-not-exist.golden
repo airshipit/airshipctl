@@ -1,0 +1,13 @@
+Error: stat foo: no such file or directory
+Usage:
+  import <kubeConfig> [flags]
+
+Examples:
+
+# Import from a kubeConfig file"
+airshipctl config import $HOME/.kube/config
+
+
+Flags:
+  -h, --help   help for import
+

@@ -159,6 +159,5 @@ func RunUseContext(desiredContext string, airconfig *Config) error {
 			return err
 		}
 	}
-
 	return nil
 }
