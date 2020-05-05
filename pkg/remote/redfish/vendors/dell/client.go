@@ -37,6 +37,7 @@ const (
 	    "ShareParameters": {
 	        "Target": "ALL"
 	    },
+	    "ShutdownType": "NoReboot",
 	    "ImportBuffer": "<SystemConfiguration>
 	                       <Component FQDD=\"iDRAC.Embedded.1\">
 	                         <Attribute Name=\"ServerBoot.1#BootOnce\">Enabled</Attribute>
