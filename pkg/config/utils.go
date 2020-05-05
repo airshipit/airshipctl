@@ -18,8 +18,6 @@ package config
 
 import (
 	"encoding/base64"
-
-	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 )
 
 const (
@@ -58,13 +56,7 @@ func NewConfig() *Config {
 		},
 		CurrentContext: AirshipDefaultContext,
 		ManagementConfiguration: map[string]*ManagementConfiguration{
-			AirshipDefaultManagementConfiguration: {
-				Type:                redfish.ClientType,
-				Insecure:            true,
-				UseProxy:            false,
-				SystemActionRetries: DefaultSystemActionRetries,
-				SystemRebootDelay:   DefaultSystemRebootDelay,
-			},
+			AirshipDefaultManagementConfiguration: NewManagementConfiguration(),
 		},
 		Manifests: map[string]*Manifest{
 			AirshipDefaultManifest: {

@@ -17,6 +17,9 @@ package config
 import (
 	"fmt"
 	"strings"
+
+	"opendev.org/airship/airshipctl/pkg/remote/redfish"
+	redfishdell "opendev.org/airship/airshipctl/pkg/remote/redfish/vendors/dell"
 )
 
 // ErrIncompatibleAuthOptions is returned when incompatible
@@ -177,4 +180,15 @@ type ErrDecodingCredentials struct {
 
 func (e ErrDecodingCredentials) Error() string {
 	return fmt.Sprintf("Error decoding credentials. String '%s' cannot not be decoded", e.Given)
+}
+
+// ErrUnknownManagementType describes a situation in which an unknown management type is listed in the airshipctl
+// config.
+type ErrUnknownManagementType struct {
+	Type string
+}
+
+func (e ErrUnknownManagementType) Error() string {
+	return fmt.Sprintf("Unknown management type '%s'. Known types include '%s' and '%s'.", e.Type,
+		redfish.ClientType, redfishdell.ClientType)
 }

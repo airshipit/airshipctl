@@ -915,15 +915,6 @@ func (c *Config) Purge() error {
 	return os.Remove(c.loadedConfigPath)
 }
 
-// Management Configuration functions
-func (m *ManagementConfiguration) String() string {
-	yamlData, err := yaml.Marshal(&m)
-	if err != nil {
-		return ""
-	}
-	return string(yamlData)
-}
-
 // DecodeAuthInfo returns authInfo with credentials decoded
 func DecodeAuthInfo(authinfo *clientcmdapi.AuthInfo) (*clientcmdapi.AuthInfo, error) {
 	password := authinfo.Password

@@ -57,7 +57,7 @@ const (
 	// Modules
 	AirshipDefaultBootstrapImage = "quay.io/airshipit/isogen:latest-debian_stable"
 	AirshipDefaultIsoURL         = "http://localhost:8099/debian-custom.iso"
-	AirshipDefaultRemoteType     = redfish.ClientType
+	AirshipDefaultManagementType = redfish.ClientType
 )
 
 // Default values for remote operations
