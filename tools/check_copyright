@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e
+declare FILES_MISSING_COPYRIGHT=()
 
 # Find all files of given format and add license if missing
-add_license() {
+check_license() {
   ext=$1
-  template=$2
   # skipping license for testdata and manifests folders
   FILES=$(find -L . -name "*.${ext}" | grep -v "testdata" | grep -v "manifests")
 
@@ -25,35 +24,22 @@ add_license() {
   do
     if ! grep -Eq 'Apache License|License-Identifier: Apache' $each
     then
-      echo "Adding license header to $each"
-      cat tools/${template} $each >$each.new
-      mv $each.new $each
+      FILES_MISSING_COPYRIGHT+=($each)
     fi
   done
 }
 
-add_license_to_bash() {
-  template=$1
-  FILES=$(find -L . -name "*.sh" )
-  NUM_OF_LINES=$(< "tools/$template" wc -l)
+check_license 'go'
+check_license 'yaml'
+check_license 'yml'
+check_license 'sh'
 
-  for each in $FILES
-  do
-    if ! grep -Eq 'Apache License|License-Identifier: Apache' $each
-    then
-      if head -1 $each | grep '^#!' > /dev/null
-      then
-        echo "Adding license header to $each"
-        head -n 1 $each >>$each.new
-        head -n $NUM_OF_LINES tools/$template >>$each.new
-        tail -n+2 $each >>$each.new
-        mv $each.new $each
-      fi
-    fi
-  done
-}
+if [ ${#FILES_MISSING_COPYRIGHT[@]} -gt 0 ]
+then
+   echo "Copyright header missing for these files: ${FILES_MISSING_COPYRIGHT[@]}"
+   echo "please run make add-copyright"
+   exit 1
+else
+   echo "no file with missing copyright header detected, make target completed successfully"
+fi
 
-add_license 'go' 'license_go.txt'
-add_license 'yaml' 'license_yaml.txt'
-add_license 'yml' 'license_yaml.txt'
-add_license_to_bash 'license_bash.txt'

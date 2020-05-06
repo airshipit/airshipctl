@@ -61,6 +61,7 @@ install:
 .PHONY: test
 test: lint
 test: cover
+test: check-copyright
 
 .PHONY: unit-tests
 unit-tests: TESTFLAGS += -race -v
@@ -129,7 +130,7 @@ print-docker-image-tag:
 	@echo "$(DOCKER_IMAGE)"
 
 .PHONY: docker-image-test-suite
-docker-image-test-suite: DOCKER_MAKE_TARGET = "lint cover update-golden check-git-diff"
+docker-image-test-suite: DOCKER_MAKE_TARGET = "lint cover update-golden check-git-diff check-copyright"
 docker-image-test-suite: DOCKER_TARGET_STAGE = builder
 docker-image-test-suite: docker-image
 
@@ -195,3 +196,13 @@ delete-golden:
 .PHONY: check-git-diff
 check-git-diff:
 	@./tools/git_diff_check
+
+# add-copyright is a utility to add copyright header to missing files
+.PHONY: add-copyright
+add-copyright:
+	@./tools/add_license.sh
+
+# check-copyright is a utility to check if copyright header is present on all files
+.PHONY: check-copyright
+check-copyright:
+	@./tools/check_copyright
