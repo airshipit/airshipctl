@@ -56,9 +56,11 @@ func NewConfig() *Config {
 		},
 		ManagementConfiguration: map[string]*ManagementConfiguration{
 			AirshipDefaultContext: {
-				Type:     redfish.ClientType,
-				Insecure: true,
-				UseProxy: false,
+				Type:                redfish.ClientType,
+				Insecure:            true,
+				UseProxy:            false,
+				SystemActionRetries: DefaultSystemActionRetries,
+				SystemRebootDelay:   DefaultSystemRebootDelay,
 			},
 		},
 		Manifests: map[string]*Manifest{
