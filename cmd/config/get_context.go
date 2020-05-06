@@ -32,7 +32,7 @@ Display information about contexts such as associated manifests, users, and clus
 
 	getContextExample = `
 # List all contexts
-airshipctl config get-context
+airshipctl config get-contexts
 
 # Display the current context
 airshipctl config get-context --current
@@ -51,6 +51,7 @@ func NewGetContextCommand(rootSettings *environment.AirshipCTLSettings) *cobra.C
 		Short:   "Get context information from the airshipctl config",
 		Long:    getContextLong[1:],
 		Example: getContextExample,
+		Aliases: []string{"get-contexts"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			airconfig := rootSettings.Config
 			if len(args) == 1 {

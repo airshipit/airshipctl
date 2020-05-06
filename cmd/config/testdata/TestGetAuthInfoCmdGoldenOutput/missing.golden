@@ -1,6 +1,9 @@
 Error: Missing configuration: User credentials with name 'authinfoMissing'
 Usage:
-  get-credentials [NAME] [flags]
+  get-credential [NAME] [flags]
+
+Aliases:
+  get-credential, get-credentials
 
 Examples:
 
@@ -8,9 +11,9 @@ Examples:
 airshipctl config get-credentials
 
 # Display a specific user's credentials
-airshipctl config get-credentials exampleUser
+airshipctl config get-credential exampleUser
 
 
 Flags:
-  -h, --help   help for get-credentials
+  -h, --help   help for get-credential
 

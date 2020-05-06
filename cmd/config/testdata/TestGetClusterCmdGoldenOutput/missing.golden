@@ -2,10 +2,13 @@ Error: Missing configuration: Cluster with name 'clusterMissing' of type 'target
 Usage:
   get-cluster [NAME] [flags]
 
+Aliases:
+  get-cluster, get-clusters
+
 Examples:
 
 # List all clusters
-airshipctl config get-cluster
+airshipctl config get-clusters
 
 # Display a specific cluster
 airshipctl config get-cluster --cluster-type=ephemeral exampleCluster
