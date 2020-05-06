@@ -1,0 +1,19 @@
+Error: Unknown management configuration 'foo'.
+Usage:
+  get-management-config [NAME] [flags]
+
+Aliases:
+  get-management-config, get-management-configs
+
+Examples:
+
+# View all defined management configurations
+airshipctl config get-management-configs
+
+# View a specific management configuration named "default"
+airshipctl config get-management-config default
+
+
+Flags:
+  -h, --help   help for get-management-config
+

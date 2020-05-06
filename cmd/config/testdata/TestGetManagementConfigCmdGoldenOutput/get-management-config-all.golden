@@ -1,0 +1,7 @@
+name: default
+insecure: true
+type: redfish
+
+name: test
+type: redfish-dell
+
