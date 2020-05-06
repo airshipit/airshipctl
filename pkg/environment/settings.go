@@ -70,9 +70,9 @@ func (a *AirshipCTLSettings) InitFlags(cmd *cobra.Command) {
 func (a *AirshipCTLSettings) InitConfig() {
 	a.Config = config.NewConfig()
 
-	a.initAirshipConfigPath()
-	a.initKubeConfigPath()
-	initPluginPath()
+	a.InitAirshipConfigPath()
+	a.InitKubeConfigPath()
+	InitPluginPath()
 
 	err := a.Config.LoadConfig(a.AirshipConfigPath, a.KubeConfigPath)
 	if err != nil {
@@ -81,7 +81,8 @@ func (a *AirshipCTLSettings) InitConfig() {
 	}
 }
 
-func (a *AirshipCTLSettings) initAirshipConfigPath() {
+// InitAirshipConfigPath - Initializes AirshipConfigPath variable for Config object
+func (a *AirshipCTLSettings) InitAirshipConfigPath() {
 	// The airshipConfigPath may already have been received as a command line argument
 	if a.AirshipConfigPath != "" {
 		return
@@ -98,7 +99,8 @@ func (a *AirshipCTLSettings) initAirshipConfigPath() {
 	a.AirshipConfigPath = filepath.Join(homeDir, config.AirshipConfigDir, config.AirshipConfig)
 }
 
-func (a *AirshipCTLSettings) initKubeConfigPath() {
+// InitKubeConfigPath - Initializes KubeConfigPath variable for Config object
+func (a *AirshipCTLSettings) InitKubeConfigPath() {
 	// NOTE(howell): This function will set the kubeConfigPath to the
 	// default location under the airship directory unless the user
 	// *explicitly* specifies a different location, either by setting the
@@ -122,8 +124,8 @@ func (a *AirshipCTLSettings) initKubeConfigPath() {
 	a.KubeConfigPath = filepath.Join(homeDir, config.AirshipConfigDir, config.AirshipKubeConfig)
 }
 
-// Sets the location to look for kustomize plugins (including airshipctl itself).
-func initPluginPath() {
+// InitPluginPath - Sets the location to look for kustomize plugins (including airshipctl itself).
+func InitPluginPath() {
 	pluginPathLock.Lock()
 	defer pluginPathLock.Unlock()
 
