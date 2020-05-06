@@ -16,9 +16,9 @@
     - name: set default roles
       set_fact:
         test_roles_default:
-          - airshipctl-test-configs
           - airshipctl-pull-docs
           - airshipctl-systemwide-executable
+          - airshipctl-test-configs
           - airshipctl-build-ephemeral-iso
           - install-kubectl
           - airshipctl-deploy-ephemeral-node
