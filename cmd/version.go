@@ -20,9 +20,10 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/util"
+	"opendev.org/airship/airshipctl/pkg/version"
 )
 
-// NewVersionCommand creates a command for displaying the version of airshipctl.
+// NewVersionCommand creates a command for displaying the version of airshipctl
 func NewVersionCommand() *cobra.Command {
 	versionCmd := &cobra.Command{
 		Use:   "version",
@@ -39,6 +40,6 @@ func NewVersionCommand() *cobra.Command {
 }
 
 func clientVersion() string {
-	// TODO(howell): There's gotta be a smarter way to do this
-	return "v0.1.0"
+	v := version.Get()
+	return v.GitVersion
 }
