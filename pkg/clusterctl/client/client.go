@@ -15,20 +15,17 @@
 package client
 
 import (
-	"github.com/spf13/afero"
-	"github.com/spf13/viper"
 	clusterctlclient "sigs.k8s.io/cluster-api/cmd/clusterctl/client"
 	clusterctlconfig "sigs.k8s.io/cluster-api/cmd/clusterctl/client/config"
 	clog "sigs.k8s.io/cluster-api/cmd/clusterctl/log"
-	"sigs.k8s.io/yaml"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/clusterctl/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/clusterctl/implementations"
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 const (
 	// path to file on in memory file system
-	confFilePath       = "/air-clusterctl.yaml"
 	dummyComponentPath = "/dummy/path/v0.3.2/components.yaml"
 )
 
@@ -78,38 +75,20 @@ func (c *Client) Init(kubeconfigPath string) error {
 
 // newConfig returns clusterctl config client
 func newConfig(options *airshipv1.Clusterctl) (clusterctlconfig.Client, error) {
-	fs := afero.NewMemMapFs()
-	b := []map[string]string{}
 	for _, provider := range options.Providers {
-		p := map[string]string{
-			"name": provider.Name,
-			"type": provider.Type,
-			"url":  provider.URL,
-		}
 		// this is a workaround as cluserctl validates if URL is empty, even though it is not
 		// used anywhere outside repository factory which we override
 		// TODO (kkalynovskyi) we need to create issue for this in clusterctl, and remove URL
 		// validation and move it to be an error during repository interface initialization
 		if !provider.IsClusterctlRepository {
-			p["url"] = dummyComponentPath
+			provider.URL = dummyComponentPath
 		}
-		b = append(b, p)
 	}
-	cconf := map[string][]map[string]string{
-		"providers": b,
-	}
-	data, err := yaml.Marshal(cconf)
+	reader, err := implementations.NewAirshipReader(options)
 	if err != nil {
 		return nil, err
 	}
-	err = afero.WriteFile(fs, confFilePath, data, 0600)
-	if err != nil {
-		return nil, err
-	}
-	// Set filesystem to global viper object, to make sure, that clusterctl config is read from
-	// memory filesystem instead of real one.
-	viper.SetFs(fs)
-	return clusterctlconfig.New(confFilePath)
+	return clusterctlconfig.New("", clusterctlconfig.InjectReader(reader))
 }
 
 func newClusterctlClient(root string, options *airshipv1.Clusterctl) (clusterctlclient.Client, error) {
