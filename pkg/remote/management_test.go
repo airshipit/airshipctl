@@ -95,6 +95,26 @@ func TestNewManagerMultipleNodes(t *testing.T) {
 	assert.Equal(t, "node-master-2", manager.Hosts[1].NodeID())
 }
 
+func TestNewManagerMultipleSelectors(t *testing.T) {
+	settings := initSettings(t, withTestDataPath("base"))
+
+	manager, err := NewManager(settings, config.BootstrapPhase, ByName("master-1"),
+		ByLabel("airshipit.org/test-node=true"))
+	require.NoError(t, err)
+	require.Equal(t, 1, len(manager.Hosts))
+
+	assert.Equal(t, "node-master-1", manager.Hosts[0].NodeID())
+}
+
+func TestNewManagerMultipleSelectorsNoMatch(t *testing.T) {
+	settings := initSettings(t, withTestDataPath("base"))
+
+	manager, err := NewManager(settings, config.BootstrapPhase, ByName("master-2"),
+		ByLabel(document.EphemeralHostSelector))
+	require.Equal(t, 0, len(manager.Hosts))
+	assert.Error(t, err)
+}
+
 func TestNewManagerByNameNoHostFound(t *testing.T) {
 	settings := initSettings(t, withTestDataPath("base"))
 
