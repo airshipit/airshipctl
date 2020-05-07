@@ -26,10 +26,11 @@ import (
 
 // Command adds a layer to clusterctl interface with airshipctl context
 type Command struct {
-	kubeconfigPath string
-	documentRoot   string
-	client         client.Interface
-	options        *airshipv1.Clusterctl
+	kubeconfigPath    string
+	kubeconfigContext string
+	documentRoot      string
+	client            client.Interface
+	options           *airshipv1.Clusterctl
 }
 
 // NewCommand returns instance of Command
@@ -52,16 +53,17 @@ func NewCommand(rs *environment.AirshipCTLSettings) (*Command, error) {
 	}
 	kubeConfigPath := rs.Config.KubeConfigPath()
 	return &Command{
-		kubeconfigPath: kubeConfigPath,
-		documentRoot:   root,
-		client:         client,
-		options:        options,
+		kubeconfigPath:    kubeConfigPath,
+		documentRoot:      root,
+		client:            client,
+		options:           options,
+		kubeconfigContext: rs.Config.CurrentContext,
 	}, nil
 }
 
 // Init runs clusterctl init
 func (c *Command) Init() error {
-	return c.client.Init(c.kubeconfigPath)
+	return c.client.Init(c.kubeconfigPath, c.kubeconfigContext)
 }
 
 func clusterctlOptions(bundle document.Bundle) (*airshipv1.Clusterctl, error) {

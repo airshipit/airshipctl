@@ -34,9 +34,11 @@ type RepositoryFactory struct {
 
 // ClusterClientFactory returns cluster factory function for clusterctl client
 func (f RepositoryFactory) ClusterClientFactory() client.ClusterClientFactory {
-	return func(kubeconfig string) (cluster.Client, error) {
+	return func(kubeconfig client.Kubeconfig) (cluster.Client, error) {
 		o := cluster.InjectRepositoryFactory(f.repoFactoryClusterClient())
-		return cluster.New(kubeconfig, f.ConfigClient, o), nil
+		return cluster.New(cluster.Kubeconfig{
+			Path:    kubeconfig.Path,
+			Context: kubeconfig.Context}, f.ConfigClient, o), nil
 	}
 }
 
@@ -77,13 +79,21 @@ func (f RepositoryFactory) repoFactory(provider config.Provider) (repository.Cli
 		// inject repository into repository client
 		o := repository.InjectRepository(repo)
 		log.Printf("Creating arishipctl repository implementation interface for provider %s of type %s\n",
-			provider.Name(),
-			provider.Type())
-		return repository.New(provider, f.ConfigClient, o)
+			name,
+			repoType)
+
+		repoClient, err := repository.New(provider, f.ConfigClient, o)
+		if err != nil {
+			return nil, err
+		}
+		return &implementations.RepositoryClient{
+			Client:       repoClient,
+			ProviderType: string(repoType),
+			ProviderName: name}, nil
 	}
 	log.Printf("Creating clusterctl repository implementation interface for provider %s of type %s\n",
-		provider.Name(),
-		provider.Type())
+		name,
+		repoType)
 	// if repository is clusterctl pass, simply use default clusterctl repository interface
 	return repository.New(provider, f.ConfigClient)
 }

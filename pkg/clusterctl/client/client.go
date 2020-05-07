@@ -33,7 +33,7 @@ var _ Interface = &Client{}
 
 // Interface is abstraction to Clusterctl
 type Interface interface {
-	Init(kubeconfigPath string) error
+	Init(kubeconfigPath, kubeconfigContext string) error
 }
 
 // Client Implements interface to Clusterctl
@@ -66,9 +66,12 @@ func NewClient(root string, debug bool, options *airshipv1.Clusterctl) (Interfac
 }
 
 // Init implements interface to Clusterctl
-func (c *Client) Init(kubeconfigPath string) error {
+func (c *Client) Init(kubeconfigPath, kubeconfigContext string) error {
 	log.Print("Starting cluster-api initiation")
-	c.initOptions.Kubeconfig = kubeconfigPath
+	c.initOptions.Kubeconfig = clusterctlclient.Kubeconfig{
+		Path:    kubeconfigPath,
+		Context: kubeconfigContext,
+	}
 	_, err := c.clusterctlClient.Init(c.initOptions)
 	return err
 }

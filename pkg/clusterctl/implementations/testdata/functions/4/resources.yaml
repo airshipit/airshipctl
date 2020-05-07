@@ -1,0 +1,17 @@
+## contains a namespace that should be idenitifed by components interface,
+---
+apiVersion: clusterctl.cluster.x-k8s.io/v1alpha3
+kind: Metadata
+metadata:
+  name: repository-metadata
+releaseSeries:
+- major: 0
+  minor: 3
+  contract: v1alpha3
+- major: 0
+  minor: 2
+  contract: v1alpha2
+---
+kind: Namespace
+metadata:
+  name: newnamespace
