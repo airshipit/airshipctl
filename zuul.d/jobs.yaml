@@ -120,7 +120,9 @@
     parent: airship-airshipctl-build-image
     post-run: playbooks/airship-airshipctl-publish-images.yaml
     secrets:
-      - airshipctl_image_repo_credentials
+      - name: airshipctl_image_repo_credentials
+        secret: airshipctl_image_repo_credentials
+        pass-to-parent: true
     vars:
       image: quay.io/airshipit/airshipctl
       image_repo: https://quay.io/api/v1/
