@@ -39,7 +39,7 @@ func NewErrIncompetibleAuthOptions(fo []string, ao string) error {
 // ssh-pass type is selected and http-pass, ssh-key or key-pass
 // options are defined
 func (e ErrIncompatibleAuthOptions) Error() string {
-	return fmt.Sprintf("Can not use %s options, with auth type %s", e.ForbiddenOptions, e.AuthType)
+	return fmt.Sprintf("Cannot use %s options with an auth type %s", e.ForbiddenOptions, e.AuthType)
 }
 
 // ErrAuthTypeNotSupported is returned when wrong AuthType is provided
@@ -47,7 +47,7 @@ type ErrAuthTypeNotSupported struct {
 }
 
 func (e ErrAuthTypeNotSupported) Error() string {
-	return "Invalid auth, allowed types: " + strings.Join(AllowedAuthTypes, ",")
+	return "Invalid Auth type. Allowed types: " + strings.Join(AllowedAuthTypes, ",")
 }
 
 // ErrRepoSpecRequiresURL is returned when repository URL is not specified
@@ -55,7 +55,7 @@ type ErrRepoSpecRequiresURL struct {
 }
 
 func (e ErrRepoSpecRequiresURL) Error() string {
-	return "Repostory spec requires url"
+	return "Repository spec requires url."
 }
 
 // ErrMutuallyExclusiveCheckout is returned if
@@ -64,7 +64,7 @@ type ErrMutuallyExclusiveCheckout struct {
 }
 
 func (e ErrMutuallyExclusiveCheckout) Error() string {
-	return "Chekout mutually execlusive, use either: commit-hash, branch or tag"
+	return "Checkout mutually exclusive, use either: commit-hash, branch or tag."
 }
 
 // ErrBootstrapInfoNotFound returned if bootstrap
@@ -74,7 +74,7 @@ type ErrBootstrapInfoNotFound struct {
 }
 
 func (e ErrBootstrapInfoNotFound) Error() string {
-	return fmt.Sprintf("Bootstrap info %q not found", e.Name)
+	return fmt.Sprintf("Bootstrap info %q not found.", e.Name)
 }
 
 // ErrInvalidConfig returned in case of incorrect configuration
@@ -108,7 +108,7 @@ type ErrMissingCurrentContext struct {
 }
 
 func (e ErrMissingCurrentContext) Error() string {
-	return "Current context must be set before using --current flag"
+	return "Current context must be set before using --current flag."
 }
 
 // ErrMissingManagementConfiguration means the management configuration was not defined for the active cluster.
@@ -126,7 +126,7 @@ type ErrMissingPrimaryRepo struct {
 }
 
 func (e ErrMissingPrimaryRepo) Error() string {
-	return "Current context manifest must have primary repository set"
+	return "Current context manifest must have a primary repository set."
 }
 
 // ErrConflictingAuthOptions returned in case both token and username/password is set at same time
@@ -134,7 +134,7 @@ type ErrConflictingAuthOptions struct {
 }
 
 func (e ErrConflictingAuthOptions) Error() string {
-	return "you cannot specify token and username/password at the same time"
+	return "Specifying token and username/password is not allowed at the same time."
 }
 
 // ErrConflictingClusterOptions returned when both certificate-authority and
@@ -143,7 +143,7 @@ type ErrConflictingClusterOptions struct {
 }
 
 func (e ErrConflictingClusterOptions) Error() string {
-	return "you cannot specify a certificate-authority and insecure-skip-tls-verify mode at the same time"
+	return "Specifying certificate-authority and insecure-skip-tls-verify mode is not allowed at the same time."
 }
 
 // ErrEmptyClusterName returned when empty cluster name is set
@@ -151,7 +151,7 @@ type ErrEmptyClusterName struct {
 }
 
 func (e ErrEmptyClusterName) Error() string {
-	return "you must specify a non-empty cluster name"
+	return "Cluster name must not be empty."
 }
 
 // ErrConflictingContextOptions returned when both context and --current is set at same time
@@ -159,7 +159,7 @@ type ErrConflictingContextOptions struct {
 }
 
 func (e ErrConflictingContextOptions) Error() string {
-	return "you cannot specify context and --current Flag at the same time"
+	return "Specifying context and --current Flag is not allowed at the same time."
 }
 
 // ErrEmptyContextName returned when empty context name is set
@@ -167,5 +167,5 @@ type ErrEmptyContextName struct {
 }
 
 func (e ErrEmptyContextName) Error() string {
-	return "you must specify a non-empty context name"
+	return "Context name must not be empty."
 }
