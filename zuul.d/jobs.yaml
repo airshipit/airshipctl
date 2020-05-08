@@ -16,14 +16,6 @@
     nodeset: airship-airshipctl-single-node
 
 - job:
-    name: airship-airshipctl-build-docs
-    nodeset: airship-airshipctl-single-node
-    run: playbooks/airship-airshipctl-build-docs.yaml
-    vars:
-      sphinx_build_dir: docs/build
-      python_version: 3.7
-
-- job:
     name: airship-airshipctl-lint-unit
     pre-run: playbooks/airship-airshipctl-deploy-docker.yaml
     run: playbooks/airship-airshipctl-lint-unit.yaml

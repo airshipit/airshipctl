@@ -22,4 +22,4 @@ bin/
 .vscode/
 
 # Sphinx build venv
-venv/
+.tox/
