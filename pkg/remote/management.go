@@ -178,7 +178,9 @@ func newBaremetalHost(mgmtCfg config.ManagementConfiguration,
 			mgmtCfg.Insecure,
 			mgmtCfg.UseProxy,
 			username,
-			password)
+			password,
+			mgmtCfg.SystemActionRetries,
+			mgmtCfg.SystemRebootDelay)
 
 		if err != nil {
 			return host, err
@@ -192,7 +194,9 @@ func newBaremetalHost(mgmtCfg config.ManagementConfiguration,
 			mgmtCfg.Insecure,
 			mgmtCfg.UseProxy,
 			username,
-			password)
+			password,
+			mgmtCfg.SystemActionRetries,
+			mgmtCfg.SystemRebootDelay)
 
 		if err != nil {
 			return host, err

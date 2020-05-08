@@ -25,19 +25,29 @@ import (
 )
 
 const (
-	redfishURL = "redfish+https://localhost/Systems/System.Embedded.1"
+	redfishURL          = "redfish+https://localhost/Systems/System.Embedded.1"
+	systemActionRetries = 0
+	systemRebootDelay   = 0
 )
 
 func TestNewClient(t *testing.T) {
-	_, _, err := NewClient(redfishURL, false, false, "username", "password")
+	_, _, err := NewClient(redfishURL, false, false, "username", "password", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 }
 
+func TestNewClientDefaultValues(t *testing.T) {
+	sysActRetr := 222
+	sysRebDel := 555
+	_, c, err := NewClient(redfishURL, false, false, "", "", sysActRetr, sysRebDel)
+	assert.Equal(t, c.SystemActionRetries(), sysActRetr)
+	assert.Equal(t, c.SystemRebootDelay(), sysRebDel)
+	assert.NoError(t, err)
+}
 func TestSetBootSourceByTypeGetSystemError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient(redfishURL, false, false, "", "")
+	ctx, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
 	// Mock redfish get system request

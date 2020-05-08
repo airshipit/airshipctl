@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	redfishAPI "opendev.org/airship/go-redfish/api"
 	redfishClient "opendev.org/airship/go-redfish/client"
@@ -255,13 +256,7 @@ func getBasePath(redfishURL string) (string, error) {
 func (c Client) waitForPowerState(ctx context.Context, desiredState redfishClient.PowerState) error {
 	log.Debugf("Waiting for node '%s' to reach power state '%s'.", c.nodeID, desiredState)
 
-	// Check if number of retries is defined in context
-	totalRetries, ok := ctx.Value(ctxKeyNumRetries).(int)
-	if !ok {
-		totalRetries = systemActionRetries
-	}
-
-	for retry := 0; retry <= totalRetries; retry++ {
+	for retry := 0; retry <= c.systemActionRetries; retry++ {
 		system, httpResp, err := c.RedfishAPI.GetSystem(ctx, c.NodeID())
 		if err = ScreenRedfishError(httpResp, err); err != nil {
 			return err
@@ -272,11 +267,11 @@ func (c Client) waitForPowerState(ctx context.Context, desiredState redfishClien
 			return nil
 		}
 
-		c.Sleep(systemRebootDelay)
+		c.Sleep(time.Duration(c.systemRebootDelay))
 	}
 
 	return ErrOperationRetriesExceeded{
 		What:    fmt.Sprintf("reach desired power state %s", desiredState),
-		Retries: totalRetries,
+		Retries: c.systemActionRetries,
 	}
 }

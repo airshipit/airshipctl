@@ -79,4 +79,8 @@ type ManagementConfiguration struct {
 	// UseProxy indicates whether airshipctl should transmit remote management requests through a proxy server when
 	// one is configured in an environment.
 	UseProxy bool `json:"useproxy,omitempty"`
+	// Number of attempts to reach host during reboot process and ejecting virtual media
+	SystemActionRetries int `json:"systemActionRetries,omitempty"`
+	// Number of seconds to wait after reboot if host isn't available
+	SystemRebootDelay int `json:"systemRebootDelay,omitempty"`
 }

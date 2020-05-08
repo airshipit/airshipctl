@@ -27,23 +27,18 @@ import (
 	"opendev.org/airship/airshipctl/pkg/remote/power"
 )
 
-// contextKey is used by the redfish package as a unique key type in order to prevent collisions
-// with context keys in other packages.
-type contextKey string
-
 const (
 	// ClientType is used by other packages as the identifier of the Redfish client.
-	ClientType          string     = "redfish"
-	systemActionRetries            = 30
-	systemRebootDelay              = 30 * time.Second
-	ctxKeyNumRetries    contextKey = "numRetries"
+	ClientType string = "redfish"
 )
 
 // Client holds details about a Redfish out-of-band system required for out-of-band management.
 type Client struct {
-	nodeID     string
-	RedfishAPI redfishAPI.RedfishAPI
-	RedfishCFG *redfishClient.Configuration
+	nodeID              string
+	RedfishAPI          redfishAPI.RedfishAPI
+	RedfishCFG          *redfishClient.Configuration
+	systemActionRetries int
+	systemRebootDelay   int
 
 	// Sleep is meant to be mocked out for tests
 	Sleep func(d time.Duration)
@@ -54,16 +49,20 @@ func (c *Client) NodeID() string {
 	return c.nodeID
 }
 
+// SystemActionRetries returns number of attempts to reach host during reboot process and ejecting virtual media
+func (c *Client) SystemActionRetries() int {
+	return c.systemActionRetries
+}
+
+// SystemRebootDelay returns number of seconds to wait after reboot if host isn't available
+func (c *Client) SystemRebootDelay() int {
+	return c.systemRebootDelay
+}
+
 // EjectVirtualMedia ejects a virtual media device attached to a host.
 func (c *Client) EjectVirtualMedia(ctx context.Context) error {
 	waitForEjectMedia := func(managerID string, mediaID string) error {
-		// Check if number of retries is defined in context
-		totalRetries, ok := ctx.Value(ctxKeyNumRetries).(int)
-		if !ok {
-			totalRetries = systemActionRetries
-		}
-
-		for retry := 0; retry < totalRetries; retry++ {
+		for retry := 0; retry < c.systemActionRetries; retry++ {
 			vMediaMgr, httpResp, err := c.RedfishAPI.GetManagerVirtualMedia(ctx, managerID, mediaID)
 			if err = ScreenRedfishError(httpResp, err); err != nil {
 				return err
@@ -75,7 +74,7 @@ func (c *Client) EjectVirtualMedia(ctx context.Context) error {
 			}
 		}
 
-		return ErrOperationRetriesExceeded{What: fmt.Sprintf("eject media %s", mediaID), Retries: totalRetries}
+		return ErrOperationRetriesExceeded{What: fmt.Sprintf("eject media %s", mediaID), Retries: c.systemActionRetries}
 	}
 
 	managerID, err := getManagerID(ctx, c.RedfishAPI, c.nodeID)
@@ -268,7 +267,9 @@ func NewClient(redfishURL string,
 	insecure bool,
 	useProxy bool,
 	username string,
-	password string) (context.Context, *Client, error) {
+	password string,
+	systemActionRetries int,
+	systemRebootDelay int) (context.Context, *Client, error) {
 	var ctx context.Context
 	if username != "" && password != "" {
 		ctx = context.WithValue(
@@ -323,9 +324,12 @@ func NewClient(redfishURL string,
 	}
 
 	c := &Client{
-		nodeID:     systemID,
-		RedfishAPI: redfishClient.NewAPIClient(cfg).DefaultApi,
-		RedfishCFG: cfg,
+		nodeID:              systemID,
+		RedfishAPI:          redfishClient.NewAPIClient(cfg).DefaultApi,
+		RedfishCFG:          cfg,
+		systemActionRetries: systemActionRetries,
+		systemRebootDelay:   systemRebootDelay,
+
 		Sleep: func(d time.Duration) {
 			time.Sleep(d)
 		},

@@ -128,8 +128,11 @@ func NewClient(redfishURL string,
 	insecure bool,
 	useProxy bool,
 	username string,
-	password string) (context.Context, *Client, error) {
-	ctx, genericClient, err := redfish.NewClient(redfishURL, insecure, useProxy, username, password)
+	password string,
+	systemActionRetries int,
+	systemRebootDelay int) (context.Context, *Client, error) {
+	ctx, genericClient, err := redfish.NewClient(redfishURL, insecure, useProxy, username, password,
+		systemActionRetries, systemRebootDelay)
 	if err != nil {
 		return ctx, nil, err
 	}
