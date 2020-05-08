@@ -38,13 +38,6 @@ PROXY               ?= http://proxy.foo.com:8000
 NO_PROXY            ?= localhost,127.0.0.1,.svc.cluster.local
 USE_PROXY           ?= false
 
-# Sphinx document options
-PYTHON_EXECUTABLE   := python3
-SPHINXBUILD         ?= sphinx-build
-SOURCEDIR           = docs/source
-BUILDDIR            = docs/build/html
-REQUIREMENTSTXT     := docs/requirements.txt
-
 # Godoc server options
 GD_PORT             ?= 8080
 
@@ -153,11 +146,7 @@ clean:
 
 .PHONY: docs
 docs:
-	@$(PYTHON_EXECUTABLE) -m venv venv
-	source ./venv/bin/activate
-	@$(PYTHON_EXECUTABLE) -m pip install -r ${REQUIREMENTSTXT}
-	@$(SPHINXBUILD) "$(SOURCEDIR)" "$(BUILDDIR)"
-	rm -rf venv
+	tox
 
 .PHONY: godoc
 godoc:
