@@ -14,14 +14,18 @@
       License for the specific language governing permissions and limitations
       under the License.
 
-========================
-airshipctl Documentation
-========================
+======================================
+Welcome to airshipctl's Documentation!
+======================================
+
+.. include:: ../../README.rst
 
 .. toctree::
-   :maxdepth: 2
+    :hidden:
+    :maxdepth: 2
 
-   developers
-   plugins
-   testing-guidelines
-   cli/cli
+    architecture
+    developers
+    plugins
+    testing-guidelines
+    cli/cli

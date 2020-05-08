@@ -48,6 +48,10 @@ exclude_patterns = []
 #
 html_logo = "img/airship.logo.white.svg"
 html_theme = "sphinx_rtd_theme"
+html_theme_options = {
+    'display_version': False,
+    'logo_only': True
+}
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # Add any paths that contain custom static files (such as style sheets) here,
