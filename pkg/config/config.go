@@ -265,7 +265,7 @@ func (c *Config) reconcileAuthInfos() {
 			// Add the reference
 			c.AuthInfos[key] = NewAuthInfo()
 		}
-		c.AuthInfos[key].SetKubeAuthInfo(authinfo)
+		c.AuthInfos[key].authInfo = authinfo
 	}
 	// Checking if there is any AuthInfo reference in airship config that does not match
 	// an actual Auth Info struct in kubeconfig
@@ -711,12 +711,17 @@ func (c *Config) GetAuthInfo(aiName string) (*AuthInfo, error) {
 	if !exists {
 		return nil, ErrMissingConfig{What: fmt.Sprintf("User credentials with name '%s'", aiName)}
 	}
+	decodedAuthInfo, err := DecodeAuthInfo(authinfo.authInfo)
+	if err != nil {
+		return nil, err
+	}
+	authinfo.authInfo = decodedAuthInfo
 	return authinfo, nil
 }
 
 // GetAuthInfos returns a slice containing all the AuthInfos associated with
 // the Config sorted by name
-func (c *Config) GetAuthInfos() []*AuthInfo {
+func (c *Config) GetAuthInfos() ([]*AuthInfo, error) {
 	keys := make([]string, 0, len(c.AuthInfos))
 	for name := range c.AuthInfos {
 		keys = append(keys, name)
@@ -725,9 +730,14 @@ func (c *Config) GetAuthInfos() []*AuthInfo {
 
 	authInfos := make([]*AuthInfo, 0, len(c.AuthInfos))
 	for _, name := range keys {
+		decodedAuthInfo, err := DecodeAuthInfo(c.AuthInfos[name].authInfo)
+		if err != nil {
+			return []*AuthInfo{}, err
+		}
+		c.AuthInfos[name].authInfo = decodedAuthInfo
 		authInfos = append(authInfos, c.AuthInfos[name])
 	}
-	return authInfos
+	return authInfos, nil
 }
 
 // AddAuthInfo creates new AuthInfo with context details updated
@@ -738,7 +748,7 @@ func (c *Config) AddAuthInfo(theAuthInfo *AuthInfoOptions) *AuthInfo {
 	c.AuthInfos[theAuthInfo.Name] = nAuthInfo
 	// Create a new KubeConfig AuthInfo object as well
 	authInfo := clientcmdapi.NewAuthInfo()
-	nAuthInfo.SetKubeAuthInfo(authInfo)
+	nAuthInfo.authInfo = authInfo
 	c.KubeConfig().AuthInfos[theAuthInfo.Name] = authInfo
 
 	c.ModifyAuthInfo(nAuthInfo, theAuthInfo)
@@ -747,24 +757,24 @@ func (c *Config) AddAuthInfo(theAuthInfo *AuthInfoOptions) *AuthInfo {
 
 // ModifyAuthInfo updates the AuthInfo in the Config object
 func (c *Config) ModifyAuthInfo(authinfo *AuthInfo, theAuthInfo *AuthInfoOptions) {
-	kubeAuthInfo := authinfo.KubeAuthInfo()
+	kubeAuthInfo := EncodeAuthInfo(authinfo.KubeAuthInfo())
 	if kubeAuthInfo == nil {
 		return
 	}
 	if theAuthInfo.ClientCertificate != "" {
-		kubeAuthInfo.ClientCertificate = theAuthInfo.ClientCertificate
+		kubeAuthInfo.ClientCertificate = EncodeString(theAuthInfo.ClientCertificate)
 	}
 	if theAuthInfo.Token != "" {
-		kubeAuthInfo.Token = theAuthInfo.Token
+		kubeAuthInfo.Token = EncodeString(theAuthInfo.Token)
 	}
 	if theAuthInfo.Username != "" {
 		kubeAuthInfo.Username = theAuthInfo.Username
 	}
 	if theAuthInfo.Password != "" {
-		kubeAuthInfo.Password = theAuthInfo.Password
+		kubeAuthInfo.Password = EncodeString(theAuthInfo.Password)
 	}
 	if theAuthInfo.ClientKey != "" {
-		kubeAuthInfo.ClientKey = theAuthInfo.ClientKey
+		kubeAuthInfo.ClientKey = EncodeString(theAuthInfo.ClientKey)
 	}
 }
 
@@ -908,4 +918,45 @@ func (m *ManagementConfiguration) String() string {
 		return ""
 	}
 	return string(yamlData)
+}
+
+// DecodeAuthInfo returns authInfo with credentials decoded
+func DecodeAuthInfo(authinfo *clientcmdapi.AuthInfo) (*clientcmdapi.AuthInfo, error) {
+	password := authinfo.Password
+	decodedPassword, err := DecodeString(password)
+	if err != nil {
+		return nil, ErrDecodingCredentials{Given: password}
+	}
+	authinfo.Password = decodedPassword
+
+	token := authinfo.Token
+	decodedToken, err := DecodeString(token)
+	if err != nil {
+		return nil, ErrDecodingCredentials{Given: token}
+	}
+	authinfo.Token = decodedToken
+
+	clientCert := authinfo.ClientCertificate
+	decodedClientCertificate, err := DecodeString(clientCert)
+	if err != nil {
+		return nil, ErrDecodingCredentials{Given: clientCert}
+	}
+	authinfo.ClientCertificate = decodedClientCertificate
+
+	clientKey := authinfo.ClientKey
+	decodedClientKey, err := DecodeString(clientKey)
+	if err != nil {
+		return nil, ErrDecodingCredentials{Given: clientKey}
+	}
+	authinfo.ClientKey = decodedClientKey
+	return authinfo, nil
+}
+
+// EncodeAuthInfo returns authInfo with credentials base64 encoded
+func EncodeAuthInfo(authinfo *clientcmdapi.AuthInfo) *clientcmdapi.AuthInfo {
+	authinfo.Password = EncodeString(authinfo.Password)
+	authinfo.Token = EncodeString(authinfo.Token)
+	authinfo.ClientCertificate = EncodeString(authinfo.ClientCertificate)
+	authinfo.ClientKey = EncodeString(authinfo.ClientKey)
+	return authinfo
 }

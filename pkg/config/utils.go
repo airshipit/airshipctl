@@ -17,6 +17,8 @@ limitations under the License.
 package config
 
 import (
+	"encoding/base64"
+
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 )
 
@@ -108,4 +110,19 @@ func NewRepository() *Repository {
 // NewAuthInfo is a convenience function that returns a new AuthInfo
 func NewAuthInfo() *AuthInfo {
 	return &AuthInfo{}
+}
+
+// EncodeString returns the base64 encoding of given string
+func EncodeString(given string) string {
+	return base64.StdEncoding.EncodeToString([]byte(given))
+}
+
+// DecodeString returns the base64 decoded string
+// If err decoding, return the given string
+func DecodeString(given string) (string, error) {
+	decoded, err := base64.StdEncoding.DecodeString(given)
+	if err != nil {
+		return "", err
+	}
+	return string(decoded), nil
 }

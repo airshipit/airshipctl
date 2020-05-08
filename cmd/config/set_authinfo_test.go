@@ -81,8 +81,9 @@ func initInputConfig(t *testing.T) (given *config.Config, cleanup func(*testing.
 	kubeAuthInfo := kubeconfig.NewAuthInfo()
 	kubeAuthInfo.Username = testUsername
 	kubeAuthInfo.Password = testPassword
-	given.KubeConfig().AuthInfos[existingUserName] = kubeAuthInfo
-	given.AuthInfos[existingUserName].SetKubeAuthInfo(kubeAuthInfo)
+	encodedKAuthInfo := config.EncodeAuthInfo(kubeAuthInfo)
+	given.KubeConfig().AuthInfos[existingUserName] = encodedKAuthInfo
+	given.AuthInfos[existingUserName].SetKubeAuthInfo(encodedKAuthInfo)
 
 	return given, givenCleanup
 }

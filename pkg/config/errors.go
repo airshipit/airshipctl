@@ -169,3 +169,12 @@ type ErrEmptyContextName struct {
 func (e ErrEmptyContextName) Error() string {
 	return "Context name must not be empty."
 }
+
+// ErrDecodingCredentials returned when the given string cannot be decoded
+type ErrDecodingCredentials struct {
+	Given string
+}
+
+func (e ErrDecodingCredentials) Error() string {
+	return fmt.Sprintf("Error decoding credentials. String '%s' cannot not be decoded", e.Given)
+}

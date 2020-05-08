@@ -60,7 +60,10 @@ func NewGetAuthInfoCommand(rootSettings *environment.AirshipCTLSettings) *cobra.
 				}
 				fmt.Fprintln(cmd.OutOrStdout(), authinfo)
 			} else {
-				authinfos := airconfig.GetAuthInfos()
+				authinfos, err := airconfig.GetAuthInfos()
+				if err != nil {
+					return err
+				}
 				if len(authinfos) == 0 {
 					fmt.Fprintln(cmd.OutOrStdout(), "No User credentials found in the configuration.")
 				}
