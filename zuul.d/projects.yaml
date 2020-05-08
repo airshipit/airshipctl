@@ -12,8 +12,9 @@
 
 - project:
     vars:
-      rtd_project_name: airship-airshipctl
-      rtd_webhook_id: 112688
+      # NOTE(drewwalters96): These variables are required for the documentation promotion job.
+      download_artifact_job: airship-airshipctl-build-docs
+      download_artifact_pipeline: gate
     check:
       jobs:
         - airship-airshipctl-roles-test:
