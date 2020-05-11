@@ -34,7 +34,7 @@
         chdir: "{{ zuul.project.src_dir }}"
         params:
           DOCKER_IMAGE_TAG: latest
-          PUBLISH: true
+          PUBLISH: "true"
         target: images
 
     - name: Push Image with Commit Tag
@@ -42,5 +42,5 @@
         chdir: "{{ zuul.project.src_dir }}"
         params:
           DOCKER_IMAGE_TAG: "{{ zuul.newrev }}"
-          PUBLISH: true
+          PUBLISH: "true"
         target: images
