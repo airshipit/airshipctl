@@ -10,4 +10,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- include_tasks: "{{ http_server_action }}.yaml"
+- include_tasks: "{{ sushy_emulator_action }}.yaml"

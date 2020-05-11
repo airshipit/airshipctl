@@ -1,0 +1,29 @@
+{%  macro render_require(item) -%}
+{%       if item == "valid_user"  %}
+          Require valid-user
+{%       elif item.group is defined %}
+          Require group {{ item.group | join(' ') }}
+{%       elif item.user is defined  %}
+           Require user {{ item.user | join(' ') }}
+{%       elif item.all is defined  %}
+           Require all {{ item.all }}
+{%       else  %}
+           Require all denied
+{%       endif %}
+{%- endmacro %}
+{%  macro render_rbac(rbac) -%}
+{# rbac #}
+{%   if rbac is defined and rbac.policies is defined %}
+{%     for item in rbac.policies %}
+        <Limit {{ item.role | join(' ') }}>
+{{         render_require(item) }}
+        </Limit>
+{%     endfor %}
+        <LimitExcept{% for item in rbac.policies %} {{ item.role | join(' ') }}{% endfor %}>
+{{         render_require(rbac.default) }}
+        </LimitExcept>
+{%   else %}
+{{     render_require(rbac.default) }}
+{%   endif %}
+{%- endmacro %}
+

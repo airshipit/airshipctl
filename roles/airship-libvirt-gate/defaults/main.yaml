@@ -47,6 +47,25 @@ airship_gate_redfish_auth:
   - username: "username"
     password: "password"
 
+airship_gate_file_exchanger:
+  servername: "loacalhost"
+  ip:
+    - "127.0.0.1"
+    - "::1"
+  http_port: 8100
+  path: "/srv"
+  user:
+  - username: "username"
+    password: "password"
+  rbac:
+    policies:
+    - role:
+      - PUT
+      user:
+      - username
+    default:
+      all: granted
+
 airship_gate_flavors:
   small:
     target_vm_memory_mb: 1024

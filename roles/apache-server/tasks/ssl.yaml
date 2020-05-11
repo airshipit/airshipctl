@@ -37,7 +37,7 @@
       common_name: "{{ apache_server_ssl_cn }}"
       subject_alt_name: "{{ apache_server_ssl_alt_name }}"
 
-  - name: Generate the self signed certificate for sushy-emulator
+  - name: Generate the self signed certificate
     openssl_certificate:
       path: "{{ apache_server_ssl_cert_path }}"
       privatekey_path: "{{ apache_server_ssl_key_path }}"
