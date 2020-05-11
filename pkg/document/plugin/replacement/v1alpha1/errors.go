@@ -56,12 +56,12 @@ func (e ErrMultipleResources) Error() string {
 	return fmt.Sprintf("found more than one resources matching from %v", e.ResList)
 }
 
-// ErrResourceNotFound returned if resource does not exist in resource map
-type ErrResourceNotFound struct {
+// ErrResourceNotFound returned if a replacement source resource does not exist in resource map
+type ErrSourceNotFound struct {
 	ObjRef *types.Target
 }
 
-func (e ErrResourceNotFound) Error() string {
+func (e ErrSourceNotFound) Error() string {
 	keys := [5]string{"Group:", "Version:", "Kind:", "Name:", "Namespace:"}
 	values := [5]string{e.ObjRef.Group, e.ObjRef.Version, e.ObjRef.Kind, e.ObjRef.Name, e.ObjRef.Namespace}
 
@@ -71,7 +71,27 @@ func (e ErrResourceNotFound) Error() string {
 			resFilter += key + values[i] + " "
 		}
 	}
-	return fmt.Sprintf("failed to find any resources identified by %s", strings.TrimSpace(resFilter))
+	return fmt.Sprintf("failed to find any source resources identified by %s", strings.TrimSpace(resFilter))
+}
+
+// ErrSelectorNotFound returned if a replacement target resource does not exist in the resource map
+type ErrTargetNotFound struct {
+	ObjRef *types.Selector
+}
+
+func (e ErrTargetNotFound) Error() string {
+	keys := [7]string{"Group:", "Version:", "Kind:", "Name:", "Namespace:",
+		"AnnotationSelector:", "LabelSelector:"}
+	values := [7]string{e.ObjRef.Group, e.ObjRef.Version, e.ObjRef.Kind, e.ObjRef.Name,
+		e.ObjRef.Namespace, e.ObjRef.AnnotationSelector, e.ObjRef.LabelSelector}
+
+	var resFilter string
+	for i, key := range keys {
+		if values[i] != "" {
+			resFilter += key + values[i] + " "
+		}
+	}
+	return fmt.Sprintf("failed to find any target resources identified by %s", strings.TrimSpace(resFilter))
 }
 
 // ErrPatternSubstring returned in case of issues with sub-string pattern substitution

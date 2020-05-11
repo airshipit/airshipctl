@@ -564,7 +564,34 @@ replacements:
       kind: Deployment
     fieldrefs:
     - spec.template.spec.containers[name=nginx-latest].image`,
-			expectedErr: "failed to find any resources identified by Kind:Pod Name:pod1 Namespace:default",
+			expectedErr: "failed to find any source resources identified by Kind:Pod Name:pod1 Namespace:default",
+		},
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: notImportantHere
+replacements:
+- source:
+    objref:
+      kind: Pod
+      name: pod1
+  target:
+    objref:
+      kind: Deployment
+    fieldrefs:
+    - spec.template.spec.containers[name=nginx-latest].image`,
+			in: `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox`,
+			expectedErr: "failed to find any target resources identified by Kind:Deployment",
 		},
 		{
 			cfg: `
