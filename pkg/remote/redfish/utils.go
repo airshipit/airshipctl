@@ -267,7 +267,7 @@ func (c Client) waitForPowerState(ctx context.Context, desiredState redfishClien
 			return nil
 		}
 
-		c.Sleep(time.Duration(c.systemRebootDelay))
+		c.Sleep(time.Duration(c.systemRebootDelay) * time.Second)
 	}
 
 	return ErrOperationRetriesExceeded{
