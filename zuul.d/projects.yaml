@@ -37,7 +37,7 @@
       jobs:
         - airship-airshipctl-publish-image
         - airship-airshipctl-upload-git-mirror
-        - airship-airshipctl-update-github-issues
     promote:
       jobs:
         - promote-airship-project-docs
+        - airship-airshipctl-update-github-issues
