@@ -25,6 +25,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"opendev.org/airship/airshipctl/pkg/errors"
+	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 // Constants for possible repo authentication types
@@ -123,7 +124,7 @@ func (repo *Repository) String() string {
 
 // Validate check possible values for repository and
 // returns Error when incorrect value is given
-// retruns nill when there are no errors
+// returns nil when there are no errors
 func (repo *Repository) Validate() error {
 	if repo.URLString == "" {
 		return ErrRepoSpecRequiresURL{}
@@ -141,6 +142,8 @@ func (repo *Repository) Validate() error {
 		if err != nil {
 			return err
 		}
+	} else {
+		log.Debugf("Checkout options not defined, cloning from master")
 	}
 
 	return nil
@@ -171,14 +174,15 @@ func (repo *Repository) ToCheckoutOptions(force bool) *git.CheckoutOptions {
 	co := &git.CheckoutOptions{
 		Force: force,
 	}
-	switch {
-	case repo.CheckoutOptions == nil:
-	case repo.CheckoutOptions.Branch != "":
-		co.Branch = plumbing.NewBranchReferenceName(repo.CheckoutOptions.Branch)
-	case repo.CheckoutOptions.Tag != "":
-		co.Branch = plumbing.NewTagReferenceName(repo.CheckoutOptions.Tag)
-	case repo.CheckoutOptions.CommitHash != "":
-		co.Hash = plumbing.NewHash(repo.CheckoutOptions.CommitHash)
+	if repo.CheckoutOptions != nil {
+		switch {
+		case repo.CheckoutOptions.Branch != "":
+			co.Branch = plumbing.NewBranchReferenceName(repo.CheckoutOptions.Branch)
+		case repo.CheckoutOptions.Tag != "":
+			co.Branch = plumbing.NewTagReferenceName(repo.CheckoutOptions.Tag)
+		case repo.CheckoutOptions.CommitHash != "":
+			co.Hash = plumbing.NewHash(repo.CheckoutOptions.CommitHash)
+		}
 	}
 	return co
 }
@@ -187,10 +191,19 @@ func (repo *Repository) ToCheckoutOptions(force bool) *git.CheckoutOptions {
 // authentication and URL set
 // CloneOptions describes how a clone should be performed
 func (repo *Repository) ToCloneOptions(auth transport.AuthMethod) *git.CloneOptions {
-	return &git.CloneOptions{
+	cl := &git.CloneOptions{
 		Auth: auth,
 		URL:  repo.URLString,
 	}
+	if repo.CheckoutOptions != nil {
+		switch {
+		case repo.CheckoutOptions.Branch != "":
+			cl.ReferenceName = plumbing.NewBranchReferenceName(repo.CheckoutOptions.Branch)
+		case repo.CheckoutOptions.Tag != "":
+			cl.ReferenceName = plumbing.NewTagReferenceName(repo.CheckoutOptions.Tag)
+		}
+	}
+	return cl
 }
 
 // ToFetchOptions returns an instance of git.FetchOptions for given authentication

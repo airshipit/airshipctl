@@ -44,6 +44,10 @@ func (s *Settings) cloneRepositories() error {
 
 	// Clone repositories
 	for _, extraRepoConfig := range currentManifest.Repositories {
+		err := extraRepoConfig.Validate()
+		if err != nil {
+			return err
+		}
 		repository, err := repo.NewRepository(currentManifest.TargetPath, extraRepoConfig)
 		if err != nil {
 			return err
