@@ -36,7 +36,7 @@ credentials if no name is provided.
 airshipctl config get-credentials
 
 # Display a specific user's credentials
-airshipctl config get-credentials exampleUser
+airshipctl config get-credential exampleUser
 `
 )
 
@@ -45,10 +45,11 @@ airshipctl config get-credentials exampleUser
 func NewGetAuthInfoCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	o := &config.AuthInfoOptions{}
 	cmd := &cobra.Command{
-		Use:     "get-credentials [NAME]",
+		Use:     "get-credential [NAME]",
 		Short:   "Get user credentials from the airshipctl config",
 		Long:    getAuthInfoLong[1:],
 		Example: getAuthInfoExample,
+		Aliases: []string{"get-credentials"},
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			airconfig := rootSettings.Config

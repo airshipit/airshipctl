@@ -36,7 +36,7 @@ Valid values for the --cluster-type flag are [ephemeral|target].
 
 	getClusterExample = `
 # List all clusters
-airshipctl config get-cluster
+airshipctl config get-clusters
 
 # Display a specific cluster
 airshipctl config get-cluster --cluster-type=ephemeral exampleCluster
@@ -52,6 +52,7 @@ func NewGetClusterCommand(rootSettings *environment.AirshipCTLSettings) *cobra.C
 		Short:   "Get cluster information from the airshipctl config",
 		Long:    getClusterLong[1:],
 		Example: getClusterExample,
+		Aliases: []string{"get-clusters"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			airconfig := rootSettings.Config
 			if len(args) == 1 {
