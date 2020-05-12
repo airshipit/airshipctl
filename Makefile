@@ -41,6 +41,9 @@ USE_PROXY           ?= false
 # Godoc server options
 GD_PORT             ?= 8080
 
+# Documentation location
+DOCS_DIR            ?= docs
+
 .PHONY: depend
 depend:
 	@go mod download
@@ -154,6 +157,12 @@ godoc:
 	@echo "Follow this link to package documentation: http://localhost:${GD_PORT}/pkg/opendev.org/airship/airshipctl/"
 	@godoc -http=":${GD_PORT}"
 
+.PHONY: cli-docs
+cli-docs:
+	@echo "Generating CLI documentation..."
+	@go run $(DOCS_DIR)/tools/generate_cli_docs.go
+	@echo "CLI documentation generated"
+
 .PHONY: releasenotes
 releasenotes:
 	@echo "TODO"
@@ -169,6 +178,7 @@ update-golden: delete-golden
 update-golden: TESTFLAGS += -update
 update-golden: PKG = opendev.org/airship/airshipctl/cmd/...
 update-golden: unit-tests
+update-golden: cli-docs
 
 # The delete-golden target is a utility for update-golden
 .PHONY: delete-golden

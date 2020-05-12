@@ -28,4 +28,4 @@ Welcome to airshipctl's Documentation!
     developers
     plugins
     testing-guidelines
-    cli/cli
+    Commands <cli/airshipctl>
