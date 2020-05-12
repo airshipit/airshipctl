@@ -11,17 +11,14 @@
 # limitations under the License.
 
 - project:
-    templates:
-      - docs-on-readthedocs
     vars:
-      rtd_project_name: airship-airshipctl
-      rtd_webhook_id: 112688
       sphinx_build_dir: docs/build
     check:
       jobs:
         - airship-airshipctl-roles-test:
             files:
               - "roles/*"
+        - openstack-tox-docs
         - airship-airshipctl-lint-unit
         - airship-airshipctl-build-image
 #        - airship-airshipctl-functional-existing-k8s TODO: Enable this when functional tests exist, and a cluster is up
@@ -29,6 +26,8 @@
         - airship-airshipctl-32GB-gate-test
     gate:
       jobs:
+        - openstack-tox-docs
+        - airship-airshipctl-lint-unit
         - airship-airshipctl-lint-unit
         - airship-airshipctl-build-image
 #        - airship-airshipctl-functional-existing-k8s TODO: Enable this when functional tests exist, and a cluster is up

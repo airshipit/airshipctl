@@ -31,11 +31,12 @@ goals for the sprint they are assigned to.
 ### Coding Conventions
 
 Airship has a set of [coding conventions](
-https://airship-docs.readthedocs.io/en/latest/conventions.html) that are meant
+https://docs.airshipit.org/develop/conventions.html) that are meant
 to cover all Airship subprojects.
 
 However, airshipctl also has its own specific coding conventions and standards
-in the official airshipctl [developer guide](docs/source/developers.md).
+in the official airshipctl [developer guide](
+https://doc.airshipit.org/airshipctl/developers.html).
 
 ### Submitting Changes
 
