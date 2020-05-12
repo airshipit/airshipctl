@@ -59,5 +59,5 @@ const (
 // Default values for remote operations
 const (
 	DefaultSystemActionRetries = 30
-	DefaultSystemRebootDelay   = 2
+	DefaultSystemRebootDelay   = 30
 )
