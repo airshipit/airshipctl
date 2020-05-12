@@ -70,7 +70,7 @@ type RepoAuth struct {
 // Each field is mutually exclusive
 type RepoCheckout struct {
 	// CommitHash is full hash of the commit that will be used to checkout
-	CommitHash string `json:"commitHash,omitempty"`
+	CommitHash string `json:"commitHash"`
 	// Branch is the branch name to checkout
 	Branch string `json:"branch"`
 	// Tag is the tag name to checkout
@@ -79,7 +79,7 @@ type RepoCheckout struct {
 	// RemoteRef is used for remote checkouts such as gerrit change requests/github pull request
 	// for example refs/changes/04/691202/5
 	// TODO Add support for fetching remote refs
-	RemoteRef string `json:"remoteRef"`
+	RemoteRef string `json:"remoteRef,omitempty"`
 	// ForceCheckout is a boolean to indicate whether to use the `--force` option when checking out
 	ForceCheckout bool `json:"force"`
 }

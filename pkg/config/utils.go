@@ -72,9 +72,7 @@ func NewConfig() *Config {
 					DefaultTestPrimaryRepo: {
 						URLString: AirshipDefaultManifestRepoLocation,
 						CheckoutOptions: &RepoCheckout{
-							CommitHash: "master",
-							Branch:     "master",
-							RemoteRef:  "master",
+							Branch: "master",
 						},
 					},
 				},

@@ -6,8 +6,8 @@ repositories:
       type: ssh-key
     checkout:
       branch: ""
+      commitHash: ""
       force: false
-      remoteRef: ""
       tag: v1.0.1
     url: http://dummy.url.com/manifests.git
 subPath: manifests/site/test-site
