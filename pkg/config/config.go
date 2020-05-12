@@ -188,8 +188,8 @@ func (c *Config) reconcileClusters() (map[string]string, bool) {
 		}
 		configCluster := c.Clusters[clusterComplexName.Name].ClusterTypes[clusterComplexName.Type]
 		configCluster.NameInKubeconf = clusterComplexName.String()
-		// TODO What do we do with the BOOTSTRAP CONFIG
-
+		configCluster.Bootstrap = AirshipDefaultBootstrapInfo
+		configCluster.ManagementConfiguration = AirshipDefaultManagementConfiguration
 		// Store the reference to the KubeConfig Cluster in the Airship Config
 		configCluster.SetKubeCluster(cluster)
 	}
