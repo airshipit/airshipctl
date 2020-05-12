@@ -72,6 +72,8 @@ func (c *Context) ClusterType() string {
 	return NewClusterComplexNameFromKubeClusterName(c.NameInKubeconf).Type
 }
 
+// ClusterName returns cluster name by extracting the name portion from
+// the complex cluster name
 func (c *Context) ClusterName() string {
 	return NewClusterComplexNameFromKubeClusterName(c.NameInKubeconf).Name
 }

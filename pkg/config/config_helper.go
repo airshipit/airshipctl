@@ -20,6 +20,7 @@ import (
 	"errors"
 )
 
+// RunSetAuthInfo validates the given command line options and invokes AddAuthInfo/ModifyAuthInfo
 func RunSetAuthInfo(o *AuthInfoOptions, airconfig *Config, writeToStorage bool) (bool, error) {
 	modified := false
 	err := o.Validate()
@@ -54,6 +55,7 @@ func RunSetAuthInfo(o *AuthInfoOptions, airconfig *Config, writeToStorage bool) 
 	return modified, nil
 }
 
+// RunSetCluster validates the given command line options and invokes AddCluster/ModifyCluster
 func RunSetCluster(o *ClusterOptions, airconfig *Config, writeToStorage bool) (bool, error) {
 	modified := false
 	err := o.Validate()
@@ -98,6 +100,7 @@ func RunSetCluster(o *ClusterOptions, airconfig *Config, writeToStorage bool) (b
 	return modified, nil
 }
 
+// RunSetContext validates the given command line options and invokes AddContext/ModifyContext
 func RunSetContext(o *ContextOptions, airconfig *Config, writeToStorage bool) (bool, error) {
 	modified := false
 	err := o.Validate()
@@ -148,6 +151,7 @@ func RunSetContext(o *ContextOptions, airconfig *Config, writeToStorage bool) (b
 	return modified, nil
 }
 
+// RunUseContext validates the given context name and updates it as current context
 func RunUseContext(desiredContext string, airconfig *Config) error {
 	if _, err := airconfig.GetContext(desiredContext); err != nil {
 		return err

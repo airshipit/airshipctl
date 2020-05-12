@@ -21,6 +21,7 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+// AuthInfo contains kubeConfig AuthInfo Object
 type AuthInfo struct {
 	// KubeConfig AuthInfo Object
 	authInfo *api.AuthInfo
@@ -36,9 +37,12 @@ func (c *AuthInfo) String() string {
 	return string(kyaml)
 }
 
+// KubeAuthInfo returns kubeConfig AuthInfo Object
 func (c *AuthInfo) KubeAuthInfo() *api.AuthInfo {
 	return c.authInfo
 }
+
+// SetKubeAuthInfo sets kubeConfig in AuthInfo
 func (c *AuthInfo) SetKubeAuthInfo(kc *api.AuthInfo) {
 	c.authInfo = kc
 }
