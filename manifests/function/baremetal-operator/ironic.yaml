@@ -72,21 +72,6 @@ spec:
               - name: ironic-entrypoints
                 mountPath: /bin/runhttpd
                 subPath: httpd-entrypoint
-        - name: mariadb
-          image: "quay.io/metal3-io/ironic:latest"
-          imagePullPolicy: Always
-          command: ["/bin/runmariadb"]
-          securityContext:
-            privileged: true
-          volumeMounts:
-            - mountPath: "/shared"
-              name: ironic-storage
-            - mountPath: "/var/lib/mysql"
-              name: ironic-storage
-              subPath: mysql
-            - name: ironic-entrypoints
-              mountPath: /bin/runmariadb
-              subPath: mariadb-entrypoint
         - name: ironic
           image: "quay.io/metal3-io/ironic:latest"
           imagePullPolicy: Always

@@ -10,5 +10,3 @@ configMapGenerator:
     - inspector.conf
     - inspector.ipxe
     - ironic.conf
-    - my.cnf
-    - configure-mysql.sql
