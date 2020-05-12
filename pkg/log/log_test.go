@@ -25,9 +25,9 @@ import (
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
-var logFormatRegex = regexp.MustCompile(`^\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} .*`)
+var logFormatRegex = regexp.MustCompile(`^\[airshipctl\] \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} .*`)
 
-const prefixLength = len("2001/02/03 16:05:06 ")
+const prefixLength = len("[airshipctl] 2001/02/03 16:05:06 ")
 
 func TestLoggingPrintf(t *testing.T) {
 	assert := assert.New(t)
