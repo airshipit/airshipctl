@@ -1,4 +1,7 @@
 resources:
+  - ../../shared/clusterctl
   - ../../../../function/baremetal-operator
+patchesStrategicMerge:
+  - patch_bmo_config.yaml
 commonLabels:
   airshipit.org/stage: initinfra
