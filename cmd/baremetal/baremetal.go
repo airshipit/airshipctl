@@ -18,6 +18,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/remote"
 )
 
@@ -36,33 +37,39 @@ const (
 
 // NewBaremetalCommand creates a new command for interacting with baremetal using airshipctl.
 func NewBaremetalCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
-	cmd := &cobra.Command{
+	baremetalRootCmd := &cobra.Command{
 		Use:   "baremetal",
 		Short: "Perform actions on baremetal hosts",
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			log.Init(rootSettings.Debug, cmd.OutOrStderr())
+
+			// Load or Initialize airship Config
+			rootSettings.InitConfig()
+		},
 	}
 
 	ejectMediaCmd := NewEjectMediaCommand(rootSettings)
-	cmd.AddCommand(ejectMediaCmd)
+	baremetalRootCmd.AddCommand(ejectMediaCmd)
 
 	isoGenCmd := NewISOGenCommand(rootSettings)
-	cmd.AddCommand(isoGenCmd)
+	baremetalRootCmd.AddCommand(isoGenCmd)
 
 	powerOffCmd := NewPowerOffCommand(rootSettings)
-	cmd.AddCommand(powerOffCmd)
+	baremetalRootCmd.AddCommand(powerOffCmd)
 
 	powerOnCmd := NewPowerOnCommand(rootSettings)
-	cmd.AddCommand(powerOnCmd)
+	baremetalRootCmd.AddCommand(powerOnCmd)
 
 	powerStatusCmd := NewPowerStatusCommand(rootSettings)
-	cmd.AddCommand(powerStatusCmd)
+	baremetalRootCmd.AddCommand(powerStatusCmd)
 
 	rebootCmd := NewRebootCommand(rootSettings)
-	cmd.AddCommand(rebootCmd)
+	baremetalRootCmd.AddCommand(rebootCmd)
 
 	remoteDirectCmd := NewRemoteDirectCommand(rootSettings)
-	cmd.AddCommand(remoteDirectCmd)
+	baremetalRootCmd.AddCommand(remoteDirectCmd)
 
-	return cmd
+	return baremetalRootCmd
 }
 
 // getHostSelections builds a list of selectors that can be passed to a manager using the name and label flags passed to

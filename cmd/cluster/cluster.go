@@ -18,6 +18,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 const (
@@ -34,6 +35,12 @@ func NewClusterCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comm
 		Use:   "cluster",
 		Short: "Manage Kubernetes clusters",
 		Long:  clusterLong[1:],
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			log.Init(rootSettings.Debug, cmd.OutOrStderr())
+
+			// Load or Initialize airship Config
+			rootSettings.InitConfig()
+		},
 	}
 
 	clusterRootCmd.AddCommand(NewInitInfraCommand(rootSettings))
