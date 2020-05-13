@@ -3,7 +3,7 @@ bootstrapInfo:
   dummy_bootstrap_config:
     container:
       volume: /tmp/airship:/config
-      image: quay.io/airshipit/isogen:latest
+      image: quay.io/airshipit/isogen:latest-debian_stable
       containerRuntime: docker
     builder:
       userDataFileName: user-data

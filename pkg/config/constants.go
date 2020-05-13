@@ -36,22 +36,24 @@ var AllClusterTypes = [2]string{Ephemeral, Target}
 
 // Constants defining default values
 const (
-	AirshipConfigGroup                 = "airshipit.org"
-	AirshipConfigVersion               = "v1alpha1"
-	AirshipConfigAPIVersion            = AirshipConfigGroup + "/" + AirshipConfigVersion
-	AirshipConfigKind                  = "Config"
-	AirshipConfigDir                   = ".airship"
-	AirshipConfig                      = "config"
-	AirshipKubeConfig                  = "kubeconfig"
-	AirshipConfigEnv                   = "AIRSHIPCONFIG"
-	AirshipKubeConfigEnv               = "AIRSHIP_KUBECONFIG"
-	AirshipDefaultContext              = "default"
-	AirshipDefaultManifest             = "default"
-	AirshipDefaultManifestRepo         = "treasuremap"
-	AirshipDefaultManifestRepoLocation = "https://opendev.org/airship/" + AirshipDefaultManifestRepo
+	AirshipConfig                         = "config"
+	AirshipConfigAPIVersion               = AirshipConfigGroup + "/" + AirshipConfigVersion
+	AirshipConfigDir                      = ".airship"
+	AirshipConfigEnv                      = "AIRSHIPCONFIG"
+	AirshipConfigGroup                    = "airshipit.org"
+	AirshipConfigKind                     = "Config"
+	AirshipConfigVersion                  = "v1alpha1"
+	AirshipDefaultBootstrapInfo           = "default"
+	AirshipDefaultContext                 = "default"
+	AirshipDefaultManagementConfiguration = "default"
+	AirshipDefaultManifest                = "default"
+	AirshipDefaultManifestRepo            = "treasuremap"
+	AirshipDefaultManifestRepoLocation    = "https://opendev.org/airship/" + AirshipDefaultManifestRepo
+	AirshipKubeConfig                     = "kubeconfig"
+	AirshipKubeConfigEnv                  = "AIRSHIP_KUBECONFIG"
 
 	// Modules
-	AirshipDefaultBootstrapImage = "quay.io/airshipit/isogen:latest"
+	AirshipDefaultBootstrapImage = "quay.io/airshipit/isogen:latest-debian_stable"
 	AirshipDefaultIsoURL         = "http://localhost:8099/debian-custom.iso"
 	AirshipDefaultRemoteType     = redfish.ClientType
 )

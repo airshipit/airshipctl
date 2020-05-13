@@ -7,7 +7,7 @@ bootstrapInfo:
       userDataFileName: user-data
     container:
       containerRuntime: docker
-      image: quay.io/airshipit/isogen:latest
+      image: quay.io/airshipit/isogen:latest-debian_stable
       volume: /srv/iso:/config
     remoteDirect:
       isoUrl: http://localhost:8099/debian-custom.iso

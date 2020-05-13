@@ -33,7 +33,7 @@ func NewConfig() *Config {
 		Kind:       AirshipConfigKind,
 		APIVersion: AirshipConfigAPIVersion,
 		BootstrapInfo: map[string]*Bootstrap{
-			AirshipDefaultContext: {
+			AirshipDefaultBootstrapInfo: {
 				Container: &Container{
 					Volume:           "/srv/iso:/config",
 					Image:            AirshipDefaultBootstrapImage,
@@ -56,8 +56,9 @@ func NewConfig() *Config {
 				Manifest: AirshipDefaultManifest,
 			},
 		},
+		CurrentContext: AirshipDefaultContext,
 		ManagementConfiguration: map[string]*ManagementConfiguration{
-			AirshipDefaultContext: {
+			AirshipDefaultManagementConfiguration: {
 				Type:                redfish.ClientType,
 				Insecure:            true,
 				UseProxy:            false,
