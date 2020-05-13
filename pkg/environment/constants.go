@@ -14,4 +14,5 @@
 
 package environment
 
+// HomeEnvVar holds value of HOME directory from env
 const HomeEnvVar = "$HOME"

@@ -42,6 +42,7 @@ type GitDriver struct {
 	Storer     storage.Storer
 }
 
+// NewGitDriver returns GitDriver with given storer and Filesystem
 func NewGitDriver(fs billy.Filesystem, s storage.Storer) Adapter {
 	return &GitDriver{Storer: s, Filesystem: fs}
 }
@@ -56,6 +57,7 @@ func (g *GitDriver) Open() error {
 	return nil
 }
 
+// IsOpen returns true if repository is already cloned
 func (g *GitDriver) IsOpen() bool {
 	if g.Repository == nil {
 		return false
@@ -78,10 +80,12 @@ func (g *GitDriver) Clone(co *git.CloneOptions) error {
 	return nil
 }
 
+// SetFilesystem updates given Filesystem in GitDriver.Filesystem
 func (g *GitDriver) SetFilesystem(fs billy.Filesystem) {
 	g.Filesystem = fs
 }
 
+// SetStorer updates given Storer in GitDriver.Filesystem
 func (g *GitDriver) SetStorer(s storage.Storer) {
 	g.Storer = s
 }

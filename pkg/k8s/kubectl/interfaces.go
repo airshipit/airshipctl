@@ -18,6 +18,10 @@ import (
 	"opendev.org/airship/airshipctl/pkg/document"
 )
 
+//TODO(sy495p): type name "Interface" is too generic. Use a more specific name
+
+// Interface provides a abstraction layer built on top of kubectl libraries
+// to implement kubectl subcommands as kubectl apply
 type Interface interface {
 	Apply(docs []document.Document, ao *ApplyOptions) error
 	ApplyOptions() (*ApplyOptions, error)

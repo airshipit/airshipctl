@@ -235,6 +235,7 @@ func DummyAuthInfoOptions() *config.AuthInfoOptions {
 	return authinfo
 }
 
+// DummyBootstrapInfo creates a dummy BootstrapInfo config object for unit testing
 func DummyBootstrapInfo() *config.Bootstrap {
 	bs := &config.Bootstrap{}
 	cont := config.Container{
