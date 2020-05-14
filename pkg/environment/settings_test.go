@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package environment
+package environment_test
 
 import (
 	"os"
@@ -25,12 +25,13 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
 func TestInitFlags(t *testing.T) {
 	// Get the Environment
-	settings := &AirshipCTLSettings{}
+	settings := &environment.AirshipCTLSettings{}
 	testCmd := &cobra.Command{}
 	settings.InitFlags(testCmd)
 	assert.True(t, testCmd.HasPersistentFlags())
@@ -43,13 +44,15 @@ func TestInitConfig(t *testing.T) {
 		defer cleanup(t)
 		defer setHome(testDir)()
 
-		var testSettings AirshipCTLSettings
+		var testSettings environment.AirshipCTLSettings
 		expectedAirshipConfig := filepath.Join(testDir, config.AirshipConfigDir, config.AirshipConfig)
 		expectedKubeConfig := filepath.Join(testDir, config.AirshipConfigDir, config.AirshipKubeConfig)
+		expectedPluginPath := filepath.Join(testDir, config.AirshipConfigDir, config.AirshipPluginPath)
 
 		testSettings.InitConfig()
 		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath)
 		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath)
+		assert.Equal(t, expectedPluginPath, environment.PluginPath())
 	})
 
 	t.Run("PreferEnvToDefault", func(subTest *testing.T) {
@@ -58,18 +61,22 @@ func TestInitConfig(t *testing.T) {
 		defer cleanup(t)
 		defer setHome(testDir)()
 
-		var testSettings AirshipCTLSettings
+		var testSettings environment.AirshipCTLSettings
 		expectedAirshipConfig := filepath.Join(testDir, "airshipEnv")
 		expectedKubeConfig := filepath.Join(testDir, "kubeEnv")
+		expectedPluginPath := filepath.Join(testDir, "pluginPath")
 
 		os.Setenv(config.AirshipConfigEnv, expectedAirshipConfig)
 		os.Setenv(config.AirshipKubeConfigEnv, expectedKubeConfig)
+		os.Setenv(config.AirshipPluginPathEnv, expectedPluginPath)
 		defer os.Unsetenv(config.AirshipConfigEnv)
 		defer os.Unsetenv(config.AirshipKubeConfigEnv)
+		defer os.Unsetenv(config.AirshipPluginPathEnv)
 
 		testSettings.InitConfig()
 		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath)
 		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath)
+		assert.Equal(t, expectedPluginPath, environment.PluginPath())
 	})
 
 	t.Run("PreferCmdLineArgToDefault", func(subTest *testing.T) {
@@ -81,7 +88,7 @@ func TestInitConfig(t *testing.T) {
 		expectedAirshipConfig := filepath.Join(testDir, "airshipCmdLine")
 		expectedKubeConfig := filepath.Join(testDir, "kubeCmdLine")
 
-		testSettings := AirshipCTLSettings{
+		testSettings := environment.AirshipCTLSettings{
 			AirshipConfigPath: expectedAirshipConfig,
 			KubeConfigPath:    expectedKubeConfig,
 		}
@@ -111,7 +118,7 @@ func TestInitConfig(t *testing.T) {
 		defer os.Unsetenv(config.AirshipConfigEnv)
 		defer os.Unsetenv(config.AirshipKubeConfigEnv)
 
-		testSettings := AirshipCTLSettings{
+		testSettings := environment.AirshipCTLSettings{
 			AirshipConfigPath: expectedAirshipConfig,
 			KubeConfigPath:    expectedKubeConfig,
 		}

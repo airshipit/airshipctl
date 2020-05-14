@@ -51,6 +51,8 @@ const (
 	AirshipDefaultManifestRepoLocation    = "https://opendev.org/airship/" + AirshipDefaultManifestRepo
 	AirshipKubeConfig                     = "kubeconfig"
 	AirshipKubeConfigEnv                  = "AIRSHIP_KUBECONFIG"
+	AirshipPluginPath                     = "kustomize-plugins"
+	AirshipPluginPathEnv                  = "AIRSHIP_KUSTOMIZE_PLUGINS"
 
 	// Modules
 	AirshipDefaultBootstrapImage = "quay.io/airshipit/isogen:latest-debian_stable"

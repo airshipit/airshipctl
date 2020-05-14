@@ -22,6 +22,7 @@ import (
 	"sigs.k8s.io/kustomize/api/resmap"
 	"sigs.k8s.io/kustomize/api/types"
 
+	"opendev.org/airship/airshipctl/pkg/environment"
 	utilyaml "opendev.org/airship/airshipctl/pkg/util/yaml"
 )
 
@@ -85,7 +86,7 @@ func NewBundle(fSys FileSystem, kustomizePath string) (Bundle, error) {
 		LoadRestrictions:     options.LoadRestrictions,
 		DoPrune:              false, // Default
 		PluginConfig: &types.PluginConfig{
-			AbsPluginHome:      kustomizePath,
+			AbsPluginHome:      environment.PluginPath(),
 			PluginRestrictions: types.PluginRestrictionsNone,
 		},
 	}

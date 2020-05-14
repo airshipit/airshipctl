@@ -17,6 +17,7 @@ package environment
 import (
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/spf13/cobra"
 
@@ -34,6 +35,10 @@ type AirshipCTLSettings struct {
 	KubeConfigPath    string
 	Config            *config.Config
 }
+
+// A singleton for the kustomize plugin path configuration
+var pluginPath string
+var pluginPathLock = &sync.Mutex{}
 
 // InitFlags adds the default settings flags to cmd
 func (a *AirshipCTLSettings) InitFlags(cmd *cobra.Command) {
@@ -67,6 +72,7 @@ func (a *AirshipCTLSettings) InitConfig() {
 
 	a.initAirshipConfigPath()
 	a.initKubeConfigPath()
+	initPluginPath()
 
 	err := a.Config.LoadConfig(a.AirshipConfigPath, a.KubeConfigPath)
 	if err != nil {
@@ -114,6 +120,28 @@ func (a *AirshipCTLSettings) initKubeConfigPath() {
 	// Otherwise, we'll try putting it in the home directory
 	homeDir := userHomeDir()
 	a.KubeConfigPath = filepath.Join(homeDir, config.AirshipConfigDir, config.AirshipKubeConfig)
+}
+
+// Sets the location to look for kustomize plugins (including airshipctl itself).
+func initPluginPath() {
+	pluginPathLock.Lock()
+	defer pluginPathLock.Unlock()
+
+	// Check if we got the path via ENVIRONMENT variable
+	pluginPath = os.Getenv(config.AirshipPluginPathEnv)
+	if pluginPath != "" {
+		return
+	}
+
+	// Otherwise, we'll try putting it in the home directory
+	homeDir := userHomeDir()
+	pluginPath = filepath.Join(homeDir, config.AirshipConfigDir, config.AirshipPluginPath)
+}
+
+func PluginPath() string {
+	pluginPathLock.Lock()
+	defer pluginPathLock.Unlock()
+	return pluginPath
 }
 
 // userHomeDir is a utility function that wraps os.UserHomeDir and returns no
