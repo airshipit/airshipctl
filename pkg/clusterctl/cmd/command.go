@@ -39,6 +39,9 @@ func NewCommand(rs *environment.AirshipCTLSettings) (*Command, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err = rs.Config.EnsureComplete(); err != nil {
+		return nil, err
+	}
 	root, err := rs.Config.CurrentContextTargetPath()
 	if err != nil {
 		return nil, err
