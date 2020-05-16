@@ -28,7 +28,7 @@
   when: ansible_facts.services['docker.service'] is defined
   args:
     executable: /bin/bash
-  become: true
+  become: yes
 
 - name: dump containerd logs
   shell: |-
@@ -36,7 +36,7 @@
   when: ansible_facts.services['containerd.service'] is defined
   args:
     executable: /bin/bash
-  become: true
+  become: yes
 
 - name: "Downloads logs to executor"
   synchronize:

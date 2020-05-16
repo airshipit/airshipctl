@@ -16,7 +16,7 @@
     state: directory
     mode: "0755"
     owner: "{{ ansible_user }}"
-  become: true
+  become: yes
 
 - name: build ephemeral node iso
   command: airshipctl baremetal isogen

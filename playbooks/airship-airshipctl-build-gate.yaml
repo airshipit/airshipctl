@@ -29,7 +29,7 @@
         state: directory
         mode: "0755"
         owner: "{{ ansible_user }}"
-      become: true
+      become: yes
 
     - name: deploy-gate
       include_role:

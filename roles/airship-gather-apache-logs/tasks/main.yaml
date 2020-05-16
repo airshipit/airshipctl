@@ -25,15 +25,15 @@
   args:
     executable: /bin/bash
   ignore_errors: True
-  become: true
+  become: yes
 
 - name: copy configs
   command: "cp -r /etc/apache2 {{ apache_log_dir }}/configs"
-  become: true
+  become: yes
 
 - name: copy logs
   command: "cp -r /var/log/apache2 {{ apache_log_dir }}/logs"
-  become: true
+  become: yes
 
 - name: Change ownership of the logs dir
   file:
@@ -41,7 +41,7 @@
     recurse: true
     owner: "{{ ansible_user }}"
     path: "{{ apache_log_dir }}"
-  become: true
+  become: yes
 
 - name: "Downloads logs to executor"
   synchronize:

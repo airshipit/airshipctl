@@ -11,7 +11,7 @@
 # limitations under the License.
 
 - name: configure libvirt
-  become: true
+  become: yes
   block:
   - name: Set libvirt security driver
     lineinfile:

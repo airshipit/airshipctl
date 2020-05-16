@@ -12,7 +12,7 @@
 
 ---
 - name: redhat | ensuring apache packages are present
-  become: true
+  become: yes
   when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
   yum:
     name:
@@ -21,7 +21,7 @@
     state: present
 
 - name: ubuntu | ensuring apache packages are present
-  become: true
+  become: yes
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
   apt:
     name:
@@ -30,25 +30,25 @@
     state: present
 
 - name: Disable default virtual host
-  become: true
+  become: yes
   command: a2dissite 000-default
 
 - name: Enable ssl module
-  become: true
+  become: yes
   command: a2enmod headers ssl
 
 - name: Add ssl configuration
-  become: true
+  become: yes
   template:
     src: ssl-params.conf.j2
     dest: /etc/apache2/conf-available/ssl-params.conf
 
 - name: Enable ssl configuration
-  become: true
+  become: yes
   command: a2enconf ssl-params
 
 - name: redhat | enabling apache on boot and starting
-  become: true
+  become: yes
   when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
   service:
     name: httpd
@@ -56,7 +56,7 @@
     enabled: true
 
 - name: Reload apache2 service
-  become: true
+  become: yes
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
   service:
     name: apache2

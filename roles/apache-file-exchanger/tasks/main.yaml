@@ -17,7 +17,7 @@
     msg: "Only Debian|Ubuntu are currently supported"
 
 - name: Confguring file-exchanger
-  become: true
+  become: yes
   block:
 
   - name: Ensure backend
