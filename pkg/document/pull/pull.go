@@ -27,6 +27,9 @@ type Settings struct {
 
 // Pull clones repositories
 func (s *Settings) Pull() error {
+	if err := s.Config.EnsureComplete(); err != nil {
+		return err
+	}
 	err := s.cloneRepositories()
 	if err != nil {
 		return err
