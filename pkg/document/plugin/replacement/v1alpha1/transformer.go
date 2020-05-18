@@ -140,7 +140,7 @@ func getReplacement(m resmap.ResMap, objRef *types.Target, fieldRef string) (int
 		return nil, ErrMultipleResources{ResList: resources}
 	}
 	if len(resources) == 0 {
-		return nil, ErrResourceNotFound{ObjRef: objRef}
+		return nil, ErrSourceNotFound{ObjRef: objRef}
 	}
 	if fieldRef == "" {
 		fieldRef = "metadata.name"
@@ -152,6 +152,9 @@ func substitute(m resmap.ResMap, to *types.ReplTarget, replacement interface{}) 
 	resources, err := m.Select(*to.ObjRef)
 	if err != nil {
 		return err
+	}
+	if len(resources) == 0 {
+		return ErrTargetNotFound{ObjRef: to.ObjRef}
 	}
 	for _, r := range resources {
 		for _, p := range to.FieldRefs {
