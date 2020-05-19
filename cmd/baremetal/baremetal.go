@@ -72,8 +72,8 @@ func NewBaremetalCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Co
 	return baremetalRootCmd
 }
 
-// getHostSelections builds a list of selectors that can be passed to a manager using the name and label flags passed to
-// airshipctl.
+// GetHostSelections builds a list of selectors that can be passed to a manager
+// using the name and label flags passed to airshipctl.
 func GetHostSelections(name string, labels string) []remote.HostSelector {
 	var selectors []remote.HostSelector
 	if name != "" {

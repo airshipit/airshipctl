@@ -31,11 +31,15 @@ import (
 	"opendev.org/airship/airshipctl/pkg/util"
 )
 
+//TODO(sy495p): Switch to strongly-typed errors in this file
+
+// variables for repository errors
 var (
 	ErrNoOpenRepo   = errors.New("no open repository is stored")
 	ErrCantParseURL = errors.New("could not get target directory from url")
 )
 
+// OptionsBuilder interface provides specification for a repository implementation
 type OptionsBuilder interface {
 	ToAuth() (transport.AuthMethod, error)
 	ToCloneOptions(auth transport.AuthMethod) *git.CloneOptions

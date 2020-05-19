@@ -55,9 +55,6 @@ type ClusterOptions struct {
 	EmbedCAData           bool
 }
 
-// Validate checks for the possible authentication values and returns
-// Error when invalid value or incompatible choice of values given
-
 // TODO(howell): The following functions are tightly coupled with flags passed
 // on the command line. We should find a way to remove this coupling, since it
 // is possible to create (and validate) these objects without using the command
@@ -65,6 +62,8 @@ type ClusterOptions struct {
 
 // TODO(howell): strongly type the errors in this file
 
+// Validate checks for the possible authentication values and returns
+// Error when invalid value or incompatible choice of values given
 func (o *AuthInfoOptions) Validate() error {
 	// TODO(howell): This prevents a user of airshipctl from creating a
 	// credential with both a bearer-token and a user/password, but it does

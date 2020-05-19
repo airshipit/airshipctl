@@ -780,7 +780,7 @@ func (c *Config) ModifyAuthInfo(authinfo *AuthInfo, theAuthInfo *AuthInfoOptions
 	}
 }
 
-// ImportFromKubeconfig absorbs the clusters, contexts and credentials from the
+// ImportFromKubeConfig absorbs the clusters, contexts and credentials from the
 // given kubeConfig
 func (c *Config) ImportFromKubeConfig(kubeConfigPath string) error {
 	_, err := os.Stat(kubeConfigPath)
