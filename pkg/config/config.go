@@ -610,9 +610,6 @@ func (c *Config) ModifyContext(context *Context, theContext *ContextOptions) {
 //      Manifest is the default manifest to be use with this context
 // Purpose for this method is simplifying the current context information
 func (c *Config) GetCurrentContext() (*Context, error) {
-	if err := c.EnsureComplete(); err != nil {
-		return nil, err
-	}
 	currentContext, err := c.GetContext(c.CurrentContext)
 	if err != nil {
 		// this should not happen since Ensure Complete checks for this
