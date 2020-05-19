@@ -19,6 +19,7 @@ DOCKER_MAKE_TARGET  := build
 
 # docker image options
 DOCKER_REGISTRY     ?= quay.io
+DOCKER_FORCE_CLEAN  ?= true
 DOCKER_IMAGE_NAME   ?= airshipctl
 DOCKER_IMAGE_PREFIX ?= airshipit
 DOCKER_IMAGE_TAG    ?= dev
@@ -111,12 +112,14 @@ ifeq ($(USE_PROXY), true)
 		--build-arg NO_PROXY=$(NO_PROXY) \
 	    --build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET) \
 	    --tag $(DOCKER_IMAGE) \
-	    --target $(DOCKER_TARGET_STAGE)
+	    --target $(DOCKER_TARGET_STAGE) \
+	    --force-rm=$(DOCKER_FORCE_CLEAN)
 else
 	@docker build . --network=host \
 	    --build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET) \
 	    --tag $(DOCKER_IMAGE) \
-	    --target $(DOCKER_TARGET_STAGE)
+	    --target $(DOCKER_TARGET_STAGE) \
+	    --force-rm=$(DOCKER_FORCE_CLEAN)
 endif
 ifeq ($(PUBLISH), true)
 	@docker push $(DOCKER_IMAGE)
