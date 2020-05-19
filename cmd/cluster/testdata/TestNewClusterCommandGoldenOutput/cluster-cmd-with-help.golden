@@ -7,7 +7,6 @@ Usage:
 Available Commands:
   help        Help about any command
   init        Deploy cluster-api provider components
-  initinfra   Deploy initinfra components to cluster
 
 Flags:
   -h, --help   help for cluster

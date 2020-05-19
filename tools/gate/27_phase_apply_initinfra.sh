@@ -25,5 +25,5 @@ PLAYBOOK_CONFIG=${PLAYBOOK_CONFIG:-"${TMP_DIR}/config.yaml"}
 
 sudo ansible-playbook -i "$ANSIBLE_HOSTS" \
 	playbooks/airship-airshipctl-test-runner.yaml \
-	-e @tools/gate/config_cluster_initinfra.yaml \
+	-e @tools/gate/config_phase_apply_initinfra.yaml \
 	-e @"$PLAYBOOK_CONFIG"

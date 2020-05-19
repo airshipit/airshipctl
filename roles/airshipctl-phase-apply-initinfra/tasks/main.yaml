@@ -10,9 +10,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: deploy infra to cluster
+- name: apply phases to cluster
   command: >-
-    airshipctl cluster initinfra
+    airshipctl phase apply initinfra --debug
 
 # TODO: As soon as issue #127 is complete, this check for pods should
 # be removed and initinfra command should check for resource status.

@@ -12,4 +12,4 @@
 
 ---
 test_roles:
-  - airshipctl-cluster-initinfra
+  - airshipctl-phase-apply-initinfra
