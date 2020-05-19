@@ -83,8 +83,8 @@ func TestPull(t *testing.T) {
 	currentManifest, err := dummyPullSettings.Config.CurrentContextManifest()
 	require.NoError(err)
 
-	testGitURL := fixtures.Basic().One().URL
-	dirNameFromURL := util.GitDirNameFromURL(testGitURL)
+	testGitDir := fixtures.Basic().One().DotGit().Root()
+	dirNameFromURL := util.GitDirNameFromURL(testGitDir)
 	globalTmpDir, cleanup := testutil.TempDir(t, "airshipctlCloneTest-")
 	defer cleanup(t)
 
@@ -95,7 +95,7 @@ func TestPull(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			currentManifest.Repositories = map[string]*config.Repository{
 				currentManifest.PrimaryRepositoryName: {
-					URLString:       testGitURL,
+					URLString:       testGitDir,
 					CheckoutOptions: chkOutOpts,
 					Auth: &config.RepoAuth{
 						Type: "http-basic",
