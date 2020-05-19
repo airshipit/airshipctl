@@ -91,7 +91,11 @@ func NewContext() *Context {
 
 // NewCluster is a convenience function that returns a new Cluster
 func NewCluster() *Cluster {
-	return &Cluster{}
+	return &Cluster{
+		NameInKubeconf:          "",
+		Bootstrap:               AirshipDefaultBootstrapInfo,
+		ManagementConfiguration: AirshipDefaultManagementConfiguration,
+	}
 }
 
 // NewManifest is a convenience function that returns a new Manifest

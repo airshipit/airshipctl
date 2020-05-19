@@ -175,21 +175,26 @@ func (c *Config) reconcileClusters() (map[string]string, bool) {
 			// Probable should just add a number _<COUNTER to it
 		}
 
-		// Update the airship config file
+		// The cluster in the kubeconfig is not present in the airship config. Create it.
 		if c.Clusters[clusterComplexName.Name] == nil {
 			c.Clusters[clusterComplexName.Name] = NewClusterPurpose()
 		}
+
+		// NOTE(drewwalters96): This is a user error because a cluster is defined in name but incomplete. We
+		// need to fail sooner than this function; add up-front validation for this later.
+		if c.Clusters[clusterComplexName.Name].ClusterTypes == nil {
+			c.Clusters[clusterComplexName.Name].ClusterTypes = make(map[string]*Cluster)
+		}
+
+		// The cluster is defined, but the type is not. Define the type.
 		if c.Clusters[clusterComplexName.Name].ClusterTypes[clusterComplexName.Type] == nil {
-			// We have to make sure that ClusterTypes map is initialized properly before assignment
-			if c.Clusters[clusterComplexName.Name].ClusterTypes == nil {
-				c.Clusters[clusterComplexName.Name].ClusterTypes = make(map[string]*Cluster)
-			}
 			c.Clusters[clusterComplexName.Name].ClusterTypes[clusterComplexName.Type] = NewCluster()
 		}
+
+		// Point cluster at kubeconfig
 		configCluster := c.Clusters[clusterComplexName.Name].ClusterTypes[clusterComplexName.Type]
 		configCluster.NameInKubeconf = clusterComplexName.String()
-		configCluster.Bootstrap = AirshipDefaultBootstrapInfo
-		configCluster.ManagementConfiguration = AirshipDefaultManagementConfiguration
+
 		// Store the reference to the KubeConfig Cluster in the Airship Config
 		configCluster.SetKubeCluster(cluster)
 	}
