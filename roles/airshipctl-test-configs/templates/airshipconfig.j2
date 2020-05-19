@@ -6,9 +6,6 @@ bootstrapInfo:
       image: {{ airship_config_iso_builder_docker_image }}
       containerRuntime: docker
     remoteDirect:
-      remoteType: {{ remote_type }}
-      insecure: {{ remote_insecure }}
-      useproxy: {{ remote_proxy }}
       isoUrl: http://{{ airship_config_iso_serve_host }}:{{ airship_config_iso_port }}/{{ airship_config_iso_name }}
     builder:
       userDataFileName: user-data

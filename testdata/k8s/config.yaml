@@ -11,7 +11,6 @@ bootstrapInfo:
       volume: /srv/iso:/config
     remoteDirect:
       isoUrl: http://localhost:8099/debian-custom.iso
-      remoteType: redfish
 clusters:
   default:
     clusterType:
