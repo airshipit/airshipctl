@@ -32,8 +32,8 @@ var (
 	kubeconfigPath = "testdata/kubeconfig.yaml"
 	fixtureDir     = "testdata/"
 
-	writeOutError = errors.New("writeOutError")
-	TempFileError = errors.New("TempFileError")
+	ErrWriteOutError = errors.New("ErrWriteOutError")
+	ErrTempFileError = errors.New("ErrTempFileError")
 )
 
 type MockFileSystem struct {
@@ -99,17 +99,17 @@ func TestApply(t *testing.T) {
 			},
 		},
 		{
-			expectedErr: writeOutError,
+			expectedErr: ErrWriteOutError,
 			fs: MockFileSystem{
-				MockTempFile: func() (document.File, error) { return nil, writeOutError }},
+				MockTempFile: func() (document.File, error) { return nil, ErrWriteOutError }},
 		},
 		{
-			expectedErr: TempFileError,
+			expectedErr: ErrTempFileError,
 			fs: MockFileSystem{
 				MockRemoveAll: func() error { return nil },
 				MockTempFile: func() (document.File, error) {
 					return TestFile{
-						MockWrite: func() (int, error) { return 0, TempFileError },
+						MockWrite: func() (int, error) { return 0, ErrTempFileError },
 						MockName:  func() string { return filenameRC },
 						MockClose: func() error { return nil },
 					}, nil

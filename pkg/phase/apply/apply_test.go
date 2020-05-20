@@ -37,7 +37,7 @@ const (
 )
 
 var (
-	DynamicClientError = errors.New("DynamicClientError")
+	ErrDynamicClientError = errors.New("ErrDynamicClientError")
 )
 
 func TestDeploy(t *testing.T) {
@@ -62,8 +62,8 @@ func TestDeploy(t *testing.T) {
 			client: fake.NewClient(fake.WithKubectl(
 				kubectl.NewKubectl(k8sutils.
 					NewMockKubectlFactory().
-					WithDynamicClientByError(nil, DynamicClientError)))),
-			expectedError: DynamicClientError,
+					WithDynamicClientByError(nil, ErrDynamicClientError)))),
+			expectedError: ErrDynamicClientError,
 		},
 		{
 			expectedError: nil,

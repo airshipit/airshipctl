@@ -30,12 +30,12 @@ import (
 var (
 	filenameRC = "testdata/replicationcontroller.yaml"
 
-	testStreams        = genericclioptions.NewTestIOStreamsDiscard()
-	ToDiscoveryError   = errors.New("ToDiscoveryError")
-	DynamicClientError = errors.New("DynamicClientError")
-	ValidateError      = errors.New("ValidateError")
-	ToRESTMapperError  = errors.New("ToRESTMapperError")
-	NamespaceError     = errors.New("NamespaceError")
+	testStreams           = genericclioptions.NewTestIOStreamsDiscard()
+	ErrToDiscoveryError   = errors.New("ErrToDiscoveryError")
+	ErrDynamicClientError = errors.New("ErrDynamicClientError")
+	ErrValidateError      = errors.New("ErrValidateError")
+	ErrToRESTMapperError  = errors.New("ErrToRESTMapperError")
+	ErrNamespaceError     = errors.New("ErrNamespaceError")
 )
 
 func TestApplyOptionsRun(t *testing.T) {
@@ -57,27 +57,27 @@ func TestNewApplyOptionsFactoryFailures(t *testing.T) {
 		expectedError error
 	}{
 		{
-			f:             k8stest.NewMockKubectlFactory().WithToDiscoveryClientByError(nil, ToDiscoveryError),
-			expectedError: ToDiscoveryError,
+			f:             k8stest.NewMockKubectlFactory().WithToDiscoveryClientByError(nil, ErrToDiscoveryError),
+			expectedError: ErrToDiscoveryError,
 		},
 		{
-			f:             k8stest.NewMockKubectlFactory().WithDynamicClientByError(nil, DynamicClientError),
-			expectedError: DynamicClientError,
+			f:             k8stest.NewMockKubectlFactory().WithDynamicClientByError(nil, ErrDynamicClientError),
+			expectedError: ErrDynamicClientError,
 		},
 		{
-			f:             k8stest.NewMockKubectlFactory().WithValidatorByError(nil, ValidateError),
-			expectedError: ValidateError,
+			f:             k8stest.NewMockKubectlFactory().WithValidatorByError(nil, ErrValidateError),
+			expectedError: ErrValidateError,
 		},
 		{
-			f:             k8stest.NewMockKubectlFactory().WithToRESTMapperByError(nil, ToRESTMapperError),
-			expectedError: ToRESTMapperError,
+			f:             k8stest.NewMockKubectlFactory().WithToRESTMapperByError(nil, ErrToRESTMapperError),
+			expectedError: ErrToRESTMapperError,
 		},
 		{
 			f: k8stest.NewMockKubectlFactory().
 				WithToRawKubeConfigLoaderByError(k8stest.
 					NewMockClientConfig().
-					WithNamespace("", false, NamespaceError)),
-			expectedError: NamespaceError,
+					WithNamespace("", false, ErrNamespaceError)),
+			expectedError: ErrNamespaceError,
 		},
 	}
 	for _, test := range tests {

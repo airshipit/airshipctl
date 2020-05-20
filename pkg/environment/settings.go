@@ -138,6 +138,7 @@ func initPluginPath() {
 	pluginPath = filepath.Join(homeDir, config.AirshipConfigDir, config.AirshipPluginPath)
 }
 
+// PluginPath returns the kustomize plugin path
 func PluginPath() string {
 	pluginPathLock.Lock()
 	defer pluginPathLock.Unlock()

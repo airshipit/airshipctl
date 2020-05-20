@@ -56,7 +56,7 @@ func (e ErrMultipleResources) Error() string {
 	return fmt.Sprintf("found more than one resources matching from %v", e.ResList)
 }
 
-// ErrResourceNotFound returned if a replacement source resource does not exist in resource map
+// ErrSourceNotFound returned if a replacement source resource does not exist in resource map
 type ErrSourceNotFound struct {
 	ObjRef *types.Target
 }
@@ -74,7 +74,7 @@ func (e ErrSourceNotFound) Error() string {
 	return fmt.Sprintf("failed to find any source resources identified by %s", strings.TrimSpace(resFilter))
 }
 
-// ErrSelectorNotFound returned if a replacement target resource does not exist in the resource map
+// ErrTargetNotFound returned if a replacement target resource does not exist in the resource map
 type ErrTargetNotFound struct {
 	ObjRef *types.Selector
 }
