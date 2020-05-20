@@ -53,6 +53,10 @@ func (applyOptions *Options) Run() error {
 
 	globalConf := applyOptions.RootSettings.Config
 
+	if err = globalConf.EnsureComplete(); err != nil {
+		return err
+	}
+
 	kustomizePath, err := globalConf.CurrentContextEntryPoint(applyOptions.PhaseName)
 	if err != nil {
 		return err
