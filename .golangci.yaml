@@ -210,3 +210,4 @@ linters:
     - unused               # Checks Go code for unused constants, variables, functions and types
     - varcheck             # Finds unused global variables and constants
     - whitespace           # Tool for detection of leading and trailing whitespace NOTE(howell): This linter does _not_ check for trailing whitespace in multiline strings
+    - golint               # Finds all coding style mistakes
