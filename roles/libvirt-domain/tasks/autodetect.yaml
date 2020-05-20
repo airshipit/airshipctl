@@ -16,7 +16,7 @@
     - name: Load the kvm kernel module
       modprobe:
         name: kvm
-      become: true
+      become: yes
       failed_when: false
 
     - name: Check for the KVM device

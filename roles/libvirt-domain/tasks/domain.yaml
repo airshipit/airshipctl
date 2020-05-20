@@ -17,7 +17,7 @@
     state: directory
     recurse: true
     mode: 0770
-  become: true
+  become: yes
   when: "libvirt_domain.console_log_enabled | default(false)"
 
 - name: Validate VM interfaces

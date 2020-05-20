@@ -13,7 +13,7 @@
 ---
 - block:
   - name: Ensuring Libvirt, Qemu and support packages are present
-    become: true
+    become: yes
     when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
     yum:
       name:
@@ -24,7 +24,7 @@
         - qemu-kvm
       state: present
   - name: Ensuring Libvirt, Qemu and support packages are present
-    become: true
+    become: yes
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
     apt:
       name:
@@ -38,7 +38,7 @@
         - ebtables
       state: present
   - name: Add user "{{ ansible_user }}" to libvirt group
-    become: true
+    become: yes
     user:
       name: "{{ ansible_user }}"
       groups:
@@ -52,5 +52,5 @@
       name: libvirtd
       state: started
       enabled: true
-    become: true
+    become: yes
 

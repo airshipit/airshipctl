@@ -16,7 +16,7 @@
     msg: "Only Debian|Ubuntu are currently supported"
 
 - name: Preparing wsgi module for sushy-emulator
-  become: true
+  become: yes
   block:
 
   - name: Ensure Apache

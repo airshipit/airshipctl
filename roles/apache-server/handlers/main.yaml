@@ -16,16 +16,16 @@
   service:
     name: "apache2"
     state: "restarted"
-  become: true
+  become: yes
 
 - name: reload apache2
   service:
     name: "apache2"
     state: "reloaded"
-  become: true
+  become: yes
 
 - name: "restart httpd"
   service:
     name: "httpd"
     state: "restarted"
-  become: true
+  become: yes

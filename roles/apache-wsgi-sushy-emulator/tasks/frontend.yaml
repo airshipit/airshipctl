@@ -17,7 +17,7 @@
     msg: "Only Debian|Ubuntu are currently supported"
 
 - name: Confguring sushy-emulator frontend
-  become: true
+  become: yes
   block:
   - name: Ensure sushy-emulator backend
     include_role:

@@ -12,7 +12,7 @@
 
 ---
 - name: Ensuring docker and support packages are present
-  become: true
+  become: yes
   when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
   yum:
     name:
@@ -22,7 +22,7 @@
     state: present
 
 - name: Ensuring docker and support packages are present
-  become: true
+  become: yes
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
   apt:
     name:
@@ -37,7 +37,7 @@
     state: present
 
 - name: Add user "{{ ansible_user }}" to docker group
-  become: true
+  become: yes
   user:
     name: "{{ ansible_user }}"
     groups:
@@ -60,23 +60,23 @@
         src: http-proxy-conf.j2
         dest: /etc/systemd/system/docker.service.d/http-proxy.conf
   when: proxy.enabled|bool == true
-  become: true
+  become: yes
 
 - name: Create docker directory
   file:
     path: "{{ docker_config_path }}"
     state: directory
     mode: '0755'
-  become: true
+  become: yes
 
 - name: Save docker daemon configuration
   copy:
     content: "{{ docker_config | to_nice_json }}"
     dest: "{{ docker_config_path }}/daemon.json"
-  become: true
+  become: yes
 
 - name: Start docker
-  become: true
+  become: yes
   systemd:
     name: docker
     state: restarted
@@ -84,7 +84,7 @@
     enabled: true
 
 - name: Change group ownership on docker sock
-  become: true
+  become: yes
   file:
     path: /var/run/docker.sock
     group: docker

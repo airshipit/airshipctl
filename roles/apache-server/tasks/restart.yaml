@@ -11,7 +11,7 @@
 # limitations under the License.
 
 - name: Reload apache2 service
-  become: true
+  become: yes
   service:
     name: apache2
     state: reloaded

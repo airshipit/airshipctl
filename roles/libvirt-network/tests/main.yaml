@@ -29,7 +29,7 @@
     name:
       - bridge-utils
     state: present
-  become: true
+  become: yes
 - name: gather network info
   virt_net:
     command: info
@@ -94,7 +94,7 @@
 
 - name: Create virtual ethernet interface
   command: ip link add name air02 type veth peer name air01
-  become: true
+  become: yes
   changed_when:
     - "create_veth_command.rc != 2"
     - "'RTNETLINK answers: File exists' not in (create_veth_command.stderr | default(''))"
@@ -103,14 +103,14 @@
     - "create_veth_command.rc != 0"
     - "'RTNETLINK answers: File exists' not in (create_veth_command.stderr | default(''))"
 - name: set interface up
-  become: true
+  become: yes
   command: ip link set up dev air02
   # This makes task never report to be changed, it is a workaround
   # because if device is already up there is no command output or different RC
   changed_when: false
 
 - name: set interface up
-  become: true
+  become: yes
   command: ip link set up dev air01
   # This makes task never report to be changed, it is a workaround
   # because if device is already up there is no command output or different RC
@@ -121,7 +121,7 @@
     already_in_bridge: device air02 is already a member of a bridge; can't enslave it to bridge oob-net.
 
 - name: Add interface to libvirt managed linux bridge with dhcp
-  become: true
+  become: yes
   command: brctl addif oob-net air02
   changed_when:
     - add_if_command.rc != 1
@@ -132,7 +132,7 @@
   register: add_if_command
 
 - name: send dhcp request over the interface
-  become: true
+  become: yes
   command: timeout 20s dhclient air01
   changed_when: false
 
