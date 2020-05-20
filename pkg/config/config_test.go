@@ -420,21 +420,6 @@ func TestGetCurrentContext(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, conf.Contexts[currentContextName], context)
 	})
-
-	t.Run("getCurrentContextIncomplete", func(t *testing.T) {
-		conf, cleanup := testutil.InitConfig(t)
-		defer cleanup(t)
-
-		context, err := conf.GetCurrentContext()
-		require.Error(t, err)
-		assert.Nil(t, context)
-
-		conf.CurrentContext = currentContextName
-
-		context, err = conf.GetCurrentContext()
-		assert.Error(t, err)
-		assert.Nil(t, context)
-	})
 }
 
 func TestCurrentContextCluster(t *testing.T) {
