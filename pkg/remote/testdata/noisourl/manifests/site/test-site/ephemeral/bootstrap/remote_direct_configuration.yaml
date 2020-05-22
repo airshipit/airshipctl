@@ -1,0 +1,4 @@
+apiVersion: airshipit.org/v1alpha1
+kind: RemoteDirectConfiguration
+metadata:
+  name: default

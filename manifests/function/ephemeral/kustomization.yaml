@@ -1,2 +1,4 @@
 resources:
   - secret.yaml
+  - image_configuration.yaml
+  - remote_direct_configuration.yaml

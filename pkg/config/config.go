@@ -67,9 +67,6 @@ type Config struct {
 	// Management configuration defines management information for all baremetal hosts in a cluster.
 	ManagementConfiguration map[string]*ManagementConfiguration `json:"managementConfiguration"`
 
-	// BootstrapInfo is the configuration for container runtime, ISO builder and remote management
-	BootstrapInfo map[string]*Bootstrap `json:"bootstrapInfo"`
-
 	// loadedConfigPath is the full path to the the location of the config
 	// file from which this config was loaded
 	// +not persisted in file
@@ -950,26 +947,6 @@ func (c *Config) importAuthInfos(importKubeConfig *clientcmdapi.Config) {
 		c.AuthInfos[key].SetKubeAuthInfo(authinfo)
 		c.kubeConfig.AuthInfos[key] = authinfo
 	}
-}
-
-// CurrentContextBootstrapInfo returns bootstrap info for current context
-func (c *Config) CurrentContextBootstrapInfo() (*Bootstrap, error) {
-	currentCluster, err := c.CurrentContextCluster()
-	if err != nil {
-		return nil, err
-	}
-
-	if currentCluster.Bootstrap == "" {
-		return nil, ErrMissingConfig{
-			What: fmt.Sprintf("No bootstrapInfo defined for context %q", c.CurrentContext),
-		}
-	}
-
-	bootstrap, exists := c.BootstrapInfo[currentCluster.Bootstrap]
-	if !exists {
-		return nil, ErrBootstrapInfoNotFound{Name: currentCluster.Bootstrap}
-	}
-	return bootstrap, nil
 }
 
 // GetManifests returns all of the Manifests associated with the Config sorted by name

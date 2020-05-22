@@ -54,18 +54,6 @@ function generate_airshipconf {
 
     cat <<EOL > ${AIRSHIPCONFIG}
 apiVersion: airshipit.org/v1alpha1
-bootstrapInfo:
-  default:
-    builder:
-      networkConfigFileName: network-config
-      outputMetadataFileName: output-metadata.yaml
-      userDataFileName: user-data
-    container:
-      containerRuntime: docker
-      image: quay.io/airshipit/isogen:latest-ubuntu_focal
-      volume: /srv/iso:/config
-    remoteDirect:
-      isoUrl: http://localhost:8099/ubuntu-focal.iso
 clusters:
   ${CONTEXT}_${cluster}:
     clusterType:

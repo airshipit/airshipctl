@@ -1,0 +1,34 @@
+apiVersion: airshipit.org/v1alpha1
+clusters:
+  default:
+    clusterType:
+      ephemeral:
+        clusterKubeconf: default_ephemeral
+        managementConfiguration: default
+contexts:
+  default:
+    contextKubeconf: default_ephemeral
+    manifest: default
+currentContext: default
+kind: Config
+managementConfiguration:
+  default:
+    insecure: true
+    systemActionRetries: 30
+    systemRebootDelay: 30
+    type: redfish
+manifests:
+  default:
+    primaryRepositoryName: primary
+    repositories:
+      primary:
+        checkout:
+          branch: master
+          commitHash: ""
+          force: false
+          tag: ""
+        url: https://opendev.org/airship/treasuremap
+    subPath: primary/site/test-site
+    targetPath: testdata
+users:
+  admin: {}

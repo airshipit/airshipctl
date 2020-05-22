@@ -1,23 +1,11 @@
 apiVersion: airshipit.org/v1alpha1
-bootstrapInfo:
-  dummy_bootstrap_config:
-    builder:
-      networkConfigFileName: netconfig
-      outputMetadataFileName: output-metadata.yaml
-      userDataFileName: user-data
-    container:
-      containerRuntime: docker
-      image: dummy_image:dummy_tag
-      volume: /dummy:dummy
 clusters:
   dummy_cluster:
     clusterType:
       ephemeral:
-        bootstrapInfo: dummy_bootstrap_config
         clusterKubeconf: dummy_cluster_ephemeral
         managementConfiguration: dummy_management_config
       target:
-        bootstrapInfo: dummy_bootstrap_config
         clusterKubeconf: dummy_cluster_target
         managementConfiguration: dummy_management_config
 contexts:

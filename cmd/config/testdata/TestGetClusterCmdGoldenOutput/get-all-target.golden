@@ -1,6 +1,5 @@
 Cluster: clusterBar
 ephemeral:
-bootstrapInfo: ""
 clusterKubeconf: clusterBar_ephemeral
 managementConfiguration: ""
 
@@ -10,7 +9,6 @@ server: ""
 
 Cluster: clusterBar
 target:
-bootstrapInfo: ""
 clusterKubeconf: clusterBar_target
 managementConfiguration: ""
 
@@ -20,7 +18,6 @@ server: ""
 
 Cluster: clusterBaz
 ephemeral:
-bootstrapInfo: ""
 clusterKubeconf: clusterBaz_ephemeral
 managementConfiguration: ""
 
@@ -30,7 +27,6 @@ server: ""
 
 Cluster: clusterBaz
 target:
-bootstrapInfo: ""
 clusterKubeconf: clusterBaz_target
 managementConfiguration: ""
 
@@ -40,7 +36,6 @@ server: ""
 
 Cluster: clusterFoo
 ephemeral:
-bootstrapInfo: ""
 clusterKubeconf: clusterFoo_ephemeral
 managementConfiguration: ""
 
@@ -50,7 +45,6 @@ server: ""
 
 Cluster: clusterFoo
 target:
-bootstrapInfo: ""
 clusterKubeconf: clusterFoo_target
 managementConfiguration: ""
 

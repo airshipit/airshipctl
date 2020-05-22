@@ -1,0 +1,7 @@
+apiVersion: airshipit.org/v1alpha1
+kind: RemoteDirectConfiguration
+metadata:
+  name: default
+  labels:
+    airshipit.org/deploy-k8s: "false"
+isoUrl: http://localhost:8099/ubuntu-focal.iso

@@ -46,6 +46,8 @@ func init() {
 		&PhasePlan{},
 		&KubeConfig{},
 		&KubernetesApply{},
+		&ImageConfiguration{},
+		&RemoteDirectConfiguration{},
 	)
 	_ = AddToScheme(Scheme) //nolint:errcheck
 }

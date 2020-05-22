@@ -107,16 +107,6 @@ func (e ErrMissingRepoCheckoutOptions) Error() string {
 	return "Missing repository checkout options."
 }
 
-// ErrBootstrapInfoNotFound returned if bootstrap
-// information is not found for cluster
-type ErrBootstrapInfoNotFound struct {
-	Name string
-}
-
-func (e ErrBootstrapInfoNotFound) Error() string {
-	return fmt.Sprintf("Bootstrap info %q not found.", e.Name)
-}
-
 // ErrInvalidConfig returned in case of incorrect configuration
 type ErrInvalidConfig struct {
 	What string

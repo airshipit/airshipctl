@@ -1,6 +1,5 @@
 Cluster: clusterFoo
 target:
-bootstrapInfo: ""
 clusterKubeconf: clusterFoo_target
 managementConfiguration: ""
 

@@ -1,4 +1,3 @@
-bootstrapInfo: dummy_bootstrap_config
 clusterKubeconf: dummy_cluster_target
 managementConfiguration: dummy_management_config
 

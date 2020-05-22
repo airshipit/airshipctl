@@ -1,0 +1,5 @@
+apiVersion: airshipit.org/v1alpha1
+kind: RemoteDirectConfiguration
+metadata:
+  name: default
+isoUrl: https://localhost:8080/ubuntu.iso

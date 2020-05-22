@@ -81,28 +81,8 @@ func TestString(t *testing.T) {
 			stringer: testutil.DummyRepoCheckout(),
 		},
 		{
-			name:     "bootstrapinfo",
-			stringer: testutil.DummyBootstrapInfo(),
-		},
-		{
 			name:     "managementconfiguration",
 			stringer: testutil.DummyManagementConfiguration(),
-		},
-		{
-			name: "builder",
-			stringer: &config.Builder{
-				UserDataFileName:       "user-data",
-				NetworkConfigFileName:  "netconfig",
-				OutputMetadataFileName: "output-metadata.yaml",
-			},
-		},
-		{
-			name: "container",
-			stringer: &config.Container{
-				Volume:           "/dummy:dummy",
-				Image:            "dummy_image:dummy_tag",
-				ContainerRuntime: "docker",
-			},
 		},
 	}
 
@@ -256,27 +236,6 @@ func TestEnsureComplete(t *testing.T) {
 			assert.Equal(subTest, tt.expectedErr, actualErr)
 		})
 	}
-}
-
-func TestCurrentContextBootstrapInfo(t *testing.T) {
-	conf, cleanup := testutil.InitConfig(t)
-	defer cleanup(t)
-
-	clusterName := "def"
-	clusterType := "ephemeral"
-
-	bootstrapInfo, err := conf.CurrentContextBootstrapInfo()
-	require.Error(t, err)
-	assert.Nil(t, bootstrapInfo)
-
-	conf.CurrentContext = currentContextName
-	conf.Clusters[clusterName].ClusterTypes[clusterType].Bootstrap = defaultString
-	conf.Contexts[currentContextName].Manifest = defaultString
-	conf.Contexts[currentContextName].KubeContext().Cluster = clusterName
-
-	bootstrapInfo, err = conf.CurrentContextBootstrapInfo()
-	require.NoError(t, err)
-	assert.Equal(t, conf.BootstrapInfo[defaultString], bootstrapInfo)
 }
 
 func TestCurrentContextManagementConfig(t *testing.T) {
