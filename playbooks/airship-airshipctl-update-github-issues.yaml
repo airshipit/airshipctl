@@ -21,7 +21,7 @@
       script: >
         zuul.d/scripts/update_github_issues.py "{{ github_credentials.username }}" \
           "{{ github_credentials.password }}" \
-          "{{ zuul.message }}" \
-          "{{ zuul.items[0].change_url }}"
+          "{{ zuul.message | b64decode }}" \
+          "{{ zuul.change_url }}"
       args:
         executable: python3
