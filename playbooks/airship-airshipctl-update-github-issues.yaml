@@ -19,7 +19,7 @@
         executable: pip3
     - name: Run python script
       script: >
-        zuul.d/scripts/update_github_issues.py "{{ github_credentials.username }}" \
+        update_github_issues.py "{{ github_credentials.username }}" \
           "{{ github_credentials.password }}" \
           "{{ zuul.message | b64decode }}" \
           "{{ zuul.change_url }}"
