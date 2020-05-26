@@ -27,7 +27,6 @@ import (
 
 // RepositoryFactory returns an injection factory to work with clusterctl client
 type RepositoryFactory struct {
-	root         string
 	Options      *airshipv1.Clusterctl
 	ConfigClient config.Client
 }
@@ -72,7 +71,7 @@ func (f RepositoryFactory) repoFactory(provider config.Provider) (repository.Cli
 			return nil, ErrProviderRepoNotFound{ProviderName: name, ProviderType: string(repoType)}
 		}
 		// construct a repository for this provider using root and version map
-		repo, err := implementations.NewRepository(f.root, versions)
+		repo, err := implementations.NewRepository(provider.URL(), versions)
 		if err != nil {
 			return nil, err
 		}
