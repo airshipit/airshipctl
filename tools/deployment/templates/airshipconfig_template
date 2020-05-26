@@ -1,0 +1,52 @@
+apiVersion: airshipit.org/v1alpha1
+bootstrapInfo:
+  dummy_bootstrap_config:
+    container:
+      volume: ${AIRSHIP_CONFIG_ISO_GEN_TARGET_PATH}:/config
+      image: ${AIRSHIP_CONFIG_ISO_BUILDER_DOCKER_IMAGE}
+      containerRuntime: docker
+    remoteDirect:
+      remoteType: ${REMOTE_TYPE}
+      insecure: ${REMOTE_INSECURE}
+      useproxy: ${REMOTE_PROXY}
+      isoUrl: http://${AIRSHIP_CONFIG_ISO_SERVE_HOST}:${AIRSHIP_CONFIG_ISO_PORT}/${AIRSHIP_CONFIG_ISO_NAME}
+    builder:
+      userDataFileName: user-data
+      networkConfigFileName: network-config
+      outputMetadataFileName: output-metadata.yaml
+managementConfiguration:
+  dummy_management_config:
+    type: ${REMOTE_TYPE}
+    insecure: ${REMOTE_INSECURE}
+    useproxy: ${REMOTE_PROXY}
+    systemActionRetries: ${SYSTEM_ACTION_RETRIES}
+    systemRebootDelay: ${SYSTEM_REBOOT_DELAY}
+
+clusters:
+  dummycluster:
+    clusterType:
+      ephemeral:
+        bootstrapInfo: dummy_bootstrap_config
+        clusterKubeconf: dummycluster_ephemeral
+        managementConfiguration: dummy_management_config
+contexts:
+  dummy_cluster:
+    contextKubeconf: dummy_cluster
+    manifest: dummy_manifest
+currentContext: dummy_cluster
+kind: Config
+manifests:
+  dummy_manifest:
+    primaryRepositoryName: primary
+    repositories:
+      primary:
+        checkout:
+          branch: ${AIRSHIP_CONFIG_PRIMARY_REPO_BRANCH}
+          force: false
+          remoteRef: ""
+          tag: ""
+        url: ${AIRSHIP_CONFIG_PRIMARY_REPO_URL}
+    subPath: ${AIRSHIP_SITE_NAME}
+    targetPath: ${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}
+users:
+  dummy_user: {}
