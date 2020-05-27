@@ -46,6 +46,13 @@
       - ^docs/.*$
 
 - job:
+    name: airship-airshipctl-validate-site-docs
+    pre-run:
+      - playbooks/airship-airshipctl-deploy-docker.yaml
+    run: playbooks/airship-airshipctl-validate-documents.yaml
+    nodeset: airship-airshipctl-single-node
+
+- job:
     name: airship-airshipctl-functional-existing-k8s
     pre-run: playbooks/airship-airshipctl-deploy-existing-k8s.yaml
     run: playbooks/airship-airshipctl-functional-existing-k8s.yaml
