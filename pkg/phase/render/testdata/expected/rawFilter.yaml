@@ -1,0 +1,14 @@
+---
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  annotations:
+    airshipit.org/clustertype: target
+  name: master-1
+spec:
+  bmc:
+    address: ipmi://192.168.111.2:6230
+    credentialsName: master-1-bmc-secret
+  bootMACAddress: 01:3b:8b:0c:ec:8b
+  online: true
+...

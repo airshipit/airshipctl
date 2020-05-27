@@ -26,4 +26,5 @@ such as getting list and applying specific one.
 
 * [airshipctl](airshipctl.md)	 - A unified entrypoint to various airship components
 * [airshipctl phase apply](airshipctl_phase_apply.md)	 - Apply phase to a cluster
+* [airshipctl phase render](airshipctl_phase_render.md)	 - Render phase documents from model
 

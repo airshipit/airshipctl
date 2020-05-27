@@ -29,11 +29,6 @@ func TestDocument(t *testing.T) {
 			Cmd:     document.NewDocumentCommand(nil),
 		},
 		{
-			Name:    "document-render-with-help",
-			CmdLine: "-h",
-			Cmd:     document.NewRenderCommand(nil),
-		},
-		{
 			Name:    "document-plugin-with-help",
 			CmdLine: "-h",
 			Cmd:     document.NewPluginCommand(nil),

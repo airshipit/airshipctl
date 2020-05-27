@@ -1,0 +1,38 @@
+apiVersion: v1
+data:
+  password: cGFzc3dvcmQ=
+  username: dXNlcm5hbWU=
+kind: Secret
+metadata:
+  name: node02-bmc-secret
+type: Opaque
+---
+apiVersion: v1
+stringData:
+  networkData: someData
+kind: Secret
+metadata:
+  name: node02-network-data
+type: Opaque
+---
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  labels:
+    airshipit.org/deploy-k8s: "false"
+    airshipit.org/ephemeral-node: "true"
+  annotations:
+    airshipit.org/clustertype: ephemeral
+  name: node02
+spec:
+  bmc:
+    address: redfish+https://localhost:8443/redfish/v1/Systems/air-ephemeral
+    credentialsName: node02-bmc-secret
+  bootMACAddress: 00:3b:8b:0c:ec:8b
+  networkData:
+    name: node02-network-data
+    namespace: default
+  online: true
+status:
+  provisioning:
+    state: externally provisioned

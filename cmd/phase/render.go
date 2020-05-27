@@ -12,24 +12,41 @@
  limitations under the License.
 */
 
-package document
+package phase
 
 import (
 	"github.com/spf13/cobra"
 
-	"opendev.org/airship/airshipctl/pkg/document/render"
 	"opendev.org/airship/airshipctl/pkg/environment"
-	"opendev.org/airship/airshipctl/pkg/errors"
+	"opendev.org/airship/airshipctl/pkg/phase/render"
+)
+
+const (
+	renderExample = `
+# Get all 'initinfra' phase documents containing labels "app=helm" and
+# "service=tiller"
+airshipctl phase render initinfra -l app=helm,service=tiller
+
+# Get all documents containing labels "app=helm" and "service=tiller"
+# and kind 'Deployment'
+airshipctl phase render initinfra -l app=helm,service=tiller -k Deployment
+`
 )
 
 // NewRenderCommand create a new command for document rendering
 func NewRenderCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
 	renderSettings := &render.Settings{AirshipCTLSettings: rootSettings}
 	renderCmd := &cobra.Command{
-		Use:   "render",
-		Short: "Render documents from model",
+		Use:     "render PHASE_NAME",
+		Short:   "Render phase documents from model",
+		Example: renderExample,
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return errors.ErrNotImplemented{}
+			path, err := renderSettings.Config.CurrentContextEntryPoint(args[0])
+			if err != nil {
+				return err
+			}
+			return renderSettings.Render(path, cmd.OutOrStdout())
 		},
 	}
 
@@ -41,38 +58,31 @@ func NewRenderCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comma
 func addRenderFlags(settings *render.Settings, cmd *cobra.Command) {
 	flags := cmd.Flags()
 
-	flags.StringArrayVarP(
+	flags.StringVarP(
 		&settings.Label,
 		"label",
 		"l",
-		nil,
+		"",
 		"filter documents by Labels")
 
-	flags.StringArrayVarP(
+	flags.StringVarP(
 		&settings.Annotation,
 		"annotation",
 		"a",
-		nil,
+		"",
 		"filter documents by Annotations")
 
-	flags.StringArrayVarP(
-		&settings.GroupVersion,
+	flags.StringVarP(
+		&settings.APIVersion,
 		"apiversion",
 		"g",
-		nil,
+		"",
 		"filter documents by API version")
 
-	flags.StringArrayVarP(
+	flags.StringVarP(
 		&settings.Kind,
 		"kind",
 		"k",
-		nil,
-		"filter documents by Kinds")
-
-	flags.StringVarP(
-		&settings.RawFilter,
-		"filter",
-		"f",
 		"",
-		"logical expression for document filtering")
+		"filter documents by Kinds")
 }
