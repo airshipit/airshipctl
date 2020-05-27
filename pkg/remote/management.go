@@ -122,6 +122,10 @@ func NewManager(settings *environment.AirshipCTLSettings, phase string, hosts ..
 		return nil, err
 	}
 
+	if err = managementCfg.Validate(); err != nil {
+		return nil, err
+	}
+
 	entrypoint, err := settings.Config.CurrentContextEntryPoint(phase)
 	if err != nil {
 		return nil, err

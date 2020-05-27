@@ -68,19 +68,3 @@ type Config struct {
 	// Private instance of Kube Config content as an object
 	kubeConfig *kubeconfig.Config
 }
-
-// ManagementConfiguration defines configuration data for all remote systems within a context.
-type ManagementConfiguration struct {
-	// Insecure indicates whether the SSL certificate should be checked on remote management requests.
-	Insecure bool `json:"insecure,omitempty"`
-	// Type indicates the type of out-of-band management that will be used for baremetal orchestration, e.g.
-	// redfish.
-	Type string `json:"type"`
-	// UseProxy indicates whether airshipctl should transmit remote management requests through a proxy server when
-	// one is configured in an environment.
-	UseProxy bool `json:"useproxy,omitempty"`
-	// Number of attempts to reach host during reboot process and ejecting virtual media
-	SystemActionRetries int `json:"systemActionRetries,omitempty"`
-	// Number of seconds to wait after reboot if host isn't available
-	SystemRebootDelay int `json:"systemRebootDelay,omitempty"`
-}
