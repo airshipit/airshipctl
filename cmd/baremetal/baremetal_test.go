@@ -36,11 +36,6 @@ func TestBaremetal(t *testing.T) {
 			Cmd:     baremetal.NewEjectMediaCommand(nil),
 		},
 		{
-			Name:    "baremetal-isogen-with-help",
-			CmdLine: "-h",
-			Cmd:     baremetal.NewISOGenCommand(nil),
-		},
-		{
 			Name:    "baremetal-poweroff-with-help",
 			CmdLine: "-h",
 			Cmd:     baremetal.NewPowerOffCommand(nil),

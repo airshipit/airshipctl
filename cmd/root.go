@@ -27,6 +27,7 @@ import (
 	"opendev.org/airship/airshipctl/cmd/completion"
 	"opendev.org/airship/airshipctl/cmd/config"
 	"opendev.org/airship/airshipctl/cmd/document"
+	"opendev.org/airship/airshipctl/cmd/image"
 	"opendev.org/airship/airshipctl/cmd/phase"
 	"opendev.org/airship/airshipctl/cmd/secret"
 	"opendev.org/airship/airshipctl/pkg/environment"
@@ -64,6 +65,7 @@ func AddDefaultAirshipCTLCommands(cmd *cobra.Command, settings *environment.Airs
 	cmd.AddCommand(completion.NewCompletionCommand())
 	cmd.AddCommand(document.NewDocumentCommand(settings))
 	cmd.AddCommand(config.NewConfigCommand(settings))
+	cmd.AddCommand(image.NewImageCommand(settings))
 	cmd.AddCommand(secret.NewSecretCommand())
 	cmd.AddCommand(phase.NewPhaseCommand(settings))
 
