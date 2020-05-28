@@ -33,6 +33,7 @@
   - name: Install sushy-tools
     pip:
       name: sushy-tools
+      version: 0.9.0
       executable: pip3
 
   - name: Create a used wsgi will run with
