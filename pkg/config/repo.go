@@ -60,7 +60,7 @@ func (c *RepoCheckout) Validate() error {
 		return ErrMutuallyExclusiveCheckout{}
 	}
 	if c.RemoteRef != "" {
-		return fmt.Errorf("Repository checkout by RemoteRef is not yet implemented\n%w", errors.ErrNotImplemented{})
+		return errors.ErrNotImplemented{What: "repository checkout by RemoteRef"}
 	}
 	return nil
 }
@@ -163,7 +163,7 @@ func (repo *Repository) ToAuth() (transport.AuthMethod, error) {
 	case HTTPBasic:
 		return &http.BasicAuth{Username: repo.Auth.Username, Password: repo.Auth.HTTPPassword}, nil
 	default:
-		return nil, fmt.Errorf("Error building auth opts, repo\n%s\n: %w", repo.String(), errors.ErrNotImplemented{})
+		return nil, errors.ErrNotImplemented{What: fmt.Sprintf("authtype %s", repo.Auth.Type)}
 	}
 }
 

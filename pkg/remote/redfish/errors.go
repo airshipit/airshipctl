@@ -16,13 +16,10 @@ package redfish
 
 import (
 	"fmt"
-
-	aerror "opendev.org/airship/airshipctl/pkg/errors"
 )
 
 // ErrRedfishClient describes an error encountered by the go-redfish client.
 type ErrRedfishClient struct {
-	aerror.AirshipError
 	Message string
 }
 
@@ -51,7 +48,6 @@ func (e ErrOperationRetriesExceeded) Error() string {
 
 // ErrUnrecognizedRedfishResponse is a debug error that describes unexpected formats in a Redfish error response.
 type ErrUnrecognizedRedfishResponse struct {
-	aerror.AirshipError
 	Key string
 }
 

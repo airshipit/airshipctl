@@ -14,23 +14,16 @@
 
 package errors
 
-// AirshipError is the base error type
-// used to create extended error types
-// in other airshipctl packages.
-type AirshipError struct {
-	Message string
-}
+import "fmt"
 
-// Error function implements the golang
-// error interface
-func (ae *AirshipError) Error() string {
-	return ae.Message
-}
-
-// ErrNotImplemented returned for not implemented features
+// ErrNotImplemented returned for features not yet implemented
 type ErrNotImplemented struct {
+	What string
 }
 
 func (e ErrNotImplemented) Error() string {
-	return "Not implemented"
+	if e.What != "" {
+		return fmt.Sprintf("not implemented: %s", e.What)
+	}
+	return "not implemented"
 }
