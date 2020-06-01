@@ -17,21 +17,21 @@ Instructions to install Git are [here][12].
 
 Instructions to install Golang are [here][13].
 
-### Installing Docker
+The `make test` verification step requires the GNU Compiler Collection (gcc) to be installed.
 
-Instructions to install Docker are [here][14].
+To install the GNU Compiler Collection (gcc):
 
-Additionally, there is a script in the airshipctl directory named as
-`00_setup.sh`. This script will download all the required binaries and
-packages. This script can be checked [here][1].
+```sh
+sudo apt-get install gcc
+```
 
-### Proxy
+### Proxy Setup
 
 If your organization requires development behind a proxy server, you will need
 to define the following environment variables with your organization's
 information:
 
-```
+```sh
 HTTP_PROXY=http://username:password@host:port
 HTTPS_PROXY=http://username:password@host:port
 NO_PROXY="localhost,127.0.0.1"
@@ -49,7 +49,8 @@ proxy, user-data section for ephemeral iso has to be updated in the below file
 `manifests/function/ephemeral/secret.yaml`.
 
 Add the following contents to the file in runcmd section
-```
+
+```sh
     - export http_proxy=http://username:password@host:port
     - export https_proxy=$http_proxy
     - export HTTP_PROXY=$http_proxy
@@ -57,7 +58,8 @@ Add the following contents to the file in runcmd section
 ```
 
 Add the following contents to the file in write_files section
-```
+
+```sh
     - path: /etc/systemd/system/docker.service.d/http-proxy.conf
       permissions: '0644'
       owner: root:root
@@ -67,9 +69,10 @@ Add the following contents to the file in write_files section
         Environment="HTTPS_PROXY=http://username:password@host:port"
         Environment="NO_PROXY=127.0.0.1,localhost,10.23.25.0/24"
 ```
-## Building airshipctl
 
-The simplest way to get started is:
+## Clone airshipctl code
+
+Run the following command to download the latest airshipctl code:
 
 ```sh
 git clone https://opendev.org/airship/airshipctl.git
@@ -80,20 +83,49 @@ need to clone the repository into the $GOPATH directory in order to build it.
 You should be able to build it from any directory as long as $GOPATH is
 defined correctly.
 
-The following command will build the airshipctl binary.
+### Installing Docker & Other Tools
+
+Prior to building the airshipctl binary, ensure you have Docker,
+Ansible & other tools installed in your environment.
+
+There is a script in the airshipctl directory named `00_setup.sh` which can be
+run to download all the required binaries and packages. This script code can be
+viewed [here][1].
+
+Standalone instructions to install Docker are [here][14]. This is not necessary
+if you run `00_setup.sh`.
+
+## Building airshipctl
+
+Run the following command to build the airshipctl binary:
 
 ```sh
 make build
 ```
 
 This will compile airshipctl and place the resulting binary into the bin
-directory. To run all the tests including linting and coverage reports, run
-`make test`. To run all tests in a containerized environment, run
-`make docker-image-test-suite`.
+directory.
+
+To test the build, including linting and coverage reports, run:
+
+```sh
+make test
+```
+
+To run all tests in a containerized environment, run:
+
+```sh
+make docker-image-test-suite
+```
 
 ## Docker Images
 
-If you want to build an `airshipctl` Docker image, run `make docker-image`.
+To build an `airshipctl` Docker image, run:
+
+```sh
+make docker-image
+```
+
 Pre-built images are already available at [quay.io][2]. Moreover, in the
 directory `airshipctl/tools/gate/`, different scripts are present which will
 run and download all the required images. The script [10_build_gate.sh][3]
