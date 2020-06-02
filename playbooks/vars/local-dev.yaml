@@ -20,4 +20,4 @@ proxy:
 # document pull command to download the manifests to the remote_work_dir.
 # Otherwise, the current working dir where the script is launched is used and
 # document pull is skipped.
-remote_work_dir: "/tmp/airship"
+#remote_work_dir: "/tmp/airship"

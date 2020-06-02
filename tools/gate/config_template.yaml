@@ -28,4 +28,4 @@ proxy:
  http: "$HTTP_PROXY"
  https: "$HTTPS_PROXY"
  noproxy: "$NO_PROXY"
-remote_work_dir: "/tmp/airship"
+#remote_work_dir: "/tmp/airship"
