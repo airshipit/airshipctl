@@ -3,3 +3,4 @@ resources:
  - tiller.yaml
  - argo.yaml
  - initially_ignored.yaml
+ - custom_resource.yaml
