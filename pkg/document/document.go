@@ -16,6 +16,7 @@ package document
 
 import (
 	"sigs.k8s.io/kustomize/api/resource"
+	"sigs.k8s.io/yaml"
 )
 
 // Factory holds document data
@@ -30,6 +31,7 @@ type Document interface {
 	GetAnnotations() map[string]string
 	GetBool(path string) (bool, error)
 	GetFloat64(path string) (float64, error)
+	GetGroup() string
 	GetInt64(path string) (int64, error)
 	GetKind() string
 	GetLabels() map[string]string
@@ -40,8 +42,10 @@ type Document interface {
 	GetString(path string) (string, error)
 	GetStringMap(path string) (map[string]string, error)
 	GetStringSlice(path string) ([]string, error)
+	GetVersion() string
 	Label(map[string]string)
 	MarshalJSON() ([]byte, error)
+	ToObject(interface{}) error
 }
 
 // Factory implements Document
@@ -145,6 +149,18 @@ func (d *Factory) GetName() string {
 	return r.GetName()
 }
 
+// GetGroup returns api group from apiVersion field
+func (d *Factory) GetGroup() string {
+	r := d.GetKustomizeResource()
+	return r.GetGvk().Group
+}
+
+// GetVersion returns api version from apiVersion field
+func (d *Factory) GetVersion() string {
+	r := d.GetKustomizeResource()
+	return r.GetGvk().Version
+}
+
 // GetKind returns the Kind: field from the document.
 func (d *Factory) GetKind() string {
 	r := d.GetKustomizeResource()
@@ -160,6 +176,15 @@ func (d *Factory) GetKustomizeResource() resource.Resource {
 func (d *Factory) SetKustomizeResource(r *resource.Resource) error {
 	d.Resource = *r
 	return nil
+}
+
+// ToObject serializes document to object passed as an argument
+func (d *Factory) ToObject(obj interface{}) error {
+	docYAML, err := d.AsYAML()
+	if err != nil {
+		return err
+	}
+	return yaml.Unmarshal(docYAML, obj)
 }
 
 // NewDocument is a convenience method to construct a new Document.  Although

@@ -1,0 +1,7 @@
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: initinfra
+config:
+  documentEntryPoint: "manifests/site/test-site/initinfra"

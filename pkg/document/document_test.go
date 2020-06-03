@@ -83,6 +83,25 @@ func TestDocument(t *testing.T) {
 		assert.Equal(strings.TrimRight(s, "\n"), strings.TrimRight(string(fileData), "\n"))
 	})
 
+	t.Run("ToObject", func(t *testing.T) {
+		expectedObj := map[string]interface{}{
+			"apiVersion": "airshipit.org/v1alpha1",
+			"kind":       "Phase",
+			"metadata": map[string]interface{}{
+				"name": "initinfra",
+			},
+			"config": map[string]interface{}{
+				"documentEntryPoint": "manifests/site/test-site/initinfra",
+			},
+		}
+		doc, err := bundle.GetByName("initinfra")
+		require.NoError(err)
+		actualObj := make(map[string]interface{})
+		err = doc.ToObject(&actualObj)
+		assert.NoError(err)
+		assert.Equal(expectedObj, actualObj)
+	})
+
 	t.Run("GetString", func(t *testing.T) {
 		doc, err := bundle.GetByName("some-random-deployment-we-will-filter")
 		require.NoError(err, "Unexpected error trying to GetByName")
