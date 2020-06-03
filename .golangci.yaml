@@ -204,7 +204,6 @@ linters:
     - misspell             # Finds commonly misspelled English words in comments
     - nakedret             # Finds naked returns in functions greater than a specified function length
     - prealloc             # Finds slice declarations that could potentially be preallocated
-    - scopelint            # Scopelint checks for unpinned variables in go programs
     - unconvert            # Remove unnecessary type conversions
     - unparam              # Reports unused function parameters
     - unused               # Checks Go code for unused constants, variables, functions and types
