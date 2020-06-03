@@ -31,5 +31,6 @@ Manage the airshipctl config file
 * [airshipctl config set-cluster](airshipctl_config_set-cluster.md)	 - Manage clusters
 * [airshipctl config set-context](airshipctl_config_set-context.md)	 - Manage contexts
 * [airshipctl config set-credentials](airshipctl_config_set-credentials.md)	 - Manage user credentials
+* [airshipctl config set-management-config](airshipctl_config_set-management-config.md)	 - Modify an out-of-band management configuration
 * [airshipctl config use-context](airshipctl_config_use-context.md)	 - Switch to a different context
 
