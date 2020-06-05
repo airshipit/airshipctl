@@ -76,10 +76,7 @@ func NewStatusMap(client client.Interface) (*StatusMap, error) {
 // GetStatusForResource iterates over all of the stored conditions for the
 // resource and returns the first status whose conditions are met.
 func (sm *StatusMap) GetStatusForResource(resource document.Document) (Status, error) {
-	gvk, err := getGVK(resource)
-	if err != nil {
-		return "", err
-	}
+	gvk := getGVK(resource)
 
 	restMapping, err := sm.restMapper.RESTMapping(gvk.GroupKind(), gvk.Version)
 	if err != nil {
@@ -150,20 +147,13 @@ func getGVRs(crd apiextensions.CustomResourceDefinition) []schema.GroupVersionRe
 }
 
 // getGVK constructs a schema.GroupVersionKind for a document
-//
-// TODO(howell): This should probably be a member method of the
-// document.Document interface.
-func getGVK(doc document.Document) (schema.GroupVersionKind, error) {
-	apiVersion, err := doc.GetString("apiVersion")
-	if err != nil {
-		return schema.GroupVersionKind{}, err
+func getGVK(doc document.Document) schema.GroupVersionKind {
+	toSchemaGvk := schema.GroupVersionKind{
+		Group:   doc.GetGroup(),
+		Version: doc.GetVersion(),
+		Kind:    doc.GetKind(),
 	}
-	gv, err := schema.ParseGroupVersion(apiVersion)
-	if err != nil {
-		return schema.GroupVersionKind{}, err
-	}
-
-	return gv.WithKind(doc.GetKind()), nil
+	return toSchemaGvk
 }
 
 // parseStatusChecks takes a string containing a map of status names (e.g.
