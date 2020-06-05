@@ -17,15 +17,24 @@ package phase
 import (
 	"path/filepath"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
 const (
 	// PhaseDirName directory for bundle with phases
 	// TODO (dukov) Remove this once repository metadata is ready
 	PhaseDirName = "phases"
+)
+
+var (
+	// ExecutorRegistry contins registered runner factories
+	ExecutorRegistry = make(map[schema.GroupVersionKind]ifc.ExecutorFactory)
 )
 
 // Cmd object to work with phase api
@@ -40,6 +49,84 @@ func (p *Cmd) getBundle() (document.Bundle, error) {
 		return nil, err
 	}
 	return document.NewBundleByPath(filepath.Join(ccm.TargetPath, ccm.SubPath, PhaseDirName))
+}
+
+// GetPhase returns particular phase object identified by name
+func (p *Cmd) GetPhase(name string) (*airshipv1.Phase, error) {
+	bundle, err := p.getBundle()
+	if err != nil {
+		return nil, err
+	}
+	phaseConfig := &airshipv1.Phase{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+	}
+	selector, err := document.NewSelector().ByObject(phaseConfig, airshipv1.Scheme)
+	if err != nil {
+		return nil, err
+	}
+	doc, err := bundle.SelectOne(selector)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = doc.ToAPIObject(phaseConfig, airshipv1.Scheme); err != nil {
+		return nil, err
+	}
+	return phaseConfig, nil
+}
+
+// GetExecutor referenced in a phase configuration
+func (p *Cmd) GetExecutor(phase *airshipv1.Phase) (ifc.Executor, error) {
+	bundle, err := p.getBundle()
+	if err != nil {
+		return nil, err
+	}
+	phaseConfig := phase.Config
+	// Searching executor configuration document referenced in
+	// phase configuration
+	refGVK := phaseConfig.ExecutorRef.GroupVersionKind()
+	selector := document.NewSelector().
+		ByGvk(refGVK.Group, refGVK.Version, refGVK.Kind).
+		ByName(phaseConfig.ExecutorRef.Name).
+		ByNamespace(phaseConfig.ExecutorRef.Namespace)
+	doc, err := bundle.SelectOne(selector)
+	if err != nil {
+		return nil, err
+	}
+
+	// Define executor configuration options
+	targetPath, err := p.Config.CurrentContextTargetPath()
+	if err != nil {
+		return nil, err
+	}
+	executorDocBundle, err := document.NewBundleByPath(filepath.Join(targetPath, phaseConfig.DocumentEntryPoint))
+	if err != nil {
+		return nil, err
+	}
+
+	// Look for executor factory defined in registry
+	executorFactory, found := ExecutorRegistry[refGVK]
+	if !found {
+		return nil, ErrExecutorNotFound{GVK: refGVK}
+	}
+	return executorFactory(doc, executorDocBundle, p.AirshipCTLSettings)
+}
+
+// Exec particular phase
+func (p *Cmd) Exec(name string) error {
+	phaseConfig, err := p.GetPhase(name)
+	if err != nil {
+		return err
+	}
+
+	executor, err := p.GetExecutor(phaseConfig)
+	if err != nil {
+		return err
+	}
+
+	return executor.Run(p.DryRun, p.Debug)
 }
 
 // Plan shows available phase names

@@ -1,0 +1,10 @@
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: capi_init
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: Clusterctl
+    name: clusterctl-v1
+  documentEntryPoint: manifests/site/test-site/auth

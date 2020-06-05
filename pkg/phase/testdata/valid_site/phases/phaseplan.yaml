@@ -8,3 +8,5 @@ phaseGroups:
       - name: isogen
       - name: remotedirect
       - name: initinfra
+      - name: some_phase
+      - name: capi_init

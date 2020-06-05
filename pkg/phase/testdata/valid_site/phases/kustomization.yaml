@@ -1,2 +1,6 @@
 resources:
   - phaseplan.yaml
+  - some_phase.yaml
+  - some_exc.yaml
+  - capi_init.yaml
+  - clusterctl.yaml

@@ -1,0 +1,10 @@
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: some_phase
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: SomeExecutor
+    name: executor-name
+  documentEntryPoint: manifests/site/test-site/auth
