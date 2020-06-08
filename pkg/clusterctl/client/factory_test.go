@@ -68,7 +68,7 @@ func testOptions(t *testing.T, input string) *airshipv1.Clusterctl {
 
 func testNewConfig(t *testing.T, o *airshipv1.Clusterctl) clusterctlconfig.Client {
 	t.Helper()
-	configClient, err := newConfig(o)
+	configClient, err := newConfig(o, testDataDir)
 	require.NoError(t, err)
 	require.NotNil(t, configClient)
 	return configClient
@@ -80,7 +80,6 @@ func TestFactory(t *testing.T) {
 	o := testOptions(t, testConfigFactory)
 	configClient := testNewConfig(t, o)
 	factory := RepositoryFactory{
-		root:         testDataDir,
 		Options:      o,
 		ConfigClient: configClient,
 	}
@@ -134,7 +133,7 @@ func TestFactory(t *testing.T) {
 			require.NoError(t, err)
 			sort.Strings(expectedVersions)
 			sort.Strings(versions)
-			assert.Equal(t, dummyComponentPath, repo.URL())
+			assert.Equal(t, testDataDir, repo.URL())
 			assert.Equal(t, expectedVersions, versions)
 			components := repo.Components()
 			require.NotNil(t, components)
@@ -163,7 +162,6 @@ func TestClientRepositoryFactory(t *testing.T) {
 	o := testOptions(t, testConfigFactory)
 	configClient := testNewConfig(t, o)
 	factory := RepositoryFactory{
-		root:         testDataDir,
 		Options:      o,
 		ConfigClient: configClient,
 	}
@@ -180,7 +178,6 @@ func TestRepoFactoryFunction(t *testing.T) {
 	configClient := testNewConfig(t, o)
 
 	factory := RepositoryFactory{
-		root:         testDataDir,
 		Options:      o,
 		ConfigClient: configClient,
 	}
@@ -203,7 +200,6 @@ func TestClusterctlRepoFactoryFunction(t *testing.T) {
 	o := testOptions(t, testConfigFactory)
 	configClient := testNewConfig(t, o)
 	factory := RepositoryFactory{
-		root:         testDataDir,
 		Options:      o,
 		ConfigClient: configClient,
 	}
@@ -231,7 +227,6 @@ func TestRepositoryFactoryErrors(t *testing.T) {
 	configClient := testNewConfig(t, o)
 	require.NotNil(t, configClient)
 	factory := RepositoryFactory{
-		root:         testDataDir,
 		Options:      o,
 		ConfigClient: configClient,
 	}

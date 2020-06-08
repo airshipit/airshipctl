@@ -78,7 +78,7 @@ func TestNewConfig(t *testing.T) {
 			name:            "multiple repos with airship",
 			presentProvider: "airship-repo",
 			presentType:     "InfrastructureProvider",
-			expectedURL:     dummyComponentPath,
+			expectedURL:     testDataDir,
 			conf: &airshipv1.Clusterctl{
 
 				Providers: []*airshipv1.Provider{
@@ -107,7 +107,7 @@ func TestNewConfig(t *testing.T) {
 		provName := tt.presentProvider
 		provType := tt.presentType
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := newConfig(conf)
+			got, err := newConfig(conf, testDataDir)
 			require.NoError(t, err)
 			providerClient := got.Providers()
 			provider, err := providerClient.Get(provName, clusterctlv1.ProviderType(provType))
