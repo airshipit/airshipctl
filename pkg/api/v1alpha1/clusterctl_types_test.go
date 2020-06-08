@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package clusterctl
+package v1alpha1
 
 import (
 	"testing"

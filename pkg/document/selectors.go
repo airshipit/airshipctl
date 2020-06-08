@@ -21,7 +21,7 @@ import (
 	"sigs.k8s.io/kustomize/api/resid"
 	"sigs.k8s.io/kustomize/api/types"
 
-	airshipv1 "opendev.org/airship/airshipctl/pkg/clusterctl/api/v1alpha1"
+	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 )
 
 // Selector provides abstraction layer in front of kustomize selector

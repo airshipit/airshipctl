@@ -19,7 +19,7 @@ import (
 	"sigs.k8s.io/cluster-api/cmd/clusterctl/client/config"
 	"sigs.k8s.io/yaml"
 
-	airshipv1 "opendev.org/airship/airshipctl/pkg/clusterctl/api/v1alpha1"
+	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 )
 
 var _ config.Reader = &AirshipReader{}

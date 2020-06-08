@@ -22,7 +22,7 @@ import (
 	clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/cmd/clusterctl/client/config"
 
-	airshipv1 "opendev.org/airship/airshipctl/pkg/clusterctl/api/v1alpha1"
+	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 )
 
 func makeValidOptions() *airshipv1.Clusterctl {
