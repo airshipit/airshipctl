@@ -19,7 +19,7 @@ import (
 	clusterctlconfig "sigs.k8s.io/cluster-api/cmd/clusterctl/client/config"
 	clog "sigs.k8s.io/cluster-api/cmd/clusterctl/log"
 
-	airshipv1 "opendev.org/airship/airshipctl/pkg/clusterctl/api/v1alpha1"
+	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/clusterctl/implementations"
 	"opendev.org/airship/airshipctl/pkg/log"
 )
