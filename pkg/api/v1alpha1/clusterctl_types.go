@@ -20,12 +20,12 @@ import (
 	clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
 )
 
-// TODO (kkalynovskyi) add generators for deepcopy methods, so we can use kubernetes schema
-
 var (
 	// GroupVersionKind is group version used to register these objects
 	GroupVersionKind = schema.GroupVersionKind{Group: "airshipit.org", Version: "v1alpha1", Kind: "Clusterctl"}
 )
+
+// +kubebuilder:object:root=true
 
 // Clusterctl provides information about clusterctl components
 type Clusterctl struct {
