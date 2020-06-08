@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# The makefile entrypoint driver for document validation
+# Expected to be run from the project root
+set -e
+
+# get kind
+echo "Fetching kind from ${KIND_URL}..."
+TMP=$(KIND_URL=${KIND_URL} ./tools/document/get_kind.sh)
+export KIND=${TMP}/kind
+export KUBECTL_URL
+
+function cleanup() {
+    ${KIND} delete cluster --name airship
+    rm -rf ${TMP}
+}
+trap cleanup EXIT
+
+./tools/document/build_kustomize_plugin.sh
+./tools/document/start_kind.sh
+
+for site in $(ls manifests/site); do
+    echo -e "\nValidating site: ${site}\n****************"
+    SITE=${site} ./tools/document/validate_site_docs.sh
+    echo "Validation of site ${site} is succesful!"
+done
+
