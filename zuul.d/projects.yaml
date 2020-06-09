@@ -30,7 +30,6 @@
       jobs:
         - openstack-tox-docs
         - airship-airshipctl-lint-unit
-        - airship-airshipctl-lint-unit
         - airship-airshipctl-build-image
         - airship-airshipctl-validate-site-docs
 #        - airship-airshipctl-functional-existing-k8s TODO: Enable this when functional tests exist, and a cluster is up
