@@ -34,15 +34,21 @@ func NewConfigCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comma
 			rootSettings.InitConfig()
 		},
 	}
-	configRootCmd.AddCommand(NewSetClusterCommand(rootSettings))
-	configRootCmd.AddCommand(NewGetClusterCommand(rootSettings))
-	configRootCmd.AddCommand(NewSetContextCommand(rootSettings))
-	configRootCmd.AddCommand(NewGetContextCommand(rootSettings))
-	configRootCmd.AddCommand(NewInitCommand(rootSettings))
-	configRootCmd.AddCommand(NewSetAuthInfoCommand(rootSettings))
+
 	configRootCmd.AddCommand(NewGetAuthInfoCommand(rootSettings))
-	configRootCmd.AddCommand(NewUseContextCommand(rootSettings))
+	configRootCmd.AddCommand(NewSetAuthInfoCommand(rootSettings))
+
+	configRootCmd.AddCommand(NewGetClusterCommand(rootSettings))
+	configRootCmd.AddCommand(NewSetClusterCommand(rootSettings))
+
+	configRootCmd.AddCommand(NewGetContextCommand(rootSettings))
+	configRootCmd.AddCommand(NewSetContextCommand(rootSettings))
+
+	configRootCmd.AddCommand(NewSetManagementConfigCommand(rootSettings))
+
 	configRootCmd.AddCommand(NewImportCommand(rootSettings))
+	configRootCmd.AddCommand(NewInitCommand(rootSettings))
+	configRootCmd.AddCommand(NewUseContextCommand(rootSettings))
 
 	return configRootCmd
 }

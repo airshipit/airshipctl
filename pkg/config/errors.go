@@ -106,6 +106,16 @@ func (e ErrConfigFailed) Error() string {
 	return "Configuration failed to complete."
 }
 
+// ErrManagementConfigurationNotFound describes a situation in which a user has attempted to reference a management
+// configuration that cannot be referenced.
+type ErrManagementConfigurationNotFound struct {
+	Name string
+}
+
+func (e ErrManagementConfigurationNotFound) Error() string {
+	return fmt.Sprintf("Unknown management configuration '%s'.", e.Name)
+}
+
 // ErrMissingCurrentContext returned in case --current used without setting current-context
 type ErrMissingCurrentContext struct {
 }

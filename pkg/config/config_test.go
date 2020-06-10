@@ -731,3 +731,20 @@ func TestImportErrors(t *testing.T) {
 		assert.Contains(t, err.Error(), "json parse error")
 	})
 }
+
+func TestManagementConfigurationByName(t *testing.T) {
+	conf, cleanupConfig := testutil.InitConfig(t)
+	defer cleanupConfig(t)
+
+	mgmtCfg, err := conf.GetManagementConfiguration(config.AirshipDefaultContext)
+	require.NoError(t, err)
+	assert.Equal(t, conf.ManagementConfiguration[config.AirshipDefaultContext], mgmtCfg)
+}
+
+func TestManagementConfigurationByNameDoesNotExist(t *testing.T) {
+	conf, cleanupConfig := testutil.InitConfig(t)
+	defer cleanupConfig(t)
+
+	_, err := conf.GetManagementConfiguration(fmt.Sprintf("%s-test", config.AirshipDefaultContext))
+	assert.Error(t, err)
+}
