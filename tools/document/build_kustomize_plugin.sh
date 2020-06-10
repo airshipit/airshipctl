@@ -32,14 +32,26 @@ fi
 rm -rf ${KUSTOMIZE_PLUGIN_HOME}/airshipit.org
 
 # copy our plugin to the PLUGIN_ROOT, and give a kustomzie-friendly wrapper
-PLUGIN_PATH=${KUSTOMIZE_PLUGIN_HOME}/airshipit.org/v1alpha1/replacementtransformer
-mkdir -p ${PLUGIN_PATH}
-cat > ${PLUGIN_PATH}/ReplacementTransformer <<EOF
+for PLUGIN in ReplacementTransformer Templater; do
+  PLUGIN_PATH=${KUSTOMIZE_PLUGIN_HOME}/airshipit.org/v1alpha1/$(echo ${PLUGIN} | awk '{print tolower($0)}')
+  mkdir -p ${PLUGIN_PATH}
+  cat > ${PLUGIN_PATH}/${PLUGIN} <<EOF
 #!/bin/bash
 \$(dirname \$0)/airshipctl document plugin "\$@"
 EOF
-chmod +x ${PLUGIN_PATH}/ReplacementTransformer
-cp -p ${AIRSHIPCTL} ${PLUGIN_PATH}/
+  chmod +x ${PLUGIN_PATH}/${PLUGIN}
+  cp -p ${AIRSHIPCTL} ${PLUGIN_PATH}/
+done
+
+# make a fake "variablecatalogue" no-op plugin, so kustomize
+# doesn't barf on leftover catalogues that were used to construct other transformer configs
+PLUGIN_PATH=${KUSTOMIZE_PLUGIN_HOME}/airshipit.org/v1alpha1/variablecatalogue
+mkdir -p ${PLUGIN_PATH}
+cat > ${PLUGIN_PATH}/VariableCatalogue <<EOF
+#!/bin/bash
+# This is a no-op kustomize plugin
+EOF
+chmod +x ${PLUGIN_PATH}/VariableCatalogue
 
 # tell the user how to use this
 echo -e "The airshipctl kustomize plugin has been installed.\nRun kustomize with:"

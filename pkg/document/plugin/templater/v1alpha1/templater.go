@@ -48,9 +48,24 @@ func New(_ *environment.AirshipCTLSettings, cfg []byte) (plugtypes.Plugin, error
 
 // Run templater plugin
 func (t *Templater) Run(_ io.Reader, out io.Writer) error {
-	tmpl, err := template.New("tmpl").Funcs(sprig.TxtFuncMap()).Parse(t.Template)
+	funcMap := sprig.TxtFuncMap()
+	funcMap["toYaml"] = toYaml
+	tmpl, err := template.New("tmpl").Funcs(funcMap).Parse(t.Template)
 	if err != nil {
 		return err
 	}
 	return tmpl.Execute(out, t.Values)
+}
+
+// Render input yaml as output yaml
+// This function is from the Helm project:
+// https://github.com/helm/helm
+// Copyright The Helm Authors
+func toYaml(v interface{}) string {
+	data, err := yaml.Marshal(v)
+	if err != nil {
+		// Swallow errors inside of a template.
+		return ""
+	}
+	return string(data)
 }
