@@ -117,7 +117,6 @@ func TestDeploy(t *testing.T) {
 // makeNewFakeRootSettings takes kubeconfig path and directory path to fixture dir as argument.
 func makeNewFakeRootSettings(t *testing.T, kp string, dir string) *environment.AirshipCTLSettings {
 	t.Helper()
-
 	akp, err := filepath.Abs(kp)
 	require.NoError(t, err)
 

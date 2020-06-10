@@ -15,24 +15,22 @@
 package cluster
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/cli-utils/pkg/kstatus/polling/event"
+	"sigs.k8s.io/cli-utils/pkg/kstatus/status"
+	"sigs.k8s.io/cli-utils/pkg/object"
 
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/k8s/client"
-)
-
-// A Status represents a kubernetes resource's state.
-type Status string
-
-// These represent the default statuses
-const (
-	UnknownStatus = Status("Unknown")
 )
 
 // StatusMap holds a mapping of schema.GroupVersionResource to various statuses
@@ -40,7 +38,8 @@ const (
 // status.
 type StatusMap struct {
 	client     client.Interface
-	mapping    map[schema.GroupVersionResource]map[Status]Expression
+	GkMapping  []schema.GroupKind
+	mapping    map[schema.GroupVersionResource]map[status.Status]Expression
 	restMapper *meta.DefaultRESTMapper
 }
 
@@ -52,10 +51,10 @@ type StatusMap struct {
 func NewStatusMap(client client.Interface) (*StatusMap, error) {
 	statusMap := &StatusMap{
 		client:     client,
-		mapping:    make(map[schema.GroupVersionResource]map[Status]Expression),
+		mapping:    make(map[schema.GroupVersionResource]map[status.Status]Expression),
 		restMapper: meta.NewDefaultRESTMapper([]schema.GroupVersion{}),
 	}
-
+	client.ApiextensionsClientSet()
 	crds, err := statusMap.client.ApiextensionsClientSet().
 		ApiextensionsV1().
 		CustomResourceDefinitions().
@@ -73,9 +72,84 @@ func NewStatusMap(client client.Interface) (*StatusMap, error) {
 	return statusMap, nil
 }
 
+// ReadStatus returns object status
+func (sm *StatusMap) ReadStatus(ctx context.Context, resource object.ObjMetadata) *event.ResourceStatus {
+	gk := resource.GroupKind
+	gvr, err := sm.restMapper.RESTMapping(gk, "v1")
+	if err != nil {
+		return handleResourceStatusError(resource, err)
+	}
+	options := metav1.GetOptions{}
+	object, err := sm.client.DynamicClient().Resource(gvr.Resource).
+		Namespace(resource.Namespace).Get(resource.Name, options)
+	if err != nil {
+		return handleResourceStatusError(resource, err)
+	}
+	return sm.ReadStatusForObject(ctx, object)
+}
+
+// ReadStatusForObject returns resource status for object.
+// Current status will be returned only if expression matched.
+func (sm *StatusMap) ReadStatusForObject(
+	ctx context.Context, resource *unstructured.Unstructured) *event.ResourceStatus {
+	identifier := object.ObjMetadata{
+		GroupKind: resource.GroupVersionKind().GroupKind(),
+		Name:      resource.GetName(),
+		Namespace: resource.GetNamespace(),
+	}
+	gvk := resource.GroupVersionKind()
+	restMapping, err := sm.restMapper.RESTMapping(gvk.GroupKind(), gvk.Version)
+	if err != nil {
+		return &event.ResourceStatus{
+			Identifier: identifier,
+			Status:     status.UnknownStatus,
+			Error:      err,
+		}
+	}
+
+	gvr := restMapping.Resource
+
+	obj, err := sm.client.DynamicClient().Resource(gvr).Namespace(resource.GetNamespace()).
+		Get(resource.GetName(), metav1.GetOptions{})
+	if err != nil {
+		return &event.ResourceStatus{
+			Identifier: identifier,
+			Status:     status.UnknownStatus,
+			Error:      err,
+		}
+	}
+
+	// No need to check for existence - if there isn't a mapping for this
+	// resource, the following for loop won't run anyway
+	for currentstatus, expression := range sm.mapping[gvr] {
+		var matched bool
+		matched, err = expression.Match(obj)
+		if err != nil {
+			return &event.ResourceStatus{
+				Identifier: identifier,
+				Status:     status.UnknownStatus,
+				Error:      err,
+			}
+		}
+		if matched {
+			return &event.ResourceStatus{
+				Identifier: identifier,
+				Status:     currentstatus,
+				Resource:   resource,
+				Message:    fmt.Sprintf("%s is %s", resource.GroupVersionKind().Kind, currentstatus.String()),
+			}
+		}
+	}
+	return &event.ResourceStatus{
+		Identifier: identifier,
+		Status:     status.UnknownStatus,
+		Error:      nil,
+	}
+}
+
 // GetStatusForResource iterates over all of the stored conditions for the
 // resource and returns the first status whose conditions are met.
-func (sm *StatusMap) GetStatusForResource(resource document.Document) (Status, error) {
+func (sm *StatusMap) GetStatusForResource(resource document.Document) (status.Status, error) {
 	gvk := getGVK(resource)
 
 	restMapping, err := sm.restMapper.RESTMapping(gvk.GroupKind(), gvk.Version)
@@ -103,7 +177,7 @@ func (sm *StatusMap) GetStatusForResource(resource document.Document) (Status, e
 		}
 	}
 
-	return UnknownStatus, nil
+	return status.UnknownStatus, nil
 }
 
 // addCRD adds the mappings from the CRD to its associated statuses
@@ -122,6 +196,7 @@ func (sm *StatusMap) addCRD(crd apiextensions.CustomResourceDefinition) error {
 
 	gvrs := getGVRs(crd)
 	for _, gvr := range gvrs {
+		sm.GkMapping = append(sm.GkMapping, crd.GroupVersionKind().GroupKind())
 		gvk := gvr.GroupVersion().WithKind(crd.Spec.Names.Kind)
 		gvrSingular := gvr.GroupVersion().WithResource(crd.Spec.Names.Singular)
 		sm.mapping[gvr] = statusChecks
@@ -159,7 +234,7 @@ func getGVK(doc document.Document) schema.GroupVersionKind {
 // parseStatusChecks takes a string containing a map of status names (e.g.
 // Healthy) to the JSONPath filters associated with the statuses, and returns
 // the Go object equivalent.
-func parseStatusChecks(raw string) (map[Status]Expression, error) {
+func parseStatusChecks(raw string) (map[status.Status]Expression, error) {
 	type statusCheckType struct {
 		Status    string `json:"status"`
 		Condition string `json:"condition"`
@@ -172,7 +247,7 @@ func parseStatusChecks(raw string) (map[Status]Expression, error) {
 		}
 	}
 
-	expressionMap := make(map[Status]Expression)
+	expressionMap := make(map[status.Status]Expression)
 	for _, mapping := range mappings {
 		if mapping.Status == "" {
 			return nil, ErrInvalidStatusCheck{What: "missing status field"}
@@ -182,8 +257,25 @@ func parseStatusChecks(raw string) (map[Status]Expression, error) {
 			return nil, ErrInvalidStatusCheck{What: "missing condition field"}
 		}
 
-		expressionMap[Status(mapping.Status)] = Expression{Condition: mapping.Condition}
+		expressionMap[status.Status(mapping.Status)] = Expression{Condition: mapping.Condition}
 	}
 
 	return expressionMap, nil
+}
+
+// handleResourceStatusError construct the appropriate ResourceStatus
+// object based on the type of error.
+func handleResourceStatusError(identifier object.ObjMetadata, err error) *event.ResourceStatus {
+	if errors.IsNotFound(err) {
+		return &event.ResourceStatus{
+			Identifier: identifier,
+			Status:     status.NotFoundStatus,
+			Message:    "Resource not found",
+		}
+	}
+	return &event.ResourceStatus{
+		Identifier: identifier,
+		Status:     status.UnknownStatus,
+		Error:      err,
+	}
 }
