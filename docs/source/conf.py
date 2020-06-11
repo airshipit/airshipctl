@@ -19,7 +19,7 @@ import sphinx_rtd_theme
 # -- Project information -----------------------------------------------------
 
 project = 'airshipctl'
-copyright = '2020, The Airship Authors'
+copyright = '2019-2020, The Airship Authors'
 author = 'The Airship Authors'
 
 
@@ -52,6 +52,8 @@ html_theme_options = {
     'display_version': False,
     'logo_only': True
 }
+html_show_sourcelink = False
+html_show_sphinx = False
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # Add any paths that contain custom static files (such as style sheets) here,

@@ -21,11 +21,21 @@ Welcome to airshipctl's Documentation!
 .. include:: ../../README.rst
 
 .. toctree::
-    :hidden:
-    :maxdepth: 2
+   :caption: Airshipctl
+   :hidden:
+   :maxdepth: 2
 
-    architecture
-    developers
-    plugins
-    testing-guidelines
-    Commands <cli/airshipctl>
+   architecture
+   developers
+   plugins
+   testing-guidelines
+   Commands <cli/airshipctl>
+
+.. toctree::
+   :caption: Airship Project Documentation
+   :hidden:
+
+   Airship Documentation <https://docs.airshipit.org>
+   Airshipctl <https://docs.airshipit.org/airshipctl>
+   Airshipui <https://docs.airshipit.org/airshipui>
+   Treasuremap <https://docs.airshipit.org/treasuremap>
