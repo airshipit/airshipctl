@@ -15,8 +15,6 @@
 package cmd
 
 import (
-	"sigs.k8s.io/yaml"
-
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/config"
@@ -71,21 +69,22 @@ func (c *Command) Init() error {
 }
 
 func clusterctlOptions(bundle document.Bundle) (*airshipv1.Clusterctl, error) {
-	doc, err := bundle.SelectOne(document.NewClusterctlSelector())
+	cctl := &airshipv1.Clusterctl{}
+	selector, err := document.NewSelector().ByObject(cctl, airshipv1.Scheme)
 	if err != nil {
 		return nil, err
 	}
-	options := &airshipv1.Clusterctl{}
-	b, err := doc.AsYAML()
+
+	doc, err := bundle.SelectOne(selector)
 	if err != nil {
 		return nil, err
 	}
-	// TODO (kkalynovskyi) instead of this, use kubernetes serializer
-	err = yaml.Unmarshal(b, options)
-	if err != nil {
+
+	if err := doc.ToAPIObject(cctl, airshipv1.Scheme); err != nil {
 		return nil, err
 	}
-	return options, nil
+
+	return cctl, nil
 }
 
 func getBundle(conf *config.Config) (document.Bundle, error) {

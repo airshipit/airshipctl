@@ -16,6 +16,8 @@ package document
 
 import (
 	"fmt"
+
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // ErrDocNotFound returned if desired document not found by selector
@@ -41,6 +43,12 @@ type ErrDocumentMalformed struct {
 	Message string
 }
 
+// ErrRuntimeObjectKind returned if runtime object contains either none or
+// more than one Kinds defined in schema
+type ErrRuntimeObjectKind struct {
+	Obj runtime.Object
+}
+
 func (e ErrDocNotFound) Error() string {
 	return fmt.Sprintf("document filtered by selector %v found no documents", e.Selector)
 }
@@ -55,4 +63,8 @@ func (e ErrDocumentDataKeyNotFound) Error() string {
 
 func (e ErrDocumentMalformed) Error() string {
 	return fmt.Sprintf("document %q is malformed: %q", e.DocName, e.Message)
+}
+
+func (e ErrRuntimeObjectKind) Error() string {
+	return fmt.Sprintf("object %#v has either none or multiple kinds in scheme (expected one)", e.Obj)
 }

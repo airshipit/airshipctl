@@ -21,6 +21,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	airapiv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/testutil"
 )
@@ -98,6 +101,33 @@ func TestDocument(t *testing.T) {
 		require.NoError(err)
 		actualObj := make(map[string]interface{})
 		err = doc.ToObject(&actualObj)
+		assert.NoError(err)
+		assert.Equal(expectedObj, actualObj)
+	})
+
+	t.Run("ToAPIObject", func(t *testing.T) {
+		expectedObj := &airapiv1.Clusterctl{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Clusterctl",
+				APIVersion: "airshipit.org/v1alpha1",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "clusterctl-v1",
+			},
+			Providers: []*airapiv1.Provider{
+				{
+					Name: "aws",
+					Type: "InfrastructureProvider",
+					URL:  "/manifests/capi/infra/aws/v0.3.0",
+				},
+			},
+		}
+		sel, err := document.NewSelector().ByObject(expectedObj, airapiv1.Scheme)
+		require.NoError(err)
+		doc, err := bundle.SelectOne(sel)
+		require.NoError(err)
+		actualObj := &airapiv1.Clusterctl{}
+		err = doc.ToAPIObject(actualObj, airapiv1.Scheme)
 		assert.NoError(err)
 		assert.Equal(expectedObj, actualObj)
 	})
