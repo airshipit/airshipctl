@@ -1,0 +1,3 @@
+Kind       Name               Status
+Resource   pending-resource   Pending
+Resource   stable-resource    Stable
