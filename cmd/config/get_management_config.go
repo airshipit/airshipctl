@@ -16,6 +16,7 @@ package config
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/spf13/cobra"
 
@@ -58,7 +59,15 @@ func NewGetManagementConfigCommand(rootSettings *environment.AirshipCTLSettings)
 				return nil
 			}
 
-			for key, config := range rootSettings.Config.ManagementConfiguration {
+			// Print all of the management configurations in order by name
+			keys := make([]string, 0, len(rootSettings.Config.ManagementConfiguration))
+			for key := range rootSettings.Config.ManagementConfiguration {
+				keys = append(keys, key)
+			}
+			sort.Strings(keys)
+
+			for _, key := range keys {
+				config := rootSettings.Config.ManagementConfiguration[key]
 				fmt.Fprintf(cmd.OutOrStdout(), "name: %s\n%s\n", key, config.String())
 			}
 
