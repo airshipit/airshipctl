@@ -10,7 +10,6 @@ Available Commands:
   get-management-config View a management config or all management configs defined in the airshipctl config
   help                  Help about any command
   import                Merge information from a kubernetes config file
-  import                Merge information from a kubernetes config file
   init                  Generate initial configuration files for airshipctl
   set-cluster           Manage clusters
   set-context           Manage contexts
