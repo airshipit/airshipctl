@@ -7,7 +7,9 @@ Available Commands:
   get-cluster           Get cluster information from the airshipctl config
   get-context           Get context information from the airshipctl config
   get-credential        Get user credentials from the airshipctl config
+  get-management-config View a management config or all management configs defined in the airshipctl config
   help                  Help about any command
+  import                Merge information from a kubernetes config file
   import                Merge information from a kubernetes config file
   init                  Generate initial configuration files for airshipctl
   set-cluster           Manage clusters

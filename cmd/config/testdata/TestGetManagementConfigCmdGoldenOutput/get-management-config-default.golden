@@ -1,0 +1,4 @@
+name: default
+insecure: true
+type: redfish
+

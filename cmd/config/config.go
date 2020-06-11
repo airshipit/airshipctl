@@ -44,11 +44,13 @@ func NewConfigCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comma
 	configRootCmd.AddCommand(NewGetContextCommand(rootSettings))
 	configRootCmd.AddCommand(NewSetContextCommand(rootSettings))
 
+	configRootCmd.AddCommand(NewGetManagementConfigCommand(rootSettings))
 	configRootCmd.AddCommand(NewSetManagementConfigCommand(rootSettings))
 
 	configRootCmd.AddCommand(NewImportCommand(rootSettings))
 	configRootCmd.AddCommand(NewInitCommand(rootSettings))
 	configRootCmd.AddCommand(NewUseContextCommand(rootSettings))
+	configRootCmd.AddCommand(NewImportCommand(rootSettings))
 
 	return configRootCmd
 }
