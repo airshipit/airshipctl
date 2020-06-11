@@ -51,6 +51,8 @@
       - playbooks/airship-airshipctl-deploy-docker.yaml
     run: playbooks/airship-airshipctl-validate-documents.yaml
     nodeset: airship-airshipctl-single-node
+    # TODO (dukov) remove this once phases framework is fully implemented
+    voting: false
 
 - job:
     name: airship-airshipctl-functional-existing-k8s
