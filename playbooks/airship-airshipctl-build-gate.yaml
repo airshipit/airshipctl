@@ -46,8 +46,13 @@
 
     - name: get BareMetalHost from model
       block:
+        - name: ensure tempdir for airshipctl does not exist
+          file:
+            path: "{{ remote_work_dir }}"
+            state: absent
+          when: remote_work_dir is defined
         - name: clone document model
-          command: git clone -q {{ airship_config_primary_repo_url }} {{ remote_work_dir }}/airshipctl
+          command: git clone -q {{ airship_config_primary_repo_url }} {{ remote_work_dir }}
           when: remote_work_dir is defined
         - name: get BareMetalHost objects
           shell: |
@@ -66,7 +71,7 @@
             kustomize build {{ airship_config_manifest_directory }}/{{ airship_config_site_path }}/ephemeral/controlplane |
             kustomize config grep  "metadata.name={{ item.spec.networkData.name }}"
           register: netdata_command
-          failed_when: "bmh_command.stdout == ''"
+          failed_when: "netdata_command.stdout == ''"
           environment:
             KUSTOMIZE_ENABLE_ALPHA_COMMANDS: "true"
           with_items: "{{ bmh }}"
