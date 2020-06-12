@@ -12,24 +12,25 @@
  limitations under the License.
 */
 
-package baremetal
+package image_test
 
 import (
-	"github.com/spf13/cobra"
+	"testing"
 
-	"opendev.org/airship/airshipctl/pkg/bootstrap/isogen"
-	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/cmd/image"
+	"opendev.org/airship/airshipctl/testutil"
 )
 
-// NewISOGenCommand creates a new command with the capability to generate the ephemeral node ISO image.
-func NewISOGenCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "isogen",
-		Short: "Generate baremetal host ISO image",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return isogen.GenerateBootstrapIso(rootSettings)
+func TestImage(t *testing.T) {
+	tests := []*testutil.CmdTest{
+		{
+			Name:    "image-with-help",
+			CmdLine: "-h",
+			Cmd:     image.NewImageCommand(nil),
 		},
 	}
 
-	return cmd
+	for _, tt := range tests {
+		testutil.RunTest(t, tt)
+	}
 }

@@ -24,7 +24,6 @@ Perform actions on baremetal hosts
 
 * [airshipctl](airshipctl.md)	 - A unified entrypoint to various airship components
 * [airshipctl baremetal ejectmedia](airshipctl_baremetal_ejectmedia.md)	 - Eject media attached to a baremetal host
-* [airshipctl baremetal isogen](airshipctl_baremetal_isogen.md)	 - Generate baremetal host ISO image
 * [airshipctl baremetal poweroff](airshipctl_baremetal_poweroff.md)	 - Shutdown a baremetal host
 * [airshipctl baremetal poweron](airshipctl_baremetal_poweron.md)	 - Power on a host
 * [airshipctl baremetal powerstatus](airshipctl_baremetal_powerstatus.md)	 - Retrieve the power status of a baremetal host

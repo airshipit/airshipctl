@@ -6,7 +6,6 @@ Usage:
 Available Commands:
   ejectmedia   Eject media attached to a baremetal host
   help         Help about any command
-  isogen       Generate baremetal host ISO image
   poweroff     Shutdown a baremetal host
   poweron      Power on a host
   powerstatus  Retrieve the power status of a baremetal host

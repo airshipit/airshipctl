@@ -1,7 +1,0 @@
-Generate baremetal host ISO image
-
-Usage:
-  isogen [flags]
-
-Flags:
-  -h, --help   help for isogen

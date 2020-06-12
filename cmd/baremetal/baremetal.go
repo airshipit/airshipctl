@@ -51,9 +51,6 @@ func NewBaremetalCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Co
 	ejectMediaCmd := NewEjectMediaCommand(rootSettings)
 	baremetalRootCmd.AddCommand(ejectMediaCmd)
 
-	isoGenCmd := NewISOGenCommand(rootSettings)
-	baremetalRootCmd.AddCommand(isoGenCmd)
-
 	powerOffCmd := NewPowerOffCommand(rootSettings)
 	baremetalRootCmd.AddCommand(powerOffCmd)
 
