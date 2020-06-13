@@ -49,7 +49,9 @@ func TestInitConfig(t *testing.T) {
 		expectedKubeConfig := filepath.Join(testDir, config.AirshipConfigDir, config.AirshipKubeConfig)
 		expectedPluginPath := filepath.Join(testDir, config.AirshipConfigDir, config.AirshipPluginPath)
 
-		testSettings.InitConfig()
+		testSettings.InitAirshipConfigPath()
+		testSettings.InitKubeConfigPath()
+		environment.InitPluginPath()
 		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath)
 		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath)
 		assert.Equal(t, expectedPluginPath, environment.PluginPath())
@@ -73,7 +75,9 @@ func TestInitConfig(t *testing.T) {
 		defer os.Unsetenv(config.AirshipKubeConfigEnv)
 		defer os.Unsetenv(config.AirshipPluginPathEnv)
 
-		testSettings.InitConfig()
+		testSettings.InitAirshipConfigPath()
+		testSettings.InitKubeConfigPath()
+		environment.InitPluginPath()
 		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath)
 		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath)
 		assert.Equal(t, expectedPluginPath, environment.PluginPath())
@@ -93,8 +97,8 @@ func TestInitConfig(t *testing.T) {
 			KubeConfigPath:    expectedKubeConfig,
 		}
 
-		// InitConfig should not change any values
-		testSettings.InitConfig()
+		testSettings.InitAirshipConfigPath()
+		testSettings.InitKubeConfigPath()
 		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath)
 		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath)
 	})
@@ -123,7 +127,8 @@ func TestInitConfig(t *testing.T) {
 			KubeConfigPath:    expectedKubeConfig,
 		}
 
-		testSettings.InitConfig()
+		testSettings.InitAirshipConfigPath()
+		testSettings.InitKubeConfigPath()
 		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath)
 		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath)
 	})

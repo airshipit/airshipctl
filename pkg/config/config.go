@@ -113,9 +113,8 @@ func (c *Config) loadFromAirConfig(airshipConfigPath string) error {
 	c.loadedConfigPath = airshipConfigPath
 
 	// If I can read from the file, load from it
-	if _, err := os.Stat(airshipConfigPath); os.IsNotExist(err) {
-		return nil
-	} else if err != nil {
+	// throw an error otherwise
+	if _, err := os.Stat(airshipConfigPath); err != nil {
 		return err
 	}
 
