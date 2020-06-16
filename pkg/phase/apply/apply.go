@@ -15,66 +15,72 @@
 package apply
 
 import (
+	"fmt"
+	"time"
+
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
-	"opendev.org/airship/airshipctl/pkg/k8s/client"
+	"opendev.org/airship/airshipctl/pkg/events"
+	"opendev.org/airship/airshipctl/pkg/k8s/applier"
+	"opendev.org/airship/airshipctl/pkg/k8s/utils"
+	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 // Options is an abstraction used to apply the phase
 type Options struct {
 	RootSettings *environment.AirshipCTLSettings
-	Client       client.Interface
+	Applier      *applier.Applier
+	Processor    events.EventProcessor
 
-	DryRun    bool
-	Prune     bool
-	PhaseName string
+	WaitTimeout time.Duration
+	DryRun      bool
+	Prune       bool
+	PhaseName   string
 }
 
-// NewOptions return instance of Options
-func NewOptions(settings *environment.AirshipCTLSettings) *Options {
-	// At this point AirshipCTLSettings may not be fully initialized
-	applyOptions := &Options{RootSettings: settings}
-	return applyOptions
+// Initialize Options with required field, such as Applier
+func (o *Options) Initialize() {
+	f := utils.FactoryFromKubeConfigPath(o.RootSettings.KubeConfigPath)
+	streams := utils.Streams()
+	o.Applier = applier.NewApplier(f, streams)
+	o.Processor = events.NewDefaultProcessor(streams)
 }
 
 // Run apply subcommand logic
-func (applyOptions *Options) Run() error {
-	kctl := applyOptions.Client.Kubectl()
-	ao, err := kctl.ApplyOptions()
+func (o *Options) Run() error {
+	ao := applier.ApplyOptions{
+		DryRun:      o.DryRun,
+		Prune:       o.Prune,
+		WaitTimeout: o.WaitTimeout,
+	}
+	globalConf := o.RootSettings.Config
+
+	if err := globalConf.EnsureComplete(); err != nil {
+		return err
+	}
+	clusterName, err := globalConf.CurrentContextClusterName()
 	if err != nil {
 		return err
 	}
-
-	ao.SetDryRun(applyOptions.DryRun)
-	// If prune is true, set selector for pruning
-	if applyOptions.Prune {
-		ao.SetPrune(document.ApplyPhaseSelector + applyOptions.PhaseName)
-	}
-
-	globalConf := applyOptions.RootSettings.Config
-
-	if err = globalConf.EnsureComplete(); err != nil {
-		return err
-	}
-
-	kustomizePath, err := globalConf.CurrentContextEntryPoint(applyOptions.PhaseName)
+	clusterType, err := globalConf.CurrentContextClusterType()
 	if err != nil {
 		return err
 	}
-
+	ao.BundleName = fmt.Sprintf("%s-%s-%s", clusterName, clusterType, o.PhaseName)
+	kustomizePath, err := globalConf.CurrentContextEntryPoint(o.PhaseName)
+	if err != nil {
+		return err
+	}
+	log.Debugf("building bundle from kustomize path %s", kustomizePath)
 	b, err := document.NewBundleByPath(kustomizePath)
 	if err != nil {
 		return err
 	}
-
 	// Returns all documents for this phase
-	docs, err := b.Select(document.NewDeployToK8sSelector())
+	bundle, err := b.SelectBundle(document.NewDeployToK8sSelector())
 	if err != nil {
 		return err
 	}
-	if len(docs) == 0 {
-		return document.ErrDocNotFound{}
-	}
-
-	return kctl.Apply(docs, ao)
+	ch := o.Applier.ApplyBundle(bundle, ao)
+	return o.Processor.Process(ch)
 }

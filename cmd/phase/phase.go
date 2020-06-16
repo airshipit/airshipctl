@@ -18,7 +18,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/environment"
-	"opendev.org/airship/airshipctl/pkg/k8s/client"
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
@@ -37,13 +36,12 @@ func NewPhaseCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comman
 		Long:  clusterLong[1:],
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			log.Init(rootSettings.Debug, cmd.OutOrStderr())
-
 			// Load or Initialize airship Config
 			rootSettings.InitConfig()
 		},
 	}
 
-	phaseRootCmd.AddCommand(NewApplyCommand(rootSettings, client.DefaultClient))
+	phaseRootCmd.AddCommand(NewApplyCommand(rootSettings))
 	phaseRootCmd.AddCommand(NewRenderCommand(rootSettings))
 	phaseRootCmd.AddCommand(NewPlanCommand(rootSettings))
 

@@ -19,8 +19,6 @@ import (
 
 	"opendev.org/airship/airshipctl/cmd/phase"
 	"opendev.org/airship/airshipctl/pkg/environment"
-	"opendev.org/airship/airshipctl/pkg/k8s/client"
-	"opendev.org/airship/airshipctl/pkg/k8s/client/fake"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
@@ -30,15 +28,12 @@ func TestNewApplyCommand(t *testing.T) {
 		KubeConfigPath:    "../../testdata/k8s/kubeconfig.yaml",
 	}
 	fakeRootSettings.InitConfig()
-	testClientFactory := func(_ *environment.AirshipCTLSettings) (client.Interface, error) {
-		return fake.NewClient(), nil
-	}
 
 	tests := []*testutil.CmdTest{
 		{
 			Name:    "phase-apply-cmd-with-help",
 			CmdLine: "--help",
-			Cmd:     phase.NewApplyCommand(fakeRootSettings, testClientFactory),
+			Cmd:     phase.NewApplyCommand(fakeRootSettings),
 		},
 	}
 	for _, testcase := range tests {

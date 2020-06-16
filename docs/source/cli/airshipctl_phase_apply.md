@@ -23,9 +23,10 @@ airshipctl phase apply initinfra
 ### Options
 
 ```
-      --dry-run   don't deliver documents to the cluster, simulate the changes instead
-  -h, --help      help for apply
-      --prune     if set to true, command will delete all kubernetes resources that are not defined in airship documents and have airshipit.org/deployed=apply label
+      --dry-run                 don't deliver documents to the cluster, simulate the changes instead
+  -h, --help                    help for apply
+      --prune                   if set to true, command will delete all kubernetes resources that are not defined in airship documents and have airshipit.org/deployed=apply label
+      --wait-timeout duration   number of seconds to wait for resources to become ready, if set to 0 will not wait (default 2m0s)
 ```
 
 ### Options inherited from parent commands
