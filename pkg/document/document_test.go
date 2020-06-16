@@ -158,3 +158,46 @@ func TestDocument(t *testing.T) {
 		}
 	})
 }
+
+func TestNewDocumentFromBytes(t *testing.T) {
+	tests := []struct {
+		name            string
+		stringData      string
+		expectErr       bool
+		expectedDocName string
+	}{
+		{
+			name: "ConfigMap",
+			stringData: `apiVersion: v1
+kind: Secret
+metadata:
+  name: control-0-bmc
+  namespace: metal3
+type: Opaque
+stringData:
+  username: username
+  password: password`,
+			expectErr:       false,
+			expectedDocName: "control-0-bmc",
+		},
+		{
+			name: "Manformed Bytes",
+			stringData: `
+			broken:fas -<
+				fasd`,
+			expectErr: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			doc, err := document.NewDocumentFromBytes([]byte(tt.stringData))
+			if tt.expectErr {
+				assert.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, doc.GetName(), tt.expectedDocName)
+			}
+		})
+	}
+}
