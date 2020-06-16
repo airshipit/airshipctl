@@ -29,3 +29,13 @@ type ErrExecutorNotFound struct {
 func (e ErrExecutorNotFound) Error() string {
 	return fmt.Sprintf("executor identified by '%s' is not found", e.GVK)
 }
+
+// ErrExecutorRegistration is a wrapper for executor registration errors
+type ErrExecutorRegistration struct {
+	ExecutorName string
+	Err          error
+}
+
+func (e ErrExecutorRegistration) Error() string {
+	return fmt.Sprintf("failed to register executor %s, registration function returned %s", e.ExecutorName, e.Err.Error())
+}

@@ -31,6 +31,8 @@ const (
 	StatusPollerType
 	// WaitType is event emitted when airshipctl is waiting for something
 	WaitType
+	// ClusterctlType event emitted by Clusterctl executor
+	ClusterctlType
 )
 
 // Event holds all possible events that can be produced by airship
@@ -39,9 +41,29 @@ type Event struct {
 	ApplierEvent      applyevent.Event
 	ErrorEvent        ErrorEvent
 	StatusPollerEvent statuspollerevent.Event
+	ClusterctlEvent   ClusterctlEvent
 }
 
 // ErrorEvent is produced when error is encountered
 type ErrorEvent struct {
 	Error error
+}
+
+// ClusterctlOperation type
+type ClusterctlOperation int
+
+const (
+	// ClusterctlInitStart operation
+	ClusterctlInitStart ClusterctlOperation = iota
+	// ClusterctlInitEnd operation
+	ClusterctlInitEnd
+	// ClusterctlMoveStart operation
+	ClusterctlMoveStart
+	// ClusterctlMoveEnd operation
+	ClusterctlMoveEnd
+)
+
+// ClusterctlEvent is prodiced by clusterctl executor
+type ClusterctlEvent struct {
+	Operation ClusterctlOperation
 }

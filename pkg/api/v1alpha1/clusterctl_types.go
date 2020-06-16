@@ -15,6 +15,7 @@
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
 )
@@ -27,6 +28,7 @@ type Clusterctl struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	Providers   []*Provider  `json:"providers,omitempty"`
+	Action      ActionType   `json:"action,omitempty"`
 	InitOptions *InitOptions `json:"init-options,omitempty"`
 	MoveOptions *MoveOptions `json:"move-options,omitempty"`
 	// AdditionalComponentVariables are variables that will be available to clusterctl
@@ -73,7 +75,19 @@ type InitOptions struct {
 	// ControlPlaneProviders and versions (e.g. kubeadm:v0.3.0) to add to the management cluster.
 	// If unspecified, the kubeadm control plane provider latest release is used.
 	ControlPlaneProviders []string `json:"control-plane-providers,omitempty"`
+
+	// KubeConfigRef reference to KubeConfig document
+	KubeConfigRef *corev1.ObjectReference `json:"kubeConfigRef,omitempty"`
 }
+
+// ActionType for clusterctl
+type ActionType string
+
+// List of possible clusterctl actions
+const (
+	Init ActionType = "init"
+	Move ActionType = "move"
+)
 
 // Provider returns provider filtering by name and type
 func (c *Clusterctl) Provider(name string, providerType clusterctlv1.ProviderType) *Provider {
