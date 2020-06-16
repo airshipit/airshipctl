@@ -20,6 +20,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
 
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubectl"
@@ -68,18 +69,28 @@ func TestNewKubectlFromKubeConfigPath(t *testing.T) {
 }
 
 func TestApply(t *testing.T) {
-	f := k8stest.NewFakeFactoryForRC(t, filenameRC)
+	b := testutil.NewTestBundle(t, fixtureDir)
+	docs, err := b.GetByAnnotation("airshipit.org/initinfra")
+	require.NoError(t, err, "failed to get documents from bundle")
+	replicationController, err := b.SelectOne(document.NewSelector().ByKind("ReplicationController"))
+	require.NoError(t, err)
+	rcBytes, err := replicationController.AsYAML()
+	require.NoError(t, err)
+	f := k8stest.FakeFactory(t,
+		[]k8stest.ClientHandler{
+			&k8stest.GenericHandler{
+				Obj:       &corev1.ReplicationController{},
+				Bytes:     rcBytes,
+				URLPath:   "/namespaces/%s/replicationcontrollers",
+				Namespace: replicationController.GetNamespace(),
+			},
+		})
 	defer f.Cleanup()
 	kctl := kubectl.NewKubectl(f).WithBufferDir("/tmp/.airship")
 	kctl.Factory = f
 	ao, err := kctl.ApplyOptions()
 	require.NoError(t, err, "failed to get documents from bundle")
 	ao.SetDryRun(true)
-
-	b := testutil.NewTestBundle(t, fixtureDir)
-	docs, err := b.GetByAnnotation("airshipit.org/initinfra")
-	require.NoError(t, err, "failed to get documents from bundle")
-
 	tests := []struct {
 		name        string
 		expectedErr error

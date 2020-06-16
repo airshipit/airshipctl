@@ -19,7 +19,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 
@@ -37,19 +36,6 @@ var (
 	ErrToRESTMapperError  = errors.New("ErrToRESTMapperError")
 	ErrNamespaceError     = errors.New("ErrNamespaceError")
 )
-
-func TestApplyOptionsRun(t *testing.T) {
-	f := k8stest.NewFakeFactoryForRC(t, filenameRC)
-	defer f.Cleanup()
-
-	streams := genericclioptions.NewTestIOStreamsDiscard()
-
-	aa, err := kubectl.NewApplyOptions(f, streams)
-	require.NoError(t, err, "Could not build ApplyAdapter")
-	aa.SetDryRun(true)
-	aa.SetSourceFiles([]string{filenameRC})
-	assert.NoError(t, aa.Run())
-}
 
 func TestNewApplyOptionsFactoryFailures(t *testing.T) {
 	tests := []struct {

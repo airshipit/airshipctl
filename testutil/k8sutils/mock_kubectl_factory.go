@@ -16,16 +16,19 @@ package k8sutils
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
+	"path"
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/client-go/discovery"
@@ -195,79 +198,183 @@ func NewMockClientConfig() *MockClientConfig {
 	}
 }
 
-// NewFakeFactoryForRC returns a fake Factory object for testing
-// It is used to mock network interactions via a rest.Request
-func NewFakeFactoryForRC(t *testing.T, filenameRC string) *cmdtesting.TestFactory {
+// ClientHandler is an interface that can be injected into FakeFactory
+// it's purpose to mock http request handling done by the Kubernetes Clients produced by cmdutils.Factory
+type ClientHandler interface {
+	Handle(t *testing.T, req *http.Request) (*http.Response, bool, error)
+}
+
+var (
+	nsNamedPathRegex = regexp.MustCompile(`/api/v1/namespaces/([^/]+)`)
+	nsPath           = "/api/v1/namespaces"
+)
+
+// NamespaceHandler implements ClientHandler, that is to be used to handle
+// Http Requests made by clients that are produced by cmdutils.Factory interface
+type NamespaceHandler struct {
+}
+
+var _ ClientHandler = &NamespaceHandler{}
+
+// Handle implements handler
+func (h *NamespaceHandler) Handle(_ *testing.T, req *http.Request) (*http.Response, bool, error) {
 	c := scheme.Codecs.LegacyCodec(scheme.Scheme.PrioritizedVersionsAllGroups()...)
+	switch match, method := nsNamedPathRegex.FindStringSubmatch(req.URL.Path), req.Method; {
+	case match != nil && method == http.MethodGet:
+		ns := &corev1.Namespace{
+			TypeMeta: v1.TypeMeta{
+				Kind:       "Namespace",
+				APIVersion: "v1"},
+			ObjectMeta: v1.ObjectMeta{
+				// check that this index exists is performed at case statement match != nil
+				// this means that [0] and [1] exist
+				Name: match[1],
+			}}
+		response := &http.Response{
+			StatusCode: http.StatusOK,
+			Header:     cmdtesting.DefaultHeader(),
+			Body:       cmdtesting.ObjBody(c, ns)}
+		return response, true, nil
 
+	case req.URL.Path == nsPath && method == http.MethodPost:
+		ns := &corev1.Namespace{
+			TypeMeta: v1.TypeMeta{
+				Kind:       "Namespace",
+				APIVersion: "v1"},
+		}
+		response := &http.Response{StatusCode: http.StatusOK,
+			Header: cmdtesting.DefaultHeader(),
+			Body:   cmdtesting.ObjBody(c, ns)}
+		return response, true, nil
+	}
+
+	return nil, false, nil
+}
+
+// InventoryObjectHandler handles configmap inventory object from cli-utils by mocking
+// http calls made by clients produced by cmdutils.Factory interface
+type InventoryObjectHandler struct {
+	inventoryObj *corev1.ConfigMap
+}
+
+var _ ClientHandler = &InventoryObjectHandler{}
+
+var (
+	cmPathRegex              = regexp.MustCompile(`^/namespaces/([^/]+)/configmaps$`)
+	resourceNameRegexpString = `^[a-zA-Z]+-[a-z0-9]+$`
+	invObjNameRegex          = regexp.MustCompile(resourceNameRegexpString)
+	invObjPathRegex          = regexp.MustCompile(`^/namespaces/([^/]+)/configmaps/` + resourceNameRegexpString[:1])
+	codec                    = scheme.Codecs.LegacyCodec(scheme.Scheme.PrioritizedVersionsAllGroups()...)
+)
+
+// Handle implements handler
+func (i *InventoryObjectHandler) Handle(t *testing.T, req *http.Request) (*http.Response, bool, error) {
+	if req.Method == http.MethodPost && cmPathRegex.Match([]byte(req.URL.Path)) {
+		b, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			return nil, false, err
+		}
+		cm := corev1.ConfigMap{}
+		err = runtime.DecodeInto(codec, b, &cm)
+		if err != nil {
+			return nil, false, err
+		}
+		if invObjNameRegex.Match([]byte(cm.Name)) {
+			i.inventoryObj = &cm
+			bodyRC := ioutil.NopCloser(bytes.NewReader(b))
+			return &http.Response{StatusCode: http.StatusCreated, Header: cmdtesting.DefaultHeader(), Body: bodyRC}, true, nil
+		}
+		return nil, false, nil
+	}
+
+	if req.Method == http.MethodGet && cmPathRegex.Match([]byte(req.URL.Path)) {
+		cmList := corev1.ConfigMapList{
+			TypeMeta: v1.TypeMeta{
+				APIVersion: "v1",
+				Kind:       "List",
+			},
+			Items: []corev1.ConfigMap{},
+		}
+		if i.inventoryObj != nil {
+			cmList.Items = append(cmList.Items, *i.inventoryObj)
+		}
+		bodyRC := ioutil.NopCloser(bytes.NewReader(toJSONBytes(t, &cmList)))
+		return &http.Response{StatusCode: http.StatusOK, Header: cmdtesting.DefaultHeader(), Body: bodyRC}, true, nil
+	}
+
+	if req.Method == http.MethodGet && invObjPathRegex.Match([]byte(req.URL.Path)) {
+		if i.inventoryObj == nil {
+			return &http.Response{
+				StatusCode: http.StatusNotFound,
+				Header:     cmdtesting.DefaultHeader(),
+				Body:       cmdtesting.StringBody("")}, true, nil
+		}
+		bodyRC := ioutil.NopCloser(bytes.NewReader(toJSONBytes(t, i.inventoryObj)))
+		return &http.Response{StatusCode: http.StatusOK, Header: cmdtesting.DefaultHeader(), Body: bodyRC}, true, nil
+	}
+	return nil, false, nil
+}
+
+// GenericHandler is a handler for generic objects
+type GenericHandler struct {
+	Obj       runtime.Object
+	Namespace string
+	// URLPath is a string for formater in which it should be defined how to inject a namespace into it
+	// example : /namespaces/%s/deployments
+	URLPath string
+	Bytes   []byte
+}
+
+var _ ClientHandler = &GenericHandler{}
+
+// Handle implements handler
+func (g *GenericHandler) Handle(t *testing.T, req *http.Request) (*http.Response, bool, error) {
+	err := runtime.DecodeInto(codec, g.Bytes, g.Obj)
+	if err != nil {
+		return nil, false, err
+	}
+	accessor, err := meta.Accessor(g.Obj)
+	if err != nil {
+		return nil, false, err
+	}
+	basePath := fmt.Sprintf(g.URLPath, g.Namespace)
+	resourcePath := path.Join(basePath, accessor.GetName())
+	if req.URL.Path == resourcePath && req.Method == http.MethodGet {
+		bodyRC := ioutil.NopCloser(bytes.NewReader(toJSONBytes(t, g.Obj)))
+		return &http.Response{StatusCode: http.StatusOK, Header: cmdtesting.DefaultHeader(), Body: bodyRC}, true, nil
+	}
+	if req.URL.Path == resourcePath && req.Method == http.MethodPatch {
+		bodyRC := ioutil.NopCloser(bytes.NewReader(toJSONBytes(t, g.Obj)))
+		return &http.Response{StatusCode: http.StatusOK, Header: cmdtesting.DefaultHeader(), Body: bodyRC}, true, nil
+	}
+	return nil, false, nil
+}
+
+func toJSONBytes(t *testing.T, obj runtime.Object) []byte {
+	objBytes, err := runtime.Encode(unstructured.NewJSONFallbackEncoder(codec), obj)
+	require.NoError(t, err)
+	return objBytes
+}
+
+// FakeFactory returns a fake factory based on provided handlers
+func FakeFactory(t *testing.T, handlers []ClientHandler) *cmdtesting.TestFactory {
 	f := cmdtesting.NewTestFactory().WithNamespace("test")
-
-	f.ClientConfigVal = cmdtesting.DefaultClientConfig()
-
-	pathRC := "/namespaces/test/replicationcontrollers/test-rc"
-	get := "GET"
-	_, rcBytes := readReplicationController(t, filenameRC, c)
-
-	f.UnstructuredClient = &fake.RESTClient{
-		GroupVersion:         schema.GroupVersion{Version: "v1"},
+	defer f.Cleanup()
+	testRESTClient := &fake.RESTClient{
 		NegotiatedSerializer: resource.UnstructuredPlusDefaultContentConfig().NegotiatedSerializer,
 		Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
-			switch p, m := req.URL.Path, req.Method; {
-			case p == pathRC && m == get:
-				bodyRC := ioutil.NopCloser(bytes.NewReader(rcBytes))
-				return &http.Response{StatusCode: http.StatusOK,
-					Header: cmdtesting.DefaultHeader(),
-					Body:   bodyRC}, nil
-			case p == "/namespaces/test/replicationcontrollers" && m == get:
-				bodyRC := ioutil.NopCloser(bytes.NewReader(rcBytes))
-				return &http.Response{StatusCode: http.StatusOK,
-					Header: cmdtesting.DefaultHeader(),
-					Body:   bodyRC}, nil
-			case p == "/namespaces/test/replicationcontrollers/no-match" && m == get:
-				return &http.Response{StatusCode: http.StatusNotFound,
-					Header: cmdtesting.DefaultHeader(),
-					Body:   cmdtesting.ObjBody(c, &corev1.Pod{})}, nil
-			case p == "/api/v1/namespaces/test" && m == get:
-				return &http.Response{StatusCode: http.StatusOK,
-					Header: cmdtesting.DefaultHeader(),
-					Body:   cmdtesting.ObjBody(c, &corev1.Namespace{})}, nil
-			default:
-				t.Fatalf("unexpected request: %#v\n%#v", req.URL, req)
-				return nil, nil
+			for _, h := range handlers {
+				resp, handled, err := h.Handle(t, req)
+				if handled {
+					return resp, err
+				}
 			}
+			t.Fatalf("unexpected request: %#v\n%#v", req.URL, req)
+			// dummy return
+			return nil, nil
 		}),
 	}
+	f.Client = testRESTClient
+	f.UnstructuredClient = testRESTClient
 	return f
-}
-
-// Below functions are taken from Kubectl library.
-// https://github.com/kubernetes/kubectl/blob/master/pkg/cmd/apply/apply_test.go
-func readReplicationController(t *testing.T, filenameRC string, c runtime.Codec) (string, []byte) {
-	t.Helper()
-	rcObj := readReplicationControllerFromFile(t, filenameRC, c)
-	metaAccessor, err := meta.Accessor(rcObj)
-	require.NoError(t, err, "Could not read replcation controller")
-	rcBytes, err := runtime.Encode(c, rcObj)
-	require.NoError(t, err, "Could not read replcation controller")
-	return metaAccessor.GetName(), rcBytes
-}
-
-func readReplicationControllerFromFile(t *testing.T,
-	filename string, c runtime.Decoder) *corev1.ReplicationController {
-	data := readBytesFromFile(t, filename)
-	rc := corev1.ReplicationController{}
-	require.NoError(t, runtime.DecodeInto(c, data, &rc), "Could not read replcation controller")
-
-	return &rc
-}
-
-func readBytesFromFile(t *testing.T, filename string) []byte {
-	file, err := os.Open(filename)
-	require.NoError(t, err, "Could not read file")
-	defer file.Close()
-
-	data, err := ioutil.ReadAll(file)
-	require.NoError(t, err, "Could not read file")
-
-	return data
 }
