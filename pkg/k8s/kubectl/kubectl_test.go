@@ -26,6 +26,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/k8s/kubectl"
 	k8sutils "opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/testutil"
+	"opendev.org/airship/airshipctl/testutil/fs"
 	k8stest "opendev.org/airship/airshipctl/testutil/k8sutils"
 )
 
@@ -36,28 +37,6 @@ var (
 	ErrWriteOutError = errors.New("ErrWriteOutError")
 	ErrTempFileError = errors.New("ErrTempFileError")
 )
-
-type MockFileSystem struct {
-	MockRemoveAll func() error
-	MockTempFile  func() (document.File, error)
-	document.FileSystem
-}
-
-func (fsys MockFileSystem) RemoveAll(string) error { return fsys.MockRemoveAll() }
-func (fsys MockFileSystem) TempFile(string, string) (document.File, error) {
-	return fsys.MockTempFile()
-}
-
-type TestFile struct {
-	document.File
-	MockName  func() string
-	MockWrite func() (int, error)
-	MockClose func() error
-}
-
-func (f TestFile) Name() string              { return f.MockName() }
-func (f TestFile) Write([]byte) (int, error) { return f.MockWrite() }
-func (f TestFile) Close() error              { return f.MockClose() }
 
 func TestNewKubectlFromKubeConfigPath(t *testing.T) {
 	f := k8sutils.FactoryFromKubeConfigPath(kubeconfigPath)
@@ -98,10 +77,10 @@ func TestApply(t *testing.T) {
 	}{
 		{
 			expectedErr: nil,
-			fs: MockFileSystem{
+			fs: fs.MockFileSystem{
 				MockRemoveAll: func() error { return nil },
 				MockTempFile: func() (document.File, error) {
-					return TestFile{
+					return fs.TestFile{
 						MockName:  func() string { return filenameRC },
 						MockWrite: func() (int, error) { return 0, nil },
 						MockClose: func() error { return nil },
@@ -111,15 +90,15 @@ func TestApply(t *testing.T) {
 		},
 		{
 			expectedErr: ErrWriteOutError,
-			fs: MockFileSystem{
+			fs: fs.MockFileSystem{
 				MockTempFile: func() (document.File, error) { return nil, ErrWriteOutError }},
 		},
 		{
 			expectedErr: ErrTempFileError,
-			fs: MockFileSystem{
+			fs: fs.MockFileSystem{
 				MockRemoveAll: func() error { return nil },
 				MockTempFile: func() (document.File, error) {
-					return TestFile{
+					return fs.TestFile{
 						MockWrite: func() (int, error) { return 0, ErrTempFileError },
 						MockName:  func() string { return filenameRC },
 						MockClose: func() error { return nil },
