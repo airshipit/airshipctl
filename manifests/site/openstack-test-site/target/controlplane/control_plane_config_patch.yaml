@@ -1,0 +1,24 @@
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+kind: KubeadmControlPlane
+metadata:
+  name: ostgt-control-plane
+  namespace: default
+spec:
+  infrastructureTemplate:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+    kind: OpenStackMachineTemplate
+    name: ostgt-control-plane
+  kubeadmConfigSpec:
+    files:
+    - path: /etc/kubernetes/cloud.conf
+      content: W0dsb2JhbF0KYXV0aC11cmw9aHR0cDovLzEwLjAuMS40L2lkZW50aXR5CnVzZXJuYW1lPSJkZW1vIgpwYXNzd29yZD0icGFzcyIKdGVuYW50LWlkPSIyMThkMWNiYzMyOWM0YWUzYWNjODhjYTU5NTAwMTUwMSIKZG9tYWluLW5hbWU9IkRlZmF1bHQiCnJlZ2lvbj0iUmVnaW9uT25lIgo=
+      encoding: base64
+      owner: root
+      permissions: "0600"
+    - path: /etc/certs/cacert
+      content: Cg==
+      encoding: base64
+      owner: root
+      permissions: "0600"
+  postKubeadmCommands:
+  - sudo kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://docs.projectcalico.org/v3.15/manifests/calico.yaml

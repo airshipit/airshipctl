@@ -1,0 +1,72 @@
+apiVersion: cluster.x-k8s.io/v1alpha3
+kind: MachineDeployment
+metadata:
+  name: ostgt-md-0
+  namespace: default
+spec:
+  clusterName: ostgt
+  replicas: 0
+  selector:
+    matchLabels: null
+  template:
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+          kind: KubeadmConfigTemplate
+          name: ostgt-md-0
+      clusterName: ostgt
+      failureDomain: nova
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+        kind: OpenStackMachineTemplate
+        name: ostgt-md-0
+      version: v1.17.3
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: OpenStackMachineTemplate
+metadata:
+  name: ostgt-md-0
+  namespace: default
+spec:
+  template:
+    spec:
+      cloudName: devstack
+      cloudsSecret:
+        name: ostgt-cloud-config
+        namespace: default
+      flavor: ${WORKER_MACHINE_FLAVOR}
+      image: ubuntu-1910-kube-v1.17.3
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+kind: KubeadmConfigTemplate
+metadata:
+  name: ostgt-md-0
+  namespace: default
+spec:
+  template:
+    spec:
+      files:
+      - content: ${CLOUD_CONF_B64}
+        encoding: base64
+        owner: root
+        path: /etc/kubernetes/cloud.conf
+        permissions: "0600"
+      - content: ${CLOUD_CERT_B64}
+        encoding: base64
+        owner: root
+        path: /etc/certs/cacert
+        permissions: "0600"
+      joinConfiguration:
+        nodeRegistration:
+          kubeletExtraArgs:
+            cloud-config: /etc/kubernetes/cloud.conf
+            cloud-provider: openstack
+          name: '{{ local_hostname }}'
+      ntp:
+        servers: []
+      users:
+      - name: capo
+        sshAuthorizedKeys:
+        - ${OPENSTACK_SSH_KEY}
+        sudo: ALL=(ALL) NOPASSWD:ALL

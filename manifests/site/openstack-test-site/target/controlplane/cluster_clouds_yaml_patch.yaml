@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ostgt-cloud-config
+  namespace: default
+data:
+  cacert: Cg==
+  clouds.yaml: Y2xvdWRzOgogIGRldnN0YWNrOgogICAgYXV0aDoKICAgICAgYXV0aF91cmw6IGh0dHA6Ly8xMC4wLjEuNC9pZGVudGl0eQogICAgICBwcm9qZWN0X2lkOiAyMThkMWNiYzMyOWM0YWUzYWNjODhjYTU5NTAwMTUwMQogICAgICB1c2VyX2RvbWFpbl9uYW1lOiBEZWZhdWx0CiAgICAgIHVzZXJuYW1lOiBkZW1vCiAgICAgIHBhc3N3b3JkOiBwYXNzCiAgICByZWdpb25fbmFtZTogUmVnaW9uT25lCg==

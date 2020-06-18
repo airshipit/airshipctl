@@ -32,6 +32,7 @@ Welcome to airshipctl's Documentation!
    virtual_redfish_bmc
    Commands <cli/airshipctl>
    providers/cluster_api_docker
+   providers/cluster_api_openstack
 
 .. toctree::
    :caption: Airship Project Documentation
