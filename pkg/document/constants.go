@@ -31,6 +31,9 @@ const (
 	SecretKind        = "Secret"
 	BareMetalHostKind = "BareMetalHost"
 
+	ConfigMapKind    = "ConfigMap"
+	ConfigMapVersion = "v1"
+
 	ClusterctlMetadataKind    = "Metadata"
 	ClusterctlMetadataVersion = "v1alpha3"
 	ClusterctlMetadataGroup   = "clusterctl.cluster.x-k8s.io"

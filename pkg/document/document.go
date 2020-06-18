@@ -15,6 +15,7 @@
 package document
 
 import (
+	"sigs.k8s.io/kustomize/api/k8sdeps/kunstruct"
 	"sigs.k8s.io/kustomize/api/resource"
 	"sigs.k8s.io/yaml"
 )
@@ -196,5 +197,16 @@ func (d *Factory) ToObject(obj interface{}) error {
 func NewDocument(r *resource.Resource) (Document, error) {
 	doc := &Factory{}
 	err := doc.SetKustomizeResource(r)
+	return doc, err
+}
+
+// NewDocumentFromBytes constructs document from bytes
+func NewDocumentFromBytes(b []byte) (Document, error) {
+	res, err := resource.NewFactory(kunstruct.NewKunstructuredFactoryImpl()).FromBytes(b)
+	if err != nil {
+		return nil, err
+	}
+	doc := &Factory{}
+	err = doc.SetKustomizeResource(res)
 	return doc, err
 }
