@@ -179,6 +179,16 @@ func (e ErrMissingPrimaryRepo) Error() string {
 	return "Current context manifest must have a primary repository set."
 }
 
+// ErrMissingPhaseDocument returned when appropriate Phase document was not found in the filesystem
+type ErrMissingPhaseDocument struct {
+	PhaseName string
+}
+
+func (e ErrMissingPhaseDocument) Error() string {
+	return fmt.Sprintf("Phase document '%s' was not found. "+
+		"You can initialize it using 'airshipctl document init %s' command.", e.PhaseName, e.PhaseName)
+}
+
 // ErrConflictingAuthOptions returned in case both token and username/password is set at same time
 type ErrConflictingAuthOptions struct {
 }

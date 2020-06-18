@@ -732,11 +732,11 @@ func (c *Config) CurrentContextEntryPoint(phase string) (string, error) {
 	if !exists {
 		return "", ErrMissingPrimaryRepo{}
 	}
-	return path.Join(
-		ccm.TargetPath,
-		ccm.SubPath,
-		clusterType,
-		phase), nil
+	epp := path.Join(ccm.TargetPath, ccm.SubPath, clusterType, phase)
+	if _, err := os.Stat(epp); err != nil {
+		return "", ErrMissingPhaseDocument{PhaseName: phase}
+	}
+	return epp, nil
 }
 
 // CurrentContextTargetPath returns target path from current context's manifest

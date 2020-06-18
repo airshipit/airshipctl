@@ -511,7 +511,7 @@ func TestCurrentContextEntryPoint(t *testing.T) {
 	conf.Contexts[currentContextName].KubeContext().Cluster = clusterName
 
 	entryPoint, err = conf.CurrentContextEntryPoint(defaultString)
-	require.NoError(t, err)
+	assert.Equal(t, config.ErrMissingPhaseDocument{PhaseName: defaultString}, err)
 	assert.Nil(t, nil, entryPoint)
 }
 
