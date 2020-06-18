@@ -21,18 +21,20 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
 
+	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/k8s/client"
 	"opendev.org/airship/airshipctl/pkg/k8s/client/fake"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubectl"
 	"opendev.org/airship/airshipctl/pkg/phase/apply"
+	"opendev.org/airship/airshipctl/testutil"
 	"opendev.org/airship/airshipctl/testutil/k8sutils"
 )
 
 const (
 	kubeconfigPath    = "testdata/kubeconfig.yaml"
-	filenameRC        = "testdata/primary/site/test-site/ephemeral/initinfra/replicationcontroller.yaml"
 	airshipConfigFile = "testdata/config.yaml"
 )
 
@@ -42,14 +44,29 @@ var (
 
 func TestDeploy(t *testing.T) {
 	rs := makeNewFakeRootSettings(t, kubeconfigPath, airshipConfigFile)
-	tf := k8sutils.NewFakeFactoryForRC(t, filenameRC)
-	defer tf.Cleanup()
+	bundle := testutil.NewTestBundle(t, "testdata/primary/site/test-site/ephemeral/initinfra")
+	replicationController, err := bundle.SelectOne(document.NewSelector().ByKind("ReplicationController"))
+	require.NoError(t, err)
+	b, err := replicationController.AsYAML()
+	require.NoError(t, err)
+	f := k8sutils.FakeFactory(t,
+		[]k8sutils.ClientHandler{
+			&k8sutils.InventoryObjectHandler{},
+			&k8sutils.NamespaceHandler{},
+			&k8sutils.GenericHandler{
+				Obj:       &corev1.ReplicationController{},
+				Bytes:     b,
+				URLPath:   "/namespaces/%s/replicationcontrollers",
+				Namespace: replicationController.GetNamespace(),
+			},
+		})
+	defer f.Cleanup()
 
 	ao := apply.NewOptions(rs)
 	ao.PhaseName = "initinfra"
 	ao.DryRun = true
 
-	kctl := kubectl.NewKubectl(tf)
+	kctl := kubectl.NewKubectl(f)
 
 	tests := []struct {
 		theApplyOptions *apply.Options
