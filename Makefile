@@ -48,7 +48,7 @@ DOCS_DIR            ?= docs
 # document validation options
 UNAME               != uname
 export KIND_URL     ?= https://kind.sigs.k8s.io/dl/v0.8.1/kind-$(UNAME)-amd64
-KUBECTL_VERSION     ?= v1.16.2
+KUBECTL_VERSION     ?= v1.17.4
 export KUBECTL_URL  ?= https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
 
 .PHONY: depend
