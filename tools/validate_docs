@@ -14,7 +14,7 @@
 
 # The makefile entrypoint driver for document validation
 # Expected to be run from the project root
-set -e
+set -xe
 
 # get kind
 echo "Fetching kind from ${KIND_URL}..."

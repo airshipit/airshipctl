@@ -49,8 +49,13 @@
     name: airship-airshipctl-validate-site-docs
     pre-run:
       - playbooks/airship-airshipctl-deploy-docker.yaml
-    run: playbooks/airship-airshipctl-validate-documents.yaml
+    run: playbooks/airshipctl-gate-runner.yaml
     nodeset: airship-airshipctl-single-node
+    vars:
+      gate_scripts:
+        - ./tools/deployment/01_install_kubectl.sh
+        - ./tools/deployment/21_systemwide_executable.sh
+        - ./tools/validate_docs
     # TODO (dukov) remove this once phases framework is fully implemented
     voting: false
 
@@ -72,7 +77,6 @@
         pass-to-parent: true
 
 - job:
-    voting: true
     name: airship-airshipctl-gate-test
     attempts: 1
     timeout: 3600
@@ -99,6 +103,7 @@
         - airshipctl-phase-controlplane
       serve_dir: /srv/iso
       serve_port: 8099
+    voting: true
 
 - job:
     name: airship-airshipctl-32GB-gate-test
@@ -123,6 +128,53 @@
         - airshipctl-phase-apply-initinfra
         - airshipctl-cluster-init-ephemeral
         - airshipctl-phase-controlplane
+      serve_dir: /srv/iso
+      serve_port: 8099
+    voting: false
+
+- job:
+    name: airship-airshipctl-gate-script-runner-test
+    attempts: 1
+    timeout: 3600
+    pre-run:
+      - playbooks/airship-airshipctl-deploy-docker.yaml
+      - playbooks/airship-airshipctl-build-gate.yaml
+    post-run: playbooks/airship-collect-logs.yaml
+    run: playbooks/airshipctl-gate-runner.yaml
+    nodeset: airship-airshipctl-single-16GB-bionic-node
+    vars:
+      site_name: test-site
+      gate_scripts:
+        - ./tools/deployment/01_install_kubectl.sh
+        - ./tools/deployment/21_systemwide_executable.sh
+        - ./tools/deployment/22_test_configs.sh
+        - ./tools/deployment/24_build_ephemeral_iso.sh
+        - ./tools/deployment/25_deploy_ephemeral_node.sh
+        - ./tools/deployment/26_deploy_metal3_capi_ephemeral_node.sh
+        - ./tools/deployment/30_deploy_controlplane.sh
+      serve_dir: /srv/iso
+      serve_port: 8099
+    voting: false
+
+- job:
+    name: airship-airshipctl-32GB-gate-script-runner-test
+    nodeset: airship-airshipctl-single-32GB-bionic-node
+    pre-run:
+      - playbooks/airship-airshipctl-deploy-docker.yaml
+      - playbooks/airship-airshipctl-build-gate.yaml
+    post-run: playbooks/airship-collect-logs.yaml
+    run: playbooks/airshipctl-gate-runner.yaml
+    timeout: 3600
+    vars:
+      site_name: test-site
+      gate_scripts:
+        - ./tools/deployment/01_install_kubectl.sh
+        - ./tools/deployment/21_systemwide_executable.sh
+        - ./tools/deployment/22_test_configs.sh
+        - ./tools/deployment/24_build_ephemeral_iso.sh
+        - ./tools/deployment/25_deploy_ephemeral_node.sh
+        - ./tools/deployment/26_deploy_metal3_capi_ephemeral_node.sh
+        - ./tools/deployment/30_deploy_controlplane.sh
       serve_dir: /srv/iso
       serve_port: 8099
     voting: false
