@@ -1,0 +1,227 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: hardwareclassifications.metal3.io
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .status.profileMatchStatus
+    description: Profile Match Status
+    name: ProfileMatchStatus
+    type: string
+  - JSONPath: .status.matchedCount
+    description: Total Matched hosts.
+    name: MatchedHosts
+    type: integer
+  - JSONPath: .status.unmatchedCount
+    description: Total Unmatched hosts.
+    name: UnmatchedHosts
+    type: integer
+  - JSONPath: .status.errorHosts
+    description: Total error hosts.
+    name: ErrorHosts
+    type: integer
+  - JSONPath: .status.registrationErrorHosts
+    description: Total hosts in Registration error state.
+    name: RegistrationErrorHosts
+    type: integer
+  - JSONPath: .status.introspectionErrorHosts
+    description: Total hosts in Introspection error state.
+    name: IntrospectionErrorHosts
+    type: integer
+  - JSONPath: .status.provisioningErrorHosts
+    description: Total hosts in Provisioning error state.
+    name: ProvisioningErrorHosts
+    type: integer
+  - JSONPath: .status.powerMgmtErrorHosts
+    description: Total hosts in Power Management error state.
+    name: PowerMgmtErrorHosts
+    type: integer
+  - JSONPath: .status.errorMessage
+    description: Most recent error
+    name: Error
+    type: string
+  group: metal3.io
+  names:
+    kind: HardwareClassification
+    listKind: HardwareClassificationList
+    plural: hardwareclassifications
+    shortNames:
+    - hwc
+    - hc
+    singular: hardwareclassification
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: HardwareClassification is the Schema for the hardwareclassifications
+        API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: HardwareClassificationSpec defines the desired state of HardwareClassification
+          properties:
+            hardwareCharacteristics:
+              description: HardwareCharacteristics defines expected hardware configurations
+                for Cpu, Disk, Nic and Ram.
+              properties:
+                cpu:
+                  description: Cpu contains cpu details extracted from the hardware
+                    profile
+                  properties:
+                    maximumCount:
+                      description: MaximumCount of cpu should be greater than 0 and
+                        greater than MinimumCount Ex. MaximumCount > 0 && MaximumCount
+                        > MinimumCount
+                      minimum: 1
+                      type: integer
+                    maximumSpeedMHz:
+                      description: 'Maximum speed of cpu should be greater than 0
+                        and greater than MinimumSpeed Ex. MaximumSpeed > 0 && MaximumSpeed
+                        > MinimumSpeed Ex. MaximumSpeed: 3200 User wants CPU speed
+                        3.2 (in GHz), then he should specify as 3200 MHz'
+                      format: int32
+                      minimum: 1000
+                      type: integer
+                    minimumCount:
+                      description: MinimumCount of cpu should be greater than 0 Ex.
+                        MinimumCount > 0
+                      minimum: 1
+                      type: integer
+                    minimumSpeedMHz:
+                      description: 'MinimumSpeed of cpu should be greater than 0 Ex.
+                        MinimumSpeed > 0 Ex. MinimumSpeed: 2600 User wants CPU speed
+                        2.6 (in GHz), then s/he should specify as 2600 MHz'
+                      format: int32
+                      minimum: 1000
+                      type: integer
+                  type: object
+                disk:
+                  description: Disk contains disk details extracted from the hardware
+                    profile
+                  properties:
+                    maximumCount:
+                      description: MaximumCount of disk should be greater than 0 and
+                        greater than MinimumCount Ex. MaximumCount > 0 && MaximumCount
+                        > MinimumCount
+                      minimum: 1
+                      type: integer
+                    maximumIndividualSizeGB:
+                      description: Maximum individual size should be greater than
+                        0 and greater than MinimumIndividualSizeGB Ex. MaximumIndividualSizeGB
+                        > 0 && MaximumIndividualSizeGB > MinimumIndividualSizeGB
+                      format: int64
+                      minimum: 1
+                      type: integer
+                    minimumCount:
+                      description: MinimumCount of disk should be greater than 0 MinimumCount
+                        > 0
+                      minimum: 1
+                      type: integer
+                    minimumIndividualSizeGB:
+                      description: MinimumIndividualSizeGB should be greater than
+                        0 Ex. MinimumIndividualSizeGB > 0
+                      format: int64
+                      minimum: 1
+                      type: integer
+                  type: object
+                nic:
+                  description: Nic contains nic details extracted from the hardware
+                    profile
+                  properties:
+                    maximumCount:
+                      description: Maximum count should be greater than 0 and greater
+                        than MinimumCount Ex. MaximumCount > 0 && MaximumCount > MinimumCount
+                      minimum: 1
+                      type: integer
+                    minimumCount:
+                      description: Minimum count should be greater than 0 Ex. MinimumCount
+                        > 0
+                      minimum: 1
+                      type: integer
+                  type: object
+                ram:
+                  description: Ram contains ram details extracted from the hardware
+                    profile
+                  properties:
+                    maximumSizeGB:
+                      description: MaximumSizeGB should be greater than 0 or greater
+                        than MinimumSizeGB Ex. MaximumSizeGB > 0 && MaximumSizeGB
+                        > MinimumSizeGB
+                      minimum: 1
+                      type: integer
+                    minimumSizeGB:
+                      description: MinimumSizeGB of Ram should be greater than 0 Ex.
+                        MinimumSizeGB > 0
+                      minimum: 1
+                      type: integer
+                  type: object
+              type: object
+          type: object
+        status:
+          description: HardwareClassificationStatus defines the observed state of
+            HardwareClassification
+          properties:
+            errorHosts:
+              description: The count of Hosts in error state
+              type: integer
+            errorMessage:
+              description: The last error message reported by the hardwareclassification
+                system
+              type: string
+            errorType:
+              description: ErrorType indicates the type of failure encountered
+              type: string
+            introspectionErrorHosts:
+              description: The count of hosts in introspection error state
+              type: integer
+            matchedCount:
+              description: The count of matched Hosts per profile reported by hardwareclassification
+                system
+              type: integer
+            powerMgmtErrorHosts:
+              description: The count of hosts in power management error state
+              type: integer
+            profileMatchStatus:
+              description: ProfileMatchStatus identifies whether a applied profile
+                is matches or not
+              type: string
+            provisioningErrorHosts:
+              description: The count of hosts in provisioning error state
+              type: integer
+            registrationErrorHosts:
+              description: The count of hosts in registration error state
+              type: integer
+            unmatchedCount:
+              description: The count of unmatched Hosts per profile reported by hardwareclassification
+                system
+              type: integer
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

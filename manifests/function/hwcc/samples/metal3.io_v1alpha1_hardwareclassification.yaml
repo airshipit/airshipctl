@@ -1,0 +1,25 @@
+apiVersion: metal3.io/v1alpha1
+kind: HardwareClassification
+metadata:
+  name: hardwareclassification-sample
+  labels:
+    hardwareclassification-sample: sample1
+    hardwareclassification-error: All
+spec:
+  hardwareCharacteristics:
+      cpu:
+         minimumCount: 1
+         maximumCount: 72
+         minimumSpeedMHz: 1100
+         maximumSpeedMHz: 3600
+      disk:
+         minimumCount: 1
+         maximumCount: 8
+         minimumIndividualSizeGB: 2
+         maximumIndividualSizeGB: 3000
+      ram:
+         minimumSizeGB: 1
+         maximumSizeGB: 180
+      nic:
+         minimumCount: 1
+         maximumCount: 7
