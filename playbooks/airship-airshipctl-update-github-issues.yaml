@@ -17,6 +17,7 @@
         name:
         - python3-setuptools
         state: present
+      become: yes
 
     - name: Install script dependencies
       pip:
