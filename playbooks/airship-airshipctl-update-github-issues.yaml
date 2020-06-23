@@ -12,6 +12,12 @@
 
 - hosts: primary
   tasks:
+    - name: Install python setuptools
+      apt:
+        name:
+        - python3-setuptools
+        state: present
+
     - name: Install script dependencies
       pip:
         name:
