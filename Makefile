@@ -33,6 +33,7 @@ TESTS               ?= .
 TEST_FLAGS          ?=
 COVER_FLAGS         ?=
 COVER_PROFILE       ?= cover.out
+COVER_EXCLUDE       ?= (zz_generated)
 
 # proxy options
 PROXY               ?= http://proxy.foo.com:8000
@@ -77,8 +78,9 @@ unit-tests:
 	@echo "All unit tests passed"
 
 .PHONY: cover
-cover: COVER_FLAGS = -covermode=atomic -coverprofile=$(COVER_PROFILE)
+cover: COVER_FLAGS = -covermode=atomic -coverprofile=fullcover.out
 cover: unit-tests
+	@grep -vE "$(COVER_EXCLUDE)" fullcover.out > $(COVER_PROFILE)
 	@./tools/coverage_check $(COVER_PROFILE)
 
 .PHONY: fmt

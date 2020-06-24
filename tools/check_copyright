@@ -18,7 +18,7 @@ declare FILES_MISSING_COPYRIGHT=()
 check_license() {
   ext=$1
   # skipping license for testdata and manifests folders
-  FILES=$(find -L . -name "*.${ext}" | grep -v "testdata" | grep -v "manifests")
+  FILES=$(find -L . -name "*.${ext}" | grep -vE "(testdata|manifests|zz_generated)")
 
   for each in $FILES
   do
