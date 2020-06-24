@@ -1,0 +1,49 @@
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: DockerMachineTemplate
+metadata:
+  name: "dtc-md-0"
+spec:
+  template:
+    spec:
+      extraMounts:
+        - containerPath: "/var/run/docker.sock"
+          hostPath: "/var/run/docker.sock"
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+kind: KubeadmConfigTemplate
+metadata:
+  name: "dtc-md-0"
+spec:
+  template:
+    spec:
+      joinConfiguration:
+        nodeRegistration:
+          criSocket: /var/run/containerd/containerd.sock
+          kubeletExtraArgs: {eviction-hard: 'nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%'}
+---
+apiVersion: cluster.x-k8s.io/v1alpha3
+kind: MachineDeployment
+metadata:
+  name: "dtc-md-0"
+spec:
+  clusterName: "dtc"
+  replicas: ${ WORKER_MACHINE_COUNT }
+  selector:
+    matchLabels:
+  template:
+    metadata:
+      labels:
+        "nodepool": "pool1"
+    spec:
+      clusterName: "dtc"
+      version: "v1.18.6"
+      bootstrap:
+        configRef:
+          name: "dtc-md-0"
+          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+          kind: KubeadmConfigTemplate
+      infrastructureRef:
+        name: "dtc-md-0"
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+        kind: DockerMachineTemplate

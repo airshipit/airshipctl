@@ -1,0 +1,66 @@
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: DockerMachineTemplate
+metadata:
+  name: "dtc-control-plane"
+spec:
+  template:
+    spec:
+      extraMounts:
+        - containerPath: "/var/run/docker.sock"
+          hostPath: "/var/run/docker.sock"
+---
+kind: KubeadmControlPlane
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+metadata:
+  name: "dtc-control-plane"
+spec:
+  replicas: ${ CONTROL_PLANE_MACHINE_COUNT }
+  infrastructureTemplate:
+    kind: DockerMachineTemplate
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+    name: "dtc-control-plane"
+  kubeadmConfigSpec:
+    clusterConfiguration:
+      apiServer:
+        certSANs:
+        - localhost
+        - 127.0.0.1
+      controllerManager:
+        extraArgs:
+          enable-hostpath-provisioner: "true"
+    files:
+      - path: /calico.sh
+        owner: root:root
+        permissions: "0755"
+        content: |
+          #!/bin/sh -x
+          su - root -c "sleep 10; kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://docs.projectcalico.org/v3.12/manifests/calico.yaml"
+    initConfiguration:
+      nodeRegistration:
+        criSocket: /var/run/containerd/containerd.sock
+        kubeletExtraArgs:
+          eviction-hard: nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%
+    joinConfiguration:
+      nodeRegistration:
+        criSocket: /var/run/containerd/containerd.sock
+        kubeletExtraArgs:
+          eviction-hard: nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%
+    postKubeadmCommands:
+      - sh /calico.sh
+  version: "v1.18.6"
+---
+apiVersion: cluster.x-k8s.io/v1alpha3
+kind: MachineHealthCheck
+metadata:
+  name: "dtc-mhc-0"
+spec:
+  clusterName: "dtc"
+  maxUnhealthy: 100%
+  selector:
+    matchLabels:
+      nodepool: "pool1"
+  unhealthyConditions:
+    - type: E2ENodeUnhealthy
+      status: "True"
+      timeout: 30s

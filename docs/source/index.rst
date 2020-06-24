@@ -31,6 +31,7 @@ Welcome to airshipctl's Documentation!
    testing-guidelines
    virtual_redfish_bmc
    Commands <cli/airshipctl>
+   providers/cluster_api_docker
 
 .. toctree::
    :caption: Airship Project Documentation
