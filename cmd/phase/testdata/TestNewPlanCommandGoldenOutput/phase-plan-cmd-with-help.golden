@@ -1,0 +1,9 @@
+List life-cycle phases which were defined in document model by group.
+Phases within a group are executed sequentially. Multiple phase groups
+are executed in parallel.
+
+Usage:
+  plan [flags]
+
+Flags:
+  -h, --help   help for plan

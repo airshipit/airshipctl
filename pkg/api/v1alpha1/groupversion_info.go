@@ -40,6 +40,10 @@ var (
 func init() {
 	Scheme = runtime.NewScheme()
 	// NOTE add all api objects to scheme here
-	SchemeBuilder.Register(&Clusterctl{})
+	SchemeBuilder.Register(
+		&Clusterctl{},
+		&Phase{},
+		&PhasePlan{},
+	)
 	_ = AddToScheme(Scheme) //nolint:errcheck
 }
