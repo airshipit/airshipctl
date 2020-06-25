@@ -18,10 +18,11 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/runtime"
+
 	"sigs.k8s.io/kustomize/api/resid"
 	"sigs.k8s.io/kustomize/api/types"
-
-	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 )
 
 // Selector provides abstraction layer in front of kustomize selector
@@ -79,6 +80,28 @@ func (s Selector) ByAnnotation(annotationSelector string) Selector {
 		s.AnnotationSelector = annotationSelector
 	}
 	return s
+}
+
+// ByObject select by runtime object defined in API schema
+func (s Selector) ByObject(obj runtime.Object, scheme *runtime.Scheme) (Selector, error) {
+	gvks, _, err := scheme.ObjectKinds(obj)
+	if err != nil {
+		return Selector{}, err
+	}
+
+	if len(gvks) != 1 {
+		return Selector{}, ErrRuntimeObjectKind{Obj: obj}
+	}
+	result := NewSelector().ByGvk(gvks[0].Group, gvks[0].Version, gvks[0].Kind)
+
+	accessor, err := meta.Accessor(obj)
+	if err != nil {
+		return Selector{}, err
+	}
+	if name := accessor.GetName(); name != "" {
+		result = result.ByName(name)
+	}
+	return result, nil
 }
 
 // String is a convenience function which dumps all relevant information about a Selector in the following format:
@@ -165,13 +188,4 @@ func NewClusterctlMetadataSelector() Selector {
 	return NewSelector().ByGvk(ClusterctlMetadataGroup,
 		ClusterctlMetadataVersion,
 		ClusterctlMetadataKind)
-}
-
-// NewClusterctlSelector returns a selector to get document that controls how clusterctl
-// components will be applied
-func NewClusterctlSelector() Selector {
-	return NewSelector().ByGvk(
-		airshipv1.GroupVersionKind.Group,
-		airshipv1.GroupVersionKind.Version,
-		airshipv1.GroupVersionKind.Kind)
 }

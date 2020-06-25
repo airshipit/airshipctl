@@ -15,6 +15,9 @@
 package document
 
 import (
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
+
 	"sigs.k8s.io/kustomize/api/k8sdeps/kunstruct"
 	"sigs.k8s.io/kustomize/api/resource"
 	"sigs.k8s.io/yaml"
@@ -47,6 +50,7 @@ type Document interface {
 	Label(map[string]string)
 	MarshalJSON() ([]byte, error)
 	ToObject(interface{}) error
+	ToAPIObject(runtime.Object, *runtime.Scheme) error
 }
 
 // Factory implements Document
@@ -186,6 +190,23 @@ func (d *Factory) ToObject(obj interface{}) error {
 		return err
 	}
 	return yaml.Unmarshal(docYAML, obj)
+}
+
+// ToAPIObject de-serializes a document into a runtime.Object
+func (d *Factory) ToAPIObject(obj runtime.Object, scheme *runtime.Scheme) error {
+	y, err := d.AsYAML()
+	if err != nil {
+		return err
+	}
+
+	yamlSerializer := json.NewSerializerWithOptions(
+		json.DefaultMetaFactory,
+		scheme,
+		scheme,
+		json.SerializerOptions{Yaml: true, Pretty: false, Strict: false})
+
+	_, _, err = yamlSerializer.Decode(y, nil, obj)
+	return err
 }
 
 // NewDocument is a convenience method to construct a new Document.  Although

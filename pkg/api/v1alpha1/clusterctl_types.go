@@ -16,13 +16,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
-)
-
-var (
-	// GroupVersionKind is group version used to register these objects
-	GroupVersionKind = schema.GroupVersionKind{Group: "airshipit.org", Version: "v1alpha1", Kind: "Clusterctl"}
 )
 
 // +kubebuilder:object:root=true

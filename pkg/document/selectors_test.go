@@ -19,7 +19,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	k8sv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/kustomize/api/resid"
+	"sigs.k8s.io/kustomize/api/types"
 
+	airapiv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/testutil"
 )
@@ -53,12 +59,6 @@ func TestSelectorsPositive(t *testing.T) {
 		doc, err := bundle.Select(document.NewClusterctlMetadataSelector())
 		require.NoError(t, err)
 		assert.Len(t, doc, 1)
-	})
-
-	t.Run("TestNewClusterctlSelector", func(t *testing.T) {
-		docs, err := bundle.Select(document.NewClusterctlSelector())
-		require.NoError(t, err)
-		assert.Len(t, docs, 1)
 	})
 }
 
@@ -139,6 +139,68 @@ func TestSelectorString(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.expected, tt.selector.String())
+		})
+	}
+}
+
+func TestSelectorToObject(t *testing.T) {
+	tests := []struct {
+		name        string
+		obj         runtime.Object
+		expectedSel document.Selector
+		expectedErr string
+	}{
+		{
+			name: "Selector with GVK",
+			obj:  &airapiv1.Clusterctl{},
+			expectedSel: document.Selector{
+				Selector: types.Selector{
+					Gvk: resid.Gvk{
+						Group:   "airshipit.org",
+						Version: "v1alpha1",
+						Kind:    "Clusterctl",
+					},
+				},
+			},
+			expectedErr: "",
+		},
+		{
+			name:        "Unregistered object",
+			obj:         &k8sv1.Pod{},
+			expectedSel: document.Selector{},
+			expectedErr: "no kind is registered for the type v1.Pod in scheme",
+		},
+		{
+			name: "Selector with GVK and Name",
+			obj: &airapiv1.Clusterctl{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "clusterctl-v1",
+				},
+			},
+			expectedSel: document.Selector{
+				Selector: types.Selector{
+					Gvk: resid.Gvk{
+						Group:   "airshipit.org",
+						Version: "v1alpha1",
+						Kind:    "Clusterctl",
+					},
+					Name: "clusterctl-v1",
+				},
+			},
+			expectedErr: "",
+		},
+	}
+	for _, test := range tests {
+		tt := test
+		t.Run(tt.name, func(t *testing.T) {
+			actualSel, err := document.NewSelector().
+				ByObject(tt.obj, airapiv1.Scheme)
+			if test.expectedErr != "" {
+				assert.Contains(t, err.Error(), tt.expectedErr)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tt.expectedSel, actualSel)
+			}
 		})
 	}
 }

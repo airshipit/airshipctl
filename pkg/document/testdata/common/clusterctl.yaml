@@ -1,0 +1,9 @@
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Clusterctl
+metadata:
+  name: clusterctl-v1
+providers:
+- name: "aws"
+  type: "InfrastructureProvider"
+  url: "/manifests/capi/infra/aws/v0.3.0"

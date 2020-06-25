@@ -4,3 +4,4 @@ resources:
  - argo.yaml
  - initially_ignored.yaml
  - custom_resource.yaml
+ - clusterctl.yaml
