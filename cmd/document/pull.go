@@ -22,12 +22,18 @@ import (
 )
 
 // NewPullCommand creates a new command for pulling airship document repositories
-func NewPullCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+// initConfig determines whether it's appropriate to load configuration from
+// disk; e.g. this is skipped when unit testing the command.
+func NewPullCommand(rootSettings *environment.AirshipCTLSettings, initConfig bool) *cobra.Command {
 	settings := pull.Settings{AirshipCTLSettings: rootSettings}
 	documentPullCmd := &cobra.Command{
 		Use:   "pull",
 		Short: "Pulls documents from remote git repository",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if initConfig {
+				// Load or Initialize airship Config
+				rootSettings.InitConfig()
+			}
 			return settings.Pull()
 		},
 	}
