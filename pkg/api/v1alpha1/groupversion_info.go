@@ -44,6 +44,7 @@ func init() {
 		&Clusterctl{},
 		&Phase{},
 		&PhasePlan{},
+		&KubeConfig{},
 	)
 	_ = AddToScheme(Scheme) //nolint:errcheck
 }

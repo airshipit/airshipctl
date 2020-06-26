@@ -15,6 +15,7 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"testing"
@@ -23,7 +24,12 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api/v1"
+
+	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/testutil/fs"
 )
 
 func TestDefaultManifestFactory(t *testing.T) {
@@ -85,6 +91,87 @@ func TestManifestBundleReader(t *testing.T) {
 					Group:   "",
 					Version: "v1"})
 			}
+		})
+	}
+}
+
+func TestDumpKubeConfig(t *testing.T) {
+	errTmpDir := errors.New("TmpDir error")
+	errTmpFile := errors.New("TmpFile error")
+	errWriteFile := errors.New("WriteFile error")
+
+	sampleKubeConfig := &airshipv1.KubeConfig{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "airshipit.org/v1alpha1",
+			Kind:       "KubeConfig",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "somename",
+		},
+		Config: clientcmdapi.Config{
+			APIVersion: "v1",
+			Kind:       "Config",
+		},
+	}
+
+	testCases := []struct {
+		name        string
+		fs          document.FileSystem
+		expectedErr error
+	}{
+		{
+			name: "Error temporary dir",
+			fs: fs.MockFileSystem{
+				MockTempDir: func() (string, error) {
+					return "", errTmpDir
+				},
+			},
+			expectedErr: errTmpDir,
+		},
+		{
+			name: "Error temporary file",
+			fs: fs.MockFileSystem{
+				MockTempDir:  func() (string, error) { return "someDir", nil },
+				MockTempFile: func() (document.File, error) { return nil, errTmpFile },
+			},
+			expectedErr: errTmpFile,
+		},
+		{
+			name: "Error write file",
+			fs: fs.MockFileSystem{
+				MockTempDir: func() (string, error) { return "someDir", nil },
+				MockTempFile: func() (document.File, error) {
+					return fs.TestFile{
+						MockName:  func() string { return "filename" },
+						MockWrite: func() (int, error) { return 0, errWriteFile },
+						MockClose: func() error { return nil },
+					}, nil
+				},
+				MockRemoveAll: func() error { return nil },
+			},
+			expectedErr: errWriteFile,
+		},
+		{
+			name: "Dump without errors",
+			fs: fs.MockFileSystem{
+				MockTempDir: func() (string, error) { return "someDir", nil },
+				MockTempFile: func() (document.File, error) {
+					return fs.TestFile{
+						MockName:  func() string { return "filename" },
+						MockWrite: func() (int, error) { return 0, nil },
+						MockClose: func() error { return nil },
+					}, nil
+				},
+				MockRemoveAll: func() error { return nil },
+			},
+		},
+	}
+
+	for _, test := range testCases {
+		tt := test
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := DumpKubeConfig(sampleKubeConfig, "ttt", tt.fs)
+			assert.Equal(t, tt.expectedErr, err)
 		})
 	}
 }

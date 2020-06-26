@@ -25,6 +25,9 @@ import (
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 	"sigs.k8s.io/cli-utils/pkg/manifestreader"
 
+	"sigs.k8s.io/yaml"
+
+	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/document"
 )
 
@@ -95,4 +98,28 @@ func (mbr *ManifestBundleReader) Read() ([]*resource.Info, error) {
 		return []*resource.Info{}, err
 	}
 	return mbr.StreamReader.Read()
+}
+
+// DumpKubeConfig to temporary directory
+func DumpKubeConfig(kconf *airshipv1.KubeConfig, root string, fs document.FileSystem) (string, error) {
+	data, err := yaml.Marshal(kconf.Config)
+	if err != nil {
+		return "", err
+	}
+
+	dir, err := fs.TempDir(root, "")
+	if err != nil {
+		return "", err
+	}
+
+	file, err := fs.TempFile(dir, "")
+	if err != nil {
+		return "", err
+	}
+
+	_, err = file.Write(data)
+	if err != nil {
+		return "", err
+	}
+	return file.Name(), nil
 }
