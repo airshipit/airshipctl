@@ -1,0 +1,4 @@
+inventory:
+  path: "manifests/site/inventory"
+phase:
+  path: "manifests/site/phases"

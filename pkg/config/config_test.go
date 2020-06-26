@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -549,6 +550,87 @@ func TestCurrentContextClusterName(t *testing.T) {
 	actualClusterName, err := conf.CurrentContextClusterName()
 	require.NoError(t, err)
 	assert.Equal(t, expectedClusterName, actualClusterName)
+}
+
+func TestCurrentContextManifestMetadata(t *testing.T) {
+	expectedMeta := &config.Metadata{
+		Inventory: &config.InventoryMeta{
+			Path: "manifests/site/inventory",
+		},
+		PhaseMeta: &config.PhaseMeta{
+			Path: "manifests/site/phases",
+		},
+	}
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+	tests := []struct {
+		name           string
+		metaPath       string
+		currentContext string
+		expectErr      bool
+		errorChecker   func(error) bool
+		meta           *config.Metadata
+	}{
+		{
+			name:           "default metadata",
+			metaPath:       "testdata/metadata.yaml",
+			expectErr:      false,
+			currentContext: "testContext",
+			meta: &config.Metadata{
+				Inventory: &config.InventoryMeta{
+					Path: "manifests/site/inventory",
+				},
+				PhaseMeta: &config.PhaseMeta{
+					Path: "manifests/site/phases",
+				},
+			},
+		},
+		{
+			name:           "no such file or directory",
+			metaPath:       "does not exist",
+			currentContext: "testContext",
+			expectErr:      true,
+			errorChecker:   os.IsNotExist,
+		},
+		{
+			name:           "missing context",
+			currentContext: "doesn't exist",
+			expectErr:      true,
+			errorChecker: func(err error) bool {
+				return strings.Contains(err.Error(), "Missing configuration")
+			},
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			context := &config.Context{
+				Manifest: "testManifest",
+			}
+			manifest := &config.Manifest{
+				MetadataPath: tt.metaPath,
+				TargetPath:   ".",
+			}
+			conf.Manifests = map[string]*config.Manifest{
+				"testManifest": manifest,
+			}
+			conf.Contexts = map[string]*config.Context{
+				"testContext": context,
+			}
+			conf.CurrentContext = tt.currentContext
+			meta, err := conf.CurrentContextManifestMetadata()
+			if tt.expectErr {
+				t.Logf("error is %v", err)
+				require.Error(t, err)
+				require.NotNil(t, tt.errorChecker)
+				assert.True(t, tt.errorChecker(err))
+			} else {
+				require.NoError(t, err)
+				require.NotNil(t, meta)
+				assert.Equal(t, expectedMeta, meta)
+			}
+		})
+	}
 }
 
 func TestNewClusterComplexNameFromKubeClusterName(t *testing.T) {

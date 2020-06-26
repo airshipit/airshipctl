@@ -32,6 +32,7 @@ managementConfiguration:
     type: redfish
 manifests:
   dummy_manifest:
+    metadataPath: manifests/site/test-site/metadata.yaml
     primaryRepositoryName: primary
     repositories:
       primary:

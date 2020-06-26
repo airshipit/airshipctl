@@ -93,6 +93,7 @@ func NewManifest() *Manifest {
 		TargetPath:            DefaultTargetPath,
 		SubPath:               DefaultSubPath,
 		Repositories:          map[string]*Repository{DefaultTestPrimaryRepo: NewRepository()},
+		MetadataPath:          DefaultManifestMetadataFile,
 	}
 }
 
