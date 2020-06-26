@@ -14,28 +14,25 @@
 - block:
   - name: Ensuring Libvirt, Qemu and support packages are present
     become: yes
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
-    yum:
-      name:
-        - libguestfs-tools
-        - libvirt
-        - libvirt-devel
-        - libvirt-daemon-kvm
-        - qemu-kvm
-      state: present
-  - name: Ensuring Libvirt, Qemu and support packages are present
-    become: yes
-    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
-    apt:
-      name:
-        - qemu
-        - libvirt-bin
-        - libguestfs-tools
-        - qemu-kvm
-        - python3-lxml
-        - python3-libvirt
-        - dnsmasq
-        - ebtables
+    vars:
+      - packages:
+          Debian:
+          - qemu
+          - libvirt-bin
+          - libguestfs-tools
+          - qemu-kvm
+          - python3-lxml
+          - python3-libvirt
+          - dnsmasq
+          - ebtables
+          RedHat:
+          - libguestfs-tools
+          - libvirt
+          - libvirt-devel
+          - libvirt-daemon-kvm
+          - qemu-kvm
+    package:
+      name: "{{ packages[ansible_os_family] }}"
       state: present
   - name: Add user "{{ ansible_user }}" to libvirt group
     become: yes

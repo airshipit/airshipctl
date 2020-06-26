@@ -11,12 +11,11 @@
 # limitations under the License.
 
 - name: Install python3-docker and python3-requests Modules
-  apt:
-    pkg:
+  package:
+    name:
       - python3-docker
       - python3-requests
     state: present
-  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
 - name: List Docker Images
   shell: docker image ls

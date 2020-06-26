@@ -24,11 +24,18 @@
       name: apache-server
 
   - name: Install needed packages
-    apt:
-      name:
-      - python3-pip
-      - python3-setuptools
-      - libapache2-mod-wsgi-py3
+    vars:
+    - packages:
+        Debian:
+        - python3-pip
+        - python3-setuptools
+        - libapache2-mod-wsgi-py3
+        RedHat:
+        - python3-pip
+        - python3-setuptools
+        - python3-mod_wsgi
+    package:
+      name: "{{ packages[ansible_os_family] }}"
       state: present
 
   - name: Install sushy-tools
