@@ -15,6 +15,7 @@
     - name: Install python setuptools
       apt:
         name:
+        - python3-pip
         - python3-setuptools
         state: present
       become: yes
