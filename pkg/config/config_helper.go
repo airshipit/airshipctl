@@ -165,3 +165,35 @@ func RunUseContext(desiredContext string, airconfig *Config) error {
 	}
 	return nil
 }
+
+// RunSetManifest validates the given command line options and invokes AddManifest/ModifyManifest
+func RunSetManifest(o *ManifestOptions, airconfig *Config, writeToStorage bool) (bool, error) {
+	modified := false
+	err := o.Validate()
+	if err != nil {
+		return modified, err
+	}
+
+	manifest, exists := airconfig.Manifests[o.Name]
+	if !exists {
+		// manifest didn't exist, create it
+		// ignoring the returned added manifest
+		airconfig.AddManifest(o)
+	} else {
+		// manifest exists, lets update
+		err = airconfig.ModifyManifest(manifest, o)
+		if err != nil {
+			return modified, err
+		}
+		modified = true
+	}
+	// Update configuration file just in time persistence approach
+	if writeToStorage {
+		if err := airconfig.PersistConfig(); err != nil {
+			// Error that it didnt persist the changes
+			return modified, ErrConfigFailed{}
+		}
+	}
+
+	return modified, nil
+}

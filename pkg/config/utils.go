@@ -20,11 +20,6 @@ import (
 	"encoding/base64"
 )
 
-const (
-	// DefaultTestPrimaryRepo holds default repo name
-	DefaultTestPrimaryRepo = "primary"
-)
-
 // NewConfig returns a newly initialized Config object
 func NewConfig() *Config {
 	return &Config{
@@ -95,13 +90,17 @@ func NewCluster() *Cluster {
 func NewManifest() *Manifest {
 	return &Manifest{
 		PrimaryRepositoryName: DefaultTestPrimaryRepo,
+		TargetPath:            DefaultTargetPath,
+		SubPath:               DefaultSubPath,
 		Repositories:          map[string]*Repository{DefaultTestPrimaryRepo: NewRepository()},
 	}
 }
 
 // NewRepository is a convenience function that returns a new Repository
 func NewRepository() *Repository {
-	return &Repository{}
+	return &Repository{
+		CheckoutOptions: &RepoCheckout{},
+	}
 }
 
 // NewAuthInfo is a convenience function that returns a new AuthInfo

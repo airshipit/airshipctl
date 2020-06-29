@@ -1,0 +1,12 @@
+primaryRepositoryName: bar_primary_repo
+subPath: ""
+targetPath: bar_target_path
+
+primaryRepositoryName: baz_primary_repo
+subPath: ""
+targetPath: baz_target_path
+
+primaryRepositoryName: foo_primary_repo
+subPath: ""
+targetPath: foo_target_path
+

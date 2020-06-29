@@ -8,6 +8,7 @@ Available Commands:
   get-context           Get context information from the airshipctl config
   get-credential        Get user credentials from the airshipctl config
   get-management-config View a management config or all management configs defined in the airshipctl config
+  get-manifest          Get a manifest information from the airshipctl config
   help                  Help about any command
   import                Merge information from a kubernetes config file
   init                  Generate initial configuration files for airshipctl
@@ -15,6 +16,7 @@ Available Commands:
   set-context           Manage contexts
   set-credentials       Manage user credentials
   set-management-config Modify an out-of-band management configuration
+  set-manifest          Manage manifests in airship config
   use-context           Switch to a different context
 
 Flags:

@@ -947,6 +947,112 @@ func (c *Config) CurrentContextBootstrapInfo() (*Bootstrap, error) {
 	return bootstrap, nil
 }
 
+// GetManifests returns all of the Manifests associated with the Config sorted by name
+func (c *Config) GetManifests() []*Manifest {
+	keys := make([]string, 0, len(c.Manifests))
+	for name := range c.Manifests {
+		keys = append(keys, name)
+	}
+	sort.Strings(keys)
+
+	manifests := make([]*Manifest, 0, len(c.Manifests))
+	for _, name := range keys {
+		manifests = append(manifests, c.Manifests[name])
+	}
+	return manifests
+}
+
+// AddManifest creates new Manifest
+func (c *Config) AddManifest(theManifest *ManifestOptions) *Manifest {
+	nManifest := NewManifest()
+	c.Manifests[theManifest.Name] = nManifest
+	err := c.ModifyManifest(nManifest, theManifest)
+	if err != nil {
+		return nil
+	}
+	return nManifest
+}
+
+// ModifyManifest set actual values to manifests
+func (c *Config) ModifyManifest(manifest *Manifest, theManifest *ManifestOptions) error {
+	if theManifest.IsPrimary {
+		manifest.PrimaryRepositoryName = theManifest.RepoName
+	}
+	if theManifest.SubPath != "" {
+		manifest.SubPath = theManifest.SubPath
+	}
+	if theManifest.TargetPath != "" {
+		manifest.TargetPath = theManifest.TargetPath
+	}
+	// There is no repository details to be updated
+	if theManifest.RepoName == "" {
+		return nil
+	}
+	//when setting an existing repository as primary, verify whether the repository exists
+	//and user is also not passing any repository URL
+	if theManifest.IsPrimary && theManifest.URL == "" && (manifest.Repositories[theManifest.RepoName] == nil) {
+		return ErrRepositoryNotFound{theManifest.RepoName}
+	}
+	repository, exists := manifest.Repositories[theManifest.RepoName]
+	if !exists {
+		_, err := c.AddRepository(manifest, theManifest)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := c.ModifyRepository(repository, theManifest)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// AddRepository creates new Repository
+func (c *Config) AddRepository(manifest *Manifest, theManifest *ManifestOptions) (*Repository, error) {
+	nRepository := NewRepository()
+	manifest.Repositories[theManifest.RepoName] = nRepository
+	err := c.ModifyRepository(nRepository, theManifest)
+	if err != nil {
+		return nil, err
+	}
+	return nRepository, nil
+}
+
+// ModifyRepository set actual values to repository
+func (c *Config) ModifyRepository(repository *Repository, theManifest *ManifestOptions) error {
+	if theManifest.URL != "" {
+		repository.URLString = theManifest.URL
+	}
+	if theManifest.Branch != "" {
+		repository.CheckoutOptions.Branch = theManifest.Branch
+	}
+	if theManifest.CommitHash != "" {
+		repository.CheckoutOptions.CommitHash = theManifest.CommitHash
+	}
+	if theManifest.Tag != "" {
+		repository.CheckoutOptions.Tag = theManifest.Tag
+	}
+	if theManifest.Force {
+		repository.CheckoutOptions.ForceCheckout = theManifest.Force
+	}
+	possibleValues := [3]string{repository.CheckoutOptions.CommitHash,
+		repository.CheckoutOptions.Branch, repository.CheckoutOptions.Tag}
+	var count int
+	for _, val := range possibleValues {
+		if val != "" {
+			count++
+		}
+	}
+	if count > 1 {
+		return ErrMutuallyExclusiveCheckout{}
+	}
+	if count == 0 {
+		return ErrMissingRepoCheckoutOptions{}
+	}
+	return nil
+}
+
 // CurrentContextManagementConfig returns the management options for the current context
 func (c *Config) CurrentContextManagementConfig() (*ManagementConfiguration, error) {
 	currentCluster, err := c.CurrentContextCluster()
