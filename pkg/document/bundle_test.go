@@ -151,6 +151,30 @@ func TestBundleDocumentFiltering(t *testing.T) {
 		// obviously, this should be improved
 		assert.Contains(b.String(), "workflow-controller")
 	})
+
+	t.Run("BundleAppend", func(t *testing.T) {
+		doc, err := document.NewDocumentFromBytes([]byte(`apiVersion: v1
+kind: Secret
+metadata:
+  name: append-secret
+  namespace: metal3
+type: Opaque
+stringData:
+  username: append-username
+  password: append-password`))
+		require.NoError(err)
+		err = bundle.Append(doc)
+		require.NoError(err)
+		secretDoc, err := bundle.SelectOne(document.NewSelector().ByKind("Secret").ByName("append-secret"))
+		require.NoError(err)
+		require.NotNil(t, secretDoc)
+		password, err := secretDoc.GetString("stringData.password")
+		require.NoError(err)
+		username, err := secretDoc.GetString("stringData.username")
+		require.NoError(err)
+		assert.Equal(password, "append-password")
+		assert.Equal(username, "append-username")
+	})
 }
 
 func TestBundleOrder(t *testing.T) {

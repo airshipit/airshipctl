@@ -18,8 +18,10 @@ import (
 	"io"
 	"strings"
 
+	"sigs.k8s.io/kustomize/api/k8sdeps/kunstruct"
 	"sigs.k8s.io/kustomize/api/krusty"
 	"sigs.k8s.io/kustomize/api/resmap"
+	"sigs.k8s.io/kustomize/api/resource"
 	"sigs.k8s.io/kustomize/api/types"
 
 	"opendev.org/airship/airshipctl/pkg/environment"
@@ -53,6 +55,7 @@ type Bundle interface {
 	GetByAnnotation(annotationSelector string) ([]Document, error)
 	GetByLabel(labelSelector string) ([]Document, error)
 	GetAllDocuments() ([]Document, error)
+	Append(Document) error
 }
 
 // NewBundleByPath helper function that returns new document.Bundle interface based on clusterType and
@@ -336,6 +339,20 @@ func (b *BundleFactory) GetByGvk(group, version, kind string) ([]Document, error
 	selector := NewSelector().ByGvk(group, version, kind)
 	// pass it to the selector
 	return b.Select(selector)
+}
+
+// Append bundle with the document, this only works with document interface implementation
+// that is provided by this package
+func (b *BundleFactory) Append(doc Document) error {
+	yaml, err := doc.AsYAML()
+	if err != nil {
+		return err
+	}
+	res, err := resource.NewFactory(kunstruct.NewKunstructuredFactoryImpl()).FromBytes(yaml)
+	if err != nil {
+		return nil
+	}
+	return b.ResMap.Append(res)
 }
 
 // Write will write out the entire bundle resource map
