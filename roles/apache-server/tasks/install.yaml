@@ -11,21 +11,16 @@
 # limitations under the License.
 
 ---
-- name: redhat | ensuring apache packages are present
+- name: ensure apache packages are present
   become: yes
-  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
-  yum:
-    name:
-      - httpd
-    update_cache: yes
-    state: present
-
-- name: ubuntu | ensuring apache packages are present
-  become: yes
-  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
-  apt:
-    name:
+  vars:
+  - packages:
+      Debian:
       - apache2
+      RedHat:
+      - httpd
+  package:
+    name: "{{ packages[ansible_os_family] }}"
     update_cache: yes
     state: present
 

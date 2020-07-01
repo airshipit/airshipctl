@@ -13,7 +13,7 @@
 - hosts: primary
   tasks:
     - name: Install python setuptools
-      apt:
+      package:
         name:
         - python3-pip
         - python3-setuptools

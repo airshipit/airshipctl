@@ -13,18 +13,7 @@
 ---
 - name: Ensuring docker and support packages are present
   become: yes
-  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
-  yum:
-    name:
-      - docker.io
-      - runc
-    update_cache: yes
-    state: present
-
-- name: Ensuring docker and support packages are present
-  become: yes
-  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
-  apt:
+  package:
     name:
       - docker.io
       - runc

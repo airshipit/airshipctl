@@ -14,7 +14,7 @@
   become: yes
   block:
   - name: Ensure needed packages
-    apt:
+    package:
       name:
       - python3-passlib
       - python3-openssl
