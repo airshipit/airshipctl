@@ -15,10 +15,17 @@
 package utils
 
 import (
+	"bytes"
+	"io"
 	"os"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/cli-runtime/pkg/resource"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
+	"sigs.k8s.io/cli-utils/pkg/manifestreader"
+
+	"opendev.org/airship/airshipctl/pkg/document"
 )
 
 // FactoryFromKubeConfigPath returns a factory with the
@@ -36,4 +43,56 @@ func Streams() genericclioptions.IOStreams {
 		Out:    os.Stdout,
 		ErrOut: os.Stderr,
 	}
+}
+
+// ManifestReaderFactory factory function for manifestreader.ManifestReader
+type ManifestReaderFactory func(
+	validate bool,
+	bundle document.Bundle,
+	factory cmdutil.Factory) manifestreader.ManifestReader
+
+// DefaultManifestReaderFactory default factory function for manifestreader.ManifestReader
+var DefaultManifestReaderFactory ManifestReaderFactory = func(
+	validate bool,
+	bundle document.Bundle,
+	factory cmdutil.Factory) manifestreader.ManifestReader {
+	return NewManifestBundleReader(validate, bundle, factory)
+}
+
+// NewManifestBundleReader returns impleemntation of manifestreader interface
+func NewManifestBundleReader(
+	validate bool,
+	bundle document.Bundle,
+	factory cmdutil.Factory) *ManifestBundleReader {
+	opts := manifestreader.ReaderOptions{
+		Validate:  validate,
+		Namespace: metav1.NamespaceDefault,
+		Factory:   factory,
+	}
+	buffer := bytes.NewBuffer([]byte{})
+	return &ManifestBundleReader{
+		Bundle: bundle,
+		writer: buffer,
+		StreamReader: &manifestreader.StreamManifestReader{
+			ReaderName:    "airship",
+			Reader:        buffer,
+			ReaderOptions: opts,
+		},
+	}
+}
+
+// ManifestBundleReader implements manifestreader interface that to transform bundle to slice
+// of *resource.Info objects using Read() method.
+type ManifestBundleReader struct {
+	Bundle       document.Bundle
+	StreamReader *manifestreader.StreamManifestReader
+	writer       io.Writer
+}
+
+func (mbr *ManifestBundleReader) Read() ([]*resource.Info, error) {
+	err := mbr.Bundle.Write(mbr.writer)
+	if err != nil {
+		return []*resource.Info{}, err
+	}
+	return mbr.StreamReader.Read()
 }
