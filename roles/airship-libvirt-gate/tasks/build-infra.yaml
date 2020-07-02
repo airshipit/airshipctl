@@ -112,7 +112,9 @@
           pool: "{{ airship_gate_names.pool }}"
       interfaces:
         - network: "{{ airship_gate_names.nat_network }}"
+          mac: "{{ chosen_flavor.ephemeral_vm_nics[0].nat_mac | default('')}}"
         - network: "{{ airship_gate_names.provision_network }}"
+          mac: "{{ chosen_flavor.ephemeral_vm_nics[0].provision_mac | default('')}}"
 
 - name: Add noauth sushy-emulator to apache
   include_role:
