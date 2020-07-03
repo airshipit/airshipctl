@@ -75,6 +75,13 @@ change. This method is considered a fallback in lieu of the other two methods.
 
 Any issue references should be evaluated within 15 minutes of being uploaded.
 
+**NOTE** Make sure to carefully divide the work into logical chunks to avoid
+creating changes that are too large. Such practices are discouraged and make
+code review very difficult. Break down the work into components and create a
+separate change for each component. Keep a design document or README to
+track the overall progress when making a large contribution.
+See [OSF Guidelines](https://docs.openstack.org/contributors/code-and-documentation/patch-best-practices.html#the-right-size) for more information.
+
 ## Reviewing Changes
 
 Another great way to contribute to the project is to review changes made by
