@@ -44,3 +44,12 @@ type ErrValueForVariableNotSet struct {
 func (e ErrValueForVariableNotSet) Error() string {
 	return fmt.Sprintf("value for variable %q is not set", e.Variable)
 }
+
+// ErrAppendNotAllowed is returned when version map is empty or not defined
+type ErrAppendNotAllowed struct {
+	Variables map[string]string
+}
+
+func (e ErrAppendNotAllowed) Error() string {
+	return fmt.Sprintf(`variables %v, are not allowed to be appended from clusterctl.AdditoinalVariables`, e.Variables)
+}

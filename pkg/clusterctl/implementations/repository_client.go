@@ -27,8 +27,9 @@ var _ config.Provider = &RepositoryClient{}
 // but in our implementation we skip variable substitution.
 type RepositoryClient struct {
 	repository.Client
-	ProviderType string
-	ProviderName string
+	VariableSubstitution bool
+	ProviderType         string
+	ProviderName         string
 }
 
 // Components provide access to YAML file for creating provider components.
@@ -36,8 +37,9 @@ func (rc *RepositoryClient) Components() repository.ComponentsClient {
 	log.Debugf("Setting up airshipctl provider Components client\n"+
 		"Provider type: %s, name: %s\n", rc.ProviderType, rc.ProviderName)
 	return &ComponentsClient{
-		client:       rc.Client.Components(),
-		providerName: rc.ProviderName,
-		providerType: rc.ProviderType,
+		client:               rc.Client.Components(),
+		providerName:         rc.ProviderName,
+		providerType:         rc.ProviderType,
+		variableSubstitution: rc.VariableSubstitution,
 	}
 }
