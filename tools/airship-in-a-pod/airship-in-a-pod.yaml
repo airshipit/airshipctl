@@ -1,0 +1,347 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: airship-in-a-pod
+spec:
+  hostNetwork: false
+  restartPolicy: Never
+  containers:
+
+  - name: libvirt
+    image: ianhowell/libvirt:latest
+    tty: true
+    securityContext:
+      privileged: true
+      #SYS_ADMIN required for systemd, need to work out reqs for libvirt
+    command:
+      - bash
+      - -cex
+      - "exec /usr/lib/systemd/systemd"
+    env:
+      - name: container
+        value: docker
+    readinessProbe:
+      exec:
+        command:
+          - virsh
+          - version
+      initialDelaySeconds: 5
+      periodSeconds: 5
+    startupProbe:
+      exec:
+        command:
+          - systemctl
+          - is-active
+          - --quiet
+          - libvirtd
+      initialDelaySeconds: 5
+      periodSeconds: 5
+    volumeMounts:
+      - name: var-run-aiap
+        mountPath: /var/run/aiap/
+      - name: dev
+        mountPath: /dev
+      - name: tmp
+        mountPath: /tmp
+      - name: run
+        mountPath: /run
+      - name: var-lib-libvirt-images
+        mountPath: /var/lib/libvirt/images
+      - name: var-lib-libvirt-default
+        mountPath: /var/lib/libvirt/default
+      - name: var-run-libvirt
+        mountPath: /var/run/libvirt
+      - name: sys-fs-cgroup
+        mountPath: /sys/fs/cgroup
+        readOnly: false
+      - name: logs
+        mountPath: /var/log/
+
+  - name: sushy
+    image: quay.io/metal3-io/sushy-tools
+    command:
+      - bash
+      - -cex
+      - |
+        tee /csr_details.txt << EOF
+        [req]
+        default_bits = 2048
+        prompt = no
+        default_md = sha256
+        req_extensions = req_ext
+        distinguished_name = dn
+
+        [ dn ]
+        CN = localhost
+
+        [ req_ext ]
+        subjectAltName = @alt_names
+
+        [ alt_names ]
+        DNS.1 = 127.0.0.1
+        DNS.2 = ::1
+        EOF
+
+        openssl req \
+          -newkey rsa:2048 \
+          -nodes \
+          -keyout /airship_gate_redfish_auth.key \
+          -x509 \
+          -days 365 \
+          -out /airship_gate_redfish_auth.pem \
+          -config <(cat /csr_details.txt) \
+          -extensions 'req_ext'
+
+        # Wait for interface to come up
+        while ! ping -c1 10.23.25.1 2>&1 >/dev/null; do sleep 1; done
+
+        sushy-emulator \
+          --debug \
+          --interface 10.23.25.1 \
+          --port 8443 \
+          --ssl-key /airship_gate_redfish_auth.key \
+          --ssl-certificate /airship_gate_redfish_auth.pem || true
+
+        tail -f /dev/null
+    volumeMounts:
+      - name: var-run-libvirt
+        mountPath: /var/run/libvirt
+
+  - name: nginx
+    image: nginx:latest
+    command:
+      - bash
+      - -cex
+      - |
+        tee /etc/nginx/nginx.conf <<'EOF'
+        user  nginx;
+        worker_processes  1;
+        error_log  /var/log/nginx/error.log warn;
+        pid        /var/run/nginx.pid;
+        events {
+            worker_connections  1024;
+        }
+        http {
+            include       /etc/nginx/mime.types;
+            default_type  application/octet-stream;
+            log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                              '$status $body_bytes_sent "$http_referer" '
+                              '"$http_user_agent" "$http_x_forwarded_for"';
+            access_log  /var/log/nginx/access.log  main;
+            sendfile        on;
+            #tcp_nopush     on;
+            keepalive_timeout  65;
+            #gzip  on;
+            server {
+                listen       8099;
+                listen  [::]:8099;
+                server_name  localhost;
+                #charset koi8-r;
+                #access_log  /var/log/nginx/host.access.log  main;
+                location / {
+                    root   /srv/images;
+                    autoindex on;
+                }
+                error_page   500 502 503 504  /50x.html;
+                location = /50x.html {
+                    root   /usr/share/nginx/html;
+                }
+            }
+        }
+        EOF
+        exec nginx -g 'daemon off;'
+    volumeMounts:
+      - name: srv
+        mountPath: /srv/
+
+  - name: dind
+    image: docker:stable-dind
+    securityContext:
+      privileged: true
+    volumeMounts:
+      - name: var-run-aiap
+        mountPath: /var/run/aiap/
+      - name: dind-storage
+        mountPath: /var/lib/docker
+      - name: var-run-docker
+        mountPath: /var/run/
+      - name: srv
+        mountPath: /srv/
+
+  - name: airshipctl-builder
+    image: quay.io/airshipit/aiap-airshipctl-builder:latest
+    command:
+      - bash
+      - -cex
+      - |
+        /entrypoint.sh || true
+        tail -f /dev/null
+    readinessProbe:
+      exec:
+        command:
+        - test
+        - -e
+        - /tmp/completed/airshipctl-builder
+    env:
+      - name: CACHE_DIR
+        value: /opt/aiap-cache
+      - name: USE_CACHED_AIRSHIPCTL
+        value: "false"
+      - name: ARTIFACTS_DIR
+        value: /opt/aiap-artifacts
+      - name: AIRSHIPCTL_REPO
+        value: https://review.opendev.org/airship/airshipctl
+      - name: AIRSHIPCTL_REF
+        value: master
+    volumeMounts:
+      - name: tmp
+        mountPath: /tmp
+      - name: cache
+        mountPath: /opt/aiap-cache
+      - name: artifacts
+        mountPath: /opt/aiap-artifacts
+      - name: completed
+        mountPath: /tmp/completed
+      - name: var-run-docker
+        mountPath: /var/run
+
+  - name: infra-builder
+    image: quay.io/airshipit/aiap-infra-builder:latest
+    securityContext:
+      privileged: true
+    command:
+      - bash
+      - -cex
+      - |
+        /entrypoint.sh || true
+        tail -f /dev/null
+    readinessProbe:
+      exec:
+        command:
+        - test
+        - -e
+        - /tmp/completed/infra-builder
+    env:
+      - name: CACHE_DIR
+        value: /opt/aiap-cache
+      - name: ARTIFACTS_DIR
+        value: /opt/aiap-artifacts
+    volumeMounts:
+      - name: cache
+        mountPath: /opt/aiap-cache
+      - name: artifacts
+        mountPath: /opt/aiap-artifacts
+      - name: completed
+        mountPath: /tmp/completed
+      - name: tmp
+        mountPath: /tmp
+      - name: var-run-aiap
+        mountPath: /var/run/aiap/
+      - name: var-lib-libvirt-images
+        mountPath: /var/lib/libvirt/images
+      - name: var-lib-libvirt-default
+        mountPath: /var/lib/libvirt/default
+      - name: var-run-libvirt
+        mountPath: /var/run/libvirt
+      - name: logs
+        mountPath: /var/log/
+      - name: var-run-docker
+        mountPath: /var/run
+
+  - name: runner
+    image: quay.io/airshipit/aiap-runner:latest
+    command:
+      - bash
+      - -cex
+      - |
+        /entrypoint.sh || true
+        tail -f /dev/null
+    readinessProbe:
+      exec:
+        command:
+        - test
+        - -e
+        - /tmp/completed/runner
+      initialDelaySeconds: 600
+      periodSeconds: 30
+    env:
+      - name: CACHE_DIR
+        value: /opt/aiap-cache
+      - name: ARTIFACTS_DIR
+        value: /opt/aiap-artifacts
+      - name: USE_CACHED_ISO
+        value: "false"
+    volumeMounts:
+      - name: cache
+        mountPath: /opt/aiap-cache
+      - name: artifacts
+        mountPath: /opt/aiap-artifacts
+      - name: completed
+        mountPath: /tmp/completed
+      - name: tmp
+        mountPath: /tmp
+      - name: var-run-aiap
+        mountPath: /var/run/aiap/
+      - name: srv
+        mountPath: /srv/
+      - name: run
+        mountPath: /run
+      - name: var-run-libvirt
+        mountPath: /var/run/libvirt
+      - name: logs
+        mountPath: /var/log/
+      - name: var-run-docker
+        mountPath: /var/run
+
+  volumes:
+    - name: cache
+      hostPath:
+        path: /opt/aiap-cache
+    - name: artifacts
+      hostPath:
+        path: /opt/aiap-artifacts
+    - name: completed
+      emptyDir: {}
+    - name: dev
+      hostPath:
+        path: /dev
+    - name: tmp
+      emptyDir:
+        medium: "Memory"
+    - name: run
+      emptyDir:
+        medium: "Memory"
+    - name: var-lib-libvirt-images
+      emptyDir: {}
+    - name: var-lib-libvirt-default
+      emptyDir: {}
+    - name: var-run-libvirt
+      emptyDir:
+        medium: "Memory"
+    - name: var-run-aiap
+      emptyDir:
+        medium: "Memory"
+    - name: sys-fs-cgroup
+      hostPath:
+        path: /sys/fs/cgroup
+    - name: srv
+      emptyDir: {}
+    - name: logs
+      emptyDir: {}
+    - name: var-run-docker
+      emptyDir:
+        medium: "Memory"
+    - name: dind-storage
+      emptyDir: {}

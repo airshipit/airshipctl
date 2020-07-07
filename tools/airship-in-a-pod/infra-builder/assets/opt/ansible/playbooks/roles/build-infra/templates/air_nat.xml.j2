@@ -1,0 +1,10 @@
+<network connections="2">
+  <name>air_nat</name>
+  <uuid>667f20da-ad20-4623-bf70-88f6e6dec2d6</uuid>
+  <forward mode="nat">
+    <nat><port start="1024" end="65535"/>
+    </nat>
+  </forward><bridge name="nat_br" stp="on" delay="0"/>
+  <ip address="{{ networks[1].ip.address }}" netmask="{{ networks[1].ip.netmask }}">
+  </ip>
+</network>

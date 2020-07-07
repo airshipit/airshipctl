@@ -1,0 +1,7 @@
+<network connections="2">
+  <name>air_prov</name>
+  <uuid>55739809-1c3a-4c79-b6e7-2607000715da</uuid>
+  <bridge name="prov_br" stp="on" delay="0"/>
+  <ip address="{{ networks[0].ip.address }}" netmask="{{ networks[0].ip.netmask }}">
+  </ip>
+</network>

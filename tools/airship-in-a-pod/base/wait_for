@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# wait_for takes a list of container names and runs until all of those container names
+# appear in the "/tmp/completed" directory. It can be used to prevent a
+# container from executing until pre-requisite containers have indicated completion.
+
+mkdir -p "/tmp/completed"
+while true; do
+  # Assume we're finished, prove otherwise
+  finished=true
+  for container in "$@"; do
+    if [[ ! -e "/tmp/completed/$container" ]]; then
+      printf "Waiting on '%s'...\n" "$container"
+      finished=false
+      sleep 10
+      break
+    fi
+  done
+  if $finished; then
+    break
+  fi
+done

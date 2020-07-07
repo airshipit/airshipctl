@@ -1,0 +1,93 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- acl:
+    default: true
+    path: "{{ floorplan.default_image_pool }}"
+    entry: "u:libvirt-qemu:r-x"
+    state: present
+
+- name: "Define, Build, and Start default storage pool"
+  block:
+    - virt_pool:
+        command: define
+        name: "{{ item }}"
+        xml: '{{ lookup("template", "{{ item }}.xml.j2") }}'
+      with_items:
+        - default
+
+    - virt_pool:
+        command: build
+        name: "{{ item }}"
+      with_items:
+        - default
+
+    - virt_pool:
+        state: active
+        name: "{{ item }}"
+      with_items:
+        - default
+
+    - virt_pool:
+        command: list_pools
+
+- name: "Define network, activate, start network pools"
+  block:
+    - virt_net:
+        command: define
+        xml: '{{ lookup("template", "{{ item }}.xml.j2") }}'
+        name: "{{ item }}"
+      with_items:
+        - "air_prov"
+        - "air_nat"
+
+    - virt_net:
+        state: active
+        name: "{{ item }}"
+      with_items:
+        - "default"
+        - "air_prov"
+        - "air_nat"
+
+    - virt_net:
+        name: "{{ item }}"
+        autostart: true
+      with_items:
+        - "default"
+        - "air_prov"
+        - "air_nat"
+
+- name: "Create ephemeral node"
+  include_tasks: create-vm.yaml
+  vars:
+    vm_instance: "{{ ephemeral_node }}"
+    vm_name: "{{ ephemeral_node.name }}"
+
+- name: "Create target nodes"
+  include_tasks: create-vm.yaml
+  vars:
+    vm_instance: "{{ target_nodes }}"
+    vm_name: "{{ target_nodes.name }}-{{ a_node }}"
+  with_sequence:
+    start=1 end="{{ (vm_instance.count | int) }}"
+  loop_control:
+    loop_var: a_node
+
+- name: "Create worker nodes"
+  include_tasks: create-vm.yaml
+  vars:
+    vm_instance: "{{ worker_nodes }}"
+    vm_name: "{{ worker_nodes.name }}-{{ a_node }}"
+  with_sequence:
+    start=1 end="{{ (vm_instance.count | int) }}"
+  loop_control:
+    loop_var: a_node

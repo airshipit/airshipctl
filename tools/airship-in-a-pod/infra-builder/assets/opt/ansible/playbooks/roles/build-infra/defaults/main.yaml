@@ -1,0 +1,64 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+floorplan:
+  image_pool: "/var/lib/libvirt/images"
+  default_image_pool: "/var/lib/libvirt/default"
+  uri: "qemu:///system"
+  os_variant: "ubuntu18.04"
+
+ephemeral_node:
+  name: air-ephemeral
+  cpu: 4
+  ram: 6124
+  nat_mac_address: 52:54:00:9b:27:02
+  prov_mac_address: 52:54:00:b6:ed:02
+  block:
+    - 20G
+
+target_nodes:
+  count: 1
+  name: air-target
+  cpu: 2
+  ram: 6124
+  nat_mac_address: 52:54:00:9b:27:4c
+  prov_mac_address: 52:54:00:b6:ed:31
+  block:
+    - 20G
+
+worker_nodes:
+  count: 1
+  name: air-worker
+  cpu: 1
+  ram: 6124
+  nat_mac_address: 52:54:00:9b:27:07
+  prov_mac_address: 52:54:00:b6:ed:23
+  block:
+    - 20G
+
+# 1st item must be the oobm network, 2nd the provisioning
+networks:
+  - name: provisioning
+    bridge: "air_prov"
+    ip:
+      address: "10.23.24.1"
+      netmask: "255.255.255.0"
+  - name: nat
+    bridge: "air_nat"
+    ip:
+      address: "10.23.25.1"
+      netmask: "255.255.255.0"
+  - name: default
+    bridge: "default"
+    ip:
+      address: "10.23.25.1"
+      netmask: "255.255.255.0"
