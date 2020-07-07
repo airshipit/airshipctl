@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helm-operator
+  namespace: flux
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: helm-operator
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+      labels:
+        name: helm-operator
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      containers:
+      - args:
+        - --enabled-helm-versions=v3
+        image: docker.io/fluxcd/helm-operator:1.1.0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 3030
+          initialDelaySeconds: 1
+          timeoutSeconds: 5
+        name: helm-operator
+        ports:
+        - containerPort: 3030
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 3030
+          initialDelaySeconds: 1
+          timeoutSeconds: 5
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+      serviceAccountName: helm-operator
+      # See https://github.com/fluxcd/flux/pull/2116
+      dnsPolicy: None
+      dnsConfig:
+        nameservers:
+          - 10.96.0.10
+        options:
+          - name: ndots
+            value: "1"

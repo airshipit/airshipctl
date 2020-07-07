@@ -1,6 +1,7 @@
 resources:
   - ../../shared/clusterctl
   - ../../../../function/baremetal-operator
+  - ../../../../function/helm-operator
 patchesStrategicMerge:
   - patch_bmo_config.yaml
 commonLabels:
