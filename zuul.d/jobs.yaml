@@ -103,7 +103,7 @@
         - airshipctl-phase-controlplane
       serve_dir: /srv/iso
       serve_port: 8099
-    voting: true
+    voting: false
 
 - job:
     name: airship-airshipctl-32GB-gate-test
