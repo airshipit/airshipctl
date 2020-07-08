@@ -16,8 +16,6 @@ package remote
 
 import (
 	"fmt"
-
-	aerror "opendev.org/airship/airshipctl/pkg/errors"
 )
 
 // TODO: This need to be refactored to match the error format used elsewhere in airshipctl
@@ -25,20 +23,21 @@ import (
 
 // GenericError provides general feedback about an error that occurred in a remote operation
 type GenericError struct {
-	aerror.AirshipError
+	Message string
 }
 
 // NewRemoteDirectErrorf retruns formatted remote direct errors
 func NewRemoteDirectErrorf(format string, v ...interface{}) error {
-	e := &GenericError{}
-	e.Message = fmt.Sprintf(format, v...)
-	return e
+	return &GenericError{Message: fmt.Sprintf(format, v...)}
+}
+
+func (e GenericError) Error() string {
+	return e.Message
 }
 
 // ErrUnknownManagementType is an error that indicates the remote type specified in the airshipctl management
 // configuration (e.g. redfish, redfish-dell) is not supported.
 type ErrUnknownManagementType struct {
-	aerror.AirshipError
 	Type string
 }
 
@@ -49,7 +48,6 @@ func (e ErrUnknownManagementType) Error() string {
 // ErrMissingBootstrapInfoOption is an error that indicates a bootstrap option is missing in the airshipctl
 // bootstrapInfo configuration.
 type ErrMissingBootstrapInfoOption struct {
-	aerror.AirshipError
 	What string
 }
 
