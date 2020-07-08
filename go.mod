@@ -28,16 +28,17 @@ require (
 	k8s.io/kubectl v0.17.4
 	opendev.org/airship/go-redfish v0.0.0-20200318103738-db034d1d753a
 	opendev.org/airship/go-redfish/client v0.0.0-20200318103738-db034d1d753a
+	sigs.k8s.io/cli-utils v0.15.0
 	sigs.k8s.io/cluster-api v0.3.5
 	sigs.k8s.io/controller-runtime v0.5.2
 	sigs.k8s.io/kustomize/api v0.3.1
 	sigs.k8s.io/yaml v1.2.0
 )
 
-replace github.com/russross/blackfriday => github.com/russross/blackfriday v1.5.2
-
 // Required by baremetal-operator:
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible // Required by OLM
-	k8s.io/client-go => k8s.io/client-go v0.17.4
+	github.com/russross/blackfriday => github.com/russross/blackfriday v1.5.2
+	k8s.io/client-go => k8s.io/client-go v0.0.0-20191114101535-6c5935290e33
+	k8s.io/kubectl => k8s.io/kubectl v0.0.0-20191219154910-1528d4eea6dd
 )

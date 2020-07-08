@@ -15,6 +15,8 @@
 package utils
 
 import (
+	"os"
+
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 )
@@ -25,4 +27,13 @@ func FactoryFromKubeConfigPath(kp string) cmdutil.Factory {
 	kf := genericclioptions.NewConfigFlags(false)
 	kf.KubeConfig = &kp
 	return cmdutil.NewFactory(kf)
+}
+
+// Streams returns default IO streams object, like stdout, stdin, stderr
+func Streams() genericclioptions.IOStreams {
+	return genericclioptions.IOStreams{
+		In:     os.Stdin,
+		Out:    os.Stdout,
+		ErrOut: os.Stderr,
+	}
 }
