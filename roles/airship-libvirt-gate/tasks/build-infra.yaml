@@ -146,3 +146,46 @@
     file_exchanger_group: "{{ airship_gate_file_exchanger.group | default(None) }}"
     file_exchanger_rbac: "{{ airship_gate_file_exchanger.rbac | default(None) }}"
 
+- name: Create worker volumes
+  include_role:
+    name: libvirt-volume
+  vars:
+    libvirt_volume:
+      name: "{{ airship_gate_names.worker_volume_prefix }}-{{ vm_index }}"
+      size: "{{ chosen_flavor.worker_disk_size }}"
+      pool: "{{ airship_gate_names.pool }}"
+      format: "{{ chosen_flavor.disk_format }}"
+    volume_action: create
+  loop_control:
+    loop_var: vm_index
+  with_sequence: "start=1 end={{ chosen_flavor.worker_vms_count }}"
+
+- name: Create worker domains
+  include_role:
+    name: libvirt-domain
+  vars:
+    libvirt_domain:
+      enable_vnc: true
+      console_log_enabled: true
+      state: shutdown
+      name: "{{ airship_gate_names.worker_vm_prefix }}-{{ vm_index }}"
+      memory_mb: "{{ chosen_flavor.worker_vm_memory_mb }}"
+      vcpus: "{{ chosen_flavor.worker_vm_vcpus }}"
+      controllers:
+        - "sata"
+      volumes:
+        - name: "{{ airship_gate_names.worker_volume_prefix }}-{{ vm_index }}"
+          device: "disk"
+          target: sda
+          bus: sata
+          format: "{{ chosen_flavor.disk_format }}"
+          pool: "{{ airship_gate_names.pool }}"
+      interfaces:
+        - network: "{{ airship_gate_names.nat_network }}"
+          mac: ""
+        - network: "{{ airship_gate_names.provision_network }}"
+          mac: ""
+  loop_control:
+    loop_var: vm_index
+  with_sequence: "start=1 end={{ chosen_flavor.worker_vms_count }}"
+

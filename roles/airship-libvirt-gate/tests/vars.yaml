@@ -38,3 +38,5 @@ airship_gate_names:
   target_volume_prefix: "vol_target"
   ephemeral_volume: "vol_ephemeral"
   pool: airship
+  worker_vm_prefix: "air-target"
+  worker_volume_prefix: "vol_worker"
