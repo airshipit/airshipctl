@@ -29,6 +29,7 @@ Welcome to airshipctl's Documentation!
    developers
    plugins
    testing-guidelines
+   virtual_redfish_bmc
    Commands <cli/airshipctl>
 
 .. toctree::
