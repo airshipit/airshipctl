@@ -1,0 +1,10 @@
+apiVersion: airshipit.org/v1alpha1
+kind: VariableCatalogue
+metadata:
+  # NOTE: change this when copying this example
+  name: hardwareprofile-example
+hardwareProfile:
+  firmware:
+    sriovEnabled: false
+    virtualizationDisabled: false
+    simultaneousMultithreadingDisabled: false
