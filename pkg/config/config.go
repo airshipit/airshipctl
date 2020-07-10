@@ -1079,6 +1079,20 @@ func (c *Config) Purge() error {
 	return os.Remove(c.loadedConfigPath)
 }
 
+// CurrentContextManifestMetadata gets manifest metadata
+func (c *Config) CurrentContextManifestMetadata() (*Metadata, error) {
+	manifest, err := c.CurrentContextManifest()
+	if err != nil {
+		return nil, err
+	}
+	meta := &Metadata{}
+	err = util.ReadYAMLFile(manifest.MetadataPath, meta)
+	if err != nil {
+		return nil, err
+	}
+	return meta, nil
+}
+
 // DecodeAuthInfo returns authInfo with credentials decoded
 func DecodeAuthInfo(authinfo *clientcmdapi.AuthInfo) (*clientcmdapi.AuthInfo, error) {
 	password := authinfo.Password

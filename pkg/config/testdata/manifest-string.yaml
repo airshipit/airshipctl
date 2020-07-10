@@ -1,3 +1,4 @@
+metadataPath: manifests/site/test-site/metadata.yaml
 primaryRepositoryName: primary
 repositories:
   primary:

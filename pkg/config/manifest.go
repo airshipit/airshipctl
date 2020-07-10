@@ -35,6 +35,8 @@ type Manifest struct {
 	// you would expect that at treasuremap/manifests you would have ephemeral/initinfra and
 	// ephemera/target directories, containing kustomize.yaml.
 	SubPath string `json:"subPath"`
+	// MetadataPath path to a metadata file relative to TargetPath
+	MetadataPath string `json:"metadataPath"`
 }
 
 // Repository is a tuple that holds the information for the remote sources of manifest yaml documents.
@@ -82,6 +84,25 @@ type RepoCheckout struct {
 	RemoteRef string `json:"remoteRef,omitempty"`
 	// ForceCheckout is a boolean to indicate whether to use the `--force` option when checking out
 	ForceCheckout bool `json:"force"`
+}
+
+// Metadata holds entrypoints for phases, inventory and clusterctl
+type Metadata struct {
+	Inventory *InventoryMeta `json:"inventory,omitempty"`
+	PhaseMeta *PhaseMeta     `json:"phase,omitempty"`
+}
+
+// InventoryMeta holds inventory metadata, this is to be extended in the future
+// when we have more information how to handle non-baremetal inventories
+// path is a kustomize entrypoint against which we will build bundle containing bmh hosts
+type InventoryMeta struct {
+	Path string `json:"path,omitempty"`
+}
+
+// PhaseMeta holds phase metadata, right now it is only path, but maybe extended further
+// path is a kustomize entrypoint against which we will build bundle with phase objects
+type PhaseMeta struct {
+	Path string `json:"path,omitempty"`
 }
 
 // Manifest functions
