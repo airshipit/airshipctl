@@ -33,7 +33,7 @@ TESTS               ?= .
 TEST_FLAGS          ?=
 COVER_FLAGS         ?=
 COVER_PROFILE       ?= cover.out
-COVER_EXCLUDE       ?= (zz_generated)
+COVER_EXCLUDE       ?= (zz_generated|errors)
 
 # proxy options
 PROXY               ?= http://proxy.foo.com:8000
