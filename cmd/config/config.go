@@ -29,7 +29,9 @@ func NewConfigCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comma
 		Short:                 "Manage the airshipctl config file",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			log.Init(rootSettings.Debug, cmd.OutOrStderr())
-
+			if cmd.Use == "init" {
+				rootSettings.Create = true
+			}
 			// Load or Initialize airship Config
 			rootSettings.InitConfig()
 		},

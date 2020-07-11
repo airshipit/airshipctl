@@ -33,6 +33,7 @@ type AirshipCTLSettings struct {
 	Debug             bool
 	AirshipConfigPath string
 	KubeConfigPath    string
+	Create            bool
 	Config            *config.Config
 }
 
@@ -64,6 +65,8 @@ func (a *AirshipCTLSettings) InitFlags(cmd *cobra.Command) {
 		clientcmd.RecommendedConfigPathFlag,
 		"",
 		`Path to kubeconfig associated with airshipctl configuration. (default "`+defaultKubeConfigPath+`")`)
+
+	a.Create = false
 }
 
 // InitConfig - Initializes and loads Config it exists.
@@ -74,10 +77,10 @@ func (a *AirshipCTLSettings) InitConfig() {
 	a.InitKubeConfigPath()
 	InitPluginPath()
 
-	err := a.Config.LoadConfig(a.AirshipConfigPath, a.KubeConfigPath)
+	err := a.Config.LoadConfig(a.AirshipConfigPath, a.KubeConfigPath, a.Create)
 	if err != nil {
 		// Should stop airshipctl
-		log.Fatal(err)
+		log.Fatal("Failed to load or initialize config: ", err)
 	}
 }
 

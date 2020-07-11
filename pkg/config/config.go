@@ -83,13 +83,13 @@ type Config struct {
 
 // LoadConfig populates the Config object using the files found at
 // airshipConfigPath and kubeConfigPath
-func (c *Config) LoadConfig(airshipConfigPath, kubeConfigPath string) error {
-	err := c.loadFromAirConfig(airshipConfigPath)
+func (c *Config) LoadConfig(airshipConfigPath, kubeConfigPath string, create bool) error {
+	err := c.loadFromAirConfig(airshipConfigPath, create)
 	if err != nil {
 		return err
 	}
 
-	err = c.loadKubeConfig(kubeConfigPath)
+	err = c.loadKubeConfig(kubeConfigPath, create)
 	if err != nil {
 		return err
 	}
@@ -104,7 +104,7 @@ func (c *Config) LoadConfig(airshipConfigPath, kubeConfigPath string) error {
 // * airshipConfigPath is the empty string
 // * the file at airshipConfigPath is inaccessible
 // * the file at airshipConfigPath cannot be marshaled into Config
-func (c *Config) loadFromAirConfig(airshipConfigPath string) error {
+func (c *Config) loadFromAirConfig(airshipConfigPath string, create bool) error {
 	if airshipConfigPath == "" {
 		return errors.New("configuration file location was not provided")
 	}
@@ -114,20 +114,22 @@ func (c *Config) loadFromAirConfig(airshipConfigPath string) error {
 
 	// If I can read from the file, load from it
 	// throw an error otherwise
-	if _, err := os.Stat(airshipConfigPath); err != nil {
+	if _, err := os.Stat(airshipConfigPath); os.IsNotExist(err) && create {
+		return nil
+	} else if err != nil {
 		return err
 	}
 
 	return util.ReadYAMLFile(airshipConfigPath, c)
 }
 
-func (c *Config) loadKubeConfig(kubeConfigPath string) error {
+func (c *Config) loadKubeConfig(kubeConfigPath string, create bool) error {
 	// Will need this for persisting the changes
 	c.kubeConfigPath = kubeConfigPath
 
 	// If I can read from the file, load from it
 	var err error
-	if _, err = os.Stat(kubeConfigPath); os.IsNotExist(err) {
+	if _, err = os.Stat(kubeConfigPath); os.IsNotExist(err) && create {
 		// Default kubeconfig matching Airship target cluster
 		c.kubeConfig = &clientcmdapi.Config{
 			Clusters: map[string]*clientcmdapi.Cluster{
