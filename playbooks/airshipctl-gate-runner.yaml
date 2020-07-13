@@ -22,6 +22,7 @@
           - ./tools/deployment/24_build_ephemeral_iso.sh
           - ./tools/deployment/25_deploy_ephemeral_node.sh
           - ./tools/deployment/26_deploy_metal3_capi_ephemeral_node.sh
+          - ./tools/deployment/30_deploy_controlplane.sh
 
     - name: "Run gate scripts"
       include_role:

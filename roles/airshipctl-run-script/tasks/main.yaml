@@ -16,6 +16,7 @@
     {{ gate_script_path }}
   args:
     chdir: "{{ zuul.project.src_dir }}"
+  vars:
+    default_zuul_dir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
   environment:
-    remote_work_dir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
-    zuul_site_mirror_fqdn: "{{ zuul_site_mirror_fqdn }}"
+    AIRSHIP_CONFIG_MANIFEST_DIRECTORY: "{{ remote_work_dir | default(local_src_dir) | default(default_zuul_dir) }}"

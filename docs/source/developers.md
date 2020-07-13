@@ -11,11 +11,11 @@ airshipctl.
 
 ### Installing Git
 
-Instructions to install Git are [here][12].
+Instructions to install Git are [here][11].
 
 ### Installing Go 1.13
 
-Instructions to install Golang are [here][13].
+Instructions to install Golang are [here][12].
 
 The `make test` verification step requires the GNU Compiler Collection (gcc) to be installed.
 
@@ -92,7 +92,7 @@ There is a script in the airshipctl directory named `00_setup.sh` which can be
 run to download all the required binaries and packages. This script code can be
 viewed [here][1].
 
-Standalone instructions to install Docker are [here][14]. This is not necessary
+Standalone instructions to install Docker are [here][13]. This is not necessary
 if you run `00_setup.sh`.
 
 ## Building airshipctl
@@ -205,10 +205,9 @@ In order to ensure that all package unit tests follow the same standard and
 use the same frameworks, airshipctl has a document outlining
 [specific test guidelines][9] maintained separately.
 Moreover, there are few scripts in directory `tools/gate` which run different
-tests. The script [20_run_test_runner.sh][10] will generate airshipctl config
-file and verify cluster and kubectl version. The script
-[22_test_config.sh][11] will generate kube config, set airshipctl config and
-verify the cluster.
+tests. The script [20_run_gate_runner.sh][10] will generate airshipctl config
+file, deploy ephemeral cluster with infra and cluster API, deploy target cluster
+and verify all control pods.
 
 [1]: https://github.com/airshipit/airshipctl/blob/master/tools/gate/00_setup.sh
 [2]: https://quay.io/airshipit/airshipctl
@@ -219,8 +218,7 @@ verify the cluster.
 [7]: https://golang.org/doc/effective_go.html#formatting
 [8]: https://github.com/golang/go/wiki/CodeReviewComments
 [9]: https://github.com/airshipit/airshipctl/blob/master/docs/source/testing-guidelines.md
-[10]: https://github.com/airshipit/airshipctl/blob/master/tools/gate/20_run_test_runner.sh
-[11]: https://github.com/airshipit/airshipctl/blob/master/tools/gate/22_test_configs.sh
-[12]: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
-[13]: https://golang.org/doc/install
-[14]: https://docs.docker.com/get-docker/
+[10]: https://github.com/airshipit/airshipctl/blob/master/tools/gate/20_run_gate_runner.sh
+[11]: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
+[12]: https://golang.org/doc/install
+[13]: https://docs.docker.com/get-docker/
