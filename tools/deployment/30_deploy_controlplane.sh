@@ -18,6 +18,8 @@ TARGET_IMAGE_DIR="/srv/iso"
 EPHEMERAL_DOMAIN_NAME="air-ephemeral"
 TARGET_IMAGE_URL="https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img"
 export WAIT_TIMEOUT=${WAIT_TIMEOUT:-"2000s"}
+export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
+export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-context"}
 
 # TODO (dukov) this is needed due to sushy tools inserts cdrom image to
 # all vms. This can be removed once sushy tool is fixed
@@ -49,35 +51,9 @@ md5sum /srv/iso/target-image.qcow2 | cut -d ' ' -f 1 > ${TARGET_IMAGE_DIR}/targe
 echo "Create target k8s cluster resources"
 airshipctl phase apply controlplane --wait-timeout $WAIT_TIMEOUT --debug
 
-echo "Get kubeconfig from secret"
-KUBECONFIG=""
-N=0
-MAX_RETRY=6
-DELAY=10
-until [ "$N" -ge ${MAX_RETRY} ]
-do
-  KUBECONFIG=$(kubectl --request-timeout 10s --kubeconfig ${HOME}/.airship/kubeconfig \
-               get secret target-cluster-kubeconfig -o jsonpath='{.data.value}' || true)
-
-  if [[ ! -z "$KUBECONFIG" ]]; then
-      break
-  fi
-
-  N=$((N+1))
-  echo "$N: Retry to get kubeconfig from secret."
-  sleep ${DELAY}
-done
-
-if [[ -z "$KUBECONFIG" ]]; then
-  echo "Could not get kubeconfig from sceret."
-  exit 1
-fi
-
-echo "Create kubeconfig"
-echo ${KUBECONFIG} | base64 -d > /tmp/targetkubeconfig
-
-echo "Import target kubeconfig"
-airshipctl config import /tmp/targetkubeconfig
+echo "Switch context to target cluster and set manifest"
+airshipctl config use-context target-context
+airshipctl config set-context target-context --manifest dummy_manifest
 
 echo "Wait for apiserver to become available"
 N=0
@@ -85,7 +61,7 @@ MAX_RETRY=30
 DELAY=60
 until [ "$N" -ge ${MAX_RETRY} ]
 do
-  if timeout 20 kubectl --kubeconfig /tmp/targetkubeconfig get node; then
+  if timeout 20 kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get node; then
       break
   fi
 
@@ -100,7 +76,4 @@ if [ "$N" -ge ${MAX_RETRY} ]; then
 fi
 
 echo "List all pods"
-kubectl --kubeconfig /tmp/targetkubeconfig get pods --all-namespaces
-
-echo "Get cluster state"
-kubectl --kubeconfig ${HOME}/.airship/kubeconfig get cluster
+kubectl --kubeconfig  $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get pods --all-namespaces
