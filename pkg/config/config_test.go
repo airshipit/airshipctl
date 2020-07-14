@@ -279,6 +279,27 @@ func TestCurrentContextBootstrapInfo(t *testing.T) {
 	assert.Equal(t, conf.BootstrapInfo[defaultString], bootstrapInfo)
 }
 
+func TestCurrentContextManagementConfig(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	clusterName := "def"
+	clusterType := "ephemeral"
+
+	managementConfig, err := conf.CurrentContextManagementConfig()
+	require.Error(t, err)
+	assert.Nil(t, managementConfig)
+
+	conf.CurrentContext = currentContextName
+	conf.Clusters[clusterName].ClusterTypes[clusterType].ManagementConfiguration = defaultString
+	conf.Contexts[currentContextName].Manifest = defaultString
+	conf.Contexts[currentContextName].KubeContext().Cluster = clusterName
+
+	managementConfig, err = conf.CurrentContextManagementConfig()
+	require.NoError(t, err)
+	assert.Equal(t, conf.ManagementConfiguration[defaultString], managementConfig)
+}
+
 func TestPurge(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
@@ -839,4 +860,28 @@ func TestGetManifests(t *testing.T) {
 	require.NotNil(t, manifests)
 
 	assert.EqualValues(t, manifests[0].PrimaryRepositoryName, "primary")
+}
+
+func TestModifyManifests(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	mo := testutil.DummyManifestOptions()
+	manifest := conf.AddManifest(mo)
+	require.NotNil(t, manifest)
+
+	mo.TargetPath += stringDelta
+	err := conf.ModifyManifest(manifest, mo)
+	require.NoError(t, err)
+
+	mo.CommitHash = "11ded0"
+	mo.Tag = "v1.0"
+	err = conf.ModifyManifest(manifest, mo)
+	require.Error(t, err, "Checkout mutually exclusive, use either: commit-hash, branch or tag")
+
+	// error scenario
+	mo.RepoName = "invalid"
+	mo.URL = ""
+	err = conf.ModifyManifest(manifest, mo)
+	require.Error(t, err)
 }

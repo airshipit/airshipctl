@@ -1,0 +1,15 @@
+---
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  labels:
+    airshipit.org/ephemeral-node: "true"
+  name: master-0
+spec:
+  online: true
+  bootMACAddress: 00:3b:8b:0c:ec:8b
+  bmc:
+    credentialsName: master-0-bmc
+  networkData:
+    name: master-0-networkdata
+    namespace: metal3
