@@ -28,7 +28,7 @@ func TestDocHelpers(t *testing.T) {
 	require := require.New(t)
 	assert := assert.New(t)
 
-	fSys := testutil.SetupTestFs(t, "testdata/dochelper")
+	fSys := testutil.SetupTestFs(t, "testdata/dochelper/valid/")
 	bundle, err := document.NewBundle(fSys, "/")
 	require.NoError(err, "Building Bundle Failed")
 	require.NotNil(bundle)
@@ -41,7 +41,7 @@ func TestDocHelpers(t *testing.T) {
 
 		networkData, err := document.GetBMHNetworkData(doc, bundle)
 		require.NoError(err, "Unexpected error trying to GetBMHNetworkData")
-		assert.Equal(networkData, "some network data")
+		assert.Equal(networkData, "some network data\n")
 	})
 
 	t.Run("GetBMHBMCAddress", func(t *testing.T) {
@@ -65,5 +65,43 @@ func TestDocHelpers(t *testing.T) {
 		require.NoError(err, "Unexpected error trying to GetBMHBMCCredentials")
 		assert.Equal(bmcUsername, "username")
 		assert.Equal(bmcPassword, "password")
+	})
+}
+
+func TestDocHelpersNegativeCases(t *testing.T) {
+	require := require.New(t)
+
+	fSys := testutil.SetupTestFs(t, "testdata/dochelper/invalid/")
+	bundle, err := document.NewBundle(fSys, "/")
+	require.NoError(err, "Building Bundle Failed")
+	require.NotNil(bundle)
+
+	t.Run("GetBMHNetworkData", func(t *testing.T) {
+		selector := document.NewSelector().ByKind("BareMetalHost")
+		doc, err := bundle.SelectOne(selector)
+		require.NoError(err)
+
+		_, err = document.GetBMHNetworkData(doc, bundle)
+		require.Error(err)
+	})
+
+	t.Run("GetBMHBMCAddress", func(t *testing.T) {
+		// retrieve our single bmh in the dataset
+		selector := document.NewSelector().ByKind("BareMetalHost")
+		doc, err := bundle.SelectOne(selector)
+		require.NoError(err)
+
+		_, err = document.GetBMHBMCAddress(doc)
+		require.Error(err)
+	})
+
+	t.Run("GetBMHBMCCredentials", func(t *testing.T) {
+		// retrieve our single bmh in the dataset
+		selector := document.NewSelector().ByKind("BareMetalHost")
+		doc, err := bundle.SelectOne(selector)
+		require.NoError(err)
+
+		_, _, err = document.GetBMHBMCCredentials(doc, bundle)
+		require.Error(err)
 	})
 }

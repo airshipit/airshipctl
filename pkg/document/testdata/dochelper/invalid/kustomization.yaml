@@ -1,0 +1,3 @@
+resources:
+ - baremetalhost.yaml
+ - secret.yaml
