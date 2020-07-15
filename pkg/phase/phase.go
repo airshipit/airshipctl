@@ -15,6 +15,7 @@
 package phase
 
 import (
+	"fmt"
 	"path/filepath"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,12 +25,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
-)
-
-const (
-	// PhaseDirName directory for bundle with phases
-	// TODO (dukov) Remove this once repository metadata is ready
-	PhaseDirName = "phases"
 )
 
 var (
@@ -48,7 +43,12 @@ func (p *Cmd) getBundle() (document.Bundle, error) {
 	if err != nil {
 		return nil, err
 	}
-	return document.NewBundleByPath(filepath.Join(ccm.TargetPath, ccm.SubPath, PhaseDirName))
+	fmt.Printf("Target path is: %s", filepath.Join(ccm.TargetPath))
+	meta, err := p.Config.CurrentContextManifestMetadata()
+	if err != nil {
+		return nil, err
+	}
+	return document.NewBundleByPath(filepath.Join(ccm.TargetPath, meta.PhaseMeta.Path))
 }
 
 // GetPhase returns particular phase object identified by name
@@ -126,7 +126,7 @@ func (p *Cmd) Exec(name string) error {
 		return err
 	}
 
-	return executor.Run(p.DryRun, p.Debug)
+	return executor.Run(p.DryRun, p.Debug, true)
 }
 
 // Plan shows available phase names

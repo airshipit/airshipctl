@@ -23,7 +23,7 @@ import (
 
 // Executor interface should be implemented by each runner
 type Executor interface {
-	Run(dryrun, debug bool) error
+	Run(dryrun, debug, wait bool) error
 	Render(io.Writer) error
 	Validate() error
 	Wait() error

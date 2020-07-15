@@ -71,6 +71,7 @@ func TestPhasePlan(t *testing.T) {
 				m, err := s.Config.CurrentContextManifest()
 				require.NoError(t, err)
 				m.SubPath = "no_plan_site"
+				m.MetadataPath = "no_plan_site/metadata.yaml"
 				return s
 			},
 			expectedErr: document.ErrDocNotFound{

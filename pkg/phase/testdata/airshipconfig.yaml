@@ -27,6 +27,8 @@ kind: Config
 manifests:
   dummy_manifest:
     primaryRepositoryName: primary
+    targetPath: testdata
+    metadataPath: valid_site/metadata.yaml
     repositories:
       primary:
         auth:
@@ -39,6 +41,5 @@ manifests:
           tag: v1.0.1
         url: http://dummy.url.com/primary.git
     subPath: valid_site
-    targetPath: testdata
 users:
   dummy_user: {}
