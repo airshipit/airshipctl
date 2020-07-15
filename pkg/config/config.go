@@ -1088,7 +1088,7 @@ func (c *Config) CurrentContextManifestMetadata() (*Metadata, error) {
 		return nil, err
 	}
 	meta := &Metadata{}
-	err = util.ReadYAMLFile(manifest.MetadataPath, meta)
+	err = util.ReadYAMLFile(filepath.Join(manifest.TargetPath, manifest.MetadataPath), meta)
 	if err != nil {
 		return nil, err
 	}
