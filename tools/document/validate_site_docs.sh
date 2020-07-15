@@ -109,12 +109,14 @@ for cluster in ephemeral target; do
         sed -i "s/${CONTEXT}/${CONTEXT}_${cluster}/" ${AIRSHIPKUBECONFIG}
         generate_airshipconf ${cluster}
 
-        for phase in $(ls manifests/site/${SITE}/${cluster}| grep -v "\.yaml$"); do
+        ${ACTL} cluster init
+        phases="bootstrap initinfra "
+        ignore=$(for i in $phases; do echo "-I $i "; done)
+        phases+=$(ls $ignore manifests/site/${SITE}/${cluster}| grep -v "\.yaml$")
+        for phase in $phases; do
             echo -e "\n*** Rendering ${cluster}/${phase}"
 
             # step 1: actually apply all crds in the phase
-            # TODO: will need to loop through phases in order, eventually
-            # e.g., load CRDs from initinfra first, so they're present when validating later phases
             ${ACTL} phase render ${phase} -k CustomResourceDefinition > ${TMP}/crds.yaml
             if [ -s ${TMP}/crds.yaml ]; then
                 ${KUBECTL} --context ${CONTEXT} --kubeconfig ${KUBECONFIG} apply -f ${TMP}/crds.yaml
