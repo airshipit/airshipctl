@@ -42,7 +42,11 @@ func NewConfig() *Config {
 				},
 			},
 		},
-		Clusters:  make(map[string]*ClusterPurpose),
+		Clusters: make(map[string]*ClusterPurpose),
+		Permissions: Permissions{
+			DirectoryPermission: AirshipDefaultDirectoryPermission,
+			FilePermission:      AirshipDefaultFilePermission,
+		},
 		AuthInfos: make(map[string]*AuthInfo),
 		Contexts: map[string]*Context{
 			AirshipDefaultContext: {

@@ -42,6 +42,10 @@ func DummyConfig() *config.Config {
 		AuthInfos: map[string]*config.AuthInfo{
 			"dummy_user": DummyAuthInfo(),
 		},
+		Permissions: config.Permissions{
+			DirectoryPermission: config.AirshipDefaultDirectoryPermission,
+			FilePermission:      config.AirshipDefaultFilePermission,
+		},
 		BootstrapInfo: map[string]*config.Bootstrap{
 			"dummy_bootstrap_config": DummyBootstrapInfo(),
 		},

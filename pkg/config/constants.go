@@ -45,6 +45,8 @@ const (
 	AirshipConfigVersion                  = "v1alpha1"
 	AirshipDefaultBootstrapInfo           = "default"
 	AirshipDefaultContext                 = "default"
+	AirshipDefaultDirectoryPermission     = 0750
+	AirshipDefaultFilePermission          = 0640
 	AirshipDefaultManagementConfiguration = "default"
 	AirshipDefaultManifest                = "default"
 	AirshipDefaultManifestRepo            = "treasuremap"

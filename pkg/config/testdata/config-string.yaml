@@ -47,5 +47,8 @@ manifests:
         url: http://dummy.url.com/manifests.git
     subPath: manifests/site/test-site
     targetPath: /var/tmp/
+permissions:
+  DirectoryPermission: 488
+  FilePermission: 416
 users:
   dummy_user: {}

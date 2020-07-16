@@ -52,6 +52,9 @@ type Config struct {
 	// AuthInfos is a map of referenceable names to user configs
 	AuthInfos map[string]*AuthInfo `json:"users"`
 
+	// Permissions is a struct of permissions for file and directory
+	Permissions Permissions `json:"permissions,omitempty"`
+
 	// Contexts is a map of referenceable names to context configs
 	Contexts map[string]*Context `json:"contexts"`
 
@@ -79,6 +82,12 @@ type Config struct {
 
 	// Private instance of Kube Config content as an object
 	kubeConfig *clientcmdapi.Config
+}
+
+// Permissions has the permissions for file and directory
+type Permissions struct {
+	DirectoryPermission uint32
+	FilePermission      uint32
 }
 
 // LoadConfig populates the Config object using the files found at
@@ -418,13 +427,25 @@ func (c *Config) PersistConfig() error {
 
 	// WriteFile doesn't create the directory, create it if needed
 	configDir := filepath.Dir(c.loadedConfigPath)
-	err = os.MkdirAll(configDir, 0755)
+	err = os.MkdirAll(configDir, os.FileMode(c.Permissions.DirectoryPermission))
 	if err != nil {
 		return err
 	}
 
 	// Write the Airship Config file
-	err = ioutil.WriteFile(c.loadedConfigPath, airshipConfigYaml, 0600)
+	err = ioutil.WriteFile(c.loadedConfigPath, airshipConfigYaml, os.FileMode(c.Permissions.FilePermission))
+	if err != nil {
+		return err
+	}
+
+	// Change the permission of directory
+	err = os.Chmod(configDir, os.FileMode(c.Permissions.DirectoryPermission))
+	if err != nil {
+		return err
+	}
+
+	// Change the permission of config file
+	err = os.Chmod(c.loadedConfigPath, os.FileMode(c.Permissions.FilePermission))
 	if err != nil {
 		return err
 	}
