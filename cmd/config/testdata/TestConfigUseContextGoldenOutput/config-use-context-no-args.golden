@@ -4,7 +4,7 @@ Usage:
 
 Examples:
 
-# Switch to a context named "exampleContext"
+# Switch to a context named "exampleContext" in airshipctl config file
 airshipctl config use-context exampleContext
 
 

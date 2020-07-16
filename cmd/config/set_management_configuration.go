@@ -88,7 +88,7 @@ func NewSetManagementConfigCommand(rootSettings *environment.AirshipCTLSettings)
 				return nil
 			}
 
-			if err = rootSettings.Config.PersistConfig(); err != nil {
+			if err = rootSettings.Config.PersistConfig(true); err != nil {
 				return err
 			}
 

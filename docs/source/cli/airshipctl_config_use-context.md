@@ -5,6 +5,7 @@ Switch to a different context
 ### Synopsis
 
 Switch to a different context defined in the airshipctl config file.
+This command doesn't change a context for the kubeconfig file.
 
 
 ```
@@ -15,7 +16,7 @@ airshipctl config use-context NAME [flags]
 
 ```
 
-# Switch to a context named "exampleContext"
+# Switch to a context named "exampleContext" in airshipctl config file
 airshipctl config use-context exampleContext
 
 ```
