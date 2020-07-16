@@ -187,6 +187,63 @@ func TestDocument(t *testing.T) {
 			assert.Equal(labelList["test-label"], "test-label-value")
 		}
 	})
+
+	t.Run("GetGroup", func(t *testing.T) {
+		doc, err := bundle.GetByName("some-random-deployment-we-will-filter")
+		require.NoError(err, "Unexpected error trying to GetByName")
+		group := doc.GetGroup()
+		require.NotNil(group)
+		assert.Equal(group, "apps")
+	})
+
+	t.Run("GetVersion", func(t *testing.T) {
+		doc, err := bundle.GetByName("some-random-deployment-we-will-filter")
+		require.NoError(err, "Unexpected error trying to GetByName")
+		version := doc.GetVersion()
+		require.NotNil(version)
+		assert.Equal(version, "v1")
+	})
+
+	t.Run("GetBool", func(t *testing.T) {
+		doc, err := bundle.GetByName("some-random-deployment-we-will-filter")
+		require.NoError(err, "Unexpected error trying to GetByName")
+		boolValue, err := doc.GetBool("spec.template.spec.containers[0].env[0].value")
+		require.NoError(err, "Unexpected error trying to GetBool from document")
+		assert.Equal(boolValue, false)
+	})
+
+	t.Run("GetFloat64", func(t *testing.T) {
+		doc, err := bundle.GetByName("some-random-deployment-we-will-filter")
+		require.NoError(err, "Unexpected error trying to GetByName")
+		floatValue, err := doc.GetFloat64("spec.template.spec.containers[0].env[1].value")
+		require.NoError(err, "Unexpected error trying to GetFloat from document")
+		assert.Equal(floatValue, float64(1.012))
+	})
+
+	t.Run("GetInt64", func(t *testing.T) {
+		doc, err := bundle.GetByName("some-random-deployment-we-will-filter")
+		require.NoError(err, "Unexpected error trying to GetByName")
+		intValue, err := doc.GetInt64("spec.template.spec.containers[0].env[2].value")
+		require.NoError(err, "Unexpected error trying to GetInt from document")
+		assert.Equal(intValue, int64(1000))
+	})
+
+	t.Run("GetSlice", func(t *testing.T) {
+		doc, err := bundle.GetByName("some-random-deployment-we-will-filter")
+		require.NoError(err, "Unexpected error trying to GetByName")
+		s := []interface{}{"foobar"}
+		gotSlice, err := doc.GetSlice("spec.template.spec.containers[0].args")
+		require.NoError(err, "Unexpected error trying to GetSlice")
+		assert.Equal(s, gotSlice)
+	})
+
+	t.Run("GetMap", func(t *testing.T) {
+		doc, err := bundle.GetByName("some-random-deployment-we-will-filter")
+		require.NoError(err, "Unexpected error trying to GetByName")
+		gotMap, err := doc.GetMap("spec.template.spec.containers[0].env[0]")
+		require.NoError(err, "Unexpected error trying to GetMap")
+		assert.NotNil(gotMap)
+	})
 }
 
 func TestNewDocumentFromBytes(t *testing.T) {

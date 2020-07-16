@@ -20,5 +20,12 @@ spec:
         - foobar
         command:
         - somecommand
+        env:
+        - name: BOOL_FLAG
+          value: false
+        - name: FLOAT64_FLAG
+          value: 1.012
+        - name: INT64_FLAG
+          value: 1000
         image: someimage
         name: some-random-deployment-we-will-filter
