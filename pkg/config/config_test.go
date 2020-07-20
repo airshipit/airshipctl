@@ -594,7 +594,7 @@ func TestCurrentContextManifestMetadata(t *testing.T) {
 	}{
 		{
 			name:           "default metadata",
-			metaPath:       "testdata/metadata.yaml",
+			metaPath:       "metadata.yaml",
 			expectErr:      false,
 			currentContext: "testContext",
 			meta: &config.Metadata{
@@ -630,7 +630,7 @@ func TestCurrentContextManifestMetadata(t *testing.T) {
 			}
 			manifest := &config.Manifest{
 				MetadataPath: tt.metaPath,
-				TargetPath:   ".",
+				TargetPath:   "testdata",
 			}
 			conf.Manifests = map[string]*config.Manifest{
 				"testManifest": manifest,
