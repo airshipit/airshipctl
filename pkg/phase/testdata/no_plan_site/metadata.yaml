@@ -1,0 +1,4 @@
+inventory:
+  path: "manifests/site/inventory"
+phase:
+  path: "no_plan_site/phases"
