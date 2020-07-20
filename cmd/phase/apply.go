@@ -17,10 +17,11 @@ limitations under the License.
 package phase
 
 import (
+	"time"
+
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/environment"
-	"opendev.org/airship/airshipctl/pkg/k8s/client"
 	"opendev.org/airship/airshipctl/pkg/phase/apply"
 )
 
@@ -35,9 +36,10 @@ airshipctl phase apply initinfra
 )
 
 // NewApplyCommand creates a command to apply phase to k8s cluster.
-func NewApplyCommand(rootSettings *environment.AirshipCTLSettings, factory client.Factory) *cobra.Command {
-	i := apply.NewOptions(rootSettings)
-
+func NewApplyCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+	i := &apply.Options{
+		RootSettings: rootSettings,
+	}
 	applyCmd := &cobra.Command{
 		Use:     "apply PHASE_NAME",
 		Short:   "Apply phase to a cluster",
@@ -46,12 +48,7 @@ func NewApplyCommand(rootSettings *environment.AirshipCTLSettings, factory clien
 		Example: applyExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			i.PhaseName = args[0]
-			client, err := factory(rootSettings)
-			if err != nil {
-				return err
-			}
-			i.Client = client
-
+			i.Initialize()
 			return i.Run()
 		},
 	}
@@ -73,4 +70,10 @@ func addApplyFlags(i *apply.Options, cmd *cobra.Command) {
 		false,
 		`if set to true, command will delete all kubernetes resources that are not`+
 			` defined in airship documents and have airshipit.org/deployed=apply label`)
+
+	flags.DurationVar(
+		&i.WaitTimeout,
+		"wait-timeout",
+		time.Second*120,
+		`number of seconds to wait for resources to become ready, if set to 0 will not wait`)
 }

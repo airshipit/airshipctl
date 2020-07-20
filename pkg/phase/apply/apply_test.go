@@ -15,19 +15,19 @@
 package apply_test
 
 import (
-	"errors"
+	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
-	"opendev.org/airship/airshipctl/pkg/k8s/client"
-	"opendev.org/airship/airshipctl/pkg/k8s/client/fake"
-	"opendev.org/airship/airshipctl/pkg/k8s/kubectl"
+	"opendev.org/airship/airshipctl/pkg/k8s/applier"
 	"opendev.org/airship/airshipctl/pkg/phase/apply"
 	"opendev.org/airship/airshipctl/testutil"
 	"opendev.org/airship/airshipctl/testutil/k8sutils"
@@ -38,12 +38,7 @@ const (
 	airshipConfigFile = "testdata/config.yaml"
 )
 
-var (
-	ErrDynamicClientError = errors.New("ErrDynamicClientError")
-)
-
 func TestDeploy(t *testing.T) {
-	rs := makeNewFakeRootSettings(t, kubeconfigPath, airshipConfigFile)
 	bundle := testutil.NewTestBundle(t, "testdata/primary/site/test-site/ephemeral/initinfra")
 	replicationController, err := bundle.SelectOne(document.NewSelector().ByKind("ReplicationController"))
 	require.NoError(t, err)
@@ -61,44 +56,61 @@ func TestDeploy(t *testing.T) {
 			},
 		})
 	defer f.Cleanup()
-
-	ao := apply.NewOptions(rs)
-	ao.PhaseName = "initinfra"
-	ao.DryRun = true
-
-	kctl := kubectl.NewKubectl(f)
-
 	tests := []struct {
-		theApplyOptions *apply.Options
-		client          client.Interface
-		prune           bool
-		expectedError   error
+		name                string
+		expectedErrorString string
+		cliApplier          *applier.Applier
+		clusterPurposes     map[string]*config.ClusterPurpose
+		phaseName           string
 	}{
 		{
-
-			client: fake.NewClient(fake.WithKubectl(
-				kubectl.NewKubectl(k8sutils.
-					NewMockKubectlFactory().
-					WithDynamicClientByError(nil, ErrDynamicClientError)))),
-			expectedError: ErrDynamicClientError,
+			name:                "success",
+			expectedErrorString: "",
+			cliApplier: applier.NewFakeApplier(genericclioptions.IOStreams{
+				In:     os.Stdin,
+				Out:    os.Stdout,
+				ErrOut: os.Stderr,
+			}, k8sutils.SuccessEvents(), f),
 		},
 		{
-			expectedError: nil,
-			prune:         false,
-			client:        fake.NewClient(fake.WithKubectl(kctl)),
+			name:                "missing clusters",
+			expectedErrorString: "At least one cluster needs to be defined",
+			clusterPurposes:     map[string]*config.ClusterPurpose{},
 		},
 		{
-			expectedError: nil,
-			prune:         true,
-			client:        fake.NewClient(fake.WithKubectl(kctl)),
+			name:                "missing phase",
+			expectedErrorString: "Phase document 'missingPhase' was not found",
+			phaseName:           "missingPhase",
 		},
 	}
 
-	for _, test := range tests {
-		ao.Prune = test.prune
-		ao.Client = test.client
-		actualErr := ao.Run()
-		assert.Equal(t, test.expectedError, actualErr)
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			rs := makeNewFakeRootSettings(t, kubeconfigPath, airshipConfigFile)
+			ao := &apply.Options{
+				RootSettings: rs,
+			}
+			ao.Initialize()
+			ao.PhaseName = "initinfra"
+			ao.DryRun = true
+			if tt.cliApplier != nil {
+				ao.Applier = tt.cliApplier
+			}
+			if tt.clusterPurposes != nil {
+				ao.RootSettings.Config.Clusters = tt.clusterPurposes
+			}
+			if tt.phaseName != "" {
+				ao.PhaseName = tt.phaseName
+			}
+			actualErr := ao.Run()
+			if tt.expectedErrorString != "" {
+				require.Error(t, actualErr)
+				assert.Contains(t, actualErr.Error(), tt.expectedErrorString)
+			} else {
+				assert.NoError(t, actualErr)
+			}
+		})
 	}
 }
 
