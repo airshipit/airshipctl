@@ -35,6 +35,53 @@ const (
 	HTTPBasic = "http-basic"
 )
 
+// Repository struct holds the information for the remote sources of manifest yaml documents.
+// Information such as location, authentication info,
+// as well as details of what to get such as branch, tag, commit it, etc.
+type Repository struct {
+	// URLString for Repository
+	URLString string `json:"url"`
+	// Auth holds authentication options against remote
+	Auth *RepoAuth `json:"auth,omitempty"`
+	// CheckoutOptions holds options to checkout repository
+	CheckoutOptions *RepoCheckout `json:"checkout,omitempty"`
+}
+
+// RepoAuth struct describes method of authentication against given repository
+type RepoAuth struct {
+	// Type of authentication method to be used with given repository
+	// supported types are "ssh-key", "ssh-pass", "http-basic"
+	Type string `json:"type,omitempty"`
+	//KeyPassword is a password decrypt ssh private key (used with ssh-key auth type)
+	KeyPassword string `json:"keyPass,omitempty"`
+	// KeyPath is path to private ssh key on disk (used with ssh-key auth type)
+	KeyPath string `json:"sshKey,omitempty"`
+	//HTTPPassword is password for basic http authentication (used with http-basic auth type)
+	HTTPPassword string `json:"httpPass,omitempty"`
+	// SSHPassword is password for ssh password authentication (used with ssh-pass)
+	SSHPassword string `json:"sshPass,omitempty"`
+	// Username to authenticate against git remote (used with any type)
+	Username string `json:"username,omitempty"`
+}
+
+// RepoCheckout container holds information how to checkout repository
+// Each field is mutually exclusive
+type RepoCheckout struct {
+	// CommitHash is full hash of the commit that will be used to checkout
+	CommitHash string `json:"commitHash"`
+	// Branch is the branch name to checkout
+	Branch string `json:"branch"`
+	// Tag is the tag name to checkout
+	Tag string `json:"tag"`
+	// RemoteRef is not supported currently TODO
+	// RemoteRef is used for remote checkouts such as gerrit change requests/github pull request
+	// for example refs/changes/04/691202/5
+	// TODO Add support for fetching remote refs
+	RemoteRef string `json:"remoteRef,omitempty"`
+	// ForceCheckout is a boolean to indicate whether to use the `--force` option when checking out
+	ForceCheckout bool `json:"force"`
+}
+
 // RepoCheckout methods
 
 func (c *RepoCheckout) String() string {

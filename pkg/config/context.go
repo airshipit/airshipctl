@@ -26,7 +26,7 @@ import (
 // Context is a tuple of references to a cluster (how do I communicate with a kubernetes context),
 // a user (how do I identify myself), and a namespace (what subset of resources do I want to work with)
 type Context struct {
-	// Context name in kubeconf
+	// NameInKubeconf is the Context name in kubeconf
 	NameInKubeconf string `json:"contextKubeconf"`
 
 	// Manifest is the default manifest to be use with this context

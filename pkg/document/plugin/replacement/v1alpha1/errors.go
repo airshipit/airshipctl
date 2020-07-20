@@ -26,6 +26,7 @@ import (
 // is raised if JSON path element points to a wrong data structure e.g.
 // JSON path 'a.b[x=y]c' considers that there is a list of maps under key 'b'
 // therefore ErrTypeMismatch will be returned for following structure
+//
 // a:
 //   b:
 //     - 'some string'
