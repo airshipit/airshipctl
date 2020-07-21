@@ -1,7 +1,0 @@
-resources:
-  - cert-manager.io_certificaterequests.yaml
-  - cert-manager.io_certificates.yaml
-  - cert-manager.io_challenges.yaml
-  - cert-manager.io_clusterissuers.yaml
-  - cert-manager.io_issuers.yaml
-  - cert-manager.io_orders.yaml
