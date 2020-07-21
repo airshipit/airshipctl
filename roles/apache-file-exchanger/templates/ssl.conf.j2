@@ -4,7 +4,7 @@
 {% if file_exchanger_https_port != 443 %}
   Listen {{ file_exchanger_https_port }}
 {% endif %}
-  <VirtualHost {{ file_exchanger_ip | default(['*']) | ipwrap | map('regex_replace', '(.*)', '\\1:{}'.format(file_exchanger_https_port)) | list | join(' ') }}>
+  <VirtualHost {{ file_exchanger_ip | default(['*']) | ipwrap | map('regex_replace', '^(.*)$', '\\1:{}'.format(file_exchanger_https_port)) | list | join(' ') }}>
      # Add machine's IP address (use ifconfig command)
 {% if file_exchanger_user is defined and file_exchanger_user != None %}
      <Directory /var/www/file_exchanger_cgi-bin/>

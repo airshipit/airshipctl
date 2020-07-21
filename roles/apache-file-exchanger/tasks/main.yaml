@@ -101,7 +101,7 @@
         apache_server_ssl_key_path: "/etc/ssl/private/{{ file_exchanger_name }}.key"
         apache_server_ssl_cert_path: "/etc/ssl/certs/{{ file_exchanger_name }}.pem"
         apache_server_ssl_cn: "{{ file_exchanger_servername }}"
-        apache_server_ssl_alt_name: "{{ file_exchanger_ip | map('regex_replace', '(.*)', 'IP:\\1') | list }}"
+        apache_server_ssl_alt_name: "{{ file_exchanger_ip | map('regex_replace', '^(.*)$', 'IP:\\1') | list }}"
 
     - name: Generate certs for case without alt_names
       when: file_exchanger_ip is undefined or file_exchanger_ip == None

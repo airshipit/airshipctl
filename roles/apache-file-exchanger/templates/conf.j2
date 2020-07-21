@@ -3,7 +3,7 @@
 {% if file_exchanger_http_port != 80 %}
 Listen {{ file_exchanger_http_port }}
 {% endif %}
-<VirtualHost {{ file_exchanger_ip | default(['*']) | ipwrap | map('regex_replace', '(.*)', '\\1:{}'.format(file_exchanger_http_port)) | list | join(' ') }}>
+<VirtualHost {{ file_exchanger_ip | default(['*']) | ipwrap | map('regex_replace', '^(.*)$', '\\1:{}'.format(file_exchanger_http_port)) | list | join(' ') }}>
      # Add machine's IP address (use ifconfig command)
      ServerName {{ file_exchanger_servername }}
 

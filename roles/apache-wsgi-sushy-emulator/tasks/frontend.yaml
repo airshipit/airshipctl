@@ -68,7 +68,7 @@
         apache_server_ssl_key_path: "/etc/ssl/private/{{ sushy_emulator_frontend_name }}.key"
         apache_server_ssl_cert_path: "/etc/ssl/certs/{{ sushy_emulator_frontend_name }}.pem"
         apache_server_ssl_cn: "{{ sushy_emulator_frontend_servername }}"
-        apache_server_ssl_alt_name: "{{ sushy_emulator_frontend_ip | map('regex_replace', '(.*)', 'IP:\\1') | list }}"
+        apache_server_ssl_alt_name: "{{ sushy_emulator_frontend_ip | map('regex_replace', '^(.*)$', 'IP:\\1') | list }}"
 
     - name: Generate certs for case without alt_names
       when: sushy_emulator_frontend_ip is undefined
@@ -111,7 +111,7 @@
   - name: Check without auth
     when: sushy_emulator_frontend_user is undefined
     uri:
-      url: http://{{ sushy_emulator_frontend_servername }}:{{sushy_emulator_frontend_http_port }}/redfish/v1/Systems?format=json
+      url: http://{{ sushy_emulator_frontend_servername }}:{{ sushy_emulator_frontend_http_port }}/redfish/v1/Systems?format=json
       method: GET
       return_content: yes
     register: sushy_get_result
@@ -122,7 +122,7 @@
   - name: Check with auth
     when: sushy_emulator_frontend_user is defined
     uri:
-      url: http://{{ sushy_emulator_frontend_servername }}:{{sushy_emulator_frontend_http_port }}/redfish/v1/Systems?format=json
+      url: http://{{ sushy_emulator_frontend_servername }}:{{ sushy_emulator_frontend_http_port }}/redfish/v1/Systems?format=json
       url_username: "{{ sushy_emulator_frontend_user[0].username }}"
       url_password: "{{  sushy_emulator_frontend_user[0].password }}"
       method: GET
@@ -134,14 +134,14 @@
   - name: Check without auth
     when: sushy_emulator_frontend_user is undefined
     uri:
-      url: https://{{ sushy_emulator_frontend_servername }}:{{sushy_emulator_frontend_https_port }}/redfish/v1/Systems?format=json
+      url: https://{{ sushy_emulator_frontend_servername }}:{{ sushy_emulator_frontend_https_port }}/redfish/v1/Systems?format=json
       method: GET
       validate_certs: false
       return_content: yes
   - name: Check with auth
     when: sushy_emulator_frontend_user is defined
     uri:
-      url: https://{{ sushy_emulator_frontend_servername }}:{{sushy_emulator_frontend_https_port }}/redfish/v1/Systems?format=json
+      url: https://{{ sushy_emulator_frontend_servername }}:{{ sushy_emulator_frontend_https_port }}/redfish/v1/Systems?format=json
       url_username: "{{ sushy_emulator_frontend_user[0].username }}"
       url_password: "{{  sushy_emulator_frontend_user[0].password }}"
       validate_certs: false
