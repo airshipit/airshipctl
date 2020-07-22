@@ -42,8 +42,8 @@ export AIRSHIP_CONFIG_EPHEMERAL_IP=${IP_Ephemeral:-"10.23.25.101"}
 export AIRSHIP_CONFIG_CLIENT_CERT_DATA=$(cat tools/deployment/certificates/airship_config_client_cert_data| base64 -w0)
 export AIRSHIP_CONFIG_CLIENT_KEY_DATA=$(cat tools/deployment/certificates/airship_config_client_key_data| base64 -w0)
 
-#Remove and Create .airship folder
-rm -rf $HOME/.airship
+# Remove the contents of the .airship folder, preserving the kustomize plugin directory
+rm -rf $HOME/.airship/*config*
 mkdir -p $HOME/.airship
 
 echo "Generate ~/.airship/config and ~/.airship/kubeconfig"

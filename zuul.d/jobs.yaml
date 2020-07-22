@@ -90,7 +90,7 @@
       site_name: test-site
       gate_scripts:
         - ./tools/deployment/01_install_kubectl.sh
-        - ./tools/deployment/21_systemwide_executable.sh
+        # 21_systemwide_executable.sh is run in the build-gate pre-run above
         - ./tools/deployment/22_test_configs.sh
         - ./tools/deployment/24_build_ephemeral_iso.sh
         - ./tools/deployment/25_deploy_ephemeral_node.sh

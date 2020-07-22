@@ -36,6 +36,12 @@
       include_role:
         name: install-kustomize
 
+    # Installs kustomize plugin functionality needed for rendering below
+    - name: install airshipctl
+      shell: |
+        cd {{ local_src_dir | default(zuul.project.src_dir) }}
+        ./tools/deployment/21_systemwide_executable.sh
+
     - name: make sure serve directory exists
       file:
         dest: "{{ serve_dir }}"
@@ -57,22 +63,26 @@
         - name: get BareMetalHost objects
           shell: |
             set -e
-            kustomize build {{ airship_config_manifest_directory }}/{{ airship_config_site_path }}/ephemeral/controlplane |
+            kustomize build --enable_alpha_plugins \
+              {{ airship_config_manifest_directory }}/{{ airship_config_site_path }}/ephemeral/controlplane |
             kustomize config grep  "kind=BareMetalHost"
           register: bmh_command
           failed_when: "bmh_command.stdout == ''"
           environment:
+            KUSTOMIZE_PLUGIN_HOME: "{{ ansible_env.HOME }}/.airship/kustomize-plugins"
             KUSTOMIZE_ENABLE_ALPHA_COMMANDS: "true"
         - set_fact:
             bmh: "{{ bmh_command.stdout | from_yaml_all | list }}"
         - name: get network configuration for BareMetalHost objects
           shell: |
             set -e
-            kustomize build {{ airship_config_manifest_directory }}/{{ airship_config_site_path }}/ephemeral/controlplane |
+            kustomize build --enable_alpha_plugins \
+              {{ airship_config_manifest_directory }}/{{ airship_config_site_path }}/ephemeral/controlplane |
             kustomize config grep  "metadata.name={{ item.spec.networkData.name }}"
           register: netdata_command
           failed_when: "netdata_command.stdout == ''"
           environment:
+            KUSTOMIZE_PLUGIN_HOME: "{{ ansible_env.HOME }}/.airship/kustomize-plugins"
             KUSTOMIZE_ENABLE_ALPHA_COMMANDS: "true"
           with_items: "{{ bmh }}"
         - name: get links from network data per BareMetalHost object
@@ -81,7 +91,7 @@
               {{
                 netdata_command.results |
                   map(attribute='stdout')| map('from_yaml') |
-                  map(attribute='data.networkData') | map('b64decode') | map('from_yaml') |
+                  map(attribute='stringData.networkData') | map('from_yaml') |
                   map(attribute='links') | list
               }}
         - name: define list of VM mac addresses

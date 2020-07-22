@@ -79,6 +79,39 @@ apiVersion: airshipit.org/v1alpha1
 kind: Templater
 metadata:
   name: notImportantHere
+values:
+  test:
+    of:
+      - toYaml
+template: |
+  {{ toYaml . -}}
+`,
+			expectedOut: `test:
+  of:
+  - toYaml
+`,
+		},
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: Templater
+metadata:
+  name: notImportantHere
+values:
+  test:
+    of:
+      - badToYamlInput
+template: |
+  {{ toYaml ignorethisbadinput -}}
+`,
+			expectedOut: ``,
+		},
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: Templater
+metadata:
+  name: notImportantHere
 template: |
   {{ end }`,
 			expectedErr: "template: tmpl:1: unexpected \"}\" in end",

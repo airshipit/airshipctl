@@ -114,16 +114,21 @@ for cluster in ephemeral target; do
         ignore=$(for i in $phases; do echo "-I $i "; done)
         phases+=$(ls $ignore manifests/site/${SITE}/${cluster}| grep -v "\.yaml$")
         for phase in $phases; do
-            echo -e "\n*** Rendering ${cluster}/${phase}"
+            # Guard against bootstrap or initinfra being missing, which could be the case for some configs
+            if [ -d "manifests/site/${SITE}/${cluster}/${phase}" ]; then
+                echo -e "\n*** Rendering ${cluster}/${phase}"
 
-            # step 1: actually apply all crds in the phase
-            ${ACTL} phase render ${phase} -k CustomResourceDefinition > ${TMP}/crds.yaml
-            if [ -s ${TMP}/crds.yaml ]; then
-                ${KUBECTL} --context ${CONTEXT} --kubeconfig ${KUBECONFIG} apply -f ${TMP}/crds.yaml
+                # step 1: actually apply all crds in the phase
+                # TODO: will need to loop through phases in order, eventually
+                # e.g., load CRDs from initinfra first, so they're present when validating later phases
+                ${ACTL} phase render ${phase} -k CustomResourceDefinition > ${TMP}/crds.yaml
+                if [ -s ${TMP}/crds.yaml ]; then
+                    ${KUBECTL} --context ${CONTEXT} --kubeconfig ${KUBECONFIG} apply -f ${TMP}/crds.yaml
+                fi
+
+                # step 2: dry-run the entire phase
+                ${ACTL} phase apply --dry-run ${phase}
             fi
-
-            # step 2: dry-run the entire phase
-            ${ACTL} phase apply --dry-run ${phase}
         done
     fi
 done
