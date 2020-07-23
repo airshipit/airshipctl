@@ -96,12 +96,19 @@ users:
 EOL
 }
 
+function cleanup() {
+    ${KIND} delete cluster --name airship
+    rm -rf ${TMP}
+}
+trap cleanup EXIT
+
 # Loop over all cluster types and phases for the given site
 for cluster in ephemeral target; do
-    # Clear out any CRDs left from testing of a previous cluster
-    ${KUBECTL} --context ${CONTEXT} --kubeconfig ${KUBECONFIG} delete crd --all > /dev/null
-
     if [[ -d "manifests/site/${SITE}/${cluster}" ]]; then
+        echo -e "\n**** Rendering phases for cluster: ${cluster}"
+        # Start a fresh, empty kind cluster for validating documents
+        ./tools/document/start_kind.sh
+
         # Since we'll be mucking with the kubeconfig - make a copy of it and muck with the copy
         cp ${KUBECONFIG} ${AIRSHIPKUBECONFIG}
         # This is a big hack to work around kubeconfig reconciliation
@@ -110,9 +117,13 @@ for cluster in ephemeral target; do
         generate_airshipconf ${cluster}
 
         ${ACTL} cluster init
-        phases="bootstrap initinfra "
-        ignore=$(for i in $phases; do echo "-I $i "; done)
-        phases+=$(ls $ignore manifests/site/${SITE}/${cluster}| grep -v "\.yaml$")
+
+        # A sequential list of potential phases.  A fancier attempt at this has been
+        # removed since it was choking in certain cases and got to be more trouble than was worth.
+        # This should be removed once we have a phase map that is smarter.
+        # In the meantime, as new phases are added, please add them here as well.
+        phases="bootstrap initinfra controlplane baremetalhost workers workload tenant"
+
         for phase in $phases; do
             # Guard against bootstrap or initinfra being missing, which could be the case for some configs
             if [ -d "manifests/site/${SITE}/${cluster}/${phase}" ]; then
@@ -130,5 +141,7 @@ for cluster in ephemeral target; do
                 ${ACTL} phase apply --dry-run ${phase}
             fi
         done
+
+        ${KIND} delete cluster --name airship
     fi
 done
