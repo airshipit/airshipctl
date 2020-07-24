@@ -52,7 +52,7 @@ func TestGetManifestConfigCmd(t *testing.T) {
 			Name:    "missing",
 			CmdLine: "manifestMissing",
 			Cmd:     cmd.NewGetManifestCommand(settings),
-			Error:   fmt.Errorf("Missing configuration: Manifest with name 'manifestMissing'"),
+			Error:   fmt.Errorf("missing configuration: Manifest with name 'manifestMissing'"),
 		},
 		{
 			Name:    "no-manifests",

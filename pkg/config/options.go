@@ -177,7 +177,7 @@ func (o *ManifestOptions) Validate() error {
 		return fmt.Errorf("you must specify a non-empty Manifest name")
 	}
 	if o.RemoteRef != "" {
-		return fmt.Errorf("Repository checkout by RemoteRef is not yet implemented\n%w", errors.ErrNotImplemented{})
+		return fmt.Errorf("repository checkout by RemoteRef is not yet implemented\n%w", errors.ErrNotImplemented{})
 	}
 	if o.IsPrimary && o.RepoName == "" {
 		return ErrMissingRepositoryName{}
