@@ -14,7 +14,14 @@
 
 set -e
 
-: ${PROJECT_ROOT:=${PWD}}
+# The root of the manifest structure to be validated.
+# This corresponds to the targetPath in an airshipctl config
+: ${MANIFEST_ROOT:="${PWD}"}
+# The location of sites whose manifests should be validated.
+# This are relative to MANIFEST_ROOT above, and correspond to
+# the base of the subPath in an airshipctl config
+: ${SITE_ROOT:="manifests/site"}
+
 : ${SITE:="test-workload"}
 : ${CONTEXT:="kind-airship"}
 : ${KUBECONFIG:="${HOME}/.airship/kubeconfig"}
@@ -89,8 +96,8 @@ manifests:
           force: false
           tag: ""
         url: https://opendev.org/airship/treasuremap
-    subPath: manifests/site/${SITE}
-    targetPath: .
+    subPath: ${SITE_ROOT}/${SITE}
+    targetPath: ${MANIFEST_ROOT}
 users:
   ${CONTEXT}_${cluster}: {}
 EOL
@@ -104,7 +111,7 @@ trap cleanup EXIT
 
 # Loop over all cluster types and phases for the given site
 for cluster in ephemeral target; do
-    if [[ -d "manifests/site/${SITE}/${cluster}" ]]; then
+    if [[ -d "${MANIFEST_ROOT}/${SITE_ROOT}/${SITE}/${cluster}" ]]; then
         echo -e "\n**** Rendering phases for cluster: ${cluster}"
         # Start a fresh, empty kind cluster for validating documents
         ./tools/document/start_kind.sh
@@ -126,7 +133,7 @@ for cluster in ephemeral target; do
 
         for phase in $phases; do
             # Guard against bootstrap or initinfra being missing, which could be the case for some configs
-            if [ -d "manifests/site/${SITE}/${cluster}/${phase}" ]; then
+            if [ -d "${MANIFEST_ROOT}/${SITE_ROOT}/${SITE}/${cluster}/${phase}" ]; then
                 echo -e "\n*** Rendering ${cluster}/${phase}"
 
                 # step 1: actually apply all crds in the phase
