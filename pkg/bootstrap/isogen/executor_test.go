@@ -104,9 +104,10 @@ func TestExecutorRun(t *testing.T) {
 		{
 			name: "Run isogen successfully",
 			builder: &mockContainer{
-				runCommand:  func() error { return nil },
-				getID:       func() string { return "TESTID" },
-				rmContainer: func() error { return nil },
+				runCommand:        func() error { return nil },
+				getID:             func() string { return "TESTID" },
+				rmContainer:       func() error { return nil },
+				waitUntilFinished: func() error { return nil },
 			},
 			expectedEvt: []events.Event{
 				{

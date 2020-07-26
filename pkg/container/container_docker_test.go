@@ -260,7 +260,7 @@ func TestImagePull(t *testing.T) {
 
 func TestGetId(t *testing.T) {
 	cnt := getDockerContainerMock(mockDockerClient{})
-	err := cnt.RunCommand([]string{"testCmd"}, nil, nil, []string{}, false)
+	err := cnt.RunCommand([]string{"testCmd"}, nil, nil, []string{})
 	require.NoError(t, err)
 	actualID := cnt.GetID()
 
@@ -278,7 +278,8 @@ func TestRunCommand(t *testing.T) {
 		volumeMounts     []string
 		debug            bool
 		mockDockerClient mockDockerClient
-		expectedErr      error
+		expectedRunErr   error
+		expectedWaitErr  error
 		assertF          func(*testing.T)
 	}{
 		{
@@ -287,7 +288,8 @@ func TestRunCommand(t *testing.T) {
 			volumeMounts:     nil,
 			debug:            false,
 			mockDockerClient: mockDockerClient{},
-			expectedErr:      nil,
+			expectedRunErr:   nil,
+			expectedWaitErr:  nil,
 			assertF:          func(t *testing.T) {},
 		},
 		{
@@ -300,8 +302,9 @@ func TestRunCommand(t *testing.T) {
 					return nil, imageListError
 				},
 			},
-			expectedErr: imageListError,
-			assertF:     func(t *testing.T) {},
+			expectedRunErr:  imageListError,
+			expectedWaitErr: nil,
+			assertF:         func(t *testing.T) {},
 		},
 		{
 			cmd:            []string{"testCmd"},
@@ -316,8 +319,9 @@ func TestRunCommand(t *testing.T) {
 					return conn, nil
 				},
 			},
-			expectedErr: nil,
-			assertF:     func(t *testing.T) {},
+			expectedRunErr:  nil,
+			expectedWaitErr: nil,
+			assertF:         func(t *testing.T) {},
 		},
 		{
 			cmd:            []string{"testCmd"},
@@ -329,8 +333,9 @@ func TestRunCommand(t *testing.T) {
 					return types.HijackedResponse{}, attachError
 				},
 			},
-			expectedErr: attachError,
-			assertF:     func(t *testing.T) {},
+			expectedRunErr:  attachError,
+			expectedWaitErr: nil,
+			assertF:         func(t *testing.T) {},
 		},
 		{
 			cmd:            []string{"testCmd"},
@@ -342,8 +347,9 @@ func TestRunCommand(t *testing.T) {
 					return containerStartError
 				},
 			},
-			expectedErr: containerStartError,
-			assertF:     func(t *testing.T) {},
+			expectedRunErr:  containerStartError,
+			expectedWaitErr: nil,
+			assertF:         func(t *testing.T) {},
 		},
 		{
 			cmd:            []string{"testCmd"},
@@ -359,8 +365,9 @@ func TestRunCommand(t *testing.T) {
 					return nil, errC
 				},
 			},
-			expectedErr: containerWaitError,
-			assertF:     func(t *testing.T) {},
+			expectedRunErr:  nil,
+			expectedWaitErr: containerWaitError,
+			assertF:         func(t *testing.T) {},
 		},
 		{
 			cmd:            []string{"testCmd"},
@@ -376,8 +383,9 @@ func TestRunCommand(t *testing.T) {
 					return resC, nil
 				},
 			},
-			expectedErr: ErrRunContainerCommand{Cmd: "docker logs testID"},
-			assertF:     func(t *testing.T) {},
+			expectedRunErr:  nil,
+			expectedWaitErr: ErrRunContainerCommand{Cmd: "docker logs testID"},
+			assertF:         func(t *testing.T) {},
 		},
 		{
 			cmd:            []string{"testCmd"},
@@ -396,15 +404,17 @@ func TestRunCommand(t *testing.T) {
 					return nil, fmt.Errorf("logs error")
 				},
 			},
-			expectedErr: ErrRunContainerCommand{Cmd: "docker logs testID"},
-			assertF:     func(t *testing.T) {},
+			expectedRunErr:  nil,
+			expectedWaitErr: ErrRunContainerCommand{Cmd: "docker logs testID"},
+			assertF:         func(t *testing.T) {},
 		},
 	}
 	for _, tt := range tests {
 		cnt := getDockerContainerMock(tt.mockDockerClient)
-		actualErr := cnt.RunCommand(tt.cmd, tt.containerInput, tt.volumeMounts, []string{}, tt.debug)
-
-		assert.Equal(t, tt.expectedErr, actualErr)
+		actualErr := cnt.RunCommand(tt.cmd, tt.containerInput, tt.volumeMounts, []string{})
+		assert.Equal(t, tt.expectedRunErr, actualErr)
+		actualErr = cnt.WaitUntilFinished()
+		assert.Equal(t, tt.expectedWaitErr, actualErr)
 
 		tt.assertF(t)
 	}
@@ -443,9 +453,10 @@ func TestRunCommandOutput(t *testing.T) {
 	}
 	for _, tt := range tests {
 		cnt := getDockerContainerMock(tt.mockDockerClient)
-		actualRes, actualErr := cnt.RunCommandOutput(tt.cmd, tt.containerInput, tt.volumeMounts, []string{})
-
+		actualErr := cnt.RunCommand(tt.cmd, tt.containerInput, tt.volumeMounts, []string{})
 		assert.Equal(t, tt.expectedErr, actualErr)
+		actualRes, actualErr := cnt.GetContainerLogs()
+		require.NoError(t, actualErr)
 
 		var actualResBytes []byte
 		if actualRes != nil {

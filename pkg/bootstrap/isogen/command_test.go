@@ -15,9 +15,12 @@
 package isogen
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
@@ -32,23 +35,24 @@ import (
 )
 
 type mockContainer struct {
-	imagePull        func() error
-	runCommand       func() error
-	runCommandOutput func() (io.ReadCloser, error)
-	rmContainer      func() error
-	getID            func() string
+	imagePull         func() error
+	runCommand        func() error
+	getContainerLogs  func() (io.ReadCloser, error)
+	rmContainer       func() error
+	getID             func() string
+	waitUntilFinished func() error
 }
 
 func (mc *mockContainer) ImagePull() error {
 	return mc.imagePull()
 }
 
-func (mc *mockContainer) RunCommand([]string, io.Reader, []string, []string, bool) error {
+func (mc *mockContainer) RunCommand([]string, io.Reader, []string, []string) error {
 	return mc.runCommand()
 }
 
-func (mc *mockContainer) RunCommandOutput([]string, io.Reader, []string, []string) (io.ReadCloser, error) {
-	return mc.runCommandOutput()
+func (mc *mockContainer) GetContainerLogs() (io.ReadCloser, error) {
+	return mc.getContainerLogs()
 }
 
 func (mc *mockContainer) RmContainer() error {
@@ -58,6 +62,12 @@ func (mc *mockContainer) RmContainer() error {
 func (mc *mockContainer) GetID() string {
 	return mc.getID()
 }
+
+func (mc *mockContainer) WaitUntilFinished() error {
+	return mc.waitUntilFinished()
+}
+
+const testID = "TESTID"
 
 func TestBootstrapIso(t *testing.T) {
 	bundle, err := document.NewBundleByPath("testdata/primary/site/test-site/ephemeral/bootstrap")
@@ -83,7 +93,7 @@ func TestBootstrapIso(t *testing.T) {
 	}
 	testBuilder := &mockContainer{
 		runCommand:  func() error { return nil },
-		getID:       func() string { return "TESTID" },
+		getID:       func() string { return testID },
 		rmContainer: func() error { return nil },
 	}
 
@@ -105,7 +115,9 @@ func TestBootstrapIso(t *testing.T) {
 	}{
 		{
 			builder: &mockContainer{
-				runCommand: func() error { return testErr },
+				runCommand:        func() error { return testErr },
+				waitUntilFinished: func() error { return nil },
+				rmContainer:       func() error { return nil },
 			},
 			cfg:         testCfg,
 			doc:         testDoc,
@@ -114,7 +126,13 @@ func TestBootstrapIso(t *testing.T) {
 			expectedErr: testErr,
 		},
 		{
-			builder:     testBuilder,
+			builder: &mockContainer{
+				runCommand:        func() error { return nil },
+				getID:             func() string { return "TESTID" },
+				waitUntilFinished: func() error { return nil },
+				rmContainer:       func() error { return nil },
+				getContainerLogs:  func() (io.ReadCloser, error) { return ioutil.NopCloser(strings.NewReader("")), nil },
+			},
 			cfg:         testCfg,
 			doc:         testDoc,
 			debug:       true,
@@ -123,9 +141,10 @@ func TestBootstrapIso(t *testing.T) {
 		},
 		{
 			builder: &mockContainer{
-				runCommand:  func() error { return nil },
-				getID:       func() string { return "TESTID" },
-				rmContainer: func() error { return testErr },
+				runCommand:        func() error { return nil },
+				getID:             func() string { return "TESTID" },
+				rmContainer:       func() error { return testErr },
+				waitUntilFinished: func() error { return nil },
 			},
 			cfg:         testCfg,
 			doc:         testDoc,
@@ -148,7 +167,7 @@ func TestBootstrapIso(t *testing.T) {
 	for _, tt := range tests {
 		outBuf := &bytes.Buffer{}
 		log.Init(tt.debug, outBuf)
-		actualErr := createBootstrapIso(bundle, tt.builder, tt.doc, tt.cfg, tt.debug)
+		actualErr := createBootstrapIso(bundle, tt.builder, tt.doc, tt.cfg, tt.debug, false)
 		actualOut := outBuf.String()
 
 		for _, line := range tt.expectedOut {
@@ -233,70 +252,92 @@ func TestGenerateBootstrapIso(t *testing.T) {
 	airshipConfigPath := "testdata/config/config"
 	kubeConfigPath := "testdata/config/kubeconfig"
 
-	t.Run("EnsureCompleteError", func(t *testing.T) {
-		settings, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
-		require.NoError(t, err)
-		expectedErr := config.ErrMissingConfig{What: "Context with name ''"}
-		settings.CurrentContext = ""
-		actualErr := GenerateBootstrapIso(func() (*config.Config, error) {
-			return settings, nil
-		})
-		assert.Equal(t, expectedErr, actualErr)
-	})
-
 	t.Run("ContextEntryPointError", func(t *testing.T) {
-		settings, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
+		cfg, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
 		require.NoError(t, err)
+		cfg.Manifests["default"].Repositories = make(map[string]*config.Repository)
+		settings := &Options{CfgFactory: func() (*config.Config, error) {
+			return cfg, nil
+		}}
 		expectedErr := config.ErrMissingPrimaryRepo{}
-		settings.Manifests["default"].Repositories = make(map[string]*config.Repository)
-		actualErr := GenerateBootstrapIso(func() (*config.Config, error) {
-			return settings, nil
-		})
+		actualErr := settings.GenerateBootstrapIso()
 		assert.Equal(t, expectedErr, actualErr)
 	})
 
 	t.Run("NewBundleByPathError", func(t *testing.T) {
-		settings, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
+		cfg, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
 		require.NoError(t, err)
+		cfg.Manifests["default"].TargetPath = "/nonexistent"
+		settings := &Options{CfgFactory: func() (*config.Config, error) {
+			return cfg, nil
+		}}
 		expectedErr := config.ErrMissingPhaseDocument{PhaseName: "bootstrap"}
-		settings.Manifests["default"].TargetPath = "/nonexistent"
-		actualErr := GenerateBootstrapIso(func() (*config.Config, error) {
-			return settings, nil
-		})
+		actualErr := settings.GenerateBootstrapIso()
 		assert.Equal(t, expectedErr, actualErr)
 	})
 
 	t.Run("SelectOneError", func(t *testing.T) {
-		settings, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
+		cfg, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
 		require.NoError(t, err)
+		cfg.Manifests["default"].SubPath = "missingkinddoc/site/test-site"
+		settings := &Options{CfgFactory: func() (*config.Config, error) {
+			return cfg, nil
+		}}
 		expectedErr := document.ErrDocNotFound{
 			Selector: document.NewSelector().ByGvk("airshipit.org", "v1alpha1", "ImageConfiguration")}
-		settings.Manifests["default"].SubPath = "missingkinddoc/site/test-site"
-		actualErr := GenerateBootstrapIso(func() (*config.Config, error) {
-			return settings, nil
-		})
+		actualErr := settings.GenerateBootstrapIso()
 		assert.Equal(t, expectedErr, actualErr)
 	})
 
 	t.Run("ToObjectError", func(t *testing.T) {
-		settings, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
+		cfg, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
 		require.NoError(t, err)
+		cfg.Manifests["default"].SubPath = "missingmetadoc/site/test-site"
+		settings := &Options{CfgFactory: func() (*config.Config, error) {
+			return cfg, nil
+		}}
 		expectedErrMessage := "missing metadata.name in object"
-		settings.Manifests["default"].SubPath = "missingmetadoc/site/test-site"
-		actualErr := GenerateBootstrapIso(func() (*config.Config, error) {
-			return settings, nil
-		})
+		actualErr := settings.GenerateBootstrapIso()
 		assert.Contains(t, actualErr.Error(), expectedErrMessage)
 	})
 
 	t.Run("verifyInputsError", func(t *testing.T) {
-		settings, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
+		cfg, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
 		require.NoError(t, err)
+		cfg.Manifests["default"].SubPath = "missingvoldoc/site/test-site"
+		settings := &Options{CfgFactory: func() (*config.Config, error) {
+			return cfg, nil
+		}}
 		expectedErr := config.ErrMissingConfig{What: "Must specify volume bind for ISO builder container"}
-		settings.Manifests["default"].SubPath = "missingvoldoc/site/test-site"
-		actualErr := GenerateBootstrapIso(func() (*config.Config, error) {
-			return settings, nil
-		})
+		actualErr := settings.GenerateBootstrapIso()
 		assert.Equal(t, expectedErr, actualErr)
 	})
+}
+
+func TestShowProgress(t *testing.T) {
+	tests := []struct {
+		name   string
+		input  string
+		output string
+	}{
+		{
+			name:   "Process-debian-based-logs",
+			input:  "testdata/debian-container-logs",
+			output: "testdata/pb-output-debian",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		file, err := os.Open(tt.input)
+		require.NoError(t, err)
+		reader := ioutil.NopCloser(bufio.NewReader(file))
+		writer := &bytes.Buffer{}
+		showProgress(reader, writer)
+		err = file.Close()
+		require.NoError(t, err)
+		expected, err := ioutil.ReadFile(tt.output)
+		require.NoError(t, err)
+		assert.Equal(t, expected, writer.Bytes())
+	}
 }

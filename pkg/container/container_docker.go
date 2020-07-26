@@ -241,7 +241,6 @@ func (c *DockerContainer) RunCommand(
 	containerInput io.Reader,
 	volumeMounts []string,
 	envVars []string,
-	debug bool,
 ) error {
 	realCmd, err := c.getCmd(cmd)
 	if err != nil {
@@ -279,53 +278,13 @@ func (c *DockerContainer) RunCommand(
 		return err
 	}
 
-	if debug {
-		log.Debug("start reading container logs")
-		var reader io.ReadCloser
-		reader, err = c.dockerClient.ContainerLogs(*c.ctx, c.id, types.ContainerLogsOptions{ShowStdout: true, Follow: true})
-		if err != nil {
-			log.Debugf("failed to read container logs %s", err)
-			reader = ioutil.NopCloser(strings.NewReader(""))
-		}
-
-		_, err = io.Copy(log.Writer(), reader)
-		if err != nil {
-			log.Debugf("failed to write container logs to log output %s", err)
-		}
-		log.Debug("got EOF from container logs")
-	}
-
-	statusCh, errCh := c.dockerClient.ContainerWait(*c.ctx, c.id, container.WaitConditionNotRunning)
-	log.Debugf("waiting until command '%s' is finished...", realCmd)
-	select {
-	case err = <-errCh:
-		if err != nil {
-			return err
-		}
-	case retCode := <-statusCh:
-		if retCode.StatusCode != 0 {
-			logsCmd := fmt.Sprintf("docker logs %s", c.id)
-			return ErrRunContainerCommand{Cmd: logsCmd}
-		}
-	}
-
+	log.Debug("docker container is started")
 	return nil
 }
 
-// RunCommandOutput executes specified command in Docker container and
-// returns command output as ReadCloser object. RunCommand debug option is
-// set to false explicitly
-func (c *DockerContainer) RunCommandOutput(
-	cmd []string,
-	containerInput io.Reader,
-	volumeMounts []string,
-	envVars []string,
-) (io.ReadCloser, error) {
-	if err := c.RunCommand(cmd, containerInput, volumeMounts, envVars, false); err != nil {
-		return nil, err
-	}
-
-	return c.dockerClient.ContainerLogs(*c.ctx, c.id, types.ContainerLogsOptions{ShowStdout: true})
+// GetContainerLogs returns logs from the container as io.ReadCloser
+func (c *DockerContainer) GetContainerLogs() (io.ReadCloser, error) {
+	return c.dockerClient.ContainerLogs(*c.ctx, c.id, types.ContainerLogsOptions{ShowStdout: true, Follow: true})
 }
 
 // RmContainer kills and removes a container from the docker host.
@@ -337,4 +296,22 @@ func (c *DockerContainer) RmContainer() error {
 			Force: true,
 		},
 	)
+}
+
+// WaitUntilFinished waits unit container command is finished, return an error if failed
+func (c *DockerContainer) WaitUntilFinished() error {
+	statusCh, errCh := c.dockerClient.ContainerWait(*c.ctx, c.id, container.WaitConditionNotRunning)
+	log.Debugf("waiting until command is finished...")
+	select {
+	case err := <-errCh:
+		if err != nil {
+			return err
+		}
+	case retCode := <-statusCh:
+		if retCode.StatusCode != 0 {
+			logsCmd := fmt.Sprintf("docker logs %s", c.id)
+			return ErrRunContainerCommand{Cmd: logsCmd}
+		}
+	}
+	return nil
 }
