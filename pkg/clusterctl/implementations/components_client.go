@@ -25,17 +25,17 @@ var _ repository.ComponentsClient = &ComponentsClient{}
 // ComponentsClient override Get() method to return same components,
 // but in our implementation we skip variable substitution.
 type ComponentsClient struct {
-	client       repository.ComponentsClient
-	providerType string
-	providerName string
+	client               repository.ComponentsClient
+	providerType         string
+	providerName         string
+	variableSubstitution bool
 }
 
 // Get returns the components from a repository but without variable substitution
 func (cc *ComponentsClient) Get(options repository.ComponentsOptions) (repository.Components, error) {
-	// This removes variable substitution in components.yaml
-	// TODO we may consider making this configurable
-	options.SkipVariables = true
-	log.Debugf("Getting airshipctl provider components, setting skipping variable substitution.\n"+
-		"Provider type: %s, name: %s\n", cc.providerType, cc.providerName)
+	// Invert variable substitution, so that by default clusterctl will not substitute variables
+	options.SkipVariables = !cc.variableSubstitution
+	log.Printf("Getting airshipctl provider components, skipping variable substitution: %t.\n"+
+		"Provider type: %s, name: %s\n", options.SkipVariables, cc.providerType, cc.providerName)
 	return cc.client.Get(options)
 }

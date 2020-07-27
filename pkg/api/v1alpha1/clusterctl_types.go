@@ -29,6 +29,12 @@ type Clusterctl struct {
 	Providers   []*Provider  `json:"providers,omitempty"`
 	InitOptions *InitOptions `json:"init-options,omitempty"`
 	MoveOptions *MoveOptions `json:"move-options,omitempty"`
+	// AdditionalComponentVariables are variables that will be available to clusterctl
+	// when reading provider components
+	AdditionalComponentVariables map[string]string `json:"additional-vars,omitempty"`
+	// EnvVars if set to true, allows to source variables for cluster-api components
+	// for environment variables.
+	EnvVars bool `json:"env-vars,omitempty"`
 }
 
 // Provider is part of clusterctl config
@@ -44,6 +50,11 @@ type Provider struct {
 	// Map of versions where each key is a version and value is path relative to target path of the manifest
 	// ignored if IsClusterctlRepository is set to true
 	Versions map[string]string `json:"versions,omitempty"`
+
+	// VariableSubstitution indicates weather you want to substitute variales in the cluster-api manifests
+	// if set to true, variables will be substituted only if they are defined either in Environment or
+	// in AdditionalComponentVariables, if not they will be left as is.
+	VariableSubstitution bool `json:"variable-substitution,omitempty"`
 }
 
 // InitOptions container with exposed clusterctl InitOptions
