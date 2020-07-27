@@ -66,7 +66,7 @@ func TestBootstrapIso(t *testing.T) {
 	defer cleanup(t)
 
 	volBind := tempVol + ":/dst"
-	testErr := fmt.Errorf("TestErr")
+	testErr := fmt.Errorf("testErr")
 	testCfg := &config.Bootstrap{
 		Container: &config.Container{
 			Volume:           volBind,

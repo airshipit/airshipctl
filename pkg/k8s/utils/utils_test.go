@@ -48,16 +48,16 @@ func TestManifestBundleReader(t *testing.T) {
 		},
 		{
 			name:      "Read error",
-			errString: "Failed to read from bundle",
+			errString: "failed to read from bundle",
 			reader: fakeReaderWriter{
-				readErr: fmt.Errorf("Failed to read from bundle"),
+				readErr: fmt.Errorf("failed to read from bundle"),
 			},
 		},
 		{
 			name:      "Write error",
-			errString: "Failed to write bundle",
+			errString: "failed to write bundle",
 			writer: fakeReaderWriter{
-				writeErr: fmt.Errorf("Failed to write bundle"),
+				writeErr: fmt.Errorf("failed to write bundle"),
 			},
 		},
 	}
