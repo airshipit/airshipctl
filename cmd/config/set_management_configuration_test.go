@@ -84,6 +84,11 @@ func TestConfigSetManagementConfigurationInsecure(t *testing.T) {
 		CmdLine: fmt.Sprintf("%s --insecure=true", config.AirshipDefaultContext),
 		Cmd:     cmd.NewSetManagementConfigCommand(settings),
 	})
+	testutil.RunTest(t, &testutil.CmdTest{
+		Name:    "config-cmd-set-management-config-no-change",
+		CmdLine: fmt.Sprintf("%s --insecure=true", config.AirshipDefaultContext),
+		Cmd:     cmd.NewSetManagementConfigCommand(settings),
+	})
 
 	assert.True(t, settings.Config.ManagementConfiguration[config.AirshipDefaultContext].Insecure)
 }

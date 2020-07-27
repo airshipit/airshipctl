@@ -37,6 +37,9 @@ func TestGetManagementConfigCmd(t *testing.T) {
 			},
 		},
 	}
+	emptySettings := &environment.AirshipCTLSettings{
+		Config: &config.Config{},
+	}
 
 	cmdTests := []*testutil.CmdTest{
 		{
@@ -59,6 +62,11 @@ func TestGetManagementConfigCmd(t *testing.T) {
 			Name:    "get-management-config-default",
 			CmdLine: config.AirshipDefaultContext,
 			Cmd:     cmd.NewGetManagementConfigCommand(settings),
+		},
+		{
+			Name:    "get-empty-management-config",
+			CmdLine: "",
+			Cmd:     cmd.NewGetManagementConfigCommand(emptySettings),
 		},
 	}
 

@@ -75,9 +75,9 @@ func TestInitConfig(t *testing.T) {
 		defer os.Unsetenv(config.AirshipKubeConfigEnv)
 		defer os.Unsetenv(config.AirshipPluginPathEnv)
 
-		testSettings.InitAirshipConfigPath()
-		testSettings.InitKubeConfigPath()
-		environment.InitPluginPath()
+		testSettings.Create = true
+		testSettings.InitConfig()
+
 		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath)
 		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath)
 		assert.Equal(t, expectedPluginPath, environment.PluginPath())
