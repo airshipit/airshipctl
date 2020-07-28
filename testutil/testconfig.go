@@ -154,18 +154,6 @@ func DummyAuthInfo() *config.AuthInfo {
 	return a
 }
 
-// DummyKubeAuthInfo creates a AuthInfo kubeconfig object
-// for unit testing
-func DummyKubeAuthInfo() *kubeconfig.AuthInfo {
-	authinfo := kubeconfig.NewAuthInfo()
-	authinfo.Username = "dummy_username"
-	authinfo.Password = "dummy_password"
-	authinfo.ClientCertificate = "dummy_certificate"
-	authinfo.ClientKey = "dummy_key"
-	authinfo.Token = "dummy_token"
-	return authinfo
-}
-
 // DummyClusterPurpose creates ClusterPurpose config object for unit testing
 func DummyClusterPurpose() *config.ClusterPurpose {
 	cp := config.NewClusterPurpose()
