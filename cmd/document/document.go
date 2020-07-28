@@ -33,7 +33,7 @@ func NewDocumentCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Com
 		},
 	}
 
-	documentRootCmd.AddCommand(NewPullCommand(rootSettings, true))
+	documentRootCmd.AddCommand(NewPullCommand(rootSettings))
 	documentRootCmd.AddCommand(NewPluginCommand(rootSettings))
 
 	return documentRootCmd

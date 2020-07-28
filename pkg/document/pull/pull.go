@@ -17,6 +17,7 @@ package pull
 import (
 	"opendev.org/airship/airshipctl/pkg/document/repo"
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 // Settings is a reference to environment.AirshipCTLSettings
@@ -41,12 +42,13 @@ func (s *Settings) Pull() error {
 func (s *Settings) cloneRepositories() error {
 	// Clone main repository
 	currentManifest, err := s.Config.CurrentContextManifest()
+	log.Debugf("Reading current context manifest information from %s", s.AirshipConfigPath)
 	if err != nil {
 		return err
 	}
 
 	// Clone repositories
-	for _, extraRepoConfig := range currentManifest.Repositories {
+	for repoName, extraRepoConfig := range currentManifest.Repositories {
 		err := extraRepoConfig.Validate()
 		if err != nil {
 			return err
@@ -55,6 +57,8 @@ func (s *Settings) cloneRepositories() error {
 		if err != nil {
 			return err
 		}
+		log.Printf("Downloading %s repository %s from %s into %s",
+			repoName, repository.Name, extraRepoConfig.URL(), currentManifest.TargetPath)
 		err = repository.Download(extraRepoConfig.ToCheckoutOptions(true).Force)
 		if err != nil {
 			return err

@@ -22,6 +22,7 @@ import (
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/osfs"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/cache"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/storage"
@@ -105,11 +106,17 @@ func (repo *Repository) Update(force bool) error {
 
 // Checkout git repository, ToCheckoutOptions method will be used go get CheckoutOptions
 func (repo *Repository) Checkout(enforce bool) error {
-	log.Debugf("Attempting to checkout the repository %s", repo.Name)
 	if !repo.Driver.IsOpen() {
 		return ErrNoOpenRepo
 	}
 	co := repo.ToCheckoutOptions(enforce)
+	var branchHash string
+	if co.Hash == plumbing.ZeroHash {
+		branchHash = fmt.Sprintf("branch %s", co.Branch.String())
+	} else {
+		branchHash = fmt.Sprintf("commit hash %s", co.Hash.String())
+	}
+	log.Debugf("Attempting to checkout the repository %s from %s", repo.Name, branchHash)
 	tree, err := repo.Driver.Worktree()
 	if err != nil {
 		return fmt.Errorf("could not get worktree from the repo, %w", err)
@@ -125,7 +132,7 @@ func (repo *Repository) Open() error {
 
 // Clone given repository
 func (repo *Repository) Clone() error {
-	log.Debugf("Attempting to clone the repository %s", repo.Name)
+	log.Debugf("Attempting to clone the repository %s from %s", repo.Name, repo.URL())
 	auth, err := repo.ToAuth()
 	if err != nil {
 		return fmt.Errorf("failed to build auth options for repository %v: %w", repo.Name, err)

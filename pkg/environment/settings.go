@@ -69,7 +69,7 @@ func (a *AirshipCTLSettings) InitFlags(cmd *cobra.Command) {
 	a.Create = false
 }
 
-// InitConfig - Initializes and loads Config it exists.
+// InitConfig - Initializes and loads Config if exists.
 func (a *AirshipCTLSettings) InitConfig() {
 	a.Config = config.NewConfig()
 
