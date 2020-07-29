@@ -19,7 +19,6 @@ const (
 	BaseAirshipSelector       = "airshipit.org"
 	EphemeralHostSelector     = BaseAirshipSelector + "/ephemeral-node in (True, true)"
 	EphemeralUserDataSelector = BaseAirshipSelector + "/ephemeral-user-data in (True, true)"
-	ApplyPhaseSelector        = BaseAirshipSelector + "/phase = "
 
 	// Please note that by default every document in the manifest is to be deployed to kubernetes cluster.
 	// so this selector simply checks that deploy-k8s label is not equal to false or False (string)
