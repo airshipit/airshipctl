@@ -1,4 +1,5 @@
 resources:
+  - ../../../../composite/infra
   - ../../shared/clusterctl
   - ../../../../function/baremetal-operator
 patchesStrategicMerge:

@@ -98,8 +98,8 @@ if [ "$N" -ge ${MAX_RETRY} ]; then
   exit 1
 fi
 
-echo "Wait for nodes to become Ready"
-kubectl --kubeconfig /tmp/targetkubeconfig wait --for=condition=Ready node --all --timeout 900s
+echo "List all pods"
+kubectl --kubeconfig /tmp/targetkubeconfig get pods --all-namespaces
 
 echo "Get cluster state"
 kubectl --kubeconfig ${HOME}/.airship/kubeconfig get cluster
