@@ -30,6 +30,7 @@ type File interface {
 type FileSystem interface {
 	fs.FileSystem
 	TempFile(string, string) (File, error)
+	TempDir(string, string) (string, error)
 }
 
 // Fs is adaptor to TempFile
@@ -45,4 +46,9 @@ func NewDocumentFs() FileSystem {
 // TempFile creates file in temporary filesystem, at default os.TempDir
 func (dfs Fs) TempFile(tmpDir string, prefix string) (File, error) {
 	return ioutil.TempFile(tmpDir, prefix)
+}
+
+// TempDir creates a temporary directory in given root directory
+func (dfs Fs) TempDir(rootDir string, prefix string) (string, error) {
+	return ioutil.TempDir(rootDir, prefix)
 }
