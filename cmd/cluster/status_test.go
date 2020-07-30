@@ -34,7 +34,7 @@ const (
 	fixturesPath = "testdata/statusmap"
 )
 
-func TestStatusCmd(t *testing.T) {
+func TestNewClusterStatusCmd(t *testing.T) {
 	tests := []struct {
 		cmdTest   *testutil.CmdTest
 		resources []runtime.Object
@@ -44,6 +44,12 @@ func TestStatusCmd(t *testing.T) {
 			cmdTest: &testutil.CmdTest{
 				Name:    "check-status-no-resources",
 				CmdLine: "",
+			},
+		},
+		{
+			cmdTest: &testutil.CmdTest{
+				Name:    "cluster-status-cmd-with-help",
+				CmdLine: "--help",
 			},
 		},
 		{

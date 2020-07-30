@@ -1,0 +1,7 @@
+Retrieve statuses of deployed cluster components
+
+Usage:
+  status [flags]
+
+Flags:
+  -h, --help   help for status
