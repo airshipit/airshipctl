@@ -1,5 +1,0 @@
-resources:
-  - crd
-  - webhook
-  - default
-  - admissionregistration
