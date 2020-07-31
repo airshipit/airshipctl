@@ -28,4 +28,5 @@ such as getting list and applying specific one.
 * [airshipctl phase apply](airshipctl_phase_apply.md)	 - Apply phase to a cluster
 * [airshipctl phase plan](airshipctl_phase_plan.md)	 - List phases
 * [airshipctl phase render](airshipctl_phase_render.md)	 - Render phase documents from model
+* [airshipctl phase run](airshipctl_phase_run.md)	 - Run phase
 

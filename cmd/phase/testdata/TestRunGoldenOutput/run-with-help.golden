@@ -1,0 +1,14 @@
+Run specific life-cycle phase such as ephemeral-control-plane, target-initinfra etc...
+
+Usage:
+  run PHASE_NAME [flags]
+
+Examples:
+
+# Run initinfra phase
+airshipctl phase run ephemeral-control-plane
+
+
+Flags:
+      --dry-run   simulate phase execution
+  -h, --help      help for run

@@ -9,6 +9,7 @@ Available Commands:
   help        Help about any command
   plan        List phases
   render      Render phase documents from model
+  run         Run phase
 
 Flags:
   -h, --help   help for phase
