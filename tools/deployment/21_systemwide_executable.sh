@@ -16,7 +16,7 @@ set -xe
 
 export USE_PROXY=${USE_PROXY:-"false"}
 export HTTPS_PROXY=${HTTPS_PROXY:-${https_proxy}}
-export HTTPS_PROXY=${HTTP_PROXY:-${http_proxy}}
+export HTTP_PROXY=${HTTP_PROXY:-${http_proxy}}
 export NO_PROXY=${NO_PROXY:-${no_proxy}}
 
 echo "Build airshipctl in docker image"
