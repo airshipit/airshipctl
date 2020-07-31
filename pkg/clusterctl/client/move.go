@@ -106,21 +106,22 @@ func copyBMHStatus(ctx context.Context, cFrom client.Client, cTo client.Client, 
 	}
 	// Copy the Status field from old BMH to new BMH
 	log.Debugf("Copying BareMetalHost status to target cluster")
-	for _, toHost := range toHosts.Items {
+	for i := range toHosts.Items {
 		var found bool
 		t := metav1.Now()
 		for _, fromHost := range fromHosts.Items {
-			if fromHost.Name == toHost.Name {
-				toHost.Status = fromHost.Status
+			if fromHost.Name == toHosts.Items[i].Name {
+				toHosts.Items[i].Status = fromHost.Status
 				found = true
 				break
 			}
 		}
 		if !found {
-			return errors.Errorf("BMH with the same name %s/%s not found in the source cluster", toHost.Name, namespace)
+			return errors.Errorf("BMH with the same name %s/%s not found in the source cluster",
+				toHosts.Items[i].Name, namespace)
 		}
-		toHost.Status.LastUpdated = &t
-		err = cTo.Status().Update(ctx, &toHost)
+		toHosts.Items[i].Status.LastUpdated = &t
+		err = cTo.Status().Update(ctx, &toHosts.Items[i])
 		if err != nil {
 			return errors.Wrap(err, "failed to update BareMetalHost status")
 		}
@@ -135,21 +136,21 @@ func pauseUnpauseBMHs(ctx context.Context, crClient client.Client, namespace str
 	if err != nil {
 		return errors.Wrap(err, "failed to list BMH objects")
 	}
-	for _, host := range hosts.Items {
-		annotations := host.GetAnnotations()
+	for i := range hosts.Items {
+		annotations := hosts.Items[i].GetAnnotations()
 		if annotations == nil {
-			host.Annotations = map[string]string{}
+			hosts.Items[i].Annotations = map[string]string{}
 		}
 		if pause {
-			log.Debugf("Pausing BareMetalHost object %s/%s", host.Name, namespace)
-			host.Annotations[bmh.PausedAnnotation] = "true"
+			log.Debugf("Pausing BareMetalHost object %s/%s", hosts.Items[i].Name, namespace)
+			hosts.Items[i].Annotations[bmh.PausedAnnotation] = "true"
 		} else {
-			log.Debugf("Unpausing BareMetalHost object %s/%s", host.Name, namespace)
-			delete(host.Annotations, bmh.PausedAnnotation)
+			log.Debugf("Unpausing BareMetalHost object %s/%s", hosts.Items[i].Name, namespace)
+			delete(hosts.Items[i].Annotations, bmh.PausedAnnotation)
 		}
-		if err := crClient.Update(ctx, &host); err != nil {
+		if err := crClient.Update(ctx, &hosts.Items[i]); err != nil {
 			return errors.Wrapf(err, "error updating BareMetalHost %q %s/%s",
-				host.GroupVersionKind(), host.GetNamespace(), host.GetName())
+				hosts.Items[i].GroupVersionKind(), hosts.Items[i].GetNamespace(), hosts.Items[i].GetName())
 		}
 	}
 	return nil

@@ -210,3 +210,4 @@ linters:
     - varcheck             # Finds unused global variables and constants
     - whitespace           # Tool for detection of leading and trailing whitespace NOTE(howell): This linter does _not_ check for trailing whitespace in multiline strings
     - golint               # Finds all coding style mistakes
+    - asciicheck           # Simple linter to check that your code does not contain non-ASCII identifiers

@@ -85,7 +85,7 @@ func updateGolden(t *testing.T, test *CmdTest, actual []byte) {
 	t.Logf("Created %s", goldenDir)
 	goldenFilePath := filepath.Join(goldenDir, test.Name+goldenFileSuffix)
 	t.Logf("Updating golden file: %s", goldenFilePath)
-	err = ioutil.WriteFile(goldenFilePath, normalize(actual), 0666)
+	err = ioutil.WriteFile(goldenFilePath, normalize(actual), 0600)
 	require.NoErrorf(t, err, "Failed to update golden file at %s", goldenFilePath)
 }
 
