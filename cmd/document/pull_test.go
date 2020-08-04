@@ -17,46 +17,19 @@ package document
 import (
 	"testing"
 
-	fixtures "github.com/go-git/go-git-fixtures/v4"
-
-	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/testutil"
 )
-
-func getDummyAirshipSettings() *environment.AirshipCTLSettings {
-	settings := &environment.AirshipCTLSettings{Config: testutil.DummyConfig(), Create: true}
-
-	fx := fixtures.Basic().One()
-
-	mfst := settings.Config.Manifests["dummy_manifest"]
-	mfst.Repositories = map[string]*config.Repository{
-		"primary": {
-			URLString: fx.DotGit().Root(),
-			CheckoutOptions: &config.RepoCheckout{
-				Branch:        "master",
-				ForceCheckout: false,
-			},
-			Auth: &config.RepoAuth{
-				Type: "http-basic",
-			},
-		},
-	}
-	return settings
-}
 
 func TestPull(t *testing.T) {
 	cmdTests := []*testutil.CmdTest{
 		{
-			Name:    "document-pull-cmd",
-			CmdLine: "",
-			Cmd:     NewPullCommand(getDummyAirshipSettings()),
+			Name:    "document-pull-cmd-with-help",
+			CmdLine: "--help",
+			Cmd:     NewPullCommand(nil),
 		},
 	}
 
 	for _, tt := range cmdTests {
 		testutil.RunTest(t, tt)
 	}
-
-	testutil.CleanUpGitFixtures(t)
 }
