@@ -108,6 +108,6 @@ func TestApply(t *testing.T) {
 	}
 	for _, test := range tests {
 		kctl.FileSystem = test.fs
-		assert.Equal(t, kctl.Apply(docs, ao), test.expectedErr)
+		assert.Equal(t, kctl.ApplyDocs(docs, ao), test.expectedErr)
 	}
 }

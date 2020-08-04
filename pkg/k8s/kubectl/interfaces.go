@@ -23,6 +23,7 @@ import (
 // Interface provides a abstraction layer built on top of kubectl libraries
 // to implement kubectl subcommands as kubectl apply
 type Interface interface {
-	Apply(docs []document.Document, ao *ApplyOptions) error
+	ApplyDocs(docs []document.Document, ao *ApplyOptions) error
+	ApplyYaml(yaml []byte, ao *ApplyOptions) error
 	ApplyOptions() (*ApplyOptions, error)
 }

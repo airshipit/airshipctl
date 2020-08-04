@@ -15,6 +15,7 @@
 package kubectl
 
 import (
+	"bytes"
 	"os"
 
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -56,8 +57,21 @@ func (kubectl *Kubectl) WithBufferDir(bd string) *Kubectl {
 	return kubectl
 }
 
-// Apply is abstraction to kubectl apply command
-func (kubectl *Kubectl) Apply(docs []document.Document, ao *ApplyOptions) error {
+// ApplyDocs transform Document into YAML
+// TODO: (anoskov) Add unit test for ApplyDocs, as of now it is calling ApplyYaml which meets the coverage test.
+func (kubectl *Kubectl) ApplyDocs(docs []document.Document, ao *ApplyOptions) error {
+	buf := bytes.NewBuffer([]byte{})
+	for _, doc := range docs {
+		err := utilyaml.WriteOut(buf, doc)
+		if err != nil {
+			return err
+		}
+	}
+	return kubectl.ApplyYaml(buf.Bytes(), ao)
+}
+
+// ApplyYaml is abstraction to kubectl apply command
+func (kubectl *Kubectl) ApplyYaml(yaml []byte, ao *ApplyOptions) error {
 	tf, err := kubectl.TempFile(kubectl.bufferDir, "initinfra")
 	if err != nil {
 		return err
@@ -70,13 +84,11 @@ func (kubectl *Kubectl) Apply(docs []document.Document, ao *ApplyOptions) error 
 			log.Fatalf("Failed to cleanup temporary file %s during kubectl apply", fName)
 		}
 	}(tf)
+
 	defer tf.Close()
-	for _, doc := range docs {
-		// Write out documents to temporary file
-		err = utilyaml.WriteOut(tf, doc)
-		if err != nil {
-			return err
-		}
+	_, err = tf.Write(yaml)
+	if err != nil {
+		return err
 	}
 	ao.SetSourceFiles([]string{tf.Name()})
 	return ao.Run()
