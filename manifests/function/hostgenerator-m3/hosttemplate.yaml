@@ -26,6 +26,7 @@ template: |
   spec:
     online: false
     bootMACAddress: {{ $host.macAddress }}
+    bootMode: {{ $host.bootMode }}
     networkData:
       name: {{ $hostName }}-network-data
       namespace: default

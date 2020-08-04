@@ -90,6 +90,12 @@ spec:
                 types, but required for libvirt VMs driven by vbmc.
               pattern: '[0-9a-fA-F]{2}(:[0-9a-fA-F]{2}){5}'
               type: string
+            bootMode:
+              description: Select the method of initializing the hardware during boot.
+              enum:
+              - UEFI
+              - legacy
+              type: string
             consumerRef:
               description: ConsumerRef can be used to store information about something
                 that is using a host. When it is not empty, the host is considered
