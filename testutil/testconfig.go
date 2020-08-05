@@ -181,11 +181,11 @@ func InitConfig(t *testing.T) (conf *config.Config, cleanup func(*testing.T)) {
 	testDir, cleanup := TempDir(t, "airship-test")
 
 	configPath := filepath.Join(testDir, "config")
-	err := ioutil.WriteFile(configPath, []byte(testConfigYAML), 0666)
+	err := ioutil.WriteFile(configPath, []byte(testConfigYAML), 0600)
 	require.NoError(t, err)
 
 	kubeConfigPath := filepath.Join(testDir, "kubeconfig")
-	err = ioutil.WriteFile(kubeConfigPath, []byte(testKubeConfigYAML), 0666)
+	err = ioutil.WriteFile(kubeConfigPath, []byte(testKubeConfigYAML), 0600)
 	require.NoError(t, err)
 
 	conf = config.NewConfig()

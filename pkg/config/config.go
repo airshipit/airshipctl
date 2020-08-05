@@ -424,7 +424,7 @@ func (c *Config) PersistConfig() error {
 	}
 
 	// Write the Airship Config file
-	err = ioutil.WriteFile(c.loadedConfigPath, airshipConfigYaml, 0644)
+	err = ioutil.WriteFile(c.loadedConfigPath, airshipConfigYaml, 0600)
 	if err != nil {
 		return err
 	}
