@@ -47,14 +47,11 @@ func TestInitConfig(t *testing.T) {
 		var testSettings environment.AirshipCTLSettings
 		expectedAirshipConfig := filepath.Join(testDir, config.AirshipConfigDir, config.AirshipConfig)
 		expectedKubeConfig := filepath.Join(testDir, config.AirshipConfigDir, config.AirshipKubeConfig)
-		expectedPluginPath := filepath.Join(testDir, config.AirshipConfigDir, config.AirshipPluginPath)
 
 		testSettings.InitAirshipConfigPath()
 		testSettings.InitKubeConfigPath()
-		environment.InitPluginPath()
 		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath)
 		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath)
-		assert.Equal(t, expectedPluginPath, environment.PluginPath())
 	})
 
 	t.Run("PreferEnvToDefault", func(subTest *testing.T) {
@@ -66,21 +63,17 @@ func TestInitConfig(t *testing.T) {
 		var testSettings environment.AirshipCTLSettings
 		expectedAirshipConfig := filepath.Join(testDir, "airshipEnv")
 		expectedKubeConfig := filepath.Join(testDir, "kubeEnv")
-		expectedPluginPath := filepath.Join(testDir, "pluginPath")
 
 		os.Setenv(config.AirshipConfigEnv, expectedAirshipConfig)
 		os.Setenv(config.AirshipKubeConfigEnv, expectedKubeConfig)
-		os.Setenv(config.AirshipPluginPathEnv, expectedPluginPath)
 		defer os.Unsetenv(config.AirshipConfigEnv)
 		defer os.Unsetenv(config.AirshipKubeConfigEnv)
-		defer os.Unsetenv(config.AirshipPluginPathEnv)
 
 		testSettings.Create = true
 		testSettings.InitConfig()
 
 		assert.Equal(t, expectedAirshipConfig, testSettings.AirshipConfigPath)
 		assert.Equal(t, expectedKubeConfig, testSettings.KubeConfigPath)
-		assert.Equal(t, expectedPluginPath, environment.PluginPath())
 	})
 
 	t.Run("PreferCmdLineArgToDefault", func(subTest *testing.T) {

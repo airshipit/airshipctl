@@ -17,7 +17,6 @@ package environment
 import (
 	"os"
 	"path/filepath"
-	"sync"
 
 	"github.com/spf13/cobra"
 
@@ -25,6 +24,7 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/log"
+	"opendev.org/airship/airshipctl/pkg/util"
 )
 
 // AirshipCTLSettings is a container for all of the settings needed by airshipctl
@@ -36,10 +36,6 @@ type AirshipCTLSettings struct {
 	Create            bool
 	Config            *config.Config
 }
-
-// A singleton for the kustomize plugin path configuration
-var pluginPath string
-var pluginPathLock = &sync.Mutex{}
 
 // InitFlags adds the default settings flags to cmd
 func (a *AirshipCTLSettings) InitFlags(cmd *cobra.Command) {
@@ -75,7 +71,6 @@ func (a *AirshipCTLSettings) InitConfig() {
 
 	a.InitAirshipConfigPath()
 	a.InitKubeConfigPath()
-	InitPluginPath()
 
 	err := a.Config.LoadConfig(a.AirshipConfigPath, a.KubeConfigPath, a.Create)
 	if err != nil {
@@ -98,7 +93,7 @@ func (a *AirshipCTLSettings) InitAirshipConfigPath() {
 	}
 
 	// Otherwise, we'll try putting it in the home directory
-	homeDir := userHomeDir()
+	homeDir := util.UserHomeDir()
 	a.AirshipConfigPath = filepath.Join(homeDir, config.AirshipConfigDir, config.AirshipConfig)
 }
 
@@ -123,40 +118,6 @@ func (a *AirshipCTLSettings) InitKubeConfigPath() {
 	}
 
 	// Otherwise, we'll try putting it in the home directory
-	homeDir := userHomeDir()
+	homeDir := util.UserHomeDir()
 	a.KubeConfigPath = filepath.Join(homeDir, config.AirshipConfigDir, config.AirshipKubeConfig)
-}
-
-// InitPluginPath - Sets the location to look for kustomize plugins (including airshipctl itself).
-func InitPluginPath() {
-	pluginPathLock.Lock()
-	defer pluginPathLock.Unlock()
-
-	// Check if we got the path via ENVIRONMENT variable
-	pluginPath = os.Getenv(config.AirshipPluginPathEnv)
-	if pluginPath != "" {
-		return
-	}
-
-	// Otherwise, we'll try putting it in the home directory
-	homeDir := userHomeDir()
-	pluginPath = filepath.Join(homeDir, config.AirshipConfigDir, config.AirshipPluginPath)
-}
-
-// PluginPath returns the kustomize plugin path
-func PluginPath() string {
-	pluginPathLock.Lock()
-	defer pluginPathLock.Unlock()
-	return pluginPath
-}
-
-// userHomeDir is a utility function that wraps os.UserHomeDir and returns no
-// errors. If the user has no home directory, the returned value will be the
-// empty string
-func userHomeDir() string {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		homeDir = ""
-	}
-	return homeDir
 }
