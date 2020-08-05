@@ -7,7 +7,7 @@ metadata:
 data:
   PROVISIONING_IP: "192.168.10.100"
   DHCP_RANGE: "192.168.10.200,192.168.10.250"
-  PROVISIONING_INTERFACE: "pxe0"
+  PROVISIONING_INTERFACE: "pxe"
   HTTP: "80"
   DEPLOY_KERNEL_PATH: "/images/tinyipa-stable-ussuri.vmlinuz"
   DEPLOY_RAMDISK_PATH: "/images/tinyipa-stable-ussuri.gz"
