@@ -16,6 +16,14 @@
 # Expected to be run from the project root
 set -xe
 
+# The root of the manifest structure to be validated.
+# This corresponds to the targetPath in an airshipctl config
+: ${MANIFEST_ROOT:="${PWD}"}
+# The space-separated locations of sites whose manifests should be validated.
+# These are relative to MANIFEST_ROOT above, and correspond to
+# the base of the subPath in an airshipctl config
+: ${SITE_ROOTS:="manifests/site"}
+
 # get kind
 echo "Fetching kind from ${KIND_URL}..."
 TMP=$(KIND_URL=${KIND_URL} ./tools/document/get_kind.sh)
@@ -24,9 +32,12 @@ export KUBECTL_URL
 
 ./tools/document/build_kustomize_plugin.sh
 
-for site in $(ls manifests/site); do
-    echo -e "\nValidating site: ${site}\n****************"
-    SITE=${site} ./tools/document/validate_site_docs.sh
-    echo "Validation of site ${site} is succesful!"
+for site_root in ${SITE_ROOTS}; do
+  for site in $(ls ${MANIFEST_ROOT}/${site_root}); do
+      echo -e "\nValidating site: ${MANIFEST_ROOT}/${site_root}/${site}\n****************"
+      MANIFEST_ROOT=${MANIFEST_ROOT} SITE_ROOT=${site_root} SITE=${site} \
+        ./tools/document/validate_site_docs.sh
+      echo "Validation of site ${site} is succesful!"
+  done
 done
 
