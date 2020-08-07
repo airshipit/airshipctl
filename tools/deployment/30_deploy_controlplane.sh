@@ -78,30 +78,27 @@ echo ${KUBECONFIG} | base64 -d > /tmp/targetkubeconfig
 echo "Import target kubeconfig"
 airshipctl config import /tmp/targetkubeconfig
 
-echo "Check kubectl version"
-VERSION=""
+echo "Wait for apiserver to become available"
 N=0
 MAX_RETRY=30
 DELAY=60
 until [ "$N" -ge ${MAX_RETRY} ]
 do
-  VERSION=$(timeout 20 kubectl --kubeconfig /tmp/targetkubeconfig version | grep 'Server Version' || true)
-
-  if [[ ! -z "$VERSION" ]]; then
+  if timeout 20 kubectl --kubeconfig /tmp/targetkubeconfig get node; then
       break
   fi
 
   N=$((N+1))
-  echo "$N: Retry to get kubectl version."
+  echo "$N: Retrying to reach the apiserver"
   sleep ${DELAY}
 done
 
-if [[ -z "$VERSION" ]]; then
-  echo "Could not get kubectl version."
+if [ "$N" -ge ${MAX_RETRY} ]; then
+  echo "Could not reach the apiserver"
   exit 1
 fi
 
-echo "Check nodes status"
+echo "Wait for nodes to become Ready"
 kubectl --kubeconfig /tmp/targetkubeconfig wait --for=condition=Ready node --all --timeout 900s
 
 echo "Get cluster state"
