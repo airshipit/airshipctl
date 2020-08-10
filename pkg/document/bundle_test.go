@@ -206,6 +206,71 @@ func TestBundleOrder(t *testing.T) {
 	assert.Equal(t, "workflow-controller", doc.GetName())
 }
 
+func TestSelectOne(t *testing.T) {
+	bundle := testutil.NewTestBundle(t, "testdata/common")
+
+	tests := []struct {
+		selector     document.Selector
+		expectedName string
+		expectedErr  string
+	}{
+		{
+			selector:     document.NewSelector().ByName("master-0"),
+			expectedName: "master-0",
+		},
+		{
+			selector:    document.NewSelector().ByName("non-existent-doc"),
+			expectedErr: `document filtered by selector [Name="non-existent-doc"] found no documents`,
+		},
+		{
+			selector:    document.NewSelector().ByKind("BareMetalHost"),
+			expectedErr: `document filtered by selector [Kind="BareMetalHost"] found more than one document`,
+		},
+	}
+
+	for _, tt := range tests {
+		doc, err := bundle.SelectOne(tt.selector)
+		if tt.expectedErr == "" {
+			require.NoError(t, err)
+			assert.Equal(t, tt.expectedName, doc.GetName())
+		} else {
+			assert.EqualError(t, err, tt.expectedErr)
+		}
+	}
+}
+
+func TestSelectBundle(t *testing.T) {
+	bundle := testutil.NewTestBundle(t, "testdata/common")
+
+	tests := []struct {
+		selector     document.Selector
+		expectedDocs int
+	}{
+		{
+			selector:     document.NewSelector().ByName("master-0"),
+			expectedDocs: 1,
+		},
+		{
+			selector:     document.NewSelector().ByName("non-existent-doc"),
+			expectedDocs: 0,
+		},
+		{
+			selector:     document.NewSelector().ByKind("BareMetalHost"),
+			expectedDocs: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		newBundle, err := bundle.SelectBundle(tt.selector)
+		require.NoError(t, err)
+
+		docs, err := newBundle.GetAllDocuments()
+		require.NoError(t, err)
+
+		assert.Len(t, docs, tt.expectedDocs)
+	}
+}
+
 func TestPluginPath(t *testing.T) {
 	testDir, cleanup := testutil.TempDir(t, "test-home")
 	defer cleanup(t)
