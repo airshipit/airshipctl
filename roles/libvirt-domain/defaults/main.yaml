@@ -106,6 +106,9 @@ libvirt_domain_template_default: |
       <on_crash>destroy</on_crash>
       <os>
       <type arch='{{ libvirt_vm_arch }}'{% if machine is not none %} machine='{{ machine }}'{% endif %}>hvm</type>
+      {% if libvirt_domain.boot_mode is defined and libvirt_domain.boot_mode == 'UEFI' %}
+      <loader readonly='yes' type='pflash'>/usr/share/OVMF/OVMF_CODE.fd</loader>
+      {% endif %}
       <bootmenu enable='no'/>
       <boot dev='hd'/>
       <boot dev='cdrom'/>
