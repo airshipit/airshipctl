@@ -29,6 +29,8 @@ const (
 	ErrorType
 	// StatusPollerType event produced by status poller
 	StatusPollerType
+	// WaitType is event emitted when airshipctl is waiting for something
+	WaitType
 )
 
 // Event holds all possible events that can be produced by airship

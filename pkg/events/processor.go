@@ -53,6 +53,8 @@ func (p *DefaultProcessor) Process(ch <-chan Event) error {
 			p.errors = append(p.errors, e.ErrorEvent.Error)
 		case StatusPollerType:
 			log.Fatalf("Processing for status poller events are not yet implemented")
+		case WaitType:
+			log.Fatalf("Processing for wait events are not yet implemented")
 		default:
 			log.Fatalf("Unknown event type received: %d", e.Type)
 		}

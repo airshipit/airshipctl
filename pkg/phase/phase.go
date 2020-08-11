@@ -15,7 +15,6 @@
 package phase
 
 import (
-	"fmt"
 	"path/filepath"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,31 +23,50 @@ import (
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/events"
+	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
-var (
-	// ExecutorRegistry contins registered runner factories
-	ExecutorRegistry = make(map[schema.GroupVersionKind]ifc.ExecutorFactory)
-)
+// ExecutorRegistry returns map with executor factories
+type ExecutorRegistry func() map[schema.GroupVersionKind]ifc.ExecutorFactory
+
+// DefaultExecutorRegistry returns map with executor factories
+func DefaultExecutorRegistry() map[schema.GroupVersionKind]ifc.ExecutorFactory {
+	execMap := make(map[schema.GroupVersionKind]ifc.ExecutorFactory)
+	// add executors here
+	return execMap
+}
 
 // Cmd object to work with phase api
 type Cmd struct {
-	*environment.AirshipCTLSettings
 	DryRun bool
+
+	Registry ExecutorRegistry
+	// Will be used to get processor based on executor action
+	Processor events.EventProcessor
+	*environment.AirshipCTLSettings
 }
 
 func (p *Cmd) getBundle() (document.Bundle, error) {
-	ccm, err := p.Config.CurrentContextManifest()
+	tp, err := p.AirshipCTLSettings.Config.CurrentContextTargetPath()
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("Target path is: %s", filepath.Join(ccm.TargetPath))
 	meta, err := p.Config.CurrentContextManifestMetadata()
 	if err != nil {
 		return nil, err
 	}
-	return document.NewBundleByPath(filepath.Join(ccm.TargetPath, meta.PhaseMeta.Path))
+	log.Debugf("Building phase bundle from path %s", tp)
+	return document.NewBundleByPath(filepath.Join(tp, meta.PhaseMeta.Path))
+}
+
+func (p *Cmd) getPhaseExecutor(name string) (ifc.Executor, error) {
+	phaseConfig, err := p.GetPhase(name)
+	if err != nil {
+		return nil, err
+	}
+	return p.GetExecutor(phaseConfig)
 }
 
 // GetPhase returns particular phase object identified by name
@@ -105,28 +123,29 @@ func (p *Cmd) GetExecutor(phase *airshipv1.Phase) (ifc.Executor, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	if p.Registry == nil {
+		p.Registry = DefaultExecutorRegistry
+	}
 	// Look for executor factory defined in registry
-	executorFactory, found := ExecutorRegistry[refGVK]
+	executorFactory, found := p.Registry()[refGVK]
 	if !found {
 		return nil, ErrExecutorNotFound{GVK: refGVK}
 	}
-	return executorFactory(doc, executorDocBundle, p.AirshipCTLSettings)
+	// When https://review.opendev.org/#/c/744382 add provider from there.
+	return executorFactory(doc, executorDocBundle, p.AirshipCTLSettings, nil)
 }
 
 // Exec particular phase
 func (p *Cmd) Exec(name string) error {
-	phaseConfig, err := p.GetPhase(name)
+	executor, err := p.getPhaseExecutor(name)
 	if err != nil {
 		return err
 	}
-
-	executor, err := p.GetExecutor(phaseConfig)
-	if err != nil {
-		return err
-	}
-
-	return executor.Run(p.DryRun, p.Debug, true)
+	ch := executor.Run(ifc.RunOptions{
+		Debug:  p.AirshipCTLSettings.Debug,
+		DryRun: p.DryRun,
+	})
+	return p.Processor.Process(ch)
 }
 
 // Plan shows available phase names

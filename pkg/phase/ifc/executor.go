@@ -16,17 +16,36 @@ package ifc
 
 import (
 	"io"
+	"time"
 
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/events"
+	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 )
 
 // Executor interface should be implemented by each runner
 type Executor interface {
-	Run(dryrun, debug, wait bool) error
-	Render(io.Writer) error
+	Run(RunOptions) <-chan events.Event
+	Render(io.Writer, RenderOptions) error
 	Validate() error
-	Wait() error
+	Wait(WaitOptions) <-chan events.Event
+}
+
+// RunOptions holds options for run method
+type RunOptions struct {
+	Debug  bool
+	DryRun bool
+
+	Timeout time.Duration
+}
+
+// RenderOptions is empty for now, but may hold things like format in future
+type RenderOptions struct{}
+
+// WaitOptions holds only timeout now, but may be extended in the future
+type WaitOptions struct {
+	Timeout time.Duration
 }
 
 // ExecutorFactory for executor instantiation
@@ -39,4 +58,5 @@ type ExecutorFactory func(
 	document.Document,
 	document.Bundle,
 	*environment.AirshipCTLSettings,
+	kubeconfig.Provider,
 ) (Executor, error)
