@@ -1,0 +1,19 @@
+# These rules inject host-specific information from the `host-catalogue`
+# into the hostgenerator-m3 function's Template plugin config.
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  # NOTE: change this when copying this example
+  name: hardwareprofile-example-replacements
+replacements:
+- source:
+    objref:
+      # NOTE: change this to match your hardwareProfile's metadata.name
+      name: hardwareprofile-example
+    fieldref: hardwareProfile
+  target:
+    objref:
+      kind: Templater
+      name: m3-host-template
+    # NOTE: change "example" below when copying this example
+    fieldrefs: [values.hardwareProfiles.example]
