@@ -4,7 +4,7 @@ metadata:
   name: cluster-controlplane
 spec:
   replicas: 1
-  version: v1.17.0
+  version: v1.18.6
   infrastructureTemplate:
     kind: Metal3MachineTemplate
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
@@ -17,18 +17,19 @@ spec:
         net.bridge.bridge-nf-call-iptables = 1
         EOF
       - sysctl --system
-      - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-      - curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-      - add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-      - echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list
-      - apt-get update
-      - apt-get install -y
-          docker-ce="$(apt policy docker-ce  | grep 19.03.9 | sort | head -n 1 | tr -s " " | cut -d ' ' -f 2 )"
-          docker-ce-cli="$(apt policy docker-ce-cli  | grep 19.03.9 | sort | head -n 1 | tr -s " " | cut -d ' ' -f 2 )"
-          containerd.io
       - swapoff -a
-      - apt-get install -y kubelet=1.17.3-00 kubeadm=1.17.3-00 kubectl=1.17.3-00
-      - apt-mark hold kubelet kubeadm kubectl
+      - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+      - curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+      - echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee -a /etc/apt/sources.list
+        # Replace xenial with focal or $(lsb_release -cs) once available
+      - echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list
+      - apt update
+      - apt install -y
+          docker-ce="$(apt-cache policy docker-ce | grep 19.03.12 | sort | head -n 1 | tr -s " " | cut -d ' ' -f 2)"
+          docker-ce-cli="$(apt-cache policy docker-ce-cli | grep 19.03.12 | sort | head -n 1 | tr -s " " | cut -d ' ' -f 2)"
+          containerd.io
+      - apt install -y kubelet=1.18.6-00 kubeadm=1.18.6-00 kubectl=1.18.6-00
+      - apt-mark hold docker-ce docker-ce-cli containerd.io kubelet kubeadm kubectl
     initConfiguration:
       nodeRegistration:
         name: '{{ ds.meta_data.local_hostname }}'
@@ -41,7 +42,7 @@ spec:
         kubeletExtraArgs:
           node-labels: 'metal3.io/uuid={{ ds.meta_data.uuid }}'
     postKubeadmCommands:
-      - kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://docs.projectcalico.org/v3.9/manifests/calico.yaml
+      - kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://docs.projectcalico.org/v3.15/manifests/calico.yaml
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
 kind: Metal3MachineTemplate
@@ -52,8 +53,8 @@ spec:
     spec:
       image:
         # NOTE (dukov) this should be overridden on lower levels
-        url: https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img
-        checksum: 4a6909d1480ac30d676accd7b37ec711
+        url: https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
+        checksum: 2c890254ecbd4e6b4931f864ef72b337
       hostSelector:
         matchLabels:
           airshipit.org/k8s-role: controlplane-host
