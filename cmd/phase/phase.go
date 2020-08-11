@@ -44,6 +44,7 @@ func NewPhaseCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comman
 	phaseRootCmd.AddCommand(NewApplyCommand(rootSettings))
 	phaseRootCmd.AddCommand(NewRenderCommand(rootSettings))
 	phaseRootCmd.AddCommand(NewPlanCommand(rootSettings))
+	phaseRootCmd.AddCommand(NewRunCommand(rootSettings))
 
 	return phaseRootCmd
 }
