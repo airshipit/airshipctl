@@ -29,6 +29,6 @@ kubectl --kubeconfig $KUBECONFIG --namespace metal3 get pods --selector tier=con
 kubectl --kubeconfig $KUBECONFIG taint node node01 node-role.kubernetes.io/master-
 
 echo "Deploy infra to cluster"
-airshipctl phase apply initinfra --debug --wait-timeout 600s
+airshipctl phase apply initinfra --debug --wait-timeout 1000s
 
 kubectl --kubeconfig $KUBECONFIG get pods --all-namespaces
