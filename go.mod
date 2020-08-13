@@ -18,7 +18,7 @@ require (
 	github.com/metal3-io/baremetal-operator v0.0.0-20200501205115-2c0dc9997bfa
 	github.com/onsi/gomega v1.9.0
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v0.0.6
+	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.4.0
 	k8s.io/api v0.17.4
 	k8s.io/apiextensions-apiserver v0.17.4

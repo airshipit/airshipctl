@@ -57,19 +57,16 @@ func TestFlagLoading(t *testing.T) {
 		name     string
 		args     []string
 		expected string
-		Error    error
 	}{
 		{
 			name:     "default, no flags",
 			args:     []string{},
 			expected: "",
-			Error:    cobra.ErrSubCommandRequired,
 		},
 		{
 			name:     "alternate airshipconfig",
 			args:     []string{"--airshipconf", "/custom/path/to/airshipconfig"},
 			expected: "/custom/path/to/airshipconfig",
-			Error:    cobra.ErrSubCommandRequired,
 		},
 	}
 
@@ -83,7 +80,7 @@ func TestFlagLoading(t *testing.T) {
 			rootCmd.SetArgs(tt.args)
 
 			err = rootCmd.Execute()
-			assert.Equal(t, tt.Error, err)
+			require.NoError(t, err)
 
 			assert.Equal(t, settings.AirshipConfigPath, tt.expected)
 		})
