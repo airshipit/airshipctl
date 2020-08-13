@@ -31,7 +31,7 @@ require (
 	sigs.k8s.io/cli-utils v0.15.0
 	sigs.k8s.io/cluster-api v0.3.5
 	sigs.k8s.io/controller-runtime v0.5.2
-	sigs.k8s.io/kustomize/api v0.3.1
+	sigs.k8s.io/kustomize/api v0.5.1
 	sigs.k8s.io/yaml v1.2.0
 )
 
