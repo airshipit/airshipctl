@@ -30,21 +30,23 @@ import (
 
 // Options is an abstraction used to apply the phase
 type Options struct {
-	RootSettings *environment.AirshipCTLSettings
-	Applier      *applier.Applier
-	Processor    events.EventProcessor
-
-	WaitTimeout time.Duration
 	DryRun      bool
 	Prune       bool
 	PhaseName   string
+	WaitTimeout time.Duration
+
+	RootSettings *environment.AirshipCTLSettings
+	Applier      *applier.Applier
+	Processor    events.EventProcessor
+	EventChannel chan events.Event
 }
 
 // Initialize Options with required field, such as Applier
 func (o *Options) Initialize() {
 	f := utils.FactoryFromKubeConfigPath(o.RootSettings.KubeConfigPath)
 	streams := utils.Streams()
-	o.Applier = applier.NewApplier(f, streams)
+	o.EventChannel = make(chan events.Event)
+	o.Applier = applier.NewApplier(o.EventChannel, f, streams)
 	o.Processor = events.NewDefaultProcessor(streams)
 }
 
@@ -87,6 +89,6 @@ func (o *Options) Run() error {
 	if err != nil {
 		return err
 	}
-	ch := o.Applier.ApplyBundle(bundle, ao)
-	return o.Processor.Process(ch)
+	go o.Applier.ApplyBundle(bundle, ao)
+	return o.Processor.Process(o.EventChannel)
 }

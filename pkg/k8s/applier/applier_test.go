@@ -36,11 +36,13 @@ import (
 )
 
 func TestFakeApplier(t *testing.T) {
-	a := applier.NewFakeApplier(genericclioptions.IOStreams{
-		In:     os.Stdin,
-		Out:    os.Stdout,
-		ErrOut: os.Stderr,
-	}, k8stest.SuccessEvents(), k8stest.FakeFactory(t, []k8stest.ClientHandler{}))
+	ch := make(chan events.Event)
+	a := applier.NewFakeApplier(ch,
+		genericclioptions.IOStreams{
+			In:     os.Stdin,
+			Out:    os.Stdout,
+			ErrOut: os.Stderr,
+		}, k8stest.SuccessEvents(), k8stest.FakeFactory(t, []k8stest.ClientHandler{}))
 	assert.NotNil(t, a)
 }
 
@@ -120,7 +122,8 @@ func TestApplierRun(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			// create default applier
-			a := applier.NewApplier(f, s)
+			eventChan := make(chan events.Event)
+			a := applier.NewApplier(eventChan, f, s)
 			opts := applier.ApplyOptions{
 				WaitTimeout:    time.Second * 5,
 				BundleName:     "test-bundle",
@@ -132,9 +135,10 @@ func TestApplierRun(t *testing.T) {
 			if tt.poller != nil {
 				a.Poller = tt.poller
 			}
-			ch := a.ApplyBundle(tt.bundle, opts)
+			// start writing to channel
+			go a.ApplyBundle(tt.bundle, opts)
 			var airEvents []events.Event
-			for e := range ch {
+			for e := range eventChan {
 				airEvents = append(airEvents, e)
 			}
 			var errs []error
