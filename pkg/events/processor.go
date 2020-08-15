@@ -77,7 +77,7 @@ func (p *DefaultProcessor) processApplierEvent(e applyevent.Event) {
 func checkErrors(errs []error) error {
 	if len(errs) != 0 {
 		return ErrEventReceived{
-			errors: errs,
+			Errors: errs,
 		}
 	}
 	return nil

@@ -20,10 +20,10 @@ import (
 
 // ErrEventReceived returned for not implemented features
 type ErrEventReceived struct {
-	errors []error
+	Errors []error
 }
 
 func (e ErrEventReceived) Error() string {
 	// TODO make printing more readable here
-	return fmt.Sprintf("Applying of resources to kubernetes cluster has failed, errors are:\n%v", e.errors)
+	return fmt.Sprintf("Applying of resources to kubernetes cluster has failed, errors are:\n%v", e.Errors)
 }
