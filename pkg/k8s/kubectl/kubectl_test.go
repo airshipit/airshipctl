@@ -79,7 +79,7 @@ func TestApply(t *testing.T) {
 			expectedErr: nil,
 			fs: fs.MockFileSystem{
 				MockRemoveAll: func() error { return nil },
-				MockTempFile: func() (document.File, error) {
+				MockTempFile: func(string, string) (document.File, error) {
 					return fs.TestFile{
 						MockName:  func() string { return filenameRC },
 						MockWrite: func() (int, error) { return 0, nil },
@@ -91,13 +91,13 @@ func TestApply(t *testing.T) {
 		{
 			expectedErr: ErrWriteOutError,
 			fs: fs.MockFileSystem{
-				MockTempFile: func() (document.File, error) { return nil, ErrWriteOutError }},
+				MockTempFile: func(string, string) (document.File, error) { return nil, ErrWriteOutError }},
 		},
 		{
 			expectedErr: ErrTempFileError,
 			fs: fs.MockFileSystem{
 				MockRemoveAll: func() error { return nil },
-				MockTempFile: func() (document.File, error) {
+				MockTempFile: func(string, string) (document.File, error) {
 					return fs.TestFile{
 						MockWrite: func() (int, error) { return 0, ErrTempFileError },
 						MockName:  func() string { return filenameRC },

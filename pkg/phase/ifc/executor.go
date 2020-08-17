@@ -58,5 +58,5 @@ type ExecutorFactory func(
 	document.Document,
 	document.Bundle,
 	*environment.AirshipCTLSettings,
-	kubeconfig.Provider,
+	kubeconfig.Interface,
 ) (Executor, error)
