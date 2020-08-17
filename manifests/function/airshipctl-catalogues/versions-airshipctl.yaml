@@ -1,0 +1,49 @@
+# The default versions catalogue for functions hosted in the airshipctl project.
+# These values can be overridden at the site, type, etc levels as appropriate.
+apiVersion: airshipit.org/v1alpha1
+kind: VariableCatalogue
+metadata:
+  name: versions-airshipctl
+  labels:
+    airshipit.org/deploy-k8s: "false"
+
+charts:
+  dex:
+    # TODO: match this data to what is expected by helm-operator or image builder
+    location: TODO
+    reference: TODO
+    subpath: TODO
+    type: TODO
+
+files:
+  k8scontrol:
+    cluster_controlplane_image:
+      url: https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img
+      checksum: 4a6909d1480ac30d676accd7b37ec711
+
+images:
+  capm3: # Images specific to the camp3 function; etc.
+    manager: quay.io/metal3-io/cluster-api-provider-metal3
+    auth_proxy: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.0
+  cacpk:
+    manager: us.gcr.io/k8s-artifacts-prod/cluster-api/kubeadm-control-plane-controller:v0.3.3
+    auth_proxy: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
+  cabpk:
+    manager: us.gcr.io/k8s-artifacts-prod/cluster-api/kubeadm-bootstrap-controller:v0.3.3
+    auth_proxy: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
+  capi:
+    manager: us.gcr.io/k8s-artifacts-prod/cluster-api/cluster-api-controller:v0.3.3
+    auth_proxy: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
+  baremetal_operator:
+    ironic: # ironic Deployment
+      init_bootstrap: centos
+      dnsmasq: quay.io/metal3-io/ironic:capm3-v0.4.0
+      httpd: quay.io/metal3-io/ironic:capm3-v0.4.0
+      ironic: quay.io/metal3-io/ironic:capm3-v0.4.0
+      ironic_inspector: quay.io/metal3-io/ironic-inspector:capm3-v0.4.0
+    metal3_baremetal_operator: # metal3-baremetal-operator Deployment
+      baremetal_operator: quay.io/metal3-io/baremetal-operator:capm3-v0.4.0
+      ironic_proxy: alpine/socat
+      ironic_inspector_proxy: alpine/socat
+
+kubernetes: v1.18.6

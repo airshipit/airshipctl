@@ -1,0 +1,82 @@
+# These rules inject host-specific information from the `host-catalogue`
+# into the hostgenerator-m3 function's Template plugin config.
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: baremetal-operator-versions-replacements
+replacements:
+# Container versions for the ironic Deployment
+- source:
+    objref:
+      name: versions-airshipctl
+    fieldref: images.baremetal_operator.ironic.init_bootstrap
+  target:
+    objref:
+      kind: Deployment
+      name: ironic
+    fieldrefs: ["spec.template.spec.initContainers[name=init-bootstrap].image"]
+- source:
+    objref:
+      name: versions-airshipctl
+    fieldref: images.baremetal_operator.ironic.dnsmasq
+  target:
+    objref:
+      kind: Deployment
+      name: ironic
+    fieldrefs: ["spec.template.spec.containers[name=dnsmasq].image"]
+- source:
+    objref:
+      name: versions-airshipctl
+    fieldref: images.baremetal_operator.ironic.httpd
+  target:
+    objref:
+      kind: Deployment
+      name: ironic
+    fieldrefs: ["spec.template.spec.containers[name=httpd].image"]
+- source:
+    objref:
+      name: versions-airshipctl
+    fieldref: images.baremetal_operator.ironic.ironic
+  target:
+    objref:
+      kind: Deployment
+      name: ironic
+    fieldrefs: ["spec.template.spec.containers[name=ironic].image"]
+- source:
+    objref:
+      name: versions-airshipctl
+    fieldref: images.baremetal_operator.ironic.ironic_inspector
+  target:
+    objref:
+      kind: Deployment
+      name: ironic
+    fieldrefs: ["spec.template.spec.containers[name=ironic-inspector].image"]
+# Container versions for the metal3-baremetal-operator Deployment
+- source:
+    objref:
+      name: versions-airshipctl
+    fieldref: images.baremetal_operator.metal3_baremetal_operator.baremetal_operator
+  target:
+    objref:
+      kind: Deployment
+      name: metal3-baremetal-operator
+    fieldrefs: ["spec.template.spec.containers[name=baremetal-operator].image"]
+- source:
+    objref:
+      name: versions-airshipctl
+    fieldref: images.baremetal_operator.metal3_baremetal_operator.ironic_proxy
+  target:
+    objref:
+      kind: Deployment
+      name: metal3-baremetal-operator
+    fieldrefs: ["spec.template.spec.containers[name=ironic-proxy].image"]
+- source:
+    objref:
+      name: versions-airshipctl
+    fieldref: images.baremetal_operator.metal3_baremetal_operator.ironic_inspector_proxy
+  target:
+    objref:
+      kind: Deployment
+      name: metal3-baremetal-operator
+    fieldrefs: ["spec.template.spec.containers[name=ironic-inspector-proxy].image"]
+
