@@ -25,7 +25,9 @@
           - python3-libvirt
           - dnsmasq
           - ebtables
+          - ovmf
           RedHat:
+          - edk2-ovmf
           - libguestfs-tools
           - libvirt
           - libvirt-devel

@@ -70,6 +70,7 @@
     name: libvirt-domain
   vars:
     libvirt_domain:
+      boot_mode: UEFI
       enable_vnc: true
       console_log_enabled: true
       state: shutdown
@@ -99,6 +100,7 @@
     name: libvirt-domain
   vars:
     libvirt_domain:
+      boot_mode: UEFI
       enable_vnc: true
       console_log_enabled: true
       state: shutdown
@@ -167,6 +169,7 @@
     name: libvirt-domain
   vars:
     libvirt_domain:
+      boot_mode: UEFI
       enable_vnc: true
       console_log_enabled: true
       state: shutdown
