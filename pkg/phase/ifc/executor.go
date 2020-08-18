@@ -26,10 +26,9 @@ import (
 
 // Executor interface should be implemented by each runner
 type Executor interface {
-	Run(RunOptions) <-chan events.Event
+	Run(<-chan events.Event, RunOptions)
 	Render(io.Writer, RenderOptions) error
 	Validate() error
-	Wait(WaitOptions) <-chan events.Event
 }
 
 // RunOptions holds options for run method
@@ -49,14 +48,15 @@ type WaitOptions struct {
 }
 
 // ExecutorFactory for executor instantiation
-// First argument is document object which represents executor
-// configuration.
-// Second argument is document bundle used by executor.
-// Third argument airship configuration settings since each phase
-// has to be aware of execution context and global settings
-type ExecutorFactory func(
-	document.Document,
-	document.Bundle,
-	*environment.AirshipCTLSettings,
-	kubeconfig.Interface,
-) (Executor, error)
+type ExecutorFactory func(config ExecutorConfig) (Executor, error)
+
+// ExecutorConfig container to store all executor options
+type ExecutorConfig struct {
+	PhaseName   string
+	ClusterName string
+
+	ExecutorDocument document.Document
+	ExecutorBundle   document.Bundle
+	AirshipSettings  *environment.AirshipCTLSettings
+	KubeConfig       kubeconfig.Interface
+}
