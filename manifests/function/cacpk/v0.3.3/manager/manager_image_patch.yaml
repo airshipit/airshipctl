@@ -7,5 +7,5 @@ spec:
   template:
     spec:
       containers:
-        - image: us.gcr.io/k8s-artifacts-prod/cluster-api/kubeadm-control-plane-controller:v0.3.3
+        - image: ${CONTAINER_CACPK_MANAGER}
           name: manager
