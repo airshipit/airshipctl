@@ -3,14 +3,14 @@ bootstrapInfo:
   dummy_bootstrap_config:
     container:
       volume: /tmp/airship:/config
-      image: quay.io/airshipit/isogen:latest-debian_stable
+      image: quay.io/airshipit/isogen:latest-ubuntu_focal
       containerRuntime: docker
     builder:
       userDataFileName: user-data
       networkConfigFileName: network-config
       outputMetadataFileName: output-metadata.yaml
     remoteDirect:
-      isoUrl: http://localhost:8099/debian-custom.iso
+      isoUrl: http://localhost:8099/ubuntu-focal.iso
       remoteType: redfish
 clusters:
   dummycluster:

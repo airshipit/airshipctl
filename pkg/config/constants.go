@@ -57,8 +57,8 @@ const (
 	AirshipPluginPathEnv                  = "AIRSHIP_KUSTOMIZE_PLUGINS"
 
 	// Modules
-	AirshipDefaultBootstrapImage = "quay.io/airshipit/isogen:latest-debian_stable"
-	AirshipDefaultIsoURL         = "http://localhost:8099/debian-custom.iso"
+	AirshipDefaultBootstrapImage = "quay.io/airshipit/isogen:latest-ubuntu_focal"
+	AirshipDefaultIsoURL         = "http://localhost:8099/ubuntu-focal.iso"
 	AirshipDefaultManagementType = redfish.ClientType
 )
 

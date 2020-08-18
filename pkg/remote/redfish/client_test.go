@@ -33,7 +33,7 @@ import (
 
 const (
 	nodeID              = "System.Embedded.1"
-	isoPath             = "https://localhost:8080/debian.iso"
+	isoPath             = "http://localhost:8099/ubuntu-focal.iso"
 	redfishURL          = "redfish+https://localhost:2224/Systems/System.Embedded.1"
 	systemActionRetries = 1
 	systemRebootDelay   = 0

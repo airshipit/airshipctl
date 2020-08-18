@@ -16,7 +16,7 @@ set -ex
 
 TARGET_IMAGE_DIR="/srv/iso"
 EPHEMERAL_DOMAIN_NAME="air-ephemeral"
-TARGET_IMAGE_URL="https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img"
+TARGET_IMAGE_URL="https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img"
 
 # TODO (dukov) this is needed due to sushy tools inserts cdrom image to
 # all vms. This can be removed once sushy tool is fixed

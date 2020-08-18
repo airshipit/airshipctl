@@ -62,10 +62,10 @@ bootstrapInfo:
       userDataFileName: user-data
     container:
       containerRuntime: docker
-      image: quay.io/airshipit/isogen:latest-debian_stable
+      image: quay.io/airshipit/isogen:latest-ubuntu_focal
       volume: /srv/iso:/config
     remoteDirect:
-      isoUrl: http://localhost:8099/debian-custom.iso
+      isoUrl: http://localhost:8099/ubuntu-focal.iso
 clusters:
   ${CONTEXT}_${cluster}:
     clusterType:
