@@ -45,6 +45,7 @@ func init() {
 		&Phase{},
 		&PhasePlan{},
 		&KubeConfig{},
+		&KubernetesApply{},
 	)
 	_ = AddToScheme(Scheme) //nolint:errcheck
 }

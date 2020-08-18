@@ -33,5 +33,5 @@ type ErrApplyNilBundle struct {
 }
 
 func (e ErrApplyNilBundle) Error() string {
-	return "Can not apply nil bundle, airship.kubernetes.Client"
+	return "Cannot apply nil bundle"
 }

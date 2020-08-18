@@ -94,7 +94,7 @@ func TestApplierRun(t *testing.T) {
 		},
 		{
 			name:           "bundle failure",
-			expectedString: "Can not apply nil bundle, airship.kubernetes.Client",
+			expectedString: "Cannot apply nil bundle",
 			expectErr:      true,
 		},
 		{

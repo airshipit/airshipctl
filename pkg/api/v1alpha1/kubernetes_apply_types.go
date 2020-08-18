@@ -15,26 +15,32 @@
 package v1alpha1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // +kubebuilder:object:root=true
 
-// Phase object to control deployment steps
-type Phase struct {
+// KubernetesApply provides instructions on how to apply resources to kubernetes cluster
+type KubernetesApply struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Config            PhaseConfig `json:"config,omitempty"`
+
+	Config ApplyConfig `json:"config,omitempty"`
 }
 
-// PhaseConfig represents configuration for a particular phase. It contins a reference to
-// phase runner object which should contain runner configuration
-type PhaseConfig struct {
-	ExecutorRef        *corev1.ObjectReference `json:"executorRef"`
-	DocumentEntryPoint string                  `json:"documentEntryPoint"`
-	// Name used to identify a cluster that the phase belongs to
-	ClusterName string `json:"clusterName"`
-	// ClusterNamespace identifies the namespace that the phase belongs to
-	ClusterNamespace string `json:"clusterNamespace"`
+// ApplyConfig provides instructions on how to apply resources to kubernetes cluster
+type ApplyConfig struct {
+	WaitOptions  ApplyWaitOptions  `json:"waitOptions,omitempty"`
+	PruneOptions ApplyPruneOptions `json:"pruneOptions,omitempty"`
+}
+
+// ApplyWaitOptions provides instructions how to wait for kubernetes resources
+type ApplyWaitOptions struct {
+	// Timeout in seconds
+	Timeout int `json:"timeout,omitempty"`
+}
+
+// ApplyPruneOptions provides instructions how to prune for kubernetes resources
+type ApplyPruneOptions struct {
+	Prune bool `json:"prune,omitempty"`
 }
