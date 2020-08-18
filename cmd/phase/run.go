@@ -58,6 +58,5 @@ func NewRunCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command 
 		"dry-run",
 		false,
 		"simulate phase execution")
-	// TODO add kubeconfig flags when https://review.opendev.org/#/c/744382 is merged
 	return runCmd
 }

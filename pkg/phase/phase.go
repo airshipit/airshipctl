@@ -21,11 +21,15 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/events"
+	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
+	k8sutils "opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
+	"opendev.org/airship/airshipctl/pkg/util"
 )
 
 // ExecutorRegistry returns map with executor factories
@@ -109,7 +113,7 @@ func (p *Cmd) GetExecutor(phase *airshipv1.Phase) (ifc.Executor, error) {
 		ByGvk(refGVK.Group, refGVK.Version, refGVK.Kind).
 		ByName(phaseConfig.ExecutorRef.Name).
 		ByNamespace(phaseConfig.ExecutorRef.Namespace)
-	doc, err := bundle.SelectOne(selector)
+	executorDoc, err := bundle.SelectOne(selector)
 	if err != nil {
 		return nil, err
 	}
@@ -131,21 +135,43 @@ func (p *Cmd) GetExecutor(phase *airshipv1.Phase) (ifc.Executor, error) {
 	if !found {
 		return nil, ErrExecutorNotFound{GVK: refGVK}
 	}
-	// When https://review.opendev.org/#/c/744382 add provider from there.
-	return executorFactory(doc, executorDocBundle, p.AirshipCTLSettings, nil)
+
+	kubeConfPath := p.AirshipCTLSettings.Config.KubeConfigPath()
+	homeDir := util.UserHomeDir()
+	workDir := filepath.Join(homeDir, config.AirshipConfigDir)
+	fs := document.NewDocumentFs()
+	source := kubeconfig.FromFile(kubeConfPath, fs)
+	fileOption := kubeconfig.InjectFilePath(kubeConfPath, fs)
+	tempRootOption := kubeconfig.InjectTempRoot(workDir)
+	kubeConfig := kubeconfig.NewKubeConfig(source, fileOption, tempRootOption)
+
+	// TODO add function to decide on how to build kubeconfig instead of hardcoding it here,
+	// when more kubeconfigs sources are available.
+	return executorFactory(ifc.ExecutorConfig{
+		ExecutorBundle:   executorDocBundle,
+		PhaseName:        phase.Name,
+		ExecutorDocument: executorDoc,
+		AirshipSettings:  p.AirshipCTLSettings,
+		KubeConfig:       kubeConfig,
+	})
 }
 
-// Exec particular phase
+// Exec starts executor goroutine and processes the events
 func (p *Cmd) Exec(name string) error {
-	executor, err := p.getPhaseExecutor(name)
-	if err != nil {
-		return err
-	}
-	ch := executor.Run(ifc.RunOptions{
-		Debug:  p.AirshipCTLSettings.Debug,
-		DryRun: p.DryRun,
-	})
-	return p.Processor.Process(ch)
+	runCh := make(chan events.Event)
+	processor := events.NewDefaultProcessor(k8sutils.Streams())
+	go func() {
+		executor, err := p.getPhaseExecutor(name)
+		if err != nil {
+			handleError(err, runCh)
+			return
+		}
+		executor.Run(runCh, ifc.RunOptions{
+			Debug:  p.Debug,
+			DryRun: p.DryRun,
+		})
+	}()
+	return processor.Process(runCh)
 }
 
 // Plan shows available phase names
@@ -177,4 +203,14 @@ func (p *Cmd) Plan() (map[string][]string, error) {
 		result[phaseGroup.Name] = phases
 	}
 	return result, nil
+}
+
+func handleError(err error, ch chan events.Event) {
+	ch <- events.Event{
+		Type: events.ErrorType,
+		ErrorEvent: events.ErrorEvent{
+			Error: err,
+		},
+	}
+	close(ch)
 }
