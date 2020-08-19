@@ -1527,8 +1527,8 @@ opendev.org/airship/go-redfish/client v0.0.0-20200318103738-db034d1d753a h1:S1dm
 opendev.org/airship/go-redfish/client v0.0.0-20200318103738-db034d1d753a/go.mod h1:s0hwuUpBsRXOrhN0NR+fNVivXGyWgHKpqtyq7qYjpew=
 rsc.io/binaryregexp v0.2.0/go.mod h1:qTv7/COck+e2FymRvadv62gMdZztPaShugOCi3I+8D8=
 rsc.io/letsencrypt v0.0.3/go.mod h1:buyQKZ6IXrRnB7TdkHP0RyEybLx18HHyOSoTyoOLqNY=
-sigs.k8s.io/cli-utils v0.15.0 h1:QiGX8wfBaegKQhejZg2EsqCPYGtyavIpEjNTMdpzUlY=
-sigs.k8s.io/cli-utils v0.15.0/go.mod h1:H35YA5iJIM7EVNgqDTjX2dgt4wE23zmnXOTSTlyD+PE=
+sigs.k8s.io/cli-utils v0.18.1 h1:K4usJmMlI98mL+z+TdAnKfzng64/m8bRXZKPwy3ZCWw=
+sigs.k8s.io/cli-utils v0.18.1/go.mod h1:B7KdqkSkHNIUn3cFbaR4aKUZMKtr+Benboi1w/HW/Fg=
 sigs.k8s.io/cluster-api v0.3.5 h1:XPCuwrGL73x82a6spCHwkHHeGiQF+L4zntaoDg2qMzo=
 sigs.k8s.io/cluster-api v0.3.5/go.mod h1:IoP66q4g92I/2f/9hltbE/FWG3RakIwRdYpY+6mqvtE=
 sigs.k8s.io/controller-runtime v0.4.0/go.mod h1:ApC79lpY3PHW9xj/w9pj+lYkLgwAAUZwfXkME1Lajns=
@@ -1541,8 +1541,6 @@ sigs.k8s.io/kustomize v2.0.3+incompatible h1:JUufWFNlI44MdtnjUqVnvh29rR37PQFzPbL
 sigs.k8s.io/kustomize v2.0.3+incompatible/go.mod h1:MkjgH3RdOWrievjo6c9T245dYlB5QeXV4WCbnt/PEpU=
 sigs.k8s.io/kustomize/api v0.5.1 h1:iHGTs5LcnJGqHstUSxWD/kX6XZgmd82x79LLlZwDU0I=
 sigs.k8s.io/kustomize/api v0.5.1/go.mod h1:LGqJ9ZWOnWDqlECqrFgNUyEqSJc6ooA9ZiWZ4KFZv+I=
-sigs.k8s.io/kustomize/kyaml v0.1.4 h1:cDG2u7v6CTAZmWKzCjk0hKG7AIN+2mCHx2ifwPbvKrs=
-sigs.k8s.io/kustomize/kyaml v0.1.4/go.mod h1:461i94nj0h0ylJ6w83jLkR4SqqVhn1iY6fjD0JSTQeE=
 sigs.k8s.io/kustomize/kyaml v0.4.1 h1:NEqA/35upoAjb+I5vh1ODUqxoX4DOrezeQa9BhhG5Co=
 sigs.k8s.io/kustomize/kyaml v0.4.1/go.mod h1:XJL84E6sOFeNrQ7CADiemc1B0EjIxHo3OhW4o1aJYNw=
 sigs.k8s.io/structured-merge-diff v0.0.0-20190525122527-15d366b2352e/go.mod h1:wWxsB5ozmmv/SG7nM11ayaAW51xMvak/t1r0CSlcokI=

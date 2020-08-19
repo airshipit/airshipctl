@@ -15,13 +15,15 @@
 package applier
 
 import (
+	"sigs.k8s.io/cli-utils/pkg/common"
+
 	"time"
 )
 
 // ApplyOptions struct that hold options for apply operation
 type ApplyOptions struct {
-	WaitTimeout time.Duration
-	DryRun      bool
-	Prune       bool
-	BundleName  string
+	WaitTimeout    time.Duration
+	DryRunStrategy common.DryRunStrategy
+	Prune          bool
+	BundleName     string
 }

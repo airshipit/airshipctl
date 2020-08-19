@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"time"
 
+	"sigs.k8s.io/cli-utils/pkg/common"
+
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/events"
@@ -49,10 +51,14 @@ func (o *Options) Initialize() {
 // Run apply subcommand logic
 func (o *Options) Run() error {
 	ao := applier.ApplyOptions{
-		DryRun:      o.DryRun,
-		Prune:       o.Prune,
-		WaitTimeout: o.WaitTimeout,
+		DryRunStrategy: common.DryRunNone,
+		Prune:          o.Prune,
+		WaitTimeout:    o.WaitTimeout,
 	}
+	if o.DryRun {
+		ao.DryRunStrategy = common.DryRunClient
+	}
+
 	globalConf := o.RootSettings.Config
 
 	if err := globalConf.EnsureComplete(); err != nil {

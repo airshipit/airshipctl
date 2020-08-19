@@ -26,6 +26,7 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"sigs.k8s.io/cli-utils/pkg/apply/event"
 	"sigs.k8s.io/cli-utils/pkg/apply/poller"
+	"sigs.k8s.io/cli-utils/pkg/common"
 
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
@@ -121,9 +122,9 @@ func TestApplierRun(t *testing.T) {
 			// create default applier
 			a := applier.NewApplier(f, s)
 			opts := applier.ApplyOptions{
-				WaitTimeout: time.Second * 5,
-				BundleName:  "test-bundle",
-				DryRun:      true,
+				WaitTimeout:    time.Second * 5,
+				BundleName:     "test-bundle",
+				DryRunStrategy: common.DryRunClient,
 			}
 			if tt.driver != nil {
 				a.Driver = tt.driver
