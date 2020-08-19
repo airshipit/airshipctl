@@ -1,7 +1,0 @@
-# this legacy-resource is stable because the fake version in the cluster will
-# have .status.state == "stable"
-apiVersion: "example.com/v1"
-kind: Legacy
-metadata:
-  name: stable-legacy
-  namespace: default

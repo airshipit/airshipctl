@@ -29,9 +29,63 @@ import (
 	"sigs.k8s.io/cli-utils/pkg/kstatus/status"
 	"sigs.k8s.io/cli-utils/pkg/object"
 
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/k8s/client"
 )
+
+// A Status represents a kubernetes resource's state.
+type Status string
+
+// StatusOptions provides a way to get status map within all the documents in the bundle
+type StatusOptions interface {
+	GetStatusMapDocs() (*StatusMap, []document.Document, error)
+}
+
+type statusOptions struct {
+	ConfigFactory config.Factory
+	ClientFactory client.Factory
+}
+
+// NewStatusOptions constructs a new StatusOptions interface based on inner struct
+func NewStatusOptions(cfgFactory config.Factory, clientFactory client.Factory) StatusOptions {
+	return &statusOptions{ConfigFactory: cfgFactory, ClientFactory: clientFactory}
+}
+
+// GetStatusMapDocs returns status map within all the documents in the bundle
+func (o *statusOptions) GetStatusMapDocs() (*StatusMap, []document.Document, error) {
+	conf, err := o.ConfigFactory()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	manifest, err := conf.CurrentContextManifest()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	docBundle, err := document.NewBundleByPath(manifest.TargetPath)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	docs, err := docBundle.GetAllDocuments()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	client, err := o.ClientFactory(conf)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	statusMap, err := NewStatusMap(client)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return statusMap, docs, nil
+}
 
 // StatusMap holds a mapping of schema.GroupVersionResource to various statuses
 // a resource may be in, as well as the Expression used to check for that
