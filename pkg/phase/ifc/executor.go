@@ -26,7 +26,7 @@ import (
 
 // Executor interface should be implemented by each runner
 type Executor interface {
-	Run(<-chan events.Event, RunOptions)
+	Run(chan events.Event, RunOptions)
 	Render(io.Writer, RenderOptions) error
 	Validate() error
 }
