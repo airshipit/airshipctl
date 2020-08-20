@@ -51,6 +51,7 @@
       size: "{{ chosen_flavor.ephemeral_disk_size }}"
       pool: "{{ airship_gate_names.pool }}"
     volume_action: create
+
 - name: Create target volumes
   include_role:
     name: libvirt-volume
@@ -70,7 +71,7 @@
     name: libvirt-domain
   vars:
     libvirt_domain:
-      boot_mode: UEFI
+      boot_mode: "{{ chosen_flavor.target_vm_cfg[vm_index|int - 1].boot_mode | default('UEFI') }}"
       enable_vnc: true
       console_log_enabled: true
       state: shutdown
@@ -88,9 +89,9 @@
           pool: "{{ airship_gate_names.pool }}"
       interfaces:
         - network: "{{ airship_gate_names.nat_network }}"
-          mac: "{{ chosen_flavor.target_vm_nics[vm_index|int - 1].nat_mac | default('')}}"
+          mac: "{{ chosen_flavor.target_vm_cfg[vm_index|int - 1].nat_mac | default('') }}"
         - network: "{{ airship_gate_names.provision_network }}"
-          mac: "{{ chosen_flavor.target_vm_nics[vm_index|int - 1].provision_mac | default('')}}"
+          mac: "{{ chosen_flavor.target_vm_cfg[vm_index|int - 1].provision_mac | default('') }}"
   loop_control:
     loop_var: vm_index
   with_sequence: "start=1 end={{ chosen_flavor.target_vms_count }}"
@@ -100,7 +101,7 @@
     name: libvirt-domain
   vars:
     libvirt_domain:
-      boot_mode: UEFI
+      boot_mode: "{{ chosen_flavor.ephemeral_vm_cfg[0].boot_mode | default('UEFI') }}"
       enable_vnc: true
       console_log_enabled: true
       state: shutdown
@@ -114,9 +115,9 @@
           pool: "{{ airship_gate_names.pool }}"
       interfaces:
         - network: "{{ airship_gate_names.nat_network }}"
-          mac: "{{ chosen_flavor.ephemeral_vm_nics[0].nat_mac | default('')}}"
+          mac: "{{ chosen_flavor.ephemeral_vm_cfg[0].nat_mac | default('') }}"
         - network: "{{ airship_gate_names.provision_network }}"
-          mac: "{{ chosen_flavor.ephemeral_vm_nics[0].provision_mac | default('')}}"
+          mac: "{{ chosen_flavor.ephemeral_vm_cfg[0].provision_mac | default('') }}"
 
 - name: Add noauth sushy-emulator to apache
   include_role:
