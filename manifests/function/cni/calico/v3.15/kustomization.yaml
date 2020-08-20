@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+bases:
+  - crd
+  - rbac
+resources:
+  - kube-controller.yaml
+  - node.yaml
+  - calico-config.yaml
