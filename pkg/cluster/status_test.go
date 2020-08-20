@@ -15,14 +15,17 @@
 package cluster_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/cli-utils/pkg/kstatus/status"
+	"sigs.k8s.io/cli-utils/pkg/object"
 
 	"opendev.org/airship/airshipctl/pkg/cluster"
 	"opendev.org/airship/airshipctl/pkg/document"
@@ -76,7 +79,7 @@ func TestGetStatusForResource(t *testing.T) {
 		name           string
 		selector       document.Selector
 		client         *fake.Client
-		expectedStatus cluster.Status
+		expectedStatus status.Status
 		err            error
 	}{
 		{
@@ -86,9 +89,9 @@ func TestGetStatusForResource(t *testing.T) {
 				ByName("stable-resource"),
 			client: fake.NewClient(
 				fake.WithCRDs(makeResourceCRD(annotationValidStatusCheck())),
-				fake.WithDynamicObjects(makeResource("Resource", "stable-resource", "stable")),
+				fake.WithDynamicObjects(makeResource("stable-resource", "stable")),
 			),
-			expectedStatus: cluster.Status("Stable"),
+			expectedStatus: status.Status("Stable"),
 		},
 		{
 			name: "pending-resource-is-pending",
@@ -97,9 +100,9 @@ func TestGetStatusForResource(t *testing.T) {
 				ByName("pending-resource"),
 			client: fake.NewClient(
 				fake.WithCRDs(makeResourceCRD(annotationValidStatusCheck())),
-				fake.WithDynamicObjects(makeResource("Resource", "pending-resource", "pending")),
+				fake.WithDynamicObjects(makeResource("pending-resource", "pending")),
 			),
-			expectedStatus: cluster.Status("Pending"),
+			expectedStatus: status.Status("Pending"),
 		},
 		{
 			name: "unknown-resource-is-unknown",
@@ -108,9 +111,9 @@ func TestGetStatusForResource(t *testing.T) {
 				ByName("unknown"),
 			client: fake.NewClient(
 				fake.WithCRDs(makeResourceCRD(annotationValidStatusCheck())),
-				fake.WithDynamicObjects(makeResource("Resource", "unknown", "unknown")),
+				fake.WithDynamicObjects(makeResource("unknown", "unknown")),
 			),
-			expectedStatus: cluster.UnknownStatus,
+			expectedStatus: status.UnknownStatus,
 		},
 		{
 			name: "missing-resource-returns-error",
@@ -146,11 +149,23 @@ func TestGetStatusForResource(t *testing.T) {
 	}
 }
 
-func makeResource(kind, name, state string) *unstructured.Unstructured {
+func TestReadStatus(t *testing.T) {
+	c := fake.NewClient(fake.WithCRDs(makeResourceCRD(annotationValidStatusCheck())),
+		fake.WithDynamicObjects(makeResource("pending-resource", "pending")))
+	statusMap, err := cluster.NewStatusMap(c)
+	require.NoError(t, err)
+	ctx := context.Background()
+	resource := object.ObjMetadata{Namespace: "default",
+		Name: "pending-resource", GroupKind: schema.GroupKind{Group: "example.com", Kind: "Resource"}}
+	result := statusMap.ReadStatus(ctx, resource)
+	assert.Equal(t, "Pending", result.Status.String())
+}
+
+func makeResource(name, state string) *unstructured.Unstructured {
 	return &unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"apiVersion": "example.com/v1",
-			"kind":       kind,
+			"kind":       "Resource",
 			"metadata": map[string]interface{}{
 				"name":      name,
 				"namespace": "default",
