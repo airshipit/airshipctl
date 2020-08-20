@@ -1,0 +1,2 @@
+resources:
+  - helmreleases.helm.fluxcd.io.yaml
