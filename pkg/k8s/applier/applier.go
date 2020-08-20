@@ -171,7 +171,7 @@ func cliApplyOptions(ao ApplyOptions) cliapply.Options {
 		EmitStatusEvents: emitStatusEvents,
 		ReconcileTimeout: ao.WaitTimeout,
 		NoPrune:          !ao.Prune,
-		DryRun:           ao.DryRun,
+		DryRunStrategy:   ao.DryRunStrategy,
 	}
 }
 

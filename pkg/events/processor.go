@@ -17,6 +17,8 @@ package events
 import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"sigs.k8s.io/cli-utils/cmd/printers"
+	"sigs.k8s.io/cli-utils/pkg/common"
+
 	applyevent "sigs.k8s.io/cli-utils/pkg/apply/event"
 
 	"opendev.org/airship/airshipctl/pkg/log"
@@ -36,7 +38,7 @@ type DefaultProcessor struct {
 // NewDefaultProcessor returns instance of DefaultProcessor as interface Implementation
 func NewDefaultProcessor(streams genericclioptions.IOStreams) EventProcessor {
 	applyCh := make(chan applyevent.Event)
-	go printers.GetPrinter(printers.EventsPrinter, streams).Print(applyCh, false)
+	go printers.GetPrinter(printers.EventsPrinter, streams).Print(applyCh, common.DryRunNone)
 	return &DefaultProcessor{
 		errors:      []error{},
 		applierChan: applyCh,
