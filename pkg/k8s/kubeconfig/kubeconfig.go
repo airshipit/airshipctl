@@ -95,6 +95,33 @@ func FromFile(path string, fs document.FileSystem) KubeSourceFunc {
 	}
 }
 
+// FromBundle returns KubeSource type, uses path to document bundle to find kubeconfig
+func FromBundle(root string) KubeSourceFunc {
+	return func() ([]byte, error) {
+		docBundle, err := document.NewBundleByPath(root)
+		if err != nil {
+			return nil, err
+		}
+
+		config := &v1alpha1.KubeConfig{}
+		selector, err := document.NewSelector().ByObject(config, v1alpha1.Scheme)
+		if err != nil {
+			return nil, err
+		}
+
+		doc, err := docBundle.SelectOne(selector)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := doc.ToAPIObject(config, v1alpha1.Scheme); err != nil {
+			return nil, err
+		}
+
+		return yaml.Marshal(config.Config)
+	}
+}
+
 // InjectFileSystem sets fileSystem to be used, mostly to be used for tests
 func InjectFileSystem(fs document.FileSystem) Option {
 	return func(k *kubeConfig) {
