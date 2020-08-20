@@ -21,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	clusterctl "opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
@@ -38,7 +39,10 @@ type ExecutorRegistry func() map[schema.GroupVersionKind]ifc.ExecutorFactory
 // DefaultExecutorRegistry returns map with executor factories
 func DefaultExecutorRegistry() map[schema.GroupVersionKind]ifc.ExecutorFactory {
 	execMap := make(map[schema.GroupVersionKind]ifc.ExecutorFactory)
-	// add executors here
+
+	if err := clusterctl.RegisterExecutor(execMap); err != nil {
+		log.Fatal(ErrExecutorRegistration{ExecutorName: "clusterctl", Err: err})
+	}
 	return execMap
 }
 

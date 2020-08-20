@@ -36,3 +36,13 @@ type ErrProviderRepoNotFound struct {
 func (e ErrProviderRepoNotFound) Error() string {
 	return fmt.Sprintf("failed to find repository for provider %s of type %s", e.ProviderName, e.ProviderType)
 }
+
+// ErrUnknownExecutorAction is returned for unknown action parameter
+// in clusterctl configuration document
+type ErrUnknownExecutorAction struct {
+	Action string
+}
+
+func (e ErrUnknownExecutorAction) Error() string {
+	return fmt.Sprintf("unknown action type '%s'", e.Action)
+}
