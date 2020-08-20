@@ -31,6 +31,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/k8s/applier"
 	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
@@ -229,6 +230,21 @@ func TestGetExecutor(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:     "Get registered executor",
+			settings: makeDefaultSettings,
+			phase: &airshipv1.Phase{
+				Config: airshipv1.PhaseConfig{
+					ExecutorRef: &corev1.ObjectReference{
+						APIVersion: "airshipit.org/v1alpha1",
+						Kind:       "KubernetesApply",
+						Name:       "kubernetes-apply",
+					},
+					DocumentEntryPoint: "valid_site/phases",
+				},
+			},
+			expectedExc: &applier.Executor{},
+		},
 	}
 
 	for _, test := range testCases {
@@ -237,9 +253,19 @@ func TestGetExecutor(t *testing.T) {
 			cmd := phase.Cmd{AirshipCTLSettings: tt.settings()}
 			actualExc, actualErr := cmd.GetExecutor(tt.phase)
 			assert.Equal(t, tt.expectedErr, actualErr)
-			assert.Equal(t, tt.expectedExc, actualExc)
+			assertEqualExecutor(t, tt.expectedExc, actualExc)
 		})
 	}
+}
+
+// assertEqualExecutor allows to compare executor interfaces
+// check if we expect nil, and if so actual interface must be nil also otherwise compare types
+func assertEqualExecutor(t *testing.T, expected, actual ifc.Executor) {
+	if expected == nil {
+		assert.Nil(t, actual)
+		return
+	}
+	assert.IsType(t, expected, actual)
 }
 
 func makeDefaultSettings() *environment.AirshipCTLSettings {

@@ -26,6 +26,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/events"
+	"opendev.org/airship/airshipctl/pkg/k8s/applier"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	k8sutils "opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/pkg/log"
@@ -42,6 +43,9 @@ func DefaultExecutorRegistry() map[schema.GroupVersionKind]ifc.ExecutorFactory {
 
 	if err := clusterctl.RegisterExecutor(execMap); err != nil {
 		log.Fatal(ErrExecutorRegistration{ExecutorName: "clusterctl", Err: err})
+	}
+	if err := applier.RegisterExecutor(execMap); err != nil {
+		log.Fatal(ErrExecutorRegistration{ExecutorName: "kubernetes-apply", Err: err})
 	}
 	return execMap
 }

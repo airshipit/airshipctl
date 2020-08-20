@@ -4,3 +4,4 @@ resources:
   - some_exc.yaml
   - capi_init.yaml
   - clusterctl.yaml
+  - kubernetes_apply.yaml

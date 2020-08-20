@@ -18,6 +18,7 @@ import (
 	"io"
 	"time"
 
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/cli-utils/pkg/common"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
@@ -39,6 +40,30 @@ type ExecutorOptions struct {
 	ExecutorBundle   document.Bundle
 	Kubeconfig       kubeconfig.Interface
 	AirshipConfig    *config.Config
+}
+
+var _ ifc.Executor = &Executor{}
+
+// RegisterExecutor adds executor to phase executor registry
+func RegisterExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFactory) error {
+	obj := &airshipv1.KubernetesApply{}
+	gvks, _, err := airshipv1.Scheme.ObjectKinds(obj)
+	if err != nil {
+		return err
+	}
+	registry[gvks[0]] = registerExecutor
+	return nil
+}
+
+// registerExecutor is here so that executor in theory can be used outside phases
+func registerExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
+	return NewExecutor(ExecutorOptions{
+		BundleName:       cfg.PhaseName,
+		AirshipConfig:    cfg.AirshipSettings.Config,
+		ExecutorBundle:   cfg.ExecutorBundle,
+		ExecutorDocument: cfg.ExecutorDocument,
+		Kubeconfig:       cfg.KubeConfig,
+	})
 }
 
 // Executor applies resources to kubernetes
