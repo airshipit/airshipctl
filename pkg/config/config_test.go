@@ -133,7 +133,7 @@ func TestPersistConfig(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
-	err := conf.PersistConfig()
+	err := conf.PersistConfig(true)
 	require.NoError(t, err)
 
 	// Check that the files were created
@@ -305,7 +305,7 @@ func TestPurge(t *testing.T) {
 	defer cleanup(t)
 
 	// Store it
-	err := conf.PersistConfig()
+	err := conf.PersistConfig(true)
 	assert.NoErrorf(t, err, "Unable to persist configuration expected at %v", conf.LoadedConfigPath())
 
 	// Verify that the file is there

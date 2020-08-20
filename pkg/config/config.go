@@ -183,7 +183,7 @@ func (c *Config) reconcileConfig() error {
 	// Specially useful if the config is loaded during a get operation
 	// If it was a Set this would have happened eventually any way
 	if persistIt {
-		return c.PersistConfig()
+		return c.PersistConfig(true)
 	}
 	return nil
 }
@@ -419,7 +419,7 @@ func (c *Config) EnsureComplete() error {
 // the current Config and KubeConfig objects.
 // If either file did not previously exist, the file will be created.
 // Otherwise, the file will be overwritten
-func (c *Config) PersistConfig() error {
+func (c *Config) PersistConfig(persistKubeConfig bool) error {
 	airshipConfigYaml, err := c.ToYaml()
 	if err != nil {
 		return err
@@ -450,9 +450,11 @@ func (c *Config) PersistConfig() error {
 		return err
 	}
 
-	// Persist the kubeconfig file referenced
-	if err := clientcmd.WriteToFile(*c.kubeConfig, c.kubeConfigPath); err != nil {
-		return err
+	if persistKubeConfig {
+		// Persist the kubeconfig file referenced
+		if err := clientcmd.WriteToFile(*c.kubeConfig, c.kubeConfigPath); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -878,7 +880,7 @@ func (c *Config) ImportFromKubeConfig(kubeConfigPath string) error {
 	c.importClusters(kubeConfig)
 	c.importContexts(kubeConfig)
 	c.importAuthInfos(kubeConfig)
-	return c.PersistConfig()
+	return c.PersistConfig(true)
 }
 
 func (c *Config) importClusters(importKubeConfig *clientcmdapi.Config) {

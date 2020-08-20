@@ -46,7 +46,7 @@ func RunSetAuthInfo(o *AuthInfoOptions, airconfig *Config, writeToStorage bool) 
 	}
 	// Update configuration file just in time persistence approach
 	if writeToStorage {
-		if err := airconfig.PersistConfig(); err != nil {
+		if err := airconfig.PersistConfig(true); err != nil {
 			// Error that it didnt persist the changes
 			return modified, ErrConfigFailed{}
 		}
@@ -89,7 +89,7 @@ func RunSetCluster(o *ClusterOptions, airconfig *Config, writeToStorage bool) (b
 	// Update configuration file
 	// Just in time persistence approach
 	if writeToStorage {
-		if err := airconfig.PersistConfig(); err != nil {
+		if err := airconfig.PersistConfig(true); err != nil {
 			// Some warning here , that it didnt persist the changes because of this
 			// Or should we float this up
 			// What would it mean? No value.
@@ -142,7 +142,7 @@ func RunSetContext(o *ContextOptions, airconfig *Config, writeToStorage bool) (b
 	}
 	// Update configuration file just in time persistence approach
 	if writeToStorage {
-		if err := airconfig.PersistConfig(); err != nil {
+		if err := airconfig.PersistConfig(true); err != nil {
 			// Error that it didnt persist the changes
 			return modified, ErrConfigFailed{}
 		}
@@ -159,7 +159,7 @@ func RunUseContext(desiredContext string, airconfig *Config) error {
 
 	if airconfig.CurrentContext != desiredContext {
 		airconfig.CurrentContext = desiredContext
-		if err := airconfig.PersistConfig(); err != nil {
+		if err := airconfig.PersistConfig(false); err != nil {
 			return err
 		}
 	}
@@ -189,7 +189,7 @@ func RunSetManifest(o *ManifestOptions, airconfig *Config, writeToStorage bool) 
 	}
 	// Update configuration file just in time persistence approach
 	if writeToStorage {
-		if err := airconfig.PersistConfig(); err != nil {
+		if err := airconfig.PersistConfig(true); err != nil {
 			// Error that it didnt persist the changes
 			return modified, ErrConfigFailed{}
 		}

@@ -44,7 +44,7 @@ func NewInitCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command
 		Short: "Generate initial configuration files for airshipctl",
 		Long:  initLong[1:],
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return rootSettings.Config.PersistConfig()
+			return rootSettings.Config.PersistConfig(true)
 		},
 	}
 
