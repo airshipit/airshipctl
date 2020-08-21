@@ -52,13 +52,14 @@ type Applier struct {
 	Streams               genericclioptions.IOStreams
 	Poller                poller.Poller
 	ManifestReaderFactory utils.ManifestReaderFactory
+	eventChannel          chan events.Event
 }
 
 // ReaderFactory function that returns reader factory interface
 type ReaderFactory func(validate bool, bundle document.Bundle, factory cmdutil.Factory) manifestreader.ManifestReader
 
 // NewApplier returns instance of Applier
-func NewApplier(f cmdutil.Factory, streams genericclioptions.IOStreams) *Applier {
+func NewApplier(eventCh chan events.Event, f cmdutil.Factory, streams genericclioptions.IOStreams) *Applier {
 	return &Applier{
 		Factory:               f,
 		Streams:               streams,
@@ -66,76 +67,68 @@ func NewApplier(f cmdutil.Factory, streams genericclioptions.IOStreams) *Applier
 		Driver: &Adaptor{
 			CliUtilsApplier: cliapply.NewApplier(f, streams),
 		},
+		eventChannel: eventCh,
 	}
 }
 
 // ApplyBundle apply bundle to kubernetes cluster
-func (a *Applier) ApplyBundle(bundle document.Bundle, ao ApplyOptions) <-chan events.Event {
-	eventCh := make(chan events.Event)
-	go func() {
-		defer close(eventCh)
-		if bundle == nil {
-			// TODO add this to errors
-			handleError(eventCh, ErrApplyNilBundle{})
-			return
+func (a *Applier) ApplyBundle(bundle document.Bundle, ao ApplyOptions) {
+	defer close(a.eventChannel)
+	log.Debugf("Getting infos for bundle, inventory id is %s", ao.BundleName)
+	infos, err := a.getInfos(ao.BundleName, bundle)
+	if err != nil {
+		handleError(a.eventChannel, err)
+		return
+	}
+
+	ctx := context.Background()
+	ch := a.Driver.Run(ctx, infos, cliApplyOptions(ao))
+	for e := range ch {
+		a.eventChannel <- events.Event{
+			Type:         events.ApplierType,
+			ApplierEvent: e,
 		}
-		log.Printf("Applying bundle, inventory id: %s", ao.BundleName)
-		// TODO Get this selector from document package instead
-		// Selector to filter invenotry document from bundle
-		selector := document.
-			NewSelector().
-			ByLabel(clicommon.InventoryLabel).
-			ByKind(document.ConfigMapKind)
-		// if we could find exactly one inventory document, we don't do anything else with it
-		_, err := bundle.SelectOne(selector)
-		// if we got an error, which means we could not find Config Map with invetory ID at rest
-		// now we need to generate and inject one at runtime
-		if err != nil && errors.As(err, &document.ErrDocNotFound{}) {
-			log.Debug("Inventory Object config Map not found, auto generating Invetory object")
-			invDoc, innerErr := NewInventoryDocument(ao.BundleName)
-			if innerErr != nil {
-				// this should never happen
-				log.Debug("Failed to create new invetory document")
-				handleError(eventCh, innerErr)
-				return
-			}
-			log.Debugf("Injecting Invetory Object: %v into bundle", invDoc)
-			innerErr = bundle.Append(invDoc)
-			if innerErr != nil {
-				log.Debug("Couldn't append bunlde with inventory document")
-				handleError(eventCh, innerErr)
-				return
-			}
-			log.Debugf("Making sure that inventory object namespace %s exists", invDoc.GetNamespace())
-			innerErr = a.ensureNamespaceExists(invDoc.GetNamespace())
-			if innerErr != nil {
-				handleError(eventCh, innerErr)
-				return
-			}
-		} else if err != nil {
-			handleError(eventCh, err)
-			return
+	}
+}
+
+func (a *Applier) getInfos(bundleName string, bundle document.Bundle) ([]*resource.Info, error) {
+	if bundle == nil {
+		return nil, ErrApplyNilBundle{}
+	}
+	selector := document.
+		NewSelector().
+		ByLabel(clicommon.InventoryLabel).
+		ByKind(document.ConfigMapKind)
+	// if we could find exactly one inventory document, we don't do anything else with it
+	_, err := bundle.SelectOne(selector)
+	// if we got an error, which means we could not find Config Map with invetory ID at rest
+	// now we need to generate and inject one at runtime
+	if err != nil && errors.As(err, &document.ErrDocNotFound{}) {
+		log.Debug("Inventory Object config Map not found, auto generating Invetory object")
+		invDoc, innerErr := NewInventoryDocument(bundleName)
+		if innerErr != nil {
+			// this should never happen
+			log.Debug("Failed to create new invetory document")
+			return nil, innerErr
 		}
-		err = a.Driver.Initialize(a.Poller)
-		if err != nil {
-			handleError(eventCh, err)
-			return
+		log.Debugf("Injecting Invetory Object: %v into bundle", invDoc)
+		innerErr = bundle.Append(invDoc)
+		if innerErr != nil {
+			log.Debug("Couldn't append bunlde with inventory document")
+			return nil, innerErr
 		}
-		ctx := context.Background()
-		infos, err := a.ManifestReaderFactory(false, bundle, a.Factory).Read()
-		if err != nil {
-			handleError(eventCh, err)
-			return
+		log.Debugf("Making sure that inventory object namespace %s exists", invDoc.GetNamespace())
+		innerErr = a.ensureNamespaceExists(invDoc.GetNamespace())
+		if innerErr != nil {
+			return nil, innerErr
 		}
-		ch := a.Driver.Run(ctx, infos, cliApplyOptions(ao))
-		for e := range ch {
-			eventCh <- events.Event{
-				Type:         events.ApplierType,
-				ApplierEvent: e,
-			}
-		}
-	}()
-	return eventCh
+	} else if err != nil {
+		return nil, err
+	}
+	if err = a.Driver.Initialize(a.Poller); err != nil {
+		return nil, err
+	}
+	return a.ManifestReaderFactory(false, bundle, a.Factory).Read()
 }
 
 func (a *Applier) ensureNamespaceExists(name string) error {

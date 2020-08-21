@@ -28,6 +28,7 @@ import (
 	pollevent "sigs.k8s.io/cli-utils/pkg/kstatus/polling/event"
 	"sigs.k8s.io/cli-utils/pkg/object"
 
+	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/utils"
 )
 
@@ -75,12 +76,16 @@ func (fa FakeAdaptor) WithInitError(err error) FakeAdaptor {
 }
 
 // NewFakeApplier returns applier with events you want
-func NewFakeApplier(streams genericclioptions.IOStreams, events []applyevent.Event, f cmdutil.Factory) *Applier {
+func NewFakeApplier(
+	eventCh chan events.Event,
+	streams genericclioptions.IOStreams,
+	events []applyevent.Event, f cmdutil.Factory) *Applier {
 	return &Applier{
 		Driver:                NewFakeAdaptor().WithEvents(events),
 		Poller:                &FakePoller{},
 		Factory:               f,
 		ManifestReaderFactory: utils.DefaultManifestReaderFactory,
+		eventChannel:          eventCh,
 	}
 }
 

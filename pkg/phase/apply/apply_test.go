@@ -23,10 +23,12 @@ import (
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	applyevent "sigs.k8s.io/cli-utils/pkg/apply/event"
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/applier"
 	"opendev.org/airship/airshipctl/pkg/phase/apply"
 	"opendev.org/airship/airshipctl/testutil"
@@ -59,18 +61,14 @@ func TestDeploy(t *testing.T) {
 	tests := []struct {
 		name                string
 		expectedErrorString string
-		cliApplier          *applier.Applier
 		clusterPurposes     map[string]*config.ClusterPurpose
 		phaseName           string
+		events              []applyevent.Event
 	}{
 		{
 			name:                "success",
 			expectedErrorString: "",
-			cliApplier: applier.NewFakeApplier(genericclioptions.IOStreams{
-				In:     os.Stdin,
-				Out:    os.Stdout,
-				ErrOut: os.Stderr,
-			}, k8sutils.SuccessEvents(), f),
+			events:              k8sutils.SuccessEvents(),
 		},
 		{
 			name:                "missing clusters",
@@ -94,8 +92,17 @@ func TestDeploy(t *testing.T) {
 			ao.Initialize()
 			ao.PhaseName = "initinfra"
 			ao.DryRun = true
-			if tt.cliApplier != nil {
-				ao.Applier = tt.cliApplier
+			if tt.events != nil {
+				ch := make(chan events.Event)
+				cliApplier := applier.NewFakeApplier(
+					ch,
+					genericclioptions.IOStreams{
+						In:     os.Stdin,
+						Out:    os.Stdout,
+						ErrOut: os.Stderr,
+					}, k8sutils.SuccessEvents(), f)
+				ao.Applier = cliApplier
+				ao.EventChannel = ch
 			}
 			if tt.clusterPurposes != nil {
 				ao.RootSettings.Config.Clusters = tt.clusterPurposes
