@@ -32,3 +32,16 @@ hosts:
         oam: 52:54:00:9b:27:02
         pxe: 52:54:00:b6:ed:02
       hardwareProfile: example # defined in the hardwareprofile-example function
+    node03:
+      bootMode: UEFI
+      macAddress: 52:54:00:b6:ed:23
+      bmcAddress: redfish+http://10.23.25.1:8000/redfish/v1/Systems/air-worker-1
+      bmcUsername: username
+      bmcPassword: password
+      ipAddresses:
+        oam-ipv4: 10.23.25.103
+        pxe-ipv4: 10.23.24.103
+      macAddresses:
+        oam: 52:54:00:9b:27:07
+        pxe: 52:54:00:b6:ed:23
+      hardwareProfile: default # defined in the hardwareprofile-example function

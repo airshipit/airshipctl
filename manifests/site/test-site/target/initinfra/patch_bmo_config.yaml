@@ -5,6 +5,5 @@ metadata:
   labels:
   name: ironic-vars
 data:
-  PROVISIONING_IP: "10.23.25.102"
-  DHCP_RANGE: "10.23.25.200,10.23.25.250"
-  PROVISIONING_INTERFACE: "pxe0"
+  PROVISIONING_IP: "10.23.24.102"
+  DHCP_RANGE: "10.23.24.200,10.23.24.250"
