@@ -31,6 +31,7 @@ import (
 	"opendev.org/airship/airshipctl/cmd/phase"
 	"opendev.org/airship/airshipctl/cmd/secret"
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 // NewAirshipCTLCommand creates a root `airshipctl` command with the default commands attached
@@ -42,13 +43,18 @@ func NewAirshipCTLCommand(out io.Writer) *cobra.Command {
 // NewRootCommand creates the root `airshipctl` command. All other commands are
 // subcommands branching from this one
 func NewRootCommand(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings) {
+	var debug bool
 	rootCmd := &cobra.Command{
 		Use:           "airshipctl",
 		Short:         "A unified entrypoint to various airship components",
 		SilenceErrors: true,
 		SilenceUsage:  true,
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			log.Init(debug, cmd.OutOrStdout())
+		},
 	}
 	rootCmd.SetOut(out)
+	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "enable verbose output")
 
 	return rootCmd, makeRootSettings(rootCmd)
 }

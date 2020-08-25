@@ -31,7 +31,6 @@ import (
 
 func TestNewStatusPoller(t *testing.T) {
 	settings := &environment.AirshipCTLSettings{
-		Debug:          true,
 		Config:         config.NewConfig(),
 		KubeConfigPath: "testdata/kubeconfig.yaml",
 	}

@@ -18,7 +18,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/environment"
-	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 // NewImageCommand creates a new command for managing ISO images using airshipctl.
@@ -27,7 +26,9 @@ func NewImageCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comman
 		Use:   "image",
 		Short: "Manage ISO image creation",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			log.Init(rootSettings.Debug, cmd.OutOrStderr())
+			if parentPreRun := cmd.Root().PersistentPreRun; parentPreRun != nil {
+				parentPreRun(cmd.Root(), args)
+			}
 
 			// Load or Initialize airship Config
 			rootSettings.InitConfig()

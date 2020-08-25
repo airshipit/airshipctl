@@ -18,7 +18,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/environment"
-	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 // NewDocumentCommand creates a new command for managing airshipctl documents
@@ -26,11 +25,6 @@ func NewDocumentCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Com
 	documentRootCmd := &cobra.Command{
 		Use:   "document",
 		Short: "Manage deployment documents",
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			// Note: config is not loaded here; the kustomize plugin command doesn't
-			// require it, and multiple use cases fail if we assume the file is there.
-			log.Init(rootSettings.Debug, cmd.OutOrStderr())
-		},
 	}
 
 	documentRootCmd.AddCommand(NewPullCommand(rootSettings))

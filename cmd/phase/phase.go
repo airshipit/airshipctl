@@ -18,7 +18,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/environment"
-	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 const (
@@ -35,7 +34,9 @@ func NewPhaseCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comman
 		Short: "Manage phases",
 		Long:  clusterLong[1:],
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			log.Init(rootSettings.Debug, cmd.OutOrStderr())
+			if parentPreRun := cmd.Root().PersistentPreRun; parentPreRun != nil {
+				parentPreRun(cmd.Root(), args)
+			}
 			// Load or Initialize airship Config
 			rootSettings.InitConfig()
 		},

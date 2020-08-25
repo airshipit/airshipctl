@@ -19,7 +19,6 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/k8s/client"
-	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 const (
@@ -37,7 +36,9 @@ func NewClusterCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comm
 		Short: "Manage Kubernetes clusters",
 		Long:  clusterLong[1:],
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			log.Init(rootSettings.Debug, cmd.OutOrStderr())
+			if parentPreRun := cmd.Root().PersistentPreRun; parentPreRun != nil {
+				parentPreRun(cmd.Root(), args)
+			}
 
 			// Load or Initialize airship Config
 			rootSettings.InitConfig()

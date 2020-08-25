@@ -234,7 +234,6 @@ func TestVerifyInputs(t *testing.T) {
 func TestGenerateBootstrapIso(t *testing.T) {
 	t.Run("EnsureCompleteError", func(t *testing.T) {
 		settings := &environment.AirshipCTLSettings{
-			Debug:             false,
 			AirshipConfigPath: "testdata/config/config",
 			KubeConfigPath:    "testdata/config/kubeconfig",
 			Config:            &config.Config{},
@@ -248,7 +247,6 @@ func TestGenerateBootstrapIso(t *testing.T) {
 
 	t.Run("ContextEntryPointError", func(t *testing.T) {
 		settings := &environment.AirshipCTLSettings{
-			Debug:             false,
 			AirshipConfigPath: "testdata/config/config",
 			KubeConfigPath:    "testdata/config/kubeconfig",
 			Config:            &config.Config{},
@@ -262,7 +260,6 @@ func TestGenerateBootstrapIso(t *testing.T) {
 
 	t.Run("NewBundleByPathError", func(t *testing.T) {
 		settings := &environment.AirshipCTLSettings{
-			Debug:             false,
 			AirshipConfigPath: "testdata/config/config",
 			KubeConfigPath:    "testdata/config/kubeconfig",
 			Config:            &config.Config{},
@@ -276,7 +273,6 @@ func TestGenerateBootstrapIso(t *testing.T) {
 
 	t.Run("SelectOneError", func(t *testing.T) {
 		settings := &environment.AirshipCTLSettings{
-			Debug:             false,
 			AirshipConfigPath: "testdata/config/config",
 			KubeConfigPath:    "testdata/config/kubeconfig",
 			Config:            &config.Config{},
@@ -291,7 +287,6 @@ func TestGenerateBootstrapIso(t *testing.T) {
 
 	t.Run("ToObjectError", func(t *testing.T) {
 		settings := &environment.AirshipCTLSettings{
-			Debug:             false,
 			AirshipConfigPath: "testdata/config/config",
 			KubeConfigPath:    "testdata/config/kubeconfig",
 			Config:            &config.Config{},
@@ -305,7 +300,6 @@ func TestGenerateBootstrapIso(t *testing.T) {
 
 	t.Run("verifyInputsError", func(t *testing.T) {
 		settings := &environment.AirshipCTLSettings{
-			Debug:             false,
 			AirshipConfigPath: "testdata/config/config",
 			KubeConfigPath:    "testdata/config/kubeconfig",
 			Config:            &config.Config{},

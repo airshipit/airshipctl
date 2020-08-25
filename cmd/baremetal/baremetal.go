@@ -18,7 +18,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/environment"
-	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/remote"
 )
 
@@ -41,7 +40,9 @@ func NewBaremetalCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Co
 		Use:   "baremetal",
 		Short: "Perform actions on baremetal hosts",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			log.Init(rootSettings.Debug, cmd.OutOrStderr())
+			if parentPreRun := cmd.Root().PersistentPreRun; parentPreRun != nil {
+				parentPreRun(cmd.Root(), args)
+			}
 
 			// Load or Initialize airship Config
 			rootSettings.InitConfig()
