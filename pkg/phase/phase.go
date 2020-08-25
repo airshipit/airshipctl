@@ -175,7 +175,7 @@ func (p *Cmd) Exec(name string) error {
 			return
 		}
 		executor.Run(runCh, ifc.RunOptions{
-			Debug:  p.Debug,
+			Debug:  log.DebugEnabled(),
 			DryRun: p.DryRun,
 		})
 	}()

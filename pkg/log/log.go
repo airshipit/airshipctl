@@ -31,6 +31,11 @@ func Init(debugFlag bool, out io.Writer) {
 	airshipLog.SetOutput(out)
 }
 
+// DebugEnabled returns whether the debug level is set
+func DebugEnabled() bool {
+	return debug
+}
+
 // Debug is a wrapper for log.Debug
 func Debug(v ...interface{}) {
 	if debug {

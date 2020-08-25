@@ -61,7 +61,7 @@ func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 	if err != nil {
 		return nil, err
 	}
-	client, err := NewClient(tgtPath, cfg.AirshipSettings.Debug, options)
+	client, err := NewClient(tgtPath, log.DebugEnabled(), options)
 	if err != nil {
 		return nil, err
 	}
