@@ -18,6 +18,7 @@ import (
 	"io"
 	"time"
 
+	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/events"
@@ -55,6 +56,7 @@ type ExecutorConfig struct {
 	PhaseName   string
 	ClusterName string
 
+	ClusterMap       *v1alpha1.ClusterMap
 	ExecutorDocument document.Document
 	ExecutorBundle   document.Bundle
 	AirshipSettings  *environment.AirshipCTLSettings

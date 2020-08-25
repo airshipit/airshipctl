@@ -33,11 +33,13 @@ var _ ifc.Executor = &ClusterctlExecutor{}
 
 // ClusterctlExecutor phase executor
 type ClusterctlExecutor struct {
+	clusterName string
+	dumpRoot    string
+
 	Interface
-	bundle   document.Bundle
-	options  *airshipv1.Clusterctl
-	kubecfg  kubeconfig.Interface
-	dumpRoot string
+	bundle  document.Bundle
+	options *airshipv1.Clusterctl
+	kubecfg kubeconfig.Interface
 }
 
 // RegisterExecutor adds executor to phase executor registry
@@ -66,11 +68,12 @@ func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 		return nil, err
 	}
 	return &ClusterctlExecutor{
-		Interface: client,
-		bundle:    cfg.ExecutorBundle,
-		options:   options,
-		kubecfg:   cfg.KubeConfig,
-		dumpRoot:  filepath.Dir(cfg.AirshipSettings.AirshipConfigPath),
+		clusterName: cfg.ClusterName,
+		Interface:   client,
+		bundle:      cfg.ExecutorBundle,
+		options:     options,
+		kubecfg:     cfg.KubeConfig,
+		dumpRoot:    filepath.Dir(cfg.AirshipSettings.AirshipConfigPath),
 	}, nil
 }
 
