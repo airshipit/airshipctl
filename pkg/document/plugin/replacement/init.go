@@ -17,11 +17,17 @@ package replacement
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	replv1alpha1 "opendev.org/airship/airshipctl/pkg/document/plugin/replacement/v1alpha1"
+	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/document/plugin/types"
 )
 
 // RegisterPlugin registers BareMetalHost generator plugin
-func RegisterPlugin(registry map[schema.GroupVersionKind]types.Factory) {
-	registry[replv1alpha1.GetGVK()] = replv1alpha1.New
+func RegisterPlugin(registry map[schema.GroupVersionKind]types.Factory) error {
+	obj := &airshipv1.ReplacementTransformer{}
+	gvks, _, err := airshipv1.Scheme.ObjectKinds(obj)
+	if err != nil {
+		return err
+	}
+	registry[gvks[0]] = New
+	return nil
 }

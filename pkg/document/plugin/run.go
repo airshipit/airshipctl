@@ -27,28 +27,38 @@ import (
 	"opendev.org/airship/airshipctl/pkg/document/plugin/types"
 )
 
-// Registry contains factory functions for the available plugins
-var Registry = make(map[schema.GroupVersionKind]types.Factory)
-
-func init() {
-	replacement.RegisterPlugin(Registry)
-	templater.RegisterPlugin(Registry)
+// DefaultPlugins returns map with plugin factories
+func DefaultPlugins() (map[schema.GroupVersionKind]types.Factory, error) {
+	registry := make(map[schema.GroupVersionKind]types.Factory)
+	if err := replacement.RegisterPlugin(registry); err != nil {
+		return nil, err
+	}
+	if err := templater.RegisterPlugin(registry); err != nil {
+		return nil, err
+	}
+	return registry, nil
 }
 
 // ConfigureAndRun executes particular plugin based on group, version, kind
 // which have been specified in configuration file. Config file should be
 // supplied as a first element of args slice
 func ConfigureAndRun(pluginCfg []byte, in io.Reader, out io.Writer) error {
-	var cfg unstructured.Unstructured
-	if err := yaml.Unmarshal(pluginCfg, &cfg); err != nil {
+	rawCfg := make(map[string]interface{})
+	if err := yaml.Unmarshal(pluginCfg, &rawCfg); err != nil {
 		return err
 	}
-	pluginFactory, ok := Registry[cfg.GroupVersionKind()]
+	uCfg := &unstructured.Unstructured{}
+	uCfg.SetUnstructuredContent(rawCfg)
+	registry, err := DefaultPlugins()
+	if err != nil {
+		return err
+	}
+	pluginFactory, ok := registry[uCfg.GroupVersionKind()]
 	if !ok {
-		return ErrPluginNotFound{PluginID: cfg.GroupVersionKind()}
+		return ErrPluginNotFound{PluginID: uCfg.GroupVersionKind()}
 	}
 
-	plugin, err := pluginFactory(pluginCfg)
+	plugin, err := pluginFactory(rawCfg)
 	if err != nil {
 		return err
 	}

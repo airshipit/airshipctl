@@ -49,6 +49,8 @@ func init() {
 		&ImageConfiguration{},
 		&RemoteDirectConfiguration{},
 		&ClusterMap{},
+		&ReplacementTransformer{},
+		&Templater{},
 	)
 	_ = AddToScheme(Scheme) //nolint:errcheck
 }

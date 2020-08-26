@@ -17,11 +17,17 @@ package templater
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	tmplv1alpha1 "opendev.org/airship/airshipctl/pkg/document/plugin/templater/v1alpha1"
+	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/document/plugin/types"
 )
 
 // RegisterPlugin registers BareMetalHost generator plugin
-func RegisterPlugin(registry map[schema.GroupVersionKind]types.Factory) {
-	registry[tmplv1alpha1.GetGVK()] = tmplv1alpha1.New
+func RegisterPlugin(registry map[schema.GroupVersionKind]types.Factory) error {
+	obj := &airshipv1.Templater{}
+	gvks, _, err := airshipv1.Scheme.ObjectKinds(obj)
+	if err != nil {
+		return err
+	}
+	registry[gvks[0]] = New
+	return nil
 }

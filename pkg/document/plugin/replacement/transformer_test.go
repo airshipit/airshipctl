@@ -1,7 +1,7 @@
 // Copyright 2019 The Kubernetes Authors.
 // SPDX-License-Identifier: Apache-2.0
 
-package v1alpha1_test
+package replacement_test
 
 import (
 	"bytes"
@@ -11,12 +11,15 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	replv1alpha1 "opendev.org/airship/airshipctl/pkg/document/plugin/replacement/v1alpha1"
+	"sigs.k8s.io/yaml"
+
+	"opendev.org/airship/airshipctl/pkg/document/plugin/replacement"
 	plugtypes "opendev.org/airship/airshipctl/pkg/document/plugin/types"
 )
 
 func samplePlugin(t *testing.T) plugtypes.Plugin {
-	plugin, err := replv1alpha1.New([]byte(`
+	cfg := make(map[string]interface{})
+	conf := `
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
@@ -28,15 +31,13 @@ replacements:
     objref:
       kind: Deployment
     fieldrefs:
-    - spec.template.spec.containers[name=nginx-latest].image`))
+    - spec.template.spec.containers[name=nginx-latest].image`
 
+	err := yaml.Unmarshal([]byte(conf), &cfg)
+	require.NoError(t, err)
+	plugin, err := replacement.New(cfg)
 	require.NoError(t, err)
 	return plugin
-}
-
-func TestMalformedConfig(t *testing.T) {
-	_, err := replv1alpha1.New([]byte("--"))
-	assert.Error(t, err)
 }
 
 func TestMalformedInput(t *testing.T) {
@@ -978,7 +979,7 @@ metadata:
   name: notImportantHere
 replacements:
 - source:
-    value: 12345678
+    value: "12345678"
   target:
     objref:
       kind: KubeadmControlPlane
@@ -1011,7 +1012,10 @@ spec:
 	}
 
 	for _, tc := range testCases {
-		plugin, err := replv1alpha1.New([]byte(tc.cfg))
+		cfg := make(map[string]interface{})
+		err := yaml.Unmarshal([]byte(tc.cfg), &cfg)
+		require.NoError(t, err)
+		plugin, err := replacement.New(cfg)
 		require.NoError(t, err)
 
 		buf := &bytes.Buffer{}

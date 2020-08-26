@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package v1alpha1
+package templater
 
 import (
 	"io"
@@ -20,33 +20,31 @@ import (
 
 	"github.com/Masterminds/sprig"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/yaml"
 
+	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	plugtypes "opendev.org/airship/airshipctl/pkg/document/plugin/types"
 )
 
-// GetGVK returns group, version, kind object used to register version
-// of the plugin
-func GetGVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "airshipit.org",
-		Version: "v1alpha1",
-		Kind:    "Templater",
-	}
+type plugin struct {
+	*airshipv1.Templater
 }
 
 // New creates new instance of the plugin
-func New(cfg []byte) (plugtypes.Plugin, error) {
-	t := &Templater{}
-	if err := yaml.Unmarshal(cfg, t); err != nil {
+func New(obj map[string]interface{}) (plugtypes.Plugin, error) {
+	cfg := &airshipv1.Templater{}
+	err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj, cfg)
+	if err != nil {
 		return nil, err
 	}
-	return t, nil
+	return &plugin{
+		Templater: cfg,
+	}, nil
 }
 
 // Run templater plugin
-func (t *Templater) Run(_ io.Reader, out io.Writer) error {
+func (t *plugin) Run(_ io.Reader, out io.Writer) error {
 	funcMap := sprig.TxtFuncMap()
 	funcMap["toYaml"] = toYaml
 	tmpl, err := template.New("tmpl").Funcs(funcMap).Parse(t.Template)
