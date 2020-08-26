@@ -1,0 +1,28 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../../../function/workers-capg
+
+patchesJson6902:
+
+# Worker
+  - target:
+      group: cluster.x-k8s.io
+      version: v1alpha3
+      kind: MachineDeployment
+      name: "gtc-md-0"
+    path: failure_domain.json
+
+  - target:
+      group: cluster.x-k8s.io
+      version: v1alpha3
+      kind: MachineDeployment
+      name: "gtc-md-0"
+    path: machine_count.json
+
+  - target:
+      group: infrastructure.cluster.x-k8s.io
+      version: v1alpha3
+      kind: GCPMachineTemplate
+      name: "gtc-md-0"
+    path: machine_type.json

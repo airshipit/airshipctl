@@ -1,0 +1,14 @@
+---
+apiVersion: clusterctl.cluster.x-k8s.io/v1alpha3
+kind: Metadata
+metadata:
+  name: repository-metadata
+  labels:
+    airshipit.org/deploy-k8s: "false"
+releaseSeries:
+- major: 0
+  minor: 3
+  contract: v1alpha3
+- major: 0
+  minor: 2
+  contract: v1alpha2

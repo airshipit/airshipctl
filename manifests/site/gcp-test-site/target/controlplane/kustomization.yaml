@@ -1,0 +1,43 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../../../function/k8scontrol-capg
+
+patchesJson6902:
+
+  - target:
+      group: infrastructure.cluster.x-k8s.io
+      version: v1alpha3
+      kind: GCPCluster
+      name: "gtc"
+    path: project_name.json
+
+  - target:
+      group: infrastructure.cluster.x-k8s.io
+      version: v1alpha3
+      kind: GCPCluster
+      name: "gtc"
+    path: region_name.json
+
+  - target:
+      group: infrastructure.cluster.x-k8s.io
+      version: v1alpha3
+      kind: GCPCluster
+      name: "gtc"
+    path: network_name.json
+
+  - target:
+      group: controlplane.cluster.x-k8s.io
+      version: v1alpha3
+      kind: KubeadmControlPlane
+      name: "gtc-control-plane"
+    path: machine_count.json
+
+
+  - target:
+      group: infrastructure.cluster.x-k8s.io
+      version: v1alpha3
+      kind: GCPMachineTemplate
+      name: "gtc-control-plane"
+    path: machine_type.json
+

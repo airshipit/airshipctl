@@ -1,0 +1,29 @@
+---
+apiVersion: cluster.x-k8s.io/v1alpha3
+kind: Cluster
+metadata:
+  name: "gtc"
+  namespace: default
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks: ["192.168.0.0/16"]
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+    kind: GCPCluster
+    name: "gtc"
+  controlPlaneRef:
+    kind: KubeadmControlPlane
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+    name: "gtc-control-plane"
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: GCPCluster
+metadata:
+  name: "gtc"
+  namespace: default
+spec:
+  project: "${GCP_PROJECT}"
+  region: "${GCP_REGION}"
+  network:
+    name: "${GCP_NETWORK_NAME}"

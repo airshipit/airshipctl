@@ -1,0 +1,39 @@
+apiVersion: airshipit.org/v1alpha1
+kind: Clusterctl
+metadata:
+  labels:
+    airshipit.org/deploy-k8s: "false"
+  name: clusterctl-v1
+init-options:
+  core-provider: "cluster-api:v0.3.3"
+  bootstrap-providers:
+    - "kubeadm:v0.3.3"
+  infrastructure-providers:
+    - "gcp:v0.3.0"
+  control-plane-providers:
+    - "kubeadm:v0.3.3"
+providers:
+  - name: "gcp"
+    type: "InfrastructureProvider"
+    variable-substitution: true
+    versions:
+      v0.3.0: manifests/function/capg/v0.3.0
+  - name: "kubeadm"
+    type: "BootstrapProvider"
+    versions:
+      v0.3.3: manifests/function/cabpk/v0.3.3
+  - name: "cluster-api"
+    type: "CoreProvider"
+    versions:
+      v0.3.3: manifests/function/capi/v0.3.3
+  - name: "kubeadm"
+    type: "ControlPlaneProvider"
+    versions:
+      v0.3.3: manifests/function/cacpk/v0.3.3
+additional-vars:
+  GCP_CONTROL_PLANE_MACHINE_TYPE: "YmFzZTY0X2VuY29kZWRfdmFsdWU="
+  GCP_NODE_MACHINE_TYPE: "YmFzZTY0X2VuY29kZWRfdmFsdWU="
+  GCP_PROJECT: "YmFzZTY0X2VuY29kZWRfdmFsdWU="
+  GCP_REGION: "YmFzZTY0X2VuY29kZWRfdmFsdWU="
+  GCP_NETWORK_NAME: "YmFzZTY0X2VuY29kZWRfdmFsdWU="
+  GCP_B64ENCODED_CREDENTIALS: "YmFzZTY0X2VuY29kZWRfdmFsdWU="

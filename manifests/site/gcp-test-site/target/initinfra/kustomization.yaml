@@ -1,0 +1,4 @@
+resources:
+  - ../../shared/clusterctl
+commonLabels:
+  airshipit.org/stage: initinfra
