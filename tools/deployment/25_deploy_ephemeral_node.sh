@@ -21,21 +21,25 @@ export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
 echo "Deploy ephemeral node using redfish with iso"
 airshipctl baremetal remotedirect --debug
 
-#Wait till ephemeral node is ready
-end=$(($(date +%s) + $TIMEOUT))
-echo "Waiting $TIMEOUT seconds for ephemeral node to be ready."
-while true; do
-    if (kubectl --request-timeout 20s --kubeconfig $KUBECONFIG get nodes ephemeral -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' | grep -q True) ; then
-        echo -e "\nEphemeral node is ready."
-        kubectl --request-timeout 20s --kubeconfig $KUBECONFIG get nodes
-        break
-    else
-        now=$(date +%s)
-        if [ $now -gt $end ]; then
-            echo -e "\nEphemeral node was not ready before TIMEOUT."
-            exit 1
-        fi
-        echo -n .
-        sleep 15
-    fi
+echo "Wait for apiserver to become available"
+N=0
+MAX_RETRY=30
+DELAY=60
+until [ "$N" -ge ${MAX_RETRY} ]
+do
+  if timeout 20 kubectl --kubeconfig $KUBECONFIG get node; then
+      break
+  fi
+
+  N=$((N+1))
+  echo "$N: Retrying to reach the apiserver"
+  sleep ${DELAY}
 done
+
+if [ "$N" -ge ${MAX_RETRY} ]; then
+  echo "Could not reach the apiserver"
+  exit 1
+fi
+
+echo "List all pods"
+kubectl --kubeconfig $KUBECONFIG get pods --all-namespaces

@@ -21,14 +21,11 @@ echo "Switch context to target cluster and set manifest"
 airshipctl config use-context target-cluster-admin@target-cluster
 airshipctl config set-context target-cluster-admin@target-cluster --manifest dummy_manifest
 
-echo "Waiting for all control pods to come up"
-kubectl --kubeconfig $KUBECONFIG wait -n kube-system --for=condition=Ready pods --selector tier=control-plane --timeout=600s
-kubectl --kubeconfig $KUBECONFIG --namespace metal3 get pods --selector tier=control-plane "--output=jsonpath={.items[*].metadata.name}"
-
 # TODO remove taint
 kubectl --kubeconfig $KUBECONFIG taint node node01 node-role.kubernetes.io/master-
 
 echo "Deploy infra to cluster"
 airshipctl phase apply initinfra --debug --wait-timeout 1000s
 
+echo "List all pods"
 kubectl --kubeconfig $KUBECONFIG get pods --all-namespaces
