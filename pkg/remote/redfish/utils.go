@@ -33,28 +33,28 @@ const (
 	redfishURLSchemeSeparator = "+"
 )
 
+func processExtendedInfo(extendedInfo map[string]interface{}) (string, error) {
+	message, ok := extendedInfo["Message"]
+	if !ok {
+		return "", ErrUnrecognizedRedfishResponse{Key: "error.@Message.ExtendedInfo.Message"}
+	}
+
+	messageContent, ok := message.(string)
+	if !ok {
+		return "", ErrUnrecognizedRedfishResponse{Key: "error.@Message.ExtendedInfo.Message"}
+	}
+
+	// Resolution may be omitted in some responses
+	if resolution, ok := extendedInfo["Resolution"]; ok {
+		return fmt.Sprintf("%s %s", messageContent, resolution), nil
+	}
+
+	return messageContent, nil
+}
+
 // DecodeRawError decodes a raw Redfish HTTP response and retrieves the extended information and available resolutions
 // returned by the BMC.
 func DecodeRawError(rawResponse []byte) (string, error) {
-	processExtendedInfo := func(extendedInfo map[string]interface{}) (string, error) {
-		message, ok := extendedInfo["Message"]
-		if !ok {
-			return "", ErrUnrecognizedRedfishResponse{Key: "error.@Message.ExtendedInfo.Message"}
-		}
-
-		messageContent, ok := message.(string)
-		if !ok {
-			return "", ErrUnrecognizedRedfishResponse{Key: "error.@Message.ExtendedInfo.Message"}
-		}
-
-		// Resolution may be omitted in some responses
-		if resolution, ok := extendedInfo["Resolution"]; ok {
-			return fmt.Sprintf("%s %s", messageContent, resolution), nil
-		}
-
-		return messageContent, nil
-	}
-
 	// Unmarshal raw Redfish response as arbitrary JSON map
 	var arbitraryJSON map[string]interface{}
 	if err := json.Unmarshal(rawResponse, &arbitraryJSON); err != nil {
@@ -81,7 +81,7 @@ func DecodeRawError(rawResponse []byte) (string, error) {
 	switch extendedInfo := extendedInfoContent.(type) {
 	case []interface{}:
 		if len(extendedInfo) == 0 {
-			return "", ErrUnrecognizedRedfishResponse{Key: "error.@MessageExtendedInfo"}
+			return "", ErrUnrecognizedRedfishResponse{Key: "error.@Message.ExtendedInfo"}
 		}
 
 		var errorMessage string
@@ -89,6 +89,10 @@ func DecodeRawError(rawResponse []byte) (string, error) {
 			infoContent, ok := info.(map[string]interface{})
 			if !ok {
 				return "", ErrUnrecognizedRedfishResponse{Key: "error.@Message.ExtendedInfo"}
+			}
+
+			if _, ok := infoContent["Message"]; !ok {
+				return errContent["message"].(string), nil
 			}
 
 			message, err := processExtendedInfo(infoContent)
@@ -208,9 +212,7 @@ func ScreenRedfishError(httpResp *http.Response, clientErr error) error {
 				httpResp.Status),
 		}
 	default:
-		finalError = ErrRedfishClient{Message: fmt.Sprintf("BMC responded '%s'.", httpResp.Status)}
-		log.Debugf("BMC responded '%s'. Attempting to unmarshal the raw BMC error response.",
-			httpResp.Status)
+		finalError = ErrRedfishClient{Message: httpResp.Status}
 	}
 
 	// Retrieve the raw HTTP response body
@@ -221,7 +223,7 @@ func ScreenRedfishError(httpResp *http.Response, clientErr error) error {
 
 	// Attempt to decode the BMC response from the raw HTTP response
 	if bmcResponse, err := DecodeRawError(oAPIErr.Body()); err == nil {
-		finalError.Message = fmt.Sprintf("%s BMC responded: '%s'", finalError.Message, bmcResponse)
+		finalError.Message = fmt.Sprintf("%s\nBMC responded: '%s'", finalError.Message, bmcResponse)
 	} else {
 		log.Debugf("Unable to decode BMC response. %q", err)
 	}
