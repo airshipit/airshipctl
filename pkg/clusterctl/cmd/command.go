@@ -20,6 +20,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 // Command adds a layer to clusterctl interface with airshipctl context
@@ -48,7 +49,7 @@ func NewCommand(rs *environment.AirshipCTLSettings) (*Command, error) {
 	if err != nil {
 		return nil, err
 	}
-	client, err := client.NewClient(root, rs.Debug, options)
+	client, err := client.NewClient(root, log.DebugEnabled(), options)
 	if err != nil {
 		return nil, err
 	}

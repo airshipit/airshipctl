@@ -71,7 +71,7 @@ func GenerateBootstrapIso(settings *environment.AirshipCTLSettings) error {
 		return err
 	}
 
-	err = generateBootstrapIso(docBundle, builder, cfg, settings.Debug)
+	err = generateBootstrapIso(docBundle, builder, cfg, log.DebugEnabled())
 	if err != nil {
 		return err
 	}
