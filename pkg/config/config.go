@@ -29,6 +29,7 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/yaml"
 
+	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/util"
 )
 
@@ -87,6 +88,61 @@ type Permissions struct {
 	FilePermission      uint32
 }
 
+// Factory is a function which returns ready to use config object and error (if any)
+type Factory func() (*Config, error)
+
+// CreateFactory returns function which creates ready to use Config object
+func CreateFactory(airshipConfigPath *string, kubeConfigPath *string) Factory {
+	return func() (*Config, error) {
+		cfg := NewConfig()
+		cfg.kubeConfig = NewKubeConfig()
+
+		var acp, kcp string
+		if airshipConfigPath != nil {
+			acp = *airshipConfigPath
+		}
+		if kubeConfigPath != nil {
+			kcp = *kubeConfigPath
+		}
+
+		cfg.initConfigPath(acp, kcp)
+		err := cfg.LoadConfig(cfg.loadedConfigPath, cfg.kubeConfigPath, false)
+		if err != nil {
+			// Should stop airshipctl
+			log.Fatal("Failed to load or initialize config: ", err)
+		}
+
+		return cfg, cfg.EnsureComplete()
+	}
+}
+
+// initConfigPath - Initializes loadedConfigPath and kubeConfigPath variable for Config object
+func (c *Config) initConfigPath(airshipConfigPath string, kubeConfigPath string) {
+	switch {
+	case airshipConfigPath != "":
+		// The loadedConfigPath may already have been received as a command line argument
+		c.loadedConfigPath = airshipConfigPath
+	case os.Getenv(AirshipConfigEnv) != "":
+		// Otherwise, we can check if we got the path via ENVIRONMENT variable
+		c.loadedConfigPath = os.Getenv(AirshipConfigEnv)
+	default:
+		// Otherwise, we'll try putting it in the home directory
+		c.loadedConfigPath = filepath.Join(util.UserHomeDir(), AirshipConfigDir, AirshipConfig)
+	}
+
+	switch {
+	case kubeConfigPath != "":
+		// The kubeConfigPath may already have been received as a command line argument
+		c.kubeConfigPath = kubeConfigPath
+	case os.Getenv(AirshipKubeConfigEnv) != "":
+		// Otherwise, we can check if we got the path via ENVIRONMENT variable
+		c.kubeConfigPath = os.Getenv(AirshipKubeConfigEnv)
+	default:
+		// Otherwise, we'll try putting it in the home directory
+		c.kubeConfigPath = filepath.Join(util.UserHomeDir(), AirshipConfigDir, AirshipKubeConfig)
+	}
+}
+
 // LoadConfig populates the Config object using the files found at
 // airshipConfigPath and kubeConfigPath
 func (c *Config) LoadConfig(airshipConfigPath, kubeConfigPath string, create bool) error {
@@ -137,24 +193,7 @@ func (c *Config) loadKubeConfig(kubeConfigPath string, create bool) error {
 	var err error
 	if _, err = os.Stat(kubeConfigPath); os.IsNotExist(err) && create {
 		// Default kubeconfig matching Airship target cluster
-		c.kubeConfig = &clientcmdapi.Config{
-			Clusters: map[string]*clientcmdapi.Cluster{
-				AirshipDefaultContext: {
-					Server: "https://172.17.0.1:6443",
-				},
-			},
-			AuthInfos: map[string]*clientcmdapi.AuthInfo{
-				"admin": {
-					Username: "airship-admin",
-				},
-			},
-			Contexts: map[string]*clientcmdapi.Context{
-				AirshipDefaultContext: {
-					Cluster:  AirshipDefaultContext,
-					AuthInfo: "admin",
-				},
-			},
-		}
+		c.kubeConfig = NewKubeConfig()
 		return nil
 	} else if err != nil {
 		return err

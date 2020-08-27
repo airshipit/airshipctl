@@ -59,6 +59,7 @@ func (a *AirshipCTLSettings) InitFlags(cmd *cobra.Command) {
 }
 
 // InitConfig - Initializes and loads Config if exists.
+// TODO (raliev) remove this function after completely switching to new approach of Config loading
 func (a *AirshipCTLSettings) InitConfig() {
 	a.Config = config.NewConfig()
 
@@ -73,6 +74,7 @@ func (a *AirshipCTLSettings) InitConfig() {
 }
 
 // InitAirshipConfigPath - Initializes AirshipConfigPath variable for Config object
+// TODO (raliev) remove this function after completely switching to new approach of Config loading
 func (a *AirshipCTLSettings) InitAirshipConfigPath() {
 	// The airshipConfigPath may already have been received as a command line argument
 	if a.AirshipConfigPath != "" {
@@ -91,6 +93,7 @@ func (a *AirshipCTLSettings) InitAirshipConfigPath() {
 }
 
 // InitKubeConfigPath - Initializes KubeConfigPath variable for Config object
+// TODO (raliev) remove this function after completely switching to new approach of Config loading
 func (a *AirshipCTLSettings) InitKubeConfigPath() {
 	// NOTE(howell): This function will set the kubeConfigPath to the
 	// default location under the airship directory unless the user
