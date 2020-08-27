@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"opendev.org/airship/airshipctl/cmd/image"
+	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
@@ -26,7 +27,7 @@ func TestImage(t *testing.T) {
 		{
 			Name:    "image-with-help",
 			CmdLine: "-h",
-			Cmd:     image.NewImageCommand(nil),
+			Cmd:     image.NewImageCommand(&environment.AirshipCTLSettings{}),
 		},
 	}
 

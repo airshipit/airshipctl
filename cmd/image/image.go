@@ -17,6 +17,7 @@ package image
 import (
 	"github.com/spf13/cobra"
 
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
@@ -25,18 +26,11 @@ func NewImageCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comman
 	imageRootCmd := &cobra.Command{
 		Use:   "image",
 		Short: "Manage ISO image creation",
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			if parentPreRun := cmd.Root().PersistentPreRun; parentPreRun != nil {
-				parentPreRun(cmd.Root(), args)
-			}
-
-			// Load or Initialize airship Config
-			rootSettings.InitConfig()
-		},
 	}
 
-	imageBuildCmd := NewImageBuildCommand(rootSettings)
-	imageRootCmd.AddCommand(imageBuildCmd)
+	cfgFactory := config.CreateFactory(&rootSettings.AirshipConfigPath, &rootSettings.KubeConfigPath)
+
+	imageRootCmd.AddCommand(NewImageBuildCommand(cfgFactory))
 
 	return imageRootCmd
 }

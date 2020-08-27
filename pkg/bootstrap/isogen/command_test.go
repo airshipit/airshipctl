@@ -21,8 +21,6 @@ import (
 	"strings"
 	"testing"
 
-	"opendev.org/airship/airshipctl/pkg/environment"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -232,82 +230,72 @@ func TestVerifyInputs(t *testing.T) {
 }
 
 func TestGenerateBootstrapIso(t *testing.T) {
+	airshipConfigPath := "testdata/config/config"
+	kubeConfigPath := "testdata/config/kubeconfig"
 	t.Run("EnsureCompleteError", func(t *testing.T) {
-		settings := &environment.AirshipCTLSettings{
-			AirshipConfigPath: "testdata/config/config",
-			KubeConfigPath:    "testdata/config/kubeconfig",
-			Config:            &config.Config{},
-		}
-		expectedErr := config.ErrMissingConfig{What: "Current Context is not defined"}
-		settings.InitConfig()
-		settings.Config.CurrentContext = ""
-		actualErr := GenerateBootstrapIso(settings)
+		settings, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
+		require.NoError(t, err)
+		expectedErr := config.ErrMissingConfig{What: "Context with name ''"}
+		settings.CurrentContext = ""
+		actualErr := GenerateBootstrapIso(func() (*config.Config, error) {
+			return settings, nil
+		})
 		assert.Equal(t, expectedErr, actualErr)
 	})
 
 	t.Run("ContextEntryPointError", func(t *testing.T) {
-		settings := &environment.AirshipCTLSettings{
-			AirshipConfigPath: "testdata/config/config",
-			KubeConfigPath:    "testdata/config/kubeconfig",
-			Config:            &config.Config{},
-		}
+		settings, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
+		require.NoError(t, err)
 		expectedErr := config.ErrMissingPrimaryRepo{}
-		settings.InitConfig()
-		settings.Config.Manifests["default"].Repositories = make(map[string]*config.Repository)
-		actualErr := GenerateBootstrapIso(settings)
+		settings.Manifests["default"].Repositories = make(map[string]*config.Repository)
+		actualErr := GenerateBootstrapIso(func() (*config.Config, error) {
+			return settings, nil
+		})
 		assert.Equal(t, expectedErr, actualErr)
 	})
 
 	t.Run("NewBundleByPathError", func(t *testing.T) {
-		settings := &environment.AirshipCTLSettings{
-			AirshipConfigPath: "testdata/config/config",
-			KubeConfigPath:    "testdata/config/kubeconfig",
-			Config:            &config.Config{},
-		}
+		settings, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
+		require.NoError(t, err)
 		expectedErr := config.ErrMissingPhaseDocument{PhaseName: "bootstrap"}
-		settings.InitConfig()
-		settings.Config.Manifests["default"].TargetPath = "/nonexistent"
-		actualErr := GenerateBootstrapIso(settings)
+		settings.Manifests["default"].TargetPath = "/nonexistent"
+		actualErr := GenerateBootstrapIso(func() (*config.Config, error) {
+			return settings, nil
+		})
 		assert.Equal(t, expectedErr, actualErr)
 	})
 
 	t.Run("SelectOneError", func(t *testing.T) {
-		settings := &environment.AirshipCTLSettings{
-			AirshipConfigPath: "testdata/config/config",
-			KubeConfigPath:    "testdata/config/kubeconfig",
-			Config:            &config.Config{},
-		}
+		settings, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
+		require.NoError(t, err)
 		expectedErr := document.ErrDocNotFound{
 			Selector: document.NewSelector().ByGvk("airshipit.org", "v1alpha1", "ImageConfiguration")}
-		settings.InitConfig()
-		settings.Config.Manifests["default"].SubPath = "missingkinddoc/site/test-site"
-		actualErr := GenerateBootstrapIso(settings)
+		settings.Manifests["default"].SubPath = "missingkinddoc/site/test-site"
+		actualErr := GenerateBootstrapIso(func() (*config.Config, error) {
+			return settings, nil
+		})
 		assert.Equal(t, expectedErr, actualErr)
 	})
 
 	t.Run("ToObjectError", func(t *testing.T) {
-		settings := &environment.AirshipCTLSettings{
-			AirshipConfigPath: "testdata/config/config",
-			KubeConfigPath:    "testdata/config/kubeconfig",
-			Config:            &config.Config{},
-		}
+		settings, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
+		require.NoError(t, err)
 		expectedErrMessage := "missing metadata.name in object"
-		settings.InitConfig()
-		settings.Config.Manifests["default"].SubPath = "missingmetadoc/site/test-site"
-		actualErr := GenerateBootstrapIso(settings)
+		settings.Manifests["default"].SubPath = "missingmetadoc/site/test-site"
+		actualErr := GenerateBootstrapIso(func() (*config.Config, error) {
+			return settings, nil
+		})
 		assert.Contains(t, actualErr.Error(), expectedErrMessage)
 	})
 
 	t.Run("verifyInputsError", func(t *testing.T) {
-		settings := &environment.AirshipCTLSettings{
-			AirshipConfigPath: "testdata/config/config",
-			KubeConfigPath:    "testdata/config/kubeconfig",
-			Config:            &config.Config{},
-		}
+		settings, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
+		require.NoError(t, err)
 		expectedErr := config.ErrMissingConfig{What: "Must specify volume bind for ISO builder container"}
-		settings.InitConfig()
-		settings.Config.Manifests["default"].SubPath = "missingvoldoc/site/test-site"
-		actualErr := GenerateBootstrapIso(settings)
+		settings.Manifests["default"].SubPath = "missingvoldoc/site/test-site"
+		actualErr := GenerateBootstrapIso(func() (*config.Config, error) {
+			return settings, nil
+		})
 		assert.Equal(t, expectedErr, actualErr)
 	})
 }

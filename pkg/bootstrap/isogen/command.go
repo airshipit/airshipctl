@@ -26,7 +26,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/util"
 )
@@ -36,11 +35,11 @@ const (
 )
 
 // GenerateBootstrapIso will generate data for cloud init and start ISO builder container
-func GenerateBootstrapIso(settings *environment.AirshipCTLSettings) error {
+func GenerateBootstrapIso(cfgFactory config.Factory) error {
 	ctx := context.Background()
 
-	globalConf := settings.Config
-	if err := globalConf.EnsureComplete(); err != nil {
+	globalConf, err := cfgFactory()
+	if err != nil {
 		return err
 	}
 
