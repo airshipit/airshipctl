@@ -20,7 +20,7 @@ import (
 	"github.com/spf13/cobra"
 
 	clusterctlcmd "opendev.org/airship/airshipctl/pkg/clusterctl/cmd"
-	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/config"
 )
 
 const (
@@ -71,14 +71,14 @@ airshipctl cluster init
 )
 
 // NewInitCommand creates a command to deploy cluster-api
-func NewInitCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewInitCommand(cfgFactory config.Factory) *cobra.Command {
 	initCmd := &cobra.Command{
 		Use:     "init",
 		Short:   "Deploy cluster-api provider components",
 		Long:    initLong,
 		Example: initExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			command, err := clusterctlcmd.NewCommand(rootSettings)
+			command, err := clusterctlcmd.NewCommand(cfgFactory)
 			if err != nil {
 				return err
 			}

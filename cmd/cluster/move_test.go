@@ -18,21 +18,15 @@ import (
 	"testing"
 
 	"opendev.org/airship/airshipctl/cmd/cluster"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
 func TestNewClusterMoveCmd(t *testing.T) {
-	fakeRootSettings := &environment.AirshipCTLSettings{
-		AirshipConfigPath: "../../testdata/k8s/config.yaml",
-		KubeConfigPath:    "../../testdata/k8s/kubeconfig.yaml",
-	}
-
 	tests := []*testutil.CmdTest{
 		{
 			Name:    "cluster-move-cmd-with-help",
 			CmdLine: "--help",
-			Cmd:     cluster.NewMoveCommand(fakeRootSettings),
+			Cmd:     cluster.NewMoveCommand(nil),
 		},
 	}
 	for _, testcase := range tests {

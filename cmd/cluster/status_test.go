@@ -24,7 +24,6 @@ import (
 
 	"opendev.org/airship/airshipctl/cmd/cluster"
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/k8s/client"
 	"opendev.org/airship/airshipctl/pkg/k8s/client/fake"
 	"opendev.org/airship/airshipctl/testutil"
@@ -69,7 +68,7 @@ func TestNewClusterStatusCmd(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt
-		testClientFactory := func(_ *environment.AirshipCTLSettings) (client.Interface, error) {
+		testClientFactory := func(_ *config.Config) (client.Interface, error) {
 			return fake.NewClient(
 				fake.WithDynamicObjects(tt.resources...),
 				fake.WithCRDs(tt.CRDs...),
@@ -80,9 +79,9 @@ func TestNewClusterStatusCmd(t *testing.T) {
 	}
 }
 
-func clusterStatusTestSettings() *environment.AirshipCTLSettings {
-	return &environment.AirshipCTLSettings{
-		Config: &config.Config{
+func clusterStatusTestSettings() config.Factory {
+	return func() (*config.Config, error) {
+		return &config.Config{
 			Clusters:  map[string]*config.ClusterPurpose{"testCluster": nil},
 			AuthInfos: map[string]*config.AuthInfo{"testAuthInfo": nil},
 			Contexts: map[string]*config.Context{
@@ -92,7 +91,7 @@ func clusterStatusTestSettings() *environment.AirshipCTLSettings {
 				"testManifest": {TargetPath: fixturesPath},
 			},
 			CurrentContext: "testContext",
-		},
+		}, nil
 	}
 }
 

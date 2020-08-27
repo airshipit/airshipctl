@@ -19,7 +19,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
@@ -33,15 +32,16 @@ type Command struct {
 }
 
 // NewCommand returns instance of Command
-func NewCommand(rs *environment.AirshipCTLSettings) (*Command, error) {
-	bundle, err := getBundle(rs.Config)
+func NewCommand(cfgFactory config.Factory) (*Command, error) {
+	cfg, err := cfgFactory()
 	if err != nil {
 		return nil, err
 	}
-	if err = rs.Config.EnsureComplete(); err != nil {
+	bundle, err := getBundle(cfg)
+	if err != nil {
 		return nil, err
 	}
-	root, err := rs.Config.CurrentContextTargetPath()
+	root, err := cfg.CurrentContextTargetPath()
 	if err != nil {
 		return nil, err
 	}
@@ -53,14 +53,14 @@ func NewCommand(rs *environment.AirshipCTLSettings) (*Command, error) {
 	if err != nil {
 		return nil, err
 	}
-	kubeConfigPath := rs.Config.KubeConfigPath()
+	kubeConfigPath := cfg.KubeConfigPath()
 
 	return &Command{
 		kubeconfigPath:    kubeConfigPath,
 		documentRoot:      root,
 		client:            client,
 		options:           options,
-		kubeconfigContext: rs.Config.CurrentContext,
+		kubeconfigContext: cfg.CurrentContext,
 	}, nil
 }
 

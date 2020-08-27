@@ -120,7 +120,9 @@ func TestNewCommand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			rs.Config.Manifests = manifests
 			rs.Config.CurrentContext = context
-			command, err := NewCommand(rs)
+			command, err := NewCommand(func() (*config.Config, error) {
+				return rs.Config, nil
+			})
 			if expectErr {
 				assert.Error(t, err)
 				assert.Nil(t, command)

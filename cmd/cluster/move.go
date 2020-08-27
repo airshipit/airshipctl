@@ -20,7 +20,7 @@ import (
 	"github.com/spf13/cobra"
 
 	clusterctlcmd "opendev.org/airship/airshipctl/pkg/clusterctl/cmd"
-	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/config"
 )
 
 const (
@@ -38,7 +38,7 @@ Move Cluster API objects, provider specific objects and all dependencies to the 
 )
 
 // NewMoveCommand creates a command to move capi and bmo resources to the target cluster
-func NewMoveCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewMoveCommand(cfgFactory config.Factory) *cobra.Command {
 	var toKubeconfigContext string
 	moveCmd := &cobra.Command{
 		Use:     "move",
@@ -46,7 +46,7 @@ func NewMoveCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command
 		Long:    moveLong[1:],
 		Example: moveExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			command, err := clusterctlcmd.NewCommand(rootSettings)
+			command, err := clusterctlcmd.NewCommand(cfgFactory)
 			if err != nil {
 				return err
 			}

@@ -22,7 +22,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubectl"
 	k8sutils "opendev.org/airship/airshipctl/pkg/k8s/utils"
 )
@@ -55,19 +55,19 @@ type Client struct {
 var _ Interface = &Client{}
 
 // Factory is a function which creates Interfaces
-type Factory func(*environment.AirshipCTLSettings) (Interface, error)
+type Factory func(*config.Config) (Interface, error)
 
 // DefaultClient is a factory which generates a default client
 var DefaultClient Factory = NewClient
 
 // NewClient creates a Client initialized from the passed in settings
-func NewClient(settings *environment.AirshipCTLSettings) (Interface, error) {
+func NewClient(cfg *config.Config) (Interface, error) {
 	client := new(Client)
 	var err error
 
-	f := k8sutils.FactoryFromKubeConfigPath(settings.KubeConfigPath)
+	f := k8sutils.FactoryFromKubeConfigPath(cfg.KubeConfigPath())
 
-	pathToBufferDir := filepath.Dir(settings.AirshipConfigPath)
+	pathToBufferDir := filepath.Dir(cfg.LoadedConfigPath())
 	client.kubectl = kubectl.NewKubectl(f).WithBufferDir(pathToBufferDir)
 
 	client.clientSet, err = f.KubernetesClientSet()
@@ -81,12 +81,12 @@ func NewClient(settings *environment.AirshipCTLSettings) (Interface, error) {
 	}
 
 	// kubectl factories can't create CRD clients...
-	config, err := clientcmd.BuildConfigFromFlags("", settings.KubeConfigPath)
+	kubeConfig, err := clientcmd.BuildConfigFromFlags("", cfg.KubeConfigPath())
 	if err != nil {
 		return nil, err
 	}
 
-	client.apixClient, err = apix.NewForConfig(config)
+	client.apixClient, err = apix.NewForConfig(kubeConfig)
 	if err != nil {
 		return nil, err
 	}

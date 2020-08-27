@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"opendev.org/airship/airshipctl/cmd/cluster"
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/testutil"
 )
@@ -33,7 +34,9 @@ func TestNewClusterInitCmd(t *testing.T) {
 		{
 			Name:    "cluster-init-cmd-with-help",
 			CmdLine: "--help",
-			Cmd:     cluster.NewInitCommand(fakeRootSettings),
+			Cmd: cluster.NewInitCommand(func() (*config.Config, error) {
+				return fakeRootSettings.Config, nil
+			}),
 		},
 	}
 	for _, testcase := range tests {

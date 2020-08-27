@@ -20,21 +20,21 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/cluster"
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/k8s/client"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/util"
 )
 
 // NewStatusCommand creates a command which reports the statuses of a cluster's deployed components.
-func NewStatusCommand(rootSettings *environment.AirshipCTLSettings, factory client.Factory) *cobra.Command {
+func NewStatusCommand(cfgFactory config.Factory, factory client.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "status",
 		Short: "Retrieve statuses of deployed cluster components",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			conf := rootSettings.Config
-			if err := conf.EnsureComplete(); err != nil {
+			conf, err := cfgFactory()
+			if err != nil {
 				return err
 			}
 
@@ -53,7 +53,7 @@ func NewStatusCommand(rootSettings *environment.AirshipCTLSettings, factory clie
 				return err
 			}
 
-			client, err := factory(rootSettings)
+			client, err := factory(conf)
 			if err != nil {
 				return err
 			}

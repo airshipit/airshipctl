@@ -17,6 +17,7 @@ package cluster
 import (
 	"github.com/spf13/cobra"
 
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/k8s/client"
 )
@@ -35,19 +36,13 @@ func NewClusterCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comm
 		Use:   "cluster",
 		Short: "Manage Kubernetes clusters",
 		Long:  clusterLong[1:],
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			if parentPreRun := cmd.Root().PersistentPreRun; parentPreRun != nil {
-				parentPreRun(cmd.Root(), args)
-			}
-
-			// Load or Initialize airship Config
-			rootSettings.InitConfig()
-		},
 	}
 
-	clusterRootCmd.AddCommand(NewInitCommand(rootSettings))
-	clusterRootCmd.AddCommand(NewMoveCommand(rootSettings))
-	clusterRootCmd.AddCommand(NewStatusCommand(rootSettings, client.DefaultClient))
+	cfgFactory := config.CreateFactory(&rootSettings.AirshipConfigPath, &rootSettings.KubeConfigPath)
+
+	clusterRootCmd.AddCommand(NewInitCommand(cfgFactory))
+	clusterRootCmd.AddCommand(NewMoveCommand(cfgFactory))
+	clusterRootCmd.AddCommand(NewStatusCommand(cfgFactory, client.DefaultClient))
 
 	return clusterRootCmd
 }
