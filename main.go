@@ -22,13 +22,7 @@ import (
 )
 
 func main() {
-	rootCmd, _, err := cmd.NewAirshipCTLCommand(os.Stdout)
-	if err != nil {
-		fmt.Fprintln(os.Stdout, err)
-		os.Exit(1)
-	}
-
-	if err := rootCmd.Execute(); err != nil {
+	if err := cmd.NewAirshipCTLCommand(os.Stdout).Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

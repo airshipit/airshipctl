@@ -34,15 +34,14 @@ import (
 )
 
 // NewAirshipCTLCommand creates a root `airshipctl` command with the default commands attached
-func NewAirshipCTLCommand(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings, error) {
-	rootCmd, settings, err := NewRootCommand(out)
-	return AddDefaultAirshipCTLCommands(rootCmd, settings), settings, err
+func NewAirshipCTLCommand(out io.Writer) *cobra.Command {
+	rootCmd, settings := NewRootCommand(out)
+	return AddDefaultAirshipCTLCommands(rootCmd, settings)
 }
 
 // NewRootCommand creates the root `airshipctl` command. All other commands are
 // subcommands branching from this one
-func NewRootCommand(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings, error) {
-	settings := &environment.AirshipCTLSettings{}
+func NewRootCommand(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings) {
 	rootCmd := &cobra.Command{
 		Use:           "airshipctl",
 		Short:         "A unified entrypoint to various airship components",
@@ -50,11 +49,8 @@ func NewRootCommand(out io.Writer) (*cobra.Command, *environment.AirshipCTLSetti
 		SilenceUsage:  true,
 	}
 	rootCmd.SetOut(out)
-	rootCmd.AddCommand(NewVersionCommand())
 
-	settings.InitFlags(rootCmd)
-
-	return rootCmd, settings, nil
+	return rootCmd, makeRootSettings(rootCmd)
 }
 
 // AddDefaultAirshipCTLCommands is a convenience function for adding all of the
@@ -68,6 +64,14 @@ func AddDefaultAirshipCTLCommands(cmd *cobra.Command, settings *environment.Airs
 	cmd.AddCommand(image.NewImageCommand(settings))
 	cmd.AddCommand(secret.NewSecretCommand())
 	cmd.AddCommand(phase.NewPhaseCommand(settings))
+	cmd.AddCommand(NewVersionCommand())
 
 	return cmd
+}
+
+// makeRootSettings holds all actions about environment.AirshipCTLSettings
+func makeRootSettings(cmd *cobra.Command) *environment.AirshipCTLSettings {
+	settings := &environment.AirshipCTLSettings{}
+	settings.InitFlags(cmd)
+	return settings
 }

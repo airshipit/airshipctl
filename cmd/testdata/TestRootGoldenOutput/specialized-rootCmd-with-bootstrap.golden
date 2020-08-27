@@ -6,7 +6,6 @@ Usage:
 Available Commands:
   baremetal   Perform actions on baremetal hosts
   help        Help about any command
-  version     Show the version number of airshipctl
 
 Flags:
       --airshipconf string   Path to file for airshipctl configuration. (default "$HOME/.airship/config")

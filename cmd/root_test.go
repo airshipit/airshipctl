@@ -75,11 +75,10 @@ func TestFlagLoading(t *testing.T) {
 		t.Run(tt.name, func(subTest *testing.T) {
 			// We don't care about the output of this test, so toss
 			// it into a throwaway &bytes.buffer{}
-			rootCmd, settings, err := cmd.NewRootCommand(&bytes.Buffer{})
-			require.NoError(t, err)
+			rootCmd, settings := cmd.NewRootCommand(&bytes.Buffer{})
 			rootCmd.SetArgs(tt.args)
 
-			err = rootCmd.Execute()
+			err := rootCmd.Execute()
 			require.NoError(t, err)
 
 			assert.Equal(t, settings.AirshipConfigPath, tt.expected)
@@ -89,15 +88,13 @@ func TestFlagLoading(t *testing.T) {
 
 func getVanillaRootCommand(t *testing.T) *cobra.Command {
 	t.Helper()
-	rootCmd, _, err := cmd.NewRootCommand(nil)
-	require.NoError(t, err, "Could not create root commands")
+	rootCmd, _ := cmd.NewRootCommand(nil)
 	return rootCmd
 }
 
 func getDefaultRootCommand(t *testing.T) *cobra.Command {
 	t.Helper()
-	rootCmd, _, err := cmd.NewAirshipCTLCommand(nil)
-	require.NoError(t, err, "Could not create root commands")
+	rootCmd := cmd.NewAirshipCTLCommand(nil)
 	return rootCmd
 }
 
