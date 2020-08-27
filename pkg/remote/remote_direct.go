@@ -18,16 +18,12 @@ import (
 	api "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/log"
-
 	"opendev.org/airship/airshipctl/pkg/remote/power"
 )
 
 // DoRemoteDirect bootstraps the ephemeral node.
-func (b baremetalHost) DoRemoteDirect(settings *environment.AirshipCTLSettings) error {
-	cfg := settings.Config
-
+func (b baremetalHost) DoRemoteDirect(cfg *config.Config) error {
 	root, err := cfg.CurrentContextEntryPoint(config.BootstrapPhase)
 	if err != nil {
 		return err

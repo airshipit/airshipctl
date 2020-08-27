@@ -19,17 +19,21 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/remote"
 )
 
 // NewRemoteDirectCommand provides a command with the capability to perform remote direct operations.
-func NewRemoteDirectCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewRemoteDirectCommand(cfgFactory config.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "remotedirect",
 		Short: "Bootstrap the ephemeral host",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			manager, err := remote.NewManager(rootSettings,
+			cfg, err := cfgFactory()
+			if err != nil {
+				return err
+			}
+
+			manager, err := remote.NewManager(cfg,
 				config.BootstrapPhase,
 				remote.ByLabel(document.EphemeralHostSelector))
 			if err != nil {
@@ -41,7 +45,7 @@ func NewRemoteDirectCommand(rootSettings *environment.AirshipCTLSettings) *cobra
 			}
 
 			ephemeralHost := manager.Hosts[0]
-			return ephemeralHost.DoRemoteDirect(rootSettings)
+			return ephemeralHost.DoRemoteDirect(cfg)
 		},
 	}
 

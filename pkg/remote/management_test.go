@@ -23,39 +23,36 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 	redfishdell "opendev.org/airship/airshipctl/pkg/remote/redfish/vendors/dell"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
-type Configuration func(*environment.AirshipCTLSettings)
+type Configuration func(*config.Config)
 
 // initSettings initializes the global airshipctl settings with test data by accepting functions as arguments that
 // manipulate configuration sections.
-func initSettings(t *testing.T, configs ...Configuration) *environment.AirshipCTLSettings {
+func initSettings(t *testing.T, configs ...Configuration) *config.Config {
 	t.Helper()
 
-	settings := &environment.AirshipCTLSettings{Config: testutil.DummyConfig()}
-
+	config := testutil.DummyConfig()
 	for _, cfg := range configs {
-		cfg(settings)
+		cfg(config)
 	}
-
-	return settings
+	return config
 }
 
 // withManagementConfig initializes the management config when used as an argument to initSettings.
 func withManagementConfig(cfg *config.ManagementConfiguration) Configuration {
-	return func(settings *environment.AirshipCTLSettings) {
-		settings.Config.ManagementConfiguration["dummy_management_config"] = cfg
+	return func(settings *config.Config) {
+		settings.ManagementConfiguration["dummy_management_config"] = cfg
 	}
 }
 
 // withTestDataPath sets the test data path when used as an argument to initSettings.
 func withTestDataPath(path string) Configuration {
-	return func(settings *environment.AirshipCTLSettings) {
-		manifest, err := settings.Config.CurrentContextManifest()
+	return func(settings *config.Config) {
+		manifest, err := settings.CurrentContextManifest()
 		if err != nil {
 			panic(fmt.Sprintf("Unable to initialize management tests. Current Context error %q", err))
 		}

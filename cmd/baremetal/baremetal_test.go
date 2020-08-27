@@ -20,6 +20,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"opendev.org/airship/airshipctl/cmd/baremetal"
+	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
@@ -28,7 +29,7 @@ func TestBaremetal(t *testing.T) {
 		{
 			Name:    "baremetal-with-help",
 			CmdLine: "-h",
-			Cmd:     baremetal.NewBaremetalCommand(nil),
+			Cmd:     baremetal.NewBaremetalCommand(&environment.AirshipCTLSettings{}),
 		},
 		{
 			Name:    "baremetal-ejectmedia-with-help",

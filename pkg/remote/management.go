@@ -20,7 +20,6 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/remote/power"
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
@@ -116,8 +115,8 @@ func ByName(name string) HostSelector {
 
 // NewManager provides a manager that exposes the capability to perform remote direct functionality and other
 // out-of-band management on multiple hosts.
-func NewManager(settings *environment.AirshipCTLSettings, phase string, hosts ...HostSelector) (*Manager, error) {
-	managementCfg, err := settings.Config.CurrentContextManagementConfig()
+func NewManager(cfg *config.Config, phase string, hosts ...HostSelector) (*Manager, error) {
+	managementCfg, err := cfg.CurrentContextManagementConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +125,7 @@ func NewManager(settings *environment.AirshipCTLSettings, phase string, hosts ..
 		return nil, err
 	}
 
-	entrypoint, err := settings.Config.CurrentContextEntryPoint(phase)
+	entrypoint, err := cfg.CurrentContextEntryPoint(phase)
 	if err != nil {
 		return nil, err
 	}

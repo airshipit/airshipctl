@@ -17,6 +17,7 @@ package baremetal
 import (
 	"github.com/spf13/cobra"
 
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/remote"
 )
@@ -39,33 +40,16 @@ func NewBaremetalCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Co
 	baremetalRootCmd := &cobra.Command{
 		Use:   "baremetal",
 		Short: "Perform actions on baremetal hosts",
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			if parentPreRun := cmd.Root().PersistentPreRun; parentPreRun != nil {
-				parentPreRun(cmd.Root(), args)
-			}
-
-			// Load or Initialize airship Config
-			rootSettings.InitConfig()
-		},
 	}
 
-	ejectMediaCmd := NewEjectMediaCommand(rootSettings)
-	baremetalRootCmd.AddCommand(ejectMediaCmd)
+	cfgFactory := config.CreateFactory(&rootSettings.AirshipConfigPath, &rootSettings.KubeConfigPath)
 
-	powerOffCmd := NewPowerOffCommand(rootSettings)
-	baremetalRootCmd.AddCommand(powerOffCmd)
-
-	powerOnCmd := NewPowerOnCommand(rootSettings)
-	baremetalRootCmd.AddCommand(powerOnCmd)
-
-	powerStatusCmd := NewPowerStatusCommand(rootSettings)
-	baremetalRootCmd.AddCommand(powerStatusCmd)
-
-	rebootCmd := NewRebootCommand(rootSettings)
-	baremetalRootCmd.AddCommand(rebootCmd)
-
-	remoteDirectCmd := NewRemoteDirectCommand(rootSettings)
-	baremetalRootCmd.AddCommand(remoteDirectCmd)
+	baremetalRootCmd.AddCommand(NewEjectMediaCommand(cfgFactory))
+	baremetalRootCmd.AddCommand(NewPowerOffCommand(cfgFactory))
+	baremetalRootCmd.AddCommand(NewPowerOnCommand(cfgFactory))
+	baremetalRootCmd.AddCommand(NewPowerStatusCommand(cfgFactory))
+	baremetalRootCmd.AddCommand(NewRebootCommand(cfgFactory))
+	baremetalRootCmd.AddCommand(NewRemoteDirectCommand(cfgFactory))
 
 	return baremetalRootCmd
 }
