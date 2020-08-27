@@ -36,7 +36,7 @@ func TestDocument(t *testing.T) {
 		{
 			Name:    "document-pull-with-help",
 			CmdLine: "-h",
-			Cmd:     document.NewPluginCommand(),
+			Cmd:     document.NewPullCommand(nil),
 		},
 	}
 	for _, tt := range tests {
