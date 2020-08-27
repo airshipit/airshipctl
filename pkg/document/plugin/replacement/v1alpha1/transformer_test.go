@@ -16,7 +16,7 @@ import (
 )
 
 func samplePlugin(t *testing.T) plugtypes.Plugin {
-	plugin, err := replv1alpha1.New(nil, []byte(`
+	plugin, err := replv1alpha1.New([]byte(`
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
@@ -35,7 +35,7 @@ replacements:
 }
 
 func TestMalformedConfig(t *testing.T) {
-	_, err := replv1alpha1.New(nil, []byte("--"))
+	_, err := replv1alpha1.New([]byte("--"))
 	assert.Error(t, err)
 }
 
@@ -909,7 +909,7 @@ spec:
 	}
 
 	for _, tc := range testCases {
-		plugin, err := replv1alpha1.New(nil, []byte(tc.cfg))
+		plugin, err := replv1alpha1.New([]byte(tc.cfg))
 		require.NoError(t, err)
 
 		buf := &bytes.Buffer{}

@@ -21,13 +21,11 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"opendev.org/airship/airshipctl/pkg/document/plugin"
-	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
 func TestConfigureAndRun(t *testing.T) {
 	testCases := []struct {
 		pluginCfg     []byte
-		settings      *environment.AirshipCTLSettings
 		expectedError string
 		in            io.Reader
 		out           io.Writer
@@ -55,7 +53,7 @@ spec: -
 	}
 
 	for _, tc := range testCases {
-		err := plugin.ConfigureAndRun(tc.settings, tc.pluginCfg, tc.in, tc.out)
+		err := plugin.ConfigureAndRun(tc.pluginCfg, tc.in, tc.out)
 		assert.EqualError(t, err, tc.expectedError)
 	}
 }

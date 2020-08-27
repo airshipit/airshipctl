@@ -27,13 +27,13 @@ func TestPlugin(t *testing.T) {
 			Name:    "document-plugin-cmd-with-empty-args",
 			CmdLine: "",
 			Error:   fmt.Errorf("requires at least 1 arg(s), only received 0"),
-			Cmd:     NewPluginCommand(nil),
+			Cmd:     NewPluginCommand(),
 		},
 		{
 			Name:    "document-plugin-cmd-with-nonexistent-config",
 			CmdLine: "/some/random/path.yaml",
 			Error:   fmt.Errorf("open /some/random/path.yaml: no such file or directory"),
-			Cmd:     NewPluginCommand(nil),
+			Cmd:     NewPluginCommand(),
 		},
 	}
 

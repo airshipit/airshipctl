@@ -31,12 +31,12 @@ func TestDocument(t *testing.T) {
 		{
 			Name:    "document-plugin-with-help",
 			CmdLine: "-h",
-			Cmd:     document.NewPluginCommand(nil),
+			Cmd:     document.NewPluginCommand(),
 		},
 		{
 			Name:    "document-pull-with-help",
 			CmdLine: "-h",
-			Cmd:     document.NewPluginCommand(nil),
+			Cmd:     document.NewPluginCommand(),
 		},
 	}
 	for _, tt := range tests {

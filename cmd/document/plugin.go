@@ -20,7 +20,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/document/plugin"
-	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
 const (
@@ -60,7 +59,7 @@ airshipctl document plugin /tmp/replacement.yaml
 
 // NewPluginCommand creates a new command which can act as kustomize
 // exec plugin.
-func NewPluginCommand(rootSetting *environment.AirshipCTLSettings) *cobra.Command {
+func NewPluginCommand() *cobra.Command {
 	pluginCmd := &cobra.Command{
 		Use:     "plugin CONFIG [ARGS]",
 		Short:   "Run as a kustomize exec plugin",
@@ -72,7 +71,7 @@ func NewPluginCommand(rootSetting *environment.AirshipCTLSettings) *cobra.Comman
 			if err != nil {
 				return err
 			}
-			return plugin.ConfigureAndRun(rootSetting, cfg, cmd.InOrStdin(), cmd.OutOrStdout())
+			return plugin.ConfigureAndRun(cfg, cmd.InOrStdin(), cmd.OutOrStdout())
 		},
 	}
 	return pluginCmd

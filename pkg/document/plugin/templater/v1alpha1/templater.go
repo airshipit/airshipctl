@@ -24,7 +24,6 @@ import (
 	"sigs.k8s.io/yaml"
 
 	plugtypes "opendev.org/airship/airshipctl/pkg/document/plugin/types"
-	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
 // GetGVK returns group, version, kind object used to register version
@@ -38,7 +37,7 @@ func GetGVK() schema.GroupVersionKind {
 }
 
 // New creates new instance of the plugin
-func New(_ *environment.AirshipCTLSettings, cfg []byte) (plugtypes.Plugin, error) {
+func New(cfg []byte) (plugtypes.Plugin, error) {
 	t := &Templater{}
 	if err := yaml.Unmarshal(cfg, t); err != nil {
 		return nil, err

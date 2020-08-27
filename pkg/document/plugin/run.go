@@ -25,7 +25,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/document/plugin/replacement"
 	"opendev.org/airship/airshipctl/pkg/document/plugin/templater"
 	"opendev.org/airship/airshipctl/pkg/document/plugin/types"
-	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
 // Registry contains factory functions for the available plugins
@@ -39,7 +38,7 @@ func init() {
 // ConfigureAndRun executes particular plugin based on group, version, kind
 // which have been specified in configuration file. Config file should be
 // supplied as a first element of args slice
-func ConfigureAndRun(settings *environment.AirshipCTLSettings, pluginCfg []byte, in io.Reader, out io.Writer) error {
+func ConfigureAndRun(pluginCfg []byte, in io.Reader, out io.Writer) error {
 	var cfg unstructured.Unstructured
 	if err := yaml.Unmarshal(pluginCfg, &cfg); err != nil {
 		return err
@@ -49,7 +48,7 @@ func ConfigureAndRun(settings *environment.AirshipCTLSettings, pluginCfg []byte,
 		return ErrPluginNotFound{PluginID: cfg.GroupVersionKind()}
 	}
 
-	plugin, err := pluginFactory(settings, pluginCfg)
+	plugin, err := pluginFactory(pluginCfg)
 	if err != nil {
 		return err
 	}

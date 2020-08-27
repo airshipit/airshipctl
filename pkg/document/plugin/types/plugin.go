@@ -16,8 +16,6 @@ package types
 
 import (
 	"io"
-
-	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
 // Plugin interface for airship document plugins
@@ -27,4 +25,4 @@ type Plugin interface {
 
 // Factory function for plugins. Functions of such type are used in the plugin
 // registry to instantiate a plugin object
-type Factory func(*environment.AirshipCTLSettings, []byte) (Plugin, error)
+type Factory func([]byte) (Plugin, error)

@@ -25,7 +25,7 @@ import (
 )
 
 func TestMalformedConfig(t *testing.T) {
-	_, err := tmplv1alpha1.New(nil, []byte("--"))
+	_, err := tmplv1alpha1.New([]byte("--"))
 	assert.Error(t, err)
 }
 
@@ -119,7 +119,7 @@ template: |
 	}
 
 	for _, tc := range testCases {
-		plugin, err := tmplv1alpha1.New(nil, []byte(tc.cfg))
+		plugin, err := tmplv1alpha1.New([]byte(tc.cfg))
 		require.NoError(t, err)
 		buf := &bytes.Buffer{}
 		err = plugin.Run(nil, buf)
