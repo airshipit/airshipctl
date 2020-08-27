@@ -1,0 +1,26 @@
+# permissions to do edit hardwareclassifications.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hardwareclassification-editor-role
+rules:
+- apiGroups:
+  - metal3.io
+  resources:
+  - hardwareclassifications
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - metal3.io
+  resources:
+  - hardwareclassifications/status
+  verbs:
+  - get
+  - patch
+  - update

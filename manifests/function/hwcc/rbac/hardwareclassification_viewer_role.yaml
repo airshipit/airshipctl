@@ -1,0 +1,20 @@
+# permissions to do viewer hardwareclassifications.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hardwareclassification-viewer-role
+rules:
+- apiGroups:
+  - metal3.io
+  resources:
+  - hardwareclassifications
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - metal3.io
+  resources:
+  - hardwareclassifications/status
+  verbs:
+  - get
