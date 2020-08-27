@@ -17,21 +17,17 @@ package document
 import (
 	"github.com/spf13/cobra"
 
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document/pull"
-	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
 // NewPullCommand creates a new command for pulling airship document repositories
-func NewPullCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
-	settings := pull.Settings{AirshipCTLSettings: rootSettings}
+func NewPullCommand(cfgFactory config.Factory) *cobra.Command {
 	documentPullCmd := &cobra.Command{
 		Use:   "pull",
 		Short: "Pulls documents from remote git repository",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Load or Initialize airship Config
-			rootSettings.InitConfig()
-
-			return settings.Pull()
+			return pull.Pull(cfgFactory)
 		},
 	}
 
