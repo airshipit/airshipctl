@@ -20,7 +20,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/config"
 )
 
 const getManagementConfigExample = `
@@ -32,7 +32,7 @@ airshipctl config get-management-config default
 `
 
 // NewGetManagementConfigCommand creates a command that enables printing a management configuration to stdout.
-func NewGetManagementConfigCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewGetManagementConfigCommand(cfgFactory config.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "get-management-config [NAME]",
 		Short:   "View a management config or all management configs defined in the airshipctl config",
@@ -40,10 +40,14 @@ func NewGetManagementConfigCommand(rootSettings *environment.AirshipCTLSettings)
 		Args:    cobra.MaximumNArgs(1),
 		Aliases: []string{"get-management-configs"},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			cfg, err := cfgFactory()
+			if err != nil {
+				return err
+			}
 			if len(args) == 1 {
 				name := args[0]
 
-				config, err := rootSettings.Config.GetManagementConfiguration(name)
+				config, err := cfg.GetManagementConfiguration(name)
 				if err != nil {
 					return err
 				}
@@ -53,21 +57,21 @@ func NewGetManagementConfigCommand(rootSettings *environment.AirshipCTLSettings)
 				return nil
 			}
 
-			if len(rootSettings.Config.ManagementConfiguration) == 0 {
+			if len(cfg.ManagementConfiguration) == 0 {
 				fmt.Fprintln(cmd.OutOrStdout(), "No management configurations defined.")
 
 				return nil
 			}
 
 			// Print all of the management configurations in order by name
-			keys := make([]string, 0, len(rootSettings.Config.ManagementConfiguration))
-			for key := range rootSettings.Config.ManagementConfiguration {
+			keys := make([]string, 0, len(cfg.ManagementConfiguration))
+			for key := range cfg.ManagementConfiguration {
 				keys = append(keys, key)
 			}
 			sort.Strings(keys)
 
 			for _, key := range keys {
-				config := rootSettings.Config.ManagementConfiguration[key]
+				config := cfg.ManagementConfiguration[key]
 				fmt.Fprintf(cmd.OutOrStdout(), "name: %s\n%s\n", key, config.String())
 			}
 

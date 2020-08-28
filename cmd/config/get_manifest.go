@@ -20,7 +20,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
 const (
@@ -39,7 +38,7 @@ airshipctl config get-manifest e2e
 
 // NewGetManifestCommand creates a command for viewing the manifest information
 // defined in the airshipctl config file.
-func NewGetManifestCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewGetManifestCommand(cfgFactory config.Factory) *cobra.Command {
 	o := &config.ManifestOptions{}
 	cmd := &cobra.Command{
 		Use:     "get-manifest NAME",
@@ -49,7 +48,10 @@ func NewGetManifestCommand(rootSettings *environment.AirshipCTLSettings) *cobra.
 		Args:    cobra.MaximumNArgs(1),
 		Aliases: []string{"get-manifests"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			airconfig := rootSettings.Config
+			airconfig, err := cfgFactory()
+			if err != nil {
+				return err
+			}
 			if len(args) == 1 {
 				o.Name = args[0]
 				manifest, exists := airconfig.Manifests[o.Name]

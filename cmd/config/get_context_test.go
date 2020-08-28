@@ -24,7 +24,6 @@ import (
 
 	cmd "opendev.org/airship/airshipctl/cmd/config"
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
@@ -36,15 +35,15 @@ const (
 )
 
 func TestGetContextCmd(t *testing.T) {
-	settings := &environment.AirshipCTLSettings{
-		Config: &config.Config{
+	settings := func() (*config.Config, error) {
+		return &config.Config{
 			Contexts: map[string]*config.Context{
 				fooContext: getNamedTestContext(fooContext),
 				barContext: getNamedTestContext(barContext),
 				bazContext: getNamedTestContext(bazContext),
 			},
 			CurrentContext: bazContext,
-		},
+		}, nil
 	}
 
 	cmdTests := []*testutil.CmdTest{
@@ -85,7 +84,7 @@ func TestGetContextCmd(t *testing.T) {
 }
 
 func TestNoContextsGetContextCmd(t *testing.T) {
-	settings := &environment.AirshipCTLSettings{Config: new(config.Config)}
+	settings := func() (*config.Config, error) { return new(config.Config), nil }
 	cmdTest := &testutil.CmdTest{
 		Name:    "no-contexts",
 		CmdLine: "",

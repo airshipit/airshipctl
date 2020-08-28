@@ -21,24 +21,23 @@ import (
 
 	cmd "opendev.org/airship/airshipctl/cmd/config"
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	redfishdell "opendev.org/airship/airshipctl/pkg/remote/redfish/vendors/dell"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
 func TestGetManagementConfigCmd(t *testing.T) {
-	settings := &environment.AirshipCTLSettings{
-		Config: &config.Config{
+	settings := func() (*config.Config, error) {
+		return &config.Config{
 			ManagementConfiguration: map[string]*config.ManagementConfiguration{
 				config.AirshipDefaultContext: testutil.DummyManagementConfiguration(),
 				"test": {
 					Type: redfishdell.ClientType,
 				},
 			},
-		},
+		}, nil
 	}
-	emptySettings := &environment.AirshipCTLSettings{
-		Config: &config.Config{},
+	emptySettings := func() (*config.Config, error) {
+		return &config.Config{}, nil
 	}
 
 	cmdTests := []*testutil.CmdTest{

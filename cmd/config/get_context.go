@@ -22,7 +22,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
 const (
@@ -44,7 +43,7 @@ airshipctl config get-context exampleContext
 
 // NewGetContextCommand creates a command for viewing cluster information
 // defined in the airshipctl config file.
-func NewGetContextCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewGetContextCommand(cfgFactory config.Factory) *cobra.Command {
 	o := &config.ContextOptions{}
 	cmd := &cobra.Command{
 		Use:     "get-context [NAME]",
@@ -53,7 +52,10 @@ func NewGetContextCommand(rootSettings *environment.AirshipCTLSettings) *cobra.C
 		Example: getContextExample,
 		Aliases: []string{"get-contexts"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			airconfig := rootSettings.Config
+			airconfig, err := cfgFactory()
+			if err != nil {
+				return err
+			}
 			if len(args) == 1 {
 				o.Name = args[0]
 			}

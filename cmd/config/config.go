@@ -17,6 +17,7 @@ package config
 import (
 	"github.com/spf13/cobra"
 
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
@@ -39,18 +40,21 @@ func NewConfigCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comma
 		},
 	}
 
-	configRootCmd.AddCommand(NewGetContextCommand(rootSettings))
-	configRootCmd.AddCommand(NewSetContextCommand(rootSettings))
+	cfgFactory := config.CreateFactory(&rootSettings.AirshipConfigPath, &rootSettings.KubeConfigPath)
 
-	configRootCmd.AddCommand(NewGetManagementConfigCommand(rootSettings))
-	configRootCmd.AddCommand(NewSetManagementConfigCommand(rootSettings))
+	configRootCmd.AddCommand(NewGetContextCommand(cfgFactory))
+	configRootCmd.AddCommand(NewSetContextCommand(cfgFactory))
 
-	configRootCmd.AddCommand(NewImportCommand(rootSettings))
+	configRootCmd.AddCommand(NewGetManagementConfigCommand(cfgFactory))
+	configRootCmd.AddCommand(NewSetManagementConfigCommand(cfgFactory))
+
+	configRootCmd.AddCommand(NewImportCommand(cfgFactory))
+	configRootCmd.AddCommand(NewUseContextCommand(cfgFactory))
+
+	configRootCmd.AddCommand(NewGetManifestCommand(cfgFactory))
+	configRootCmd.AddCommand(NewSetManifestCommand(cfgFactory))
+
+	// Init will have different factory
 	configRootCmd.AddCommand(NewInitCommand(rootSettings))
-	configRootCmd.AddCommand(NewUseContextCommand(rootSettings))
-
-	configRootCmd.AddCommand(NewGetManifestCommand(rootSettings))
-	configRootCmd.AddCommand(NewSetManifestCommand(rootSettings))
-
 	return configRootCmd
 }

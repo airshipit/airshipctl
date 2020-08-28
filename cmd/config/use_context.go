@@ -22,7 +22,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
 const (
@@ -38,7 +37,7 @@ airshipctl config use-context exampleContext
 )
 
 // NewUseContextCommand creates a command for switching to a defined airshipctl context.
-func NewUseContextCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewUseContextCommand(cfgFactory config.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "use-context NAME",
 		Short:   "Switch to a different context",
@@ -46,8 +45,12 @@ func NewUseContextCommand(rootSettings *environment.AirshipCTLSettings) *cobra.C
 		Example: useContextExample,
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			cfg, err := cfgFactory()
+			if err != nil {
+				return err
+			}
 			contextName := args[0]
-			err := config.RunUseContext(contextName, rootSettings.Config)
+			err = config.RunUseContext(contextName, cfg)
 			if err != nil {
 				return err
 			}

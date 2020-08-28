@@ -20,22 +20,23 @@ import (
 
 	cmd "opendev.org/airship/airshipctl/cmd/config"
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
 func TestGetManifestConfigCmd(t *testing.T) {
-	settings := &environment.AirshipCTLSettings{
-		Config: &config.Config{
+	settings := func() (*config.Config, error) {
+		return &config.Config{
 			Manifests: map[string]*config.Manifest{
 				"fooManifestConfig": getTestManifest("foo"),
 				"barManifestConfig": getTestManifest("bar"),
 				"bazManifestConfig": getTestManifest("baz"),
 			},
-		},
+		}, nil
 	}
 
-	noConfigSettings := &environment.AirshipCTLSettings{Config: new(config.Config)}
+	noConfigSettings := func() (*config.Config, error) {
+		return new(config.Config), nil
+	}
 
 	cmdTests := []*testutil.CmdTest{
 		{

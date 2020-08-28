@@ -24,7 +24,6 @@ import (
 
 	cmd "opendev.org/airship/airshipctl/cmd/config"
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
@@ -125,11 +124,13 @@ func TestSetManifest(t *testing.T) {
 }
 
 func (test setManifestTest) run(t *testing.T) {
-	settings := &environment.AirshipCTLSettings{Config: test.inputConfig}
+	settings := func() (*config.Config, error) {
+		return test.inputConfig, nil
+	}
 	test.cmdTest.Cmd = cmd.NewSetManifestCommand(settings)
 	testutil.RunTest(t, test.cmdTest)
 
-	afterRunConf := settings.Config
+	afterRunConf := test.inputConfig
 	// Find the Manifest Created or Modified
 	afterRunManifest, _ := afterRunConf.Manifests[test.manifestName]
 	require.NotNil(t, afterRunManifest)

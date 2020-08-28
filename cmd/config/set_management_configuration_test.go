@@ -23,7 +23,6 @@ import (
 
 	cmd "opendev.org/airship/airshipctl/cmd/config"
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	redfishdell "opendev.org/airship/airshipctl/pkg/remote/redfish/vendors/dell"
 	"opendev.org/airship/airshipctl/testutil"
 )
@@ -32,8 +31,8 @@ func TestConfigSetManagementConfigurationCmd(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
-	settings := &environment.AirshipCTLSettings{
-		Config: conf,
+	settings := func() (*config.Config, error) {
+		return conf, nil
 	}
 
 	cmdTests := []*testutil.CmdTest{
@@ -73,11 +72,11 @@ func TestConfigSetManagementConfigurationInsecure(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
-	settings := &environment.AirshipCTLSettings{
-		Config: conf,
+	settings := func() (*config.Config, error) {
+		return conf, nil
 	}
 
-	require.False(t, settings.Config.ManagementConfiguration[config.AirshipDefaultContext].Insecure)
+	require.False(t, conf.ManagementConfiguration[config.AirshipDefaultContext].Insecure)
 
 	testutil.RunTest(t, &testutil.CmdTest{
 		Name:    "config-cmd-set-management-config-change-insecure",
@@ -90,19 +89,19 @@ func TestConfigSetManagementConfigurationInsecure(t *testing.T) {
 		Cmd:     cmd.NewSetManagementConfigCommand(settings),
 	})
 
-	assert.True(t, settings.Config.ManagementConfiguration[config.AirshipDefaultContext].Insecure)
+	assert.True(t, conf.ManagementConfiguration[config.AirshipDefaultContext].Insecure)
 }
 
 func TestConfigSetManagementConfigurationType(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
-	settings := &environment.AirshipCTLSettings{
-		Config: conf,
+	settings := func() (*config.Config, error) {
+		return conf, nil
 	}
 
 	require.NotEqual(t, redfishdell.ClientType,
-		settings.Config.ManagementConfiguration[config.AirshipDefaultContext].Type)
+		conf.ManagementConfiguration[config.AirshipDefaultContext].Type)
 
 	cmdTests := []*testutil.CmdTest{
 		{
@@ -124,18 +123,18 @@ func TestConfigSetManagementConfigurationType(t *testing.T) {
 	}
 
 	assert.Equal(t, redfishdell.ClientType,
-		settings.Config.ManagementConfiguration[config.AirshipDefaultContext].Type)
+		conf.ManagementConfiguration[config.AirshipDefaultContext].Type)
 }
 
 func TestConfigSetManagementConfigurationUseProxy(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
-	settings := &environment.AirshipCTLSettings{
-		Config: conf,
+	settings := func() (*config.Config, error) {
+		return conf, nil
 	}
 
-	require.False(t, settings.Config.ManagementConfiguration[config.AirshipDefaultContext].UseProxy)
+	require.False(t, conf.ManagementConfiguration[config.AirshipDefaultContext].UseProxy)
 
 	testutil.RunTest(t, &testutil.CmdTest{
 		Name:    "config-cmd-set-management-config-change-use-proxy",
@@ -143,20 +142,20 @@ func TestConfigSetManagementConfigurationUseProxy(t *testing.T) {
 		Cmd:     cmd.NewSetManagementConfigCommand(settings),
 	})
 
-	assert.True(t, settings.Config.ManagementConfiguration[config.AirshipDefaultContext].UseProxy)
+	assert.True(t, conf.ManagementConfiguration[config.AirshipDefaultContext].UseProxy)
 }
 
 func TestConfigSetManagementConfigurationMultipleOptions(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
-	settings := &environment.AirshipCTLSettings{
-		Config: conf,
+	settings := func() (*config.Config, error) {
+		return conf, nil
 	}
 
 	require.NotEqual(t, redfishdell.ClientType,
-		settings.Config.ManagementConfiguration[config.AirshipDefaultContext].Type)
-	require.False(t, settings.Config.ManagementConfiguration[config.AirshipDefaultContext].UseProxy)
+		conf.ManagementConfiguration[config.AirshipDefaultContext].Type)
+	require.False(t, conf.ManagementConfiguration[config.AirshipDefaultContext].UseProxy)
 
 	testutil.RunTest(t, &testutil.CmdTest{
 		Name: "config-cmd-set-management-config-change-type",
@@ -166,6 +165,6 @@ func TestConfigSetManagementConfigurationMultipleOptions(t *testing.T) {
 	})
 
 	assert.Equal(t, redfishdell.ClientType,
-		settings.Config.ManagementConfiguration[config.AirshipDefaultContext].Type)
-	assert.True(t, settings.Config.ManagementConfiguration[config.AirshipDefaultContext].UseProxy)
+		conf.ManagementConfiguration[config.AirshipDefaultContext].Type)
+	assert.True(t, conf.ManagementConfiguration[config.AirshipDefaultContext].UseProxy)
 }

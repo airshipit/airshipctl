@@ -19,7 +19,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 )
 
@@ -36,7 +36,7 @@ const (
 
 // NewSetManagementConfigCommand creates a command for creating and modifying clusters
 // in the airshipctl config file.
-func NewSetManagementConfigCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewSetManagementConfigCommand(cfgFactory config.Factory) *cobra.Command {
 	var insecure bool
 	var managementType string
 	var useProxy bool
@@ -46,8 +46,12 @@ func NewSetManagementConfigCommand(rootSettings *environment.AirshipCTLSettings)
 		Short: "Modify an out-of-band management configuration",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			cfg, err := cfgFactory()
+			if err != nil {
+				return err
+			}
 			name := args[0]
-			managementCfg, err := rootSettings.Config.GetManagementConfiguration(name)
+			managementCfg, err := cfg.GetManagementConfiguration(name)
 			if err != nil {
 				return err
 			}
@@ -88,7 +92,7 @@ func NewSetManagementConfigCommand(rootSettings *environment.AirshipCTLSettings)
 				return nil
 			}
 
-			if err = rootSettings.Config.PersistConfig(true); err != nil {
+			if err = cfg.PersistConfig(true); err != nil {
 				return err
 			}
 

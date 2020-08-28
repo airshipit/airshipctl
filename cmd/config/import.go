@@ -19,7 +19,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/config"
 )
 
 const (
@@ -35,7 +35,7 @@ airshipctl config import $HOME/.kube/config
 
 // NewImportCommand creates a command that merges clusters, contexts, and
 // users from a kubeConfig file into the airshipctl config file.
-func NewImportCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewImportCommand(cfgFactory config.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "import <kubeConfig>",
 		Short:   "Merge information from a kubernetes config file",
@@ -43,8 +43,12 @@ func NewImportCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comma
 		Example: useImportExample,
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			cfg, err := cfgFactory()
+			if err != nil {
+				return err
+			}
 			kubeConfigPath := args[0]
-			err := rootSettings.Config.ImportFromKubeConfig(kubeConfigPath)
+			err = cfg.ImportFromKubeConfig(kubeConfigPath)
 			if err != nil {
 				return err
 			}

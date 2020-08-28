@@ -22,7 +22,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
 const (
@@ -47,7 +46,7 @@ airshipctl config set-context \
 
 // NewSetContextCommand creates a command for creating and modifying contexts
 // in the airshipctl config
-func NewSetContextCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewSetContextCommand(cfgFactory config.Factory) *cobra.Command {
 	o := &config.ContextOptions{}
 	cmd := &cobra.Command{
 		Use:     "set-context NAME",
@@ -66,7 +65,11 @@ func NewSetContextCommand(rootSettings *environment.AirshipCTLSettings) *cobra.C
 				return nil
 			}
 
-			modified, err := config.RunSetContext(o, rootSettings.Config, true)
+			cfg, err := cfgFactory()
+			if err != nil {
+				return err
+			}
+			modified, err := config.RunSetContext(o, cfg, true)
 
 			if err != nil {
 				return err

@@ -21,12 +21,14 @@ import (
 	"testing"
 
 	cmd "opendev.org/airship/airshipctl/cmd/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
 func TestConfigUseContext(t *testing.T) {
-	settings := &environment.AirshipCTLSettings{Config: testutil.DummyConfig()}
+	settings := func() (*config.Config, error) {
+		return testutil.DummyConfig(), nil
+	}
 	cmdTests := []*testutil.CmdTest{
 		{
 			Name:    "config-use-context",

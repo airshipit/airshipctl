@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	cmd "opendev.org/airship/airshipctl/cmd/config"
+	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
@@ -28,7 +29,7 @@ func TestConfig(t *testing.T) {
 		{
 			Name:    "config-cmd-with-help",
 			CmdLine: "--help",
-			Cmd:     cmd.NewConfigCommand(nil),
+			Cmd:     cmd.NewConfigCommand(&environment.AirshipCTLSettings{}),
 		},
 	}
 

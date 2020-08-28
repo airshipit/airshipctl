@@ -22,7 +22,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
@@ -58,7 +57,7 @@ airshipctl config set-manifest e2e \
 
 // NewSetManifestCommand creates a command for creating and modifying manifests
 // in the airshipctl config file.
-func NewSetManifestCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewSetManifestCommand(cfgFactory config.Factory) *cobra.Command {
 	o := &config.ManifestOptions{}
 	cmd := &cobra.Command{
 		Use:     "set-manifest NAME",
@@ -67,8 +66,12 @@ func NewSetManifestCommand(rootSettings *environment.AirshipCTLSettings) *cobra.
 		Example: setManifestsExample,
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			cfg, err := cfgFactory()
+			if err != nil {
+				return err
+			}
 			o.Name = args[0]
-			modified, err := config.RunSetManifest(o, rootSettings.Config, true)
+			modified, err := config.RunSetManifest(o, cfg, true)
 			// Check if URL flag is passed with empty value
 			if cmd.Flags().Changed("url") && o.URL == "" {
 				log.Fatal("Repository URL cannot be empty.")

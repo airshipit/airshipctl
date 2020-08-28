@@ -26,7 +26,6 @@ import (
 
 	cmd "opendev.org/airship/airshipctl/cmd/config"
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
@@ -127,12 +126,14 @@ func TestSetContext(t *testing.T) {
 
 func (test setContextTest) run(t *testing.T) {
 	// Get the Environment
-	settings := &environment.AirshipCTLSettings{Config: test.givenConfig}
+	settings := func() (*config.Config, error) {
+		return test.givenConfig, nil
+	}
 
 	test.cmdTest.Cmd = cmd.NewSetContextCommand(settings)
 	testutil.RunTest(t, test.cmdTest)
 
-	afterRunConf := settings.Config
+	afterRunConf := test.givenConfig
 
 	// Find the Context Created or Modified
 	afterRunContext, err := afterRunConf.GetContext(test.contextName)
