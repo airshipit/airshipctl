@@ -249,3 +249,31 @@ func (e ErrUnknownManagementType) Error() string {
 	return fmt.Sprintf("Unknown management type '%s'. Known types include '%s' and '%s'.", e.Type,
 		redfish.ClientType, redfishdell.ClientType)
 }
+
+// ErrMissingManifestName is returned when manifest name is empty
+type ErrMissingManifestName struct {
+}
+
+func (e ErrMissingManifestName) Error() string {
+	return "missing manifest name"
+}
+
+// ErrMissingFlag is returned when flag is not provided
+type ErrMissingFlag struct {
+	FlagName string
+}
+
+func (e ErrMissingFlag) Error() string {
+	return fmt.Sprintf("missing flag, specify a --%s to embed", e.FlagName)
+}
+
+// ErrCheckFile is returned if there is error when checking file on FS
+type ErrCheckFile struct {
+	FlagName    string
+	Path        string
+	InternalErr error
+}
+
+func (e ErrCheckFile) Error() string {
+	return fmt.Sprintf("could not read %s data from '%s': %v", e.FlagName, e.Path, e.InternalErr)
+}

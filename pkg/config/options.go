@@ -17,7 +17,6 @@ limitations under the License.
 package config
 
 import (
-	"fmt"
 	"os"
 
 	"opendev.org/airship/airshipctl/pkg/errors"
@@ -76,8 +75,6 @@ type ManifestOptions struct {
 // on the command line. We should find a way to remove this coupling, since it
 // is possible to create (and validate) these objects without using the command
 // line.
-
-// TODO(howell): strongly type the errors in this file
 
 // Validate checks for the possible authentication values and returns
 // Error when invalid value or incompatible choice of values given
@@ -162,10 +159,14 @@ func (o *ClusterOptions) Validate() error {
 
 func checkExists(flagName, path string) error {
 	if path == "" {
-		return fmt.Errorf("you must specify a --%s to embed", flagName)
+		return ErrMissingFlag{FlagName: flagName}
 	}
 	if _, err := os.Stat(path); err != nil {
-		return fmt.Errorf("could not read %s data from '%s': %v", flagName, path, err)
+		return ErrCheckFile{
+			FlagName:    flagName,
+			Path:        path,
+			InternalErr: err,
+		}
 	}
 	return nil
 }
@@ -174,10 +175,10 @@ func checkExists(flagName, path string) error {
 // Error when invalid value or incompatible choice of values given
 func (o *ManifestOptions) Validate() error {
 	if o.Name == "" {
-		return fmt.Errorf("you must specify a non-empty Manifest name")
+		return ErrMissingManifestName{}
 	}
 	if o.RemoteRef != "" {
-		return fmt.Errorf("repository checkout by RemoteRef is not yet implemented\n%w", errors.ErrNotImplemented{})
+		return errors.ErrNotImplemented{What: "repository checkout by RemoteRef"}
 	}
 	if o.IsPrimary && o.RepoName == "" {
 		return ErrMissingRepositoryName{}
