@@ -232,6 +232,7 @@ func TestVerifyInputs(t *testing.T) {
 func TestGenerateBootstrapIso(t *testing.T) {
 	airshipConfigPath := "testdata/config/config"
 	kubeConfigPath := "testdata/config/kubeconfig"
+
 	t.Run("EnsureCompleteError", func(t *testing.T) {
 		settings, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
 		require.NoError(t, err)

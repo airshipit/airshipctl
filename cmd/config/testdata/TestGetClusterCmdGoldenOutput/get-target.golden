@@ -1,9 +1,0 @@
-Cluster: clusterFoo
-target:
-clusterKubeconf: clusterFoo_target
-managementConfiguration: ""
-
-LocationOfOrigin: ""
-insecure-skip-tls-verify: true
-server: ""
-

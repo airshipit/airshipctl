@@ -1,9 +1,0 @@
-Cluster: clusterFoo
-ephemeral:
-clusterKubeconf: clusterFoo_ephemeral
-managementConfiguration: ""
-
-LocationOfOrigin: ""
-insecure-skip-tls-verify: true
-server: ""
-
