@@ -15,7 +15,6 @@
 package repo
 
 import (
-	"errors"
 	"fmt"
 	"path/filepath"
 
@@ -30,14 +29,6 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/util"
-)
-
-//TODO(sy495p): Switch to strongly-typed errors in this file
-
-// variables for repository errors
-var (
-	ErrNoOpenRepo   = errors.New("no open repository is stored")
-	ErrCantParseURL = errors.New("could not get target directory from url")
 )
 
 // OptionsBuilder interface provides specification for a repository implementation
@@ -62,7 +53,7 @@ type Repository struct {
 func NewRepository(basePath string, builder OptionsBuilder) (*Repository, error) {
 	dirName := util.GitDirNameFromURL(builder.URL())
 	if dirName == "" {
-		return nil, fmt.Errorf("URL: %s, original error: %w", builder.URL(), ErrCantParseURL)
+		return nil, ErrParseURL{URL: builder.URL()}
 	}
 	fs := osfs.New(filepath.Join(basePath, dirName))
 
@@ -91,7 +82,7 @@ func storerFromFs(fs billy.Filesystem) (storage.Storer, error) {
 func (repo *Repository) Update(force bool) error {
 	log.Debugf("Updating repository %s", repo.Name)
 	if !repo.Driver.IsOpen() {
-		return ErrNoOpenRepo
+		return ErrNoOpenRepo{}
 	}
 	auth, err := repo.ToAuth()
 	if err != nil {
@@ -107,7 +98,7 @@ func (repo *Repository) Update(force bool) error {
 // Checkout git repository, ToCheckoutOptions method will be used go get CheckoutOptions
 func (repo *Repository) Checkout(enforce bool) error {
 	if !repo.Driver.IsOpen() {
-		return ErrNoOpenRepo
+		return ErrNoOpenRepo{}
 	}
 	co := repo.ToCheckoutOptions(enforce)
 	var branchHash string
