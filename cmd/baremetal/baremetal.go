@@ -18,7 +18,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/remote"
 )
 
@@ -36,13 +35,11 @@ const (
 )
 
 // NewBaremetalCommand creates a new command for interacting with baremetal using airshipctl.
-func NewBaremetalCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewBaremetalCommand(cfgFactory config.Factory) *cobra.Command {
 	baremetalRootCmd := &cobra.Command{
 		Use:   "baremetal",
 		Short: "Perform actions on baremetal hosts",
 	}
-
-	cfgFactory := config.CreateFactory(&rootSettings.AirshipConfigPath, &rootSettings.KubeConfigPath)
 
 	baremetalRootCmd.AddCommand(NewEjectMediaCommand(cfgFactory))
 	baremetalRootCmd.AddCommand(NewPowerOffCommand(cfgFactory))

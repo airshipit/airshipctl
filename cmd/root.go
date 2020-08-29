@@ -16,8 +16,10 @@ package cmd
 
 import (
 	"io"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
+	"k8s.io/client-go/tools/clientcmd"
 
 	// Import to initialize client auth plugins.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -30,54 +32,76 @@ import (
 	"opendev.org/airship/airshipctl/cmd/image"
 	"opendev.org/airship/airshipctl/cmd/phase"
 	"opendev.org/airship/airshipctl/cmd/secret"
-	"opendev.org/airship/airshipctl/pkg/environment"
+	cfg "opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/log"
 )
+
+// RootOptions stores global flags values
+type RootOptions struct {
+	Debug             bool
+	AirshipConfigPath string
+	KubeConfigPath    string
+}
 
 // NewAirshipCTLCommand creates a root `airshipctl` command with the default commands attached
 func NewAirshipCTLCommand(out io.Writer) *cobra.Command {
 	rootCmd, settings := NewRootCommand(out)
-	return AddDefaultAirshipCTLCommands(rootCmd, settings)
+	return AddDefaultAirshipCTLCommands(rootCmd,
+		cfg.CreateFactory(&settings.AirshipConfigPath, &settings.KubeConfigPath))
 }
 
 // NewRootCommand creates the root `airshipctl` command. All other commands are
 // subcommands branching from this one
-func NewRootCommand(out io.Writer) (*cobra.Command, *environment.AirshipCTLSettings) {
-	var debug bool
+func NewRootCommand(out io.Writer) (*cobra.Command, *RootOptions) {
+	options := &RootOptions{}
 	rootCmd := &cobra.Command{
 		Use:           "airshipctl",
 		Short:         "A unified entrypoint to various airship components",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			log.Init(debug, cmd.OutOrStdout())
+			log.Init(options.Debug, cmd.OutOrStdout())
 		},
 	}
 	rootCmd.SetOut(out)
-	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "enable verbose output")
+	initFlags(options, rootCmd)
 
-	return rootCmd, makeRootSettings(rootCmd)
+	return rootCmd, options
 }
 
 // AddDefaultAirshipCTLCommands is a convenience function for adding all of the
 // default commands to airshipctl
-func AddDefaultAirshipCTLCommands(cmd *cobra.Command, settings *environment.AirshipCTLSettings) *cobra.Command {
-	cmd.AddCommand(baremetal.NewBaremetalCommand(settings))
-	cmd.AddCommand(cluster.NewClusterCommand(settings))
+func AddDefaultAirshipCTLCommands(cmd *cobra.Command, factory cfg.Factory) *cobra.Command {
+	cmd.AddCommand(baremetal.NewBaremetalCommand(factory))
+	cmd.AddCommand(cluster.NewClusterCommand(factory))
 	cmd.AddCommand(completion.NewCompletionCommand())
-	cmd.AddCommand(document.NewDocumentCommand(settings))
-	cmd.AddCommand(config.NewConfigCommand(settings))
-	cmd.AddCommand(image.NewImageCommand(settings))
+	cmd.AddCommand(document.NewDocumentCommand(factory))
+	cmd.AddCommand(config.NewConfigCommand(factory))
+	cmd.AddCommand(image.NewImageCommand(factory))
 	cmd.AddCommand(secret.NewSecretCommand())
-	cmd.AddCommand(phase.NewPhaseCommand(settings))
+	cmd.AddCommand(phase.NewPhaseCommand(factory))
 	cmd.AddCommand(NewVersionCommand())
 
 	return cmd
 }
 
-// makeRootSettings holds all actions about environment.AirshipCTLSettings
-func makeRootSettings(cmd *cobra.Command) *environment.AirshipCTLSettings {
-	settings := &environment.AirshipCTLSettings{}
-	settings.InitFlags(cmd)
-	return settings
+func initFlags(options *RootOptions, cmd *cobra.Command) {
+	flags := cmd.PersistentFlags()
+	flags.BoolVar(&options.Debug, "debug", false, "enable verbose output")
+
+	defaultAirshipConfigDir := filepath.Join(cfg.HomeEnvVar, cfg.AirshipConfigDir)
+
+	defaultAirshipConfigPath := filepath.Join(defaultAirshipConfigDir, cfg.AirshipConfig)
+	flags.StringVar(
+		&options.AirshipConfigPath,
+		"airshipconf",
+		"",
+		`Path to file for airshipctl configuration. (default "`+defaultAirshipConfigPath+`")`)
+
+	defaultKubeConfigPath := filepath.Join(defaultAirshipConfigDir, cfg.AirshipKubeConfig)
+	flags.StringVar(
+		&options.KubeConfigPath,
+		clientcmd.RecommendedConfigPathFlag,
+		"",
+		`Path to kubeconfig associated with airshipctl configuration. (default "`+defaultKubeConfigPath+`")`)
 }

@@ -57,6 +57,9 @@ const (
 
 	// Modules
 	AirshipDefaultManagementType = redfish.ClientType
+
+	//HomeEnvVar holds value of HOME directory from env
+	HomeEnvVar = "$HOME"
 )
 
 // Default values for remote operations

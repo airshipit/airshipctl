@@ -18,17 +18,15 @@ import (
 	"testing"
 
 	"opendev.org/airship/airshipctl/cmd/document"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
 func TestDocument(t *testing.T) {
-	rootSettings := &environment.AirshipCTLSettings{}
 	tests := []*testutil.CmdTest{
 		{
 			Name:    "document-with-help",
 			CmdLine: "-h",
-			Cmd:     document.NewDocumentCommand(rootSettings),
+			Cmd:     document.NewDocumentCommand(nil),
 		},
 		{
 			Name:    "document-plugin-with-help",

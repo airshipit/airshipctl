@@ -24,7 +24,6 @@ import (
 
 	"opendev.org/airship/airshipctl/cmd"
 	"opendev.org/airship/airshipctl/cmd/baremetal"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
@@ -101,6 +100,6 @@ func getDefaultRootCommand(t *testing.T) *cobra.Command {
 func getSpecializedRootCommand(t *testing.T) *cobra.Command {
 	t.Helper()
 	rootCmd := getVanillaRootCommand(t)
-	rootCmd.AddCommand(baremetal.NewBaremetalCommand(&environment.AirshipCTLSettings{}))
+	rootCmd.AddCommand(baremetal.NewBaremetalCommand(nil))
 	return rootCmd
 }

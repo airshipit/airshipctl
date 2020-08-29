@@ -18,29 +18,15 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
 // NewConfigCommand creates a command for interacting with the airshipctl configuration.
-func NewConfigCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewConfigCommand(cfgFactory config.Factory) *cobra.Command {
 	configRootCmd := &cobra.Command{
 		Use:                   "config",
 		DisableFlagsInUseLine: true,
 		Short:                 "Manage the airshipctl config file",
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			if parentPreRun := cmd.Root().PersistentPreRun; parentPreRun != nil {
-				parentPreRun(cmd.Root(), args)
-			}
-
-			if cmd.Use == "init" {
-				rootSettings.Create = true
-			}
-			// Load or Initialize airship Config
-			rootSettings.InitConfig()
-		},
 	}
-
-	cfgFactory := config.CreateFactory(&rootSettings.AirshipConfigPath, &rootSettings.KubeConfigPath)
 
 	configRootCmd.AddCommand(NewGetContextCommand(cfgFactory))
 	configRootCmd.AddCommand(NewSetContextCommand(cfgFactory))

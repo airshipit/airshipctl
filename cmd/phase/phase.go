@@ -18,7 +18,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
 const (
@@ -29,14 +28,12 @@ such as getting list and applying specific one.
 )
 
 // NewPhaseCommand creates a command for interacting with phases
-func NewPhaseCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewPhaseCommand(cfgFactory config.Factory) *cobra.Command {
 	phaseRootCmd := &cobra.Command{
 		Use:   "phase",
 		Short: "Manage phases",
 		Long:  clusterLong[1:],
 	}
-
-	cfgFactory := config.CreateFactory(&rootSettings.AirshipConfigPath, &rootSettings.KubeConfigPath)
 
 	phaseRootCmd.AddCommand(NewApplyCommand(cfgFactory))
 	phaseRootCmd.AddCommand(NewRenderCommand(cfgFactory))

@@ -18,22 +18,15 @@ import (
 	"testing"
 
 	"opendev.org/airship/airshipctl/cmd/phase"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
 func TestNewPhaseCommand(t *testing.T) {
-	fakeRootSettings := &environment.AirshipCTLSettings{
-		AirshipConfigPath: "../../testdata/k8s/config.yaml",
-		KubeConfigPath:    "../../testdata/k8s/kubeconfig.yaml",
-	}
-	fakeRootSettings.InitConfig()
-
 	tests := []*testutil.CmdTest{
 		{
 			Name:    "phase-cmd-with-help",
 			CmdLine: "--help",
-			Cmd:     phase.NewPhaseCommand(fakeRootSettings),
+			Cmd:     phase.NewPhaseCommand(nil),
 		},
 	}
 	for _, testcase := range tests {

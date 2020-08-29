@@ -18,7 +18,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/k8s/client"
 )
 
@@ -31,14 +30,12 @@ such as getting status and deploying initial infrastructure.
 )
 
 // NewClusterCommand creates a command for interacting with a Kubernetes cluster.
-func NewClusterCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewClusterCommand(cfgFactory config.Factory) *cobra.Command {
 	clusterRootCmd := &cobra.Command{
 		Use:   "cluster",
 		Short: "Manage Kubernetes clusters",
 		Long:  clusterLong[1:],
 	}
-
-	cfgFactory := config.CreateFactory(&rootSettings.AirshipConfigPath, &rootSettings.KubeConfigPath)
 
 	clusterRootCmd.AddCommand(NewInitCommand(cfgFactory))
 	clusterRootCmd.AddCommand(NewMoveCommand(cfgFactory))

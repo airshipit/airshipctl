@@ -18,17 +18,14 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
 // NewImageCommand creates a new command for managing ISO images using airshipctl.
-func NewImageCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewImageCommand(cfgFactory config.Factory) *cobra.Command {
 	imageRootCmd := &cobra.Command{
 		Use:   "image",
 		Short: "Manage ISO image creation",
 	}
-
-	cfgFactory := config.CreateFactory(&rootSettings.AirshipConfigPath, &rootSettings.KubeConfigPath)
 
 	imageRootCmd.AddCommand(NewImageBuildCommand(cfgFactory))
 
