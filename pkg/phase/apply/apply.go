@@ -20,8 +20,8 @@ import (
 
 	"sigs.k8s.io/cli-utils/pkg/common"
 
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/applier"
 	"opendev.org/airship/airshipctl/pkg/k8s/utils"
@@ -35,15 +35,14 @@ type Options struct {
 	PhaseName   string
 	WaitTimeout time.Duration
 
-	RootSettings *environment.AirshipCTLSettings
 	Applier      *applier.Applier
 	Processor    events.EventProcessor
 	EventChannel chan events.Event
 }
 
 // Initialize Options with required field, such as Applier
-func (o *Options) Initialize() {
-	f := utils.FactoryFromKubeConfigPath(o.RootSettings.KubeConfigPath)
+func (o *Options) Initialize(kubeConfigPath string) {
+	f := utils.FactoryFromKubeConfigPath(kubeConfigPath)
 	streams := utils.Streams()
 	o.EventChannel = make(chan events.Event)
 	o.Applier = applier.NewApplier(o.EventChannel, f, streams)
@@ -51,7 +50,7 @@ func (o *Options) Initialize() {
 }
 
 // Run apply subcommand logic
-func (o *Options) Run() error {
+func (o *Options) Run(cfg *config.Config) error {
 	ao := applier.ApplyOptions{
 		DryRunStrategy: common.DryRunNone,
 		Prune:          o.Prune,
@@ -61,21 +60,16 @@ func (o *Options) Run() error {
 		ao.DryRunStrategy = common.DryRunClient
 	}
 
-	globalConf := o.RootSettings.Config
-
-	if err := globalConf.EnsureComplete(); err != nil {
-		return err
-	}
-	clusterName, err := globalConf.CurrentContextClusterName()
+	clusterName, err := cfg.CurrentContextClusterName()
 	if err != nil {
 		return err
 	}
-	clusterType, err := globalConf.CurrentContextClusterType()
+	clusterType, err := cfg.CurrentContextClusterType()
 	if err != nil {
 		return err
 	}
 	ao.BundleName = fmt.Sprintf("%s-%s-%s", clusterName, clusterType, o.PhaseName)
-	kustomizePath, err := globalConf.CurrentContextEntryPoint(o.PhaseName)
+	kustomizePath, err := cfg.CurrentContextEntryPoint(o.PhaseName)
 	if err != nil {
 		return err
 	}

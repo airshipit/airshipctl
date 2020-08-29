@@ -19,7 +19,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/pkg/util"
 )
@@ -33,14 +33,17 @@ are executed in parallel.
 )
 
 // NewPlanCommand creates a command which prints available phases
-func NewPlanCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
-	p := &phase.Cmd{AirshipCTLSettings: rootSettings}
-
+func NewPlanCommand(cfgFactory config.Factory) *cobra.Command {
 	planCmd := &cobra.Command{
 		Use:   "plan",
 		Short: "List phases",
 		Long:  cmdLong[1:],
 		RunE: func(cmd *cobra.Command, args []string) error {
+			cfg, err := cfgFactory()
+			if err != nil {
+				return err
+			}
+			p := &phase.Cmd{Config: cfg}
 			phases, err := p.Plan()
 			if err != nil {
 				return err

@@ -21,7 +21,6 @@ import (
 
 	"opendev.org/airship/airshipctl/cmd/phase"
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
@@ -41,7 +40,9 @@ func TestRender(t *testing.T) {
 	ctx, err := cfg.GetContext("def_ephemeral")
 	require.NoError(t, err)
 	ctx.Manifest = "test"
-	settings := &environment.AirshipCTLSettings{Config: cfg}
+	settings := func() (*config.Config, error) {
+		return cfg, nil
+	}
 
 	tests := []*testutil.CmdTest{
 		{

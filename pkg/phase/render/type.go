@@ -14,13 +14,8 @@
 
 package render
 
-import (
-	"opendev.org/airship/airshipctl/pkg/environment"
-)
-
 // Settings for document rendering
 type Settings struct {
-	*environment.AirshipCTLSettings
 	// Label filters documents by label string
 	Label string
 	// Annotation filters documents by annotation string

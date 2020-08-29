@@ -17,6 +17,7 @@ package phase
 import (
 	"github.com/spf13/cobra"
 
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
@@ -33,19 +34,14 @@ func NewPhaseCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comman
 		Use:   "phase",
 		Short: "Manage phases",
 		Long:  clusterLong[1:],
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			if parentPreRun := cmd.Root().PersistentPreRun; parentPreRun != nil {
-				parentPreRun(cmd.Root(), args)
-			}
-			// Load or Initialize airship Config
-			rootSettings.InitConfig()
-		},
 	}
 
-	phaseRootCmd.AddCommand(NewApplyCommand(rootSettings))
-	phaseRootCmd.AddCommand(NewRenderCommand(rootSettings))
-	phaseRootCmd.AddCommand(NewPlanCommand(rootSettings))
-	phaseRootCmd.AddCommand(NewRunCommand(rootSettings))
+	cfgFactory := config.CreateFactory(&rootSettings.AirshipConfigPath, &rootSettings.KubeConfigPath)
+
+	phaseRootCmd.AddCommand(NewApplyCommand(cfgFactory))
+	phaseRootCmd.AddCommand(NewRenderCommand(cfgFactory))
+	phaseRootCmd.AddCommand(NewPlanCommand(cfgFactory))
+	phaseRootCmd.AddCommand(NewRunCommand(cfgFactory))
 
 	return phaseRootCmd
 }

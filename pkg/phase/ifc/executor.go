@@ -19,8 +19,8 @@ import (
 	"time"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 )
@@ -59,6 +59,6 @@ type ExecutorConfig struct {
 	ClusterMap       *v1alpha1.ClusterMap
 	ExecutorDocument document.Document
 	ExecutorBundle   document.Bundle
-	AirshipSettings  *environment.AirshipCTLSettings
+	AirshipConfig    *config.Config
 	KubeConfig       kubeconfig.Interface
 }

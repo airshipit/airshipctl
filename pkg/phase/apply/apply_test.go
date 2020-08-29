@@ -71,11 +71,6 @@ func TestDeploy(t *testing.T) {
 			events:              k8sutils.SuccessEvents(),
 		},
 		{
-			name:                "missing clusters",
-			expectedErrorString: "At least one cluster needs to be defined",
-			clusterPurposes:     map[string]*config.ClusterPurpose{},
-		},
-		{
 			name:                "missing phase",
 			expectedErrorString: "Phase document 'missingPhase' was not found",
 			phaseName:           "missingPhase",
@@ -86,12 +81,9 @@ func TestDeploy(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			rs := makeNewFakeRootSettings(t, kubeconfigPath, airshipConfigFile)
-			ao := &apply.Options{
-				RootSettings: rs,
-			}
-			ao.Initialize()
-			ao.PhaseName = "initinfra"
-			ao.DryRun = true
+			ao := &apply.Options{PhaseName: "initinfra", DryRun: true}
+			ao.Initialize(rs.KubeConfigPath())
+
 			if tt.events != nil {
 				ch := make(chan events.Event)
 				cliApplier := applier.NewFakeApplier(
@@ -105,12 +97,12 @@ func TestDeploy(t *testing.T) {
 				ao.EventChannel = ch
 			}
 			if tt.clusterPurposes != nil {
-				ao.RootSettings.Config.Clusters = tt.clusterPurposes
+				rs.Clusters = tt.clusterPurposes
 			}
 			if tt.phaseName != "" {
 				ao.PhaseName = tt.phaseName
 			}
-			actualErr := ao.Run()
+			actualErr := ao.Run(rs)
 			if tt.expectedErrorString != "" {
 				require.Error(t, actualErr)
 				assert.Contains(t, actualErr.Error(), tt.expectedErrorString)
@@ -122,7 +114,7 @@ func TestDeploy(t *testing.T) {
 }
 
 // makeNewFakeRootSettings takes kubeconfig path and directory path to fixture dir as argument.
-func makeNewFakeRootSettings(t *testing.T, kp string, dir string) *environment.AirshipCTLSettings {
+func makeNewFakeRootSettings(t *testing.T, kp string, dir string) *config.Config {
 	t.Helper()
 	akp, err := filepath.Abs(kp)
 	require.NoError(t, err)
@@ -136,5 +128,7 @@ func makeNewFakeRootSettings(t *testing.T, kp string, dir string) *environment.A
 	}
 
 	settings.InitConfig()
-	return settings
+	settings.Config.SetKubeConfigPath(kp)
+	settings.Config.SetLoadedConfigPath(dir)
+	return settings.Config
 }

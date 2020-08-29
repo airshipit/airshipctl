@@ -21,7 +21,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/phase/apply"
 )
 
@@ -36,10 +36,8 @@ airshipctl phase apply initinfra
 )
 
 // NewApplyCommand creates a command to apply phase to k8s cluster.
-func NewApplyCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
-	i := &apply.Options{
-		RootSettings: rootSettings,
-	}
+func NewApplyCommand(cfgFactory config.Factory) *cobra.Command {
+	i := &apply.Options{}
 	applyCmd := &cobra.Command{
 		Use:     "apply PHASE_NAME",
 		Short:   "Apply phase to a cluster",
@@ -48,8 +46,12 @@ func NewApplyCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comman
 		Example: applyExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			i.PhaseName = args[0]
-			i.Initialize()
-			return i.Run()
+			cfg, err := cfgFactory()
+			if err != nil {
+				return err
+			}
+			i.Initialize(cfg.KubeConfigPath())
+			return i.Run(cfg)
 		},
 	}
 	addApplyFlags(i, applyCmd)

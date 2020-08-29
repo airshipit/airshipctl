@@ -17,7 +17,7 @@ package phase
 import (
 	"github.com/spf13/cobra"
 
-	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/pkg/phase"
@@ -36,10 +36,9 @@ airshipctl phase run ephemeral-control-plane
 )
 
 // NewRunCommand creates a command to run specific phase
-func NewRunCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
 	p := &phase.Cmd{
-		AirshipCTLSettings: rootSettings,
-		Processor:          events.NewDefaultProcessor(utils.Streams()),
+		Processor: events.NewDefaultProcessor(utils.Streams()),
 	}
 
 	runCmd := &cobra.Command{
@@ -49,6 +48,11 @@ func NewRunCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command 
 		Args:    cobra.ExactArgs(1),
 		Example: runExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			cfg, err := cfgFactory()
+			if err != nil {
+				return err
+			}
+			p.Config = cfg
 			return p.Exec(args[0])
 		},
 	}

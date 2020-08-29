@@ -22,8 +22,8 @@ import (
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	clusterctl "opendev.org/airship/airshipctl/pkg/clusterctl/client"
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/applier"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
@@ -55,11 +55,11 @@ type Cmd struct {
 	Registry ExecutorRegistry
 	// Will be used to get processor based on executor action
 	Processor events.EventProcessor
-	*environment.AirshipCTLSettings
+	*config.Config
 }
 
 func (p *Cmd) getBundle() (document.Bundle, error) {
-	tp, err := p.AirshipCTLSettings.Config.CurrentContextTargetPath()
+	tp, err := p.CurrentContextTargetPath()
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +190,7 @@ func (p *Cmd) GetExecutor(phase *airshipv1.Phase) (ifc.Executor, error) {
 			ExecutorBundle:   executorDocBundle,
 			PhaseName:        phase.Name,
 			ExecutorDocument: executorDoc,
-			AirshipSettings:  p.AirshipCTLSettings,
+			AirshipConfig:    p.Config,
 			KubeConfig:       kubeConfig,
 			ClusterName:      phase.ClusterName,
 			ClusterMap:       cMap,

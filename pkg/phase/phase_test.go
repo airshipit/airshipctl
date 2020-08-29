@@ -39,15 +39,15 @@ import (
 func TestPhasePlan(t *testing.T) {
 	testCases := []struct {
 		name         string
-		settings     func() *environment.AirshipCTLSettings
+		settings     func() *config.Config
 		expectedPlan map[string][]string
 		expectedErr  error
 	}{
 		{
 			name: "No context",
-			settings: func() *environment.AirshipCTLSettings {
+			settings: func() *config.Config {
 				s := makeDefaultSettings()
-				s.Config.CurrentContext = "badCtx"
+				s.CurrentContext = "badCtx"
 				return s
 			},
 			expectedErr: config.ErrMissingConfig{What: "Context with name 'badCtx'"},
@@ -67,9 +67,9 @@ func TestPhasePlan(t *testing.T) {
 		},
 		{
 			name: "No Phase Plan",
-			settings: func() *environment.AirshipCTLSettings {
+			settings: func() *config.Config {
 				s := makeDefaultSettings()
-				m, err := s.Config.CurrentContextManifest()
+				m, err := s.CurrentContextManifest()
 				require.NoError(t, err)
 				m.SubPath = "no_plan_site"
 				m.MetadataPath = "no_plan_site/metadata.yaml"
@@ -92,7 +92,7 @@ func TestPhasePlan(t *testing.T) {
 	for _, test := range testCases {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
-			cmd := phase.Cmd{AirshipCTLSettings: tt.settings()}
+			cmd := phase.Cmd{Config: tt.settings()}
 			actualPlan, actualErr := cmd.Plan()
 			assert.Equal(t, tt.expectedErr, actualErr)
 			assert.Equal(t, tt.expectedPlan, actualPlan)
@@ -103,16 +103,16 @@ func TestPhasePlan(t *testing.T) {
 func TestGetPhase(t *testing.T) {
 	testCases := []struct {
 		name          string
-		settings      func() *environment.AirshipCTLSettings
+		settings      func() *config.Config
 		phaseName     string
 		expectedPhase *airshipv1.Phase
 		expectedErr   error
 	}{
 		{
 			name: "No context",
-			settings: func() *environment.AirshipCTLSettings {
+			settings: func() *config.Config {
 				s := makeDefaultSettings()
-				s.Config.CurrentContext = "badCtx"
+				s.CurrentContext = "badCtx"
 				return s
 			},
 			expectedErr: config.ErrMissingConfig{What: "Context with name 'badCtx'"},
@@ -161,7 +161,7 @@ func TestGetPhase(t *testing.T) {
 	for _, test := range testCases {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
-			cmd := phase.Cmd{AirshipCTLSettings: tt.settings()}
+			cmd := phase.Cmd{Config: tt.settings()}
 			actualPhase, actualErr := cmd.GetPhase(tt.phaseName)
 			assert.Equal(t, tt.expectedErr, actualErr)
 			assert.Equal(t, tt.expectedPhase, actualPhase)
@@ -172,16 +172,16 @@ func TestGetPhase(t *testing.T) {
 func TestGetExecutor(t *testing.T) {
 	testCases := []struct {
 		name        string
-		settings    func() *environment.AirshipCTLSettings
+		settings    func() *config.Config
 		phase       *airshipv1.Phase
 		expectedExc ifc.Executor
 		expectedErr error
 	}{
 		{
 			name: "No context",
-			settings: func() *environment.AirshipCTLSettings {
+			settings: func() *config.Config {
 				s := makeDefaultSettings()
-				s.Config.CurrentContext = "badCtx"
+				s.CurrentContext = "badCtx"
 				return s
 			},
 			expectedErr: config.ErrMissingConfig{What: "Context with name 'badCtx'"},
@@ -250,7 +250,7 @@ func TestGetExecutor(t *testing.T) {
 	for _, test := range testCases {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
-			cmd := phase.Cmd{AirshipCTLSettings: tt.settings()}
+			cmd := phase.Cmd{Config: tt.settings()}
 			actualExc, actualErr := cmd.GetExecutor(tt.phase)
 			assert.Equal(t, tt.expectedErr, actualErr)
 			assertEqualExecutor(t, tt.expectedExc, actualExc)
@@ -268,11 +268,11 @@ func assertEqualExecutor(t *testing.T, expected, actual ifc.Executor) {
 	assert.IsType(t, expected, actual)
 }
 
-func makeDefaultSettings() *environment.AirshipCTLSettings {
+func makeDefaultSettings() *config.Config {
 	testSettings := &environment.AirshipCTLSettings{
 		AirshipConfigPath: "testdata/airshipconfig.yaml",
 		KubeConfigPath:    "testdata/kubeconfig.yaml",
 	}
 	testSettings.InitConfig()
-	return testSettings
+	return testSettings.Config
 }

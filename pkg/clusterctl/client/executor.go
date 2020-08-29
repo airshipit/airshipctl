@@ -59,7 +59,7 @@ func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 	if err := cfg.ExecutorDocument.ToAPIObject(options, airshipv1.Scheme); err != nil {
 		return nil, err
 	}
-	tgtPath, err := cfg.AirshipSettings.Config.CurrentContextTargetPath()
+	tgtPath, err := cfg.AirshipConfig.CurrentContextTargetPath()
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 		bundle:      cfg.ExecutorBundle,
 		options:     options,
 		kubecfg:     cfg.KubeConfig,
-		dumpRoot:    filepath.Dir(cfg.AirshipSettings.AirshipConfigPath),
+		dumpRoot:    filepath.Dir(cfg.AirshipConfig.LoadedConfigPath()),
 	}, nil
 }
 

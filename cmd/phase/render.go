@@ -17,7 +17,7 @@ package phase
 import (
 	"github.com/spf13/cobra"
 
-	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/phase/render"
 )
 
@@ -34,19 +34,15 @@ airshipctl phase render initinfra -l app=helm,service=tiller -k Deployment
 )
 
 // NewRenderCommand create a new command for document rendering
-func NewRenderCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
-	renderSettings := &render.Settings{AirshipCTLSettings: rootSettings}
+func NewRenderCommand(cfgFactory config.Factory) *cobra.Command {
+	renderSettings := &render.Settings{}
 	renderCmd := &cobra.Command{
 		Use:     "render PHASE_NAME",
 		Short:   "Render phase documents from model",
 		Example: renderExample,
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			path, err := renderSettings.Config.CurrentContextEntryPoint(args[0])
-			if err != nil {
-				return err
-			}
-			return renderSettings.Render(path, cmd.OutOrStdout())
+			return renderSettings.Render(cfgFactory, args[0], cmd.OutOrStdout())
 		},
 	}
 

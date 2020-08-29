@@ -18,14 +18,22 @@ import (
 	"io"
 	"strings"
 
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 )
 
 // Render prints out filtered documents
-func (s *Settings) Render(path string, out io.Writer) error {
-	if err := s.Config.EnsureComplete(); err != nil {
+func (s *Settings) Render(cfgFactory config.Factory, phaseName string, out io.Writer) error {
+	cfg, err := cfgFactory()
+	if err != nil {
 		return err
 	}
+
+	path, err := cfg.CurrentContextEntryPoint(phaseName)
+	if err != nil {
+		return err
+	}
+
 	docBundle, err := document.NewBundleByPath(path)
 	if err != nil {
 		return err

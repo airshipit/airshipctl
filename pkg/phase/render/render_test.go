@@ -24,14 +24,17 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/phase/render"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
 func TestRender(t *testing.T) {
-	rs := &environment.AirshipCTLSettings{Config: testutil.DummyConfig()}
-	fixturePath := "testdata/phase"
+	rs := testutil.DummyConfig()
+	dummyManifest := rs.Manifests["dummy_manifest"]
+	dummyManifest.TargetPath = "testdata"
+	dummyManifest.SubPath = ""
+	fixturePath := "phase"
 	tests := []struct {
 		name       string
 		settings   *render.Settings
@@ -40,18 +43,17 @@ func TestRender(t *testing.T) {
 	}{
 		{
 			name:       "No Filters",
-			settings:   &render.Settings{AirshipCTLSettings: rs},
+			settings:   &render.Settings{},
 			expResFile: "noFilter.yaml",
 			expErr:     nil,
 		},
 		{
 			name: "All Filters",
 			settings: &render.Settings{
-				AirshipCTLSettings: rs,
-				Label:              "airshipit.org/deploy-k8s=false",
-				Annotation:         "airshipit.org/clustertype=ephemeral",
-				APIVersion:         "metal3.io/v1alpha1",
-				Kind:               "BareMetalHost",
+				Label:      "airshipit.org/deploy-k8s=false",
+				Annotation: "airshipit.org/clustertype=ephemeral",
+				APIVersion: "metal3.io/v1alpha1",
+				Kind:       "BareMetalHost",
 			},
 			expResFile: "allFilters.yaml",
 			expErr:     nil,
@@ -59,8 +61,7 @@ func TestRender(t *testing.T) {
 		{
 			name: "Multiple Labels",
 			settings: &render.Settings{
-				AirshipCTLSettings: rs,
-				Label:              "airshipit.org/deploy-k8s=false, airshipit.org/ephemeral-node=true",
+				Label: "airshipit.org/deploy-k8s=false, airshipit.org/ephemeral-node=true",
 			},
 			expResFile: "multiLabels.yaml",
 			expErr:     nil,
@@ -68,8 +69,7 @@ func TestRender(t *testing.T) {
 		{
 			name: "Malformed Label",
 			settings: &render.Settings{
-				AirshipCTLSettings: rs,
-				Label:              "app=(",
+				Label: "app=(",
 			},
 			expResFile: "",
 			expErr:     fmt.Errorf("unable to parse requirement: found '(', expected: identifier"),
@@ -86,7 +86,9 @@ func TestRender(t *testing.T) {
 				require.NoError(t, err)
 			}
 			out := &bytes.Buffer{}
-			err = tt.settings.Render(fixturePath, out)
+			err = tt.settings.Render(func() (*config.Config, error) {
+				return rs, nil
+			}, fixturePath, out)
 			assert.Equal(t, tt.expErr, err)
 			assert.Equal(t, expectedOut, out.Bytes())
 		})

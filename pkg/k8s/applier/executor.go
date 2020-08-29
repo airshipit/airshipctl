@@ -59,7 +59,7 @@ func RegisterExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFactory) 
 func registerExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 	return NewExecutor(ExecutorOptions{
 		BundleName:       cfg.PhaseName,
-		AirshipConfig:    cfg.AirshipSettings.Config,
+		AirshipConfig:    cfg.AirshipConfig,
 		ExecutorBundle:   cfg.ExecutorBundle,
 		ExecutorDocument: cfg.ExecutorDocument,
 		Kubeconfig:       cfg.KubeConfig,

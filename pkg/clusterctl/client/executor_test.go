@@ -28,7 +28,6 @@ import (
 	cctlclient "opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	airerrors "opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
@@ -77,7 +76,7 @@ func TestNewExecutor(t *testing.T) {
 
 	testCases := []struct {
 		name        string
-		settings    *environment.AirshipCTLSettings
+		settings    *config.Config
 		expectedErr error
 	}{
 		{
@@ -86,9 +85,9 @@ func TestNewExecutor(t *testing.T) {
 		},
 		{
 			name: "New Clusterctl Executor",
-			settings: func() *environment.AirshipCTLSettings {
+			settings: func() *config.Config {
 				s := sampleSettings()
-				s.Config.CurrentContext = "non-existent-ctx"
+				s.CurrentContext = "non-existent-ctx"
 				return s
 			}(),
 			expectedErr: config.ErrMissingConfig{What: "Context with name 'non-existent-ctx'"},
@@ -100,7 +99,7 @@ func TestNewExecutor(t *testing.T) {
 			_, actualErr := cctlclient.NewExecutor(ifc.ExecutorConfig{
 				ExecutorDocument: sampleCfgDoc,
 				ExecutorBundle:   bundle,
-				AirshipSettings:  tt.settings,
+				AirshipConfig:    tt.settings,
 			})
 			assert.Equal(t, tt.expectedErr, actualErr)
 		})
@@ -186,7 +185,7 @@ func TestExecutorRun(t *testing.T) {
 				ifc.ExecutorConfig{
 					ExecutorDocument: tt.cfgDoc,
 					ExecutorBundle:   bundle,
-					AirshipSettings:  sampleSettings(),
+					AirshipConfig:    sampleSettings(),
 					KubeConfig:       kubeCfg,
 				})
 			require.NoError(t, err)
@@ -209,7 +208,7 @@ func TestExecutorValidate(t *testing.T) {
 		ifc.ExecutorConfig{
 			ExecutorDocument: sampleCfgDoc,
 			ExecutorBundle:   bundle,
-			AirshipSettings:  sampleSettings(),
+			AirshipConfig:    sampleSettings(),
 		})
 	require.NoError(t, err)
 	expectedErr := airerrors.ErrNotImplemented{}
@@ -226,7 +225,7 @@ func TestExecutorRender(t *testing.T) {
 		ifc.ExecutorConfig{
 			ExecutorDocument: sampleCfgDoc,
 			ExecutorBundle:   bundle,
-			AirshipSettings:  sampleSettings(),
+			AirshipConfig:    sampleSettings(),
 		})
 	require.NoError(t, err)
 	actualOut := &bytes.Buffer{}
@@ -234,10 +233,11 @@ func TestExecutorRender(t *testing.T) {
 	assert.Equal(t, expectedErr, actualErr)
 }
 
-func sampleSettings() *environment.AirshipCTLSettings {
+func sampleSettings() *config.Config {
 	cfg := config.NewConfig()
 	cfg.Manifests[config.AirshipDefaultManifest].TargetPath = "./testdata"
-	return &environment.AirshipCTLSettings{Config: cfg, AirshipConfigPath: "."}
+	cfg.SetLoadedConfigPath(".")
+	return cfg
 }
 
 func executorDoc(t *testing.T, action string) document.Document {
