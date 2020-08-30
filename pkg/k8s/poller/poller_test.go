@@ -22,21 +22,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"opendev.org/airship/airshipctl/pkg/cluster"
-	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/k8s/client/fake"
 	"opendev.org/airship/airshipctl/pkg/k8s/poller"
 	k8sutils "opendev.org/airship/airshipctl/pkg/k8s/utils"
 )
 
 func TestNewStatusPoller(t *testing.T) {
-	settings := &environment.AirshipCTLSettings{
-		Config:         config.NewConfig(),
-		KubeConfigPath: "testdata/kubeconfig.yaml",
-	}
 	airClient := fake.NewClient()
 
-	f := k8sutils.FactoryFromKubeConfigPath(settings.KubeConfigPath)
+	f := k8sutils.FactoryFromKubeConfigPath("testdata/kubeconfig.yaml")
 	restConfig, err := f.ToRESTConfig()
 	require.NoError(t, err)
 	restMapper, err := f.ToRESTMapper()

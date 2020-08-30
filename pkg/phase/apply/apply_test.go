@@ -27,7 +27,6 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/applier"
 	"opendev.org/airship/airshipctl/pkg/phase/apply"
@@ -122,13 +121,8 @@ func makeNewFakeRootSettings(t *testing.T, kp string, dir string) *config.Config
 	adir, err := filepath.Abs(dir)
 	require.NoError(t, err)
 
-	settings := &environment.AirshipCTLSettings{
-		AirshipConfigPath: adir,
-		KubeConfigPath:    akp,
-	}
+	settings, err := config.CreateFactory(&adir, &akp)()
+	require.NoError(t, err)
 
-	settings.InitConfig()
-	settings.Config.SetKubeConfigPath(kp)
-	settings.Config.SetLoadedConfigPath(dir)
-	return settings.Config
+	return settings
 }

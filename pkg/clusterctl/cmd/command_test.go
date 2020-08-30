@@ -21,7 +21,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
 const (
@@ -31,11 +30,11 @@ const (
 
 // TODO (kkalynovskyi) expand test cases
 func TestNewCommand(t *testing.T) {
-	rs := &environment.AirshipCTLSettings{
-		AirshipConfigPath: "testdata/airshipconfig.yaml",
-		KubeConfigPath:    "testdata/kubeconfig.yaml",
-	}
-	rs.InitConfig()
+	airshipConfigPath := "testdata/airshipconfig.yaml"
+	kubeConfigPath := "testdata/kubeconfig.yaml"
+	cfg, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
+	require.NoError(t, err)
+
 	tests := []struct {
 		name          string
 		expectErr     bool
@@ -112,16 +111,15 @@ func TestNewCommand(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		rs.InitConfig()
 		expectErr := tt.expectErr
 		manifests := tt.manifests
-		rs.Config.Manifests = manifests
+		cfg.Manifests = manifests
 		context := tt.currentConext
 		t.Run(tt.name, func(t *testing.T) {
-			rs.Config.Manifests = manifests
-			rs.Config.CurrentContext = context
+			cfg.Manifests = manifests
+			cfg.CurrentContext = context
 			command, err := NewCommand(func() (*config.Config, error) {
-				return rs.Config, nil
+				return cfg, nil
 			})
 			if expectErr {
 				assert.Error(t, err)

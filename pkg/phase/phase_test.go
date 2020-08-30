@@ -30,7 +30,6 @@ import (
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/k8s/applier"
 	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
@@ -39,14 +38,14 @@ import (
 func TestPhasePlan(t *testing.T) {
 	testCases := []struct {
 		name         string
-		settings     func() *config.Config
+		settings     func(t *testing.T) *config.Config
 		expectedPlan map[string][]string
 		expectedErr  error
 	}{
 		{
 			name: "No context",
-			settings: func() *config.Config {
-				s := makeDefaultSettings()
+			settings: func(t *testing.T) *config.Config {
+				s := makeDefaultSettings(t)
 				s.CurrentContext = "badCtx"
 				return s
 			},
@@ -67,8 +66,8 @@ func TestPhasePlan(t *testing.T) {
 		},
 		{
 			name: "No Phase Plan",
-			settings: func() *config.Config {
-				s := makeDefaultSettings()
+			settings: func(t *testing.T) *config.Config {
+				s := makeDefaultSettings(t)
 				m, err := s.CurrentContextManifest()
 				require.NoError(t, err)
 				m.SubPath = "no_plan_site"
@@ -92,7 +91,7 @@ func TestPhasePlan(t *testing.T) {
 	for _, test := range testCases {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
-			cmd := phase.Cmd{Config: tt.settings()}
+			cmd := phase.Cmd{Config: tt.settings(t)}
 			actualPlan, actualErr := cmd.Plan()
 			assert.Equal(t, tt.expectedErr, actualErr)
 			assert.Equal(t, tt.expectedPlan, actualPlan)
@@ -103,15 +102,15 @@ func TestPhasePlan(t *testing.T) {
 func TestGetPhase(t *testing.T) {
 	testCases := []struct {
 		name          string
-		settings      func() *config.Config
+		settings      func(t *testing.T) *config.Config
 		phaseName     string
 		expectedPhase *airshipv1.Phase
 		expectedErr   error
 	}{
 		{
 			name: "No context",
-			settings: func() *config.Config {
-				s := makeDefaultSettings()
+			settings: func(t *testing.T) *config.Config {
+				s := makeDefaultSettings(t)
 				s.CurrentContext = "badCtx"
 				return s
 			},
@@ -161,7 +160,7 @@ func TestGetPhase(t *testing.T) {
 	for _, test := range testCases {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
-			cmd := phase.Cmd{Config: tt.settings()}
+			cmd := phase.Cmd{Config: tt.settings(t)}
 			actualPhase, actualErr := cmd.GetPhase(tt.phaseName)
 			assert.Equal(t, tt.expectedErr, actualErr)
 			assert.Equal(t, tt.expectedPhase, actualPhase)
@@ -172,15 +171,15 @@ func TestGetPhase(t *testing.T) {
 func TestGetExecutor(t *testing.T) {
 	testCases := []struct {
 		name        string
-		settings    func() *config.Config
+		settings    func(t *testing.T) *config.Config
 		phase       *airshipv1.Phase
 		expectedExc ifc.Executor
 		expectedErr error
 	}{
 		{
 			name: "No context",
-			settings: func() *config.Config {
-				s := makeDefaultSettings()
+			settings: func(t *testing.T) *config.Config {
+				s := makeDefaultSettings(t)
 				s.CurrentContext = "badCtx"
 				return s
 			},
@@ -250,7 +249,7 @@ func TestGetExecutor(t *testing.T) {
 	for _, test := range testCases {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
-			cmd := phase.Cmd{Config: tt.settings()}
+			cmd := phase.Cmd{Config: tt.settings(t)}
 			actualExc, actualErr := cmd.GetExecutor(tt.phase)
 			assert.Equal(t, tt.expectedErr, actualErr)
 			assertEqualExecutor(t, tt.expectedExc, actualExc)
@@ -268,11 +267,10 @@ func assertEqualExecutor(t *testing.T, expected, actual ifc.Executor) {
 	assert.IsType(t, expected, actual)
 }
 
-func makeDefaultSettings() *config.Config {
-	testSettings := &environment.AirshipCTLSettings{
-		AirshipConfigPath: "testdata/airshipconfig.yaml",
-		KubeConfigPath:    "testdata/kubeconfig.yaml",
-	}
-	testSettings.InitConfig()
-	return testSettings.Config
+func makeDefaultSettings(t *testing.T) *config.Config {
+	airshipConfigPath := "testdata/airshipconfig.yaml"
+	kubeConfigPath := "testdata/kubeconfig.yaml"
+	testSettings, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
+	require.NoError(t, err)
+	return testSettings
 }
