@@ -19,7 +19,7 @@ package config
 import (
 	"github.com/spf13/cobra"
 
-	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/config"
 )
 
 const (
@@ -33,7 +33,7 @@ NOTE: This will overwrite any existing config files in $HOME/.airship
 )
 
 // NewInitCommand creates a command for generating default airshipctl config files.
-func NewInitCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command {
+func NewInitCommand() *cobra.Command {
 	// TODO(howell): It'd be nice to have a flag to tell
 	// airshipctl where to store the new files.
 	// TODO(howell): Currently, this command overwrites whatever the user
@@ -44,7 +44,16 @@ func NewInitCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Command
 		Short: "Generate initial configuration files for airshipctl",
 		Long:  initLong[1:],
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return rootSettings.Config.PersistConfig(true)
+			airshipConfigPath, err := cmd.Flags().GetString("airshipconf")
+			if err != nil {
+				airshipConfigPath = ""
+			}
+
+			kubeConfigPath, err := cmd.Flags().GetString("kubeconfig")
+			if err != nil {
+				kubeConfigPath = ""
+			}
+			return config.CreateConfig(airshipConfigPath, kubeConfigPath)
 		},
 	}
 

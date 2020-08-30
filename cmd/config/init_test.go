@@ -27,7 +27,7 @@ func TestConfigInit(t *testing.T) {
 		{
 			Name:    "config-init-help",
 			CmdLine: "-h",
-			Cmd:     NewInitCommand(nil),
+			Cmd:     NewInitCommand(),
 		},
 	}
 

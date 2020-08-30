@@ -116,6 +116,17 @@ func CreateFactory(airshipConfigPath *string, kubeConfigPath *string) Factory {
 	}
 }
 
+// CreateConfig saves default config to specified paths
+func CreateConfig(airshipConfigPath string, kubeConfigPath string) error {
+	cfg := NewConfig()
+	cfg.kubeConfig = NewKubeConfig()
+	cfg.initConfigPath(airshipConfigPath, kubeConfigPath)
+	if err := cfg.reconcileConfig(); err != nil {
+		return err
+	}
+	return cfg.PersistConfig(true)
+}
+
 // initConfigPath - Initializes loadedConfigPath and kubeConfigPath variable for Config object
 func (c *Config) initConfigPath(airshipConfigPath string, kubeConfigPath string) {
 	switch {

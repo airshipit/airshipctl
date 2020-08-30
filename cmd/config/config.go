@@ -55,6 +55,6 @@ func NewConfigCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Comma
 	configRootCmd.AddCommand(NewSetManifestCommand(cfgFactory))
 
 	// Init will have different factory
-	configRootCmd.AddCommand(NewInitCommand(rootSettings))
+	configRootCmd.AddCommand(NewInitCommand())
 	return configRootCmd
 }
