@@ -16,9 +16,11 @@ import (
 	"sigs.k8s.io/kustomize/api/resmap"
 	"sigs.k8s.io/kustomize/api/resource"
 	"sigs.k8s.io/kustomize/api/types"
+	"sigs.k8s.io/kustomize/kyaml/yaml"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	plugtypes "opendev.org/airship/airshipctl/pkg/document/plugin/types"
+	"opendev.org/airship/airshipctl/pkg/errors"
 )
 
 var (
@@ -30,6 +32,8 @@ var (
 const (
 	dotReplacer = "$$$$"
 )
+
+var _ plugtypes.Plugin = &plugin{}
 
 type plugin struct {
 	*airshipv1.ReplacementTransformer
@@ -108,6 +112,10 @@ func (p *plugin) Transform(m resmap.ResMap) error {
 		}
 	}
 	return nil
+}
+
+func (p *plugin) Filter(items []*yaml.RNode) ([]*yaml.RNode, error) {
+	return nil, errors.ErrNotImplemented{What: "`Exec` method for replacement transformer"}
 }
 
 func getReplacement(m resmap.ResMap, objRef *types.Target, fieldRef string) (interface{}, error) {

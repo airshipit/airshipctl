@@ -15,17 +15,22 @@
 package templater
 
 import (
+	"bytes"
+	"fmt"
 	"io"
 	"text/template"
 
 	"github.com/Masterminds/sprig"
 
 	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/yaml"
+	"sigs.k8s.io/kustomize/kyaml/kio"
+	"sigs.k8s.io/kustomize/kyaml/yaml"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	plugtypes "opendev.org/airship/airshipctl/pkg/document/plugin/types"
 )
+
+var _ plugtypes.Plugin = &plugin{}
 
 type plugin struct {
 	*airshipv1.Templater
@@ -52,6 +57,29 @@ func (t *plugin) Run(_ io.Reader, out io.Writer) error {
 		return err
 	}
 	return tmpl.Execute(out, t.Values)
+}
+
+func (t *plugin) Filter(items []*yaml.RNode) ([]*yaml.RNode, error) {
+	out := &bytes.Buffer{}
+	err := t.Run(nil, out)
+	if err != nil {
+		return nil, err
+	}
+
+	p := kio.Pipeline{
+		Inputs:  []kio.Reader{&kio.ByteReader{Reader: out}},
+		Outputs: []kio.Writer{&kio.PackageBuffer{}},
+	}
+	err = p.Execute()
+	if err != nil {
+		return nil, err
+	}
+
+	res, ok := p.Outputs[0].(*kio.PackageBuffer)
+	if !ok {
+		return nil, fmt.Errorf("Output conversion error")
+	}
+	return append(items, res.Nodes...), nil
 }
 
 // Render input yaml as output yaml

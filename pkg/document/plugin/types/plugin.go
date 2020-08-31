@@ -16,10 +16,13 @@ package types
 
 import (
 	"io"
+
+	"sigs.k8s.io/kustomize/kyaml/kio"
 )
 
 // Plugin interface for airship document plugins
 type Plugin interface {
+	kio.Filter
 	Run(io.Reader, io.Writer) error
 }
 

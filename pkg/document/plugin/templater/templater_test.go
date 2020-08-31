@@ -20,6 +20,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"sigs.k8s.io/kustomize/kyaml/kio"
 	"sigs.k8s.io/yaml"
 
 	"opendev.org/airship/airshipctl/pkg/document/plugin/templater"
@@ -53,8 +55,7 @@ template: |
   spec:
     bootMACAddress: {{ .macAddress }}
   {{ end -}}`,
-			expectedOut: `---
-apiVersion: metal3.io/v1alpha1
+			expectedOut: `apiVersion: metal3.io/v1alpha1
 kind: BareMetalHost
 metadata:
   name: node-1
@@ -77,6 +78,8 @@ metadata:
   name: notImportantHere
 values:
   test:
+    someKey:
+      anotherKey: value
     of:
       - toYaml
 template: |
@@ -85,6 +88,8 @@ template: |
 			expectedOut: `test:
   of:
   - toYaml
+  someKey:
+    anotherKey: value
 `,
 		},
 		{
@@ -121,10 +126,12 @@ template: |
 		plugin, err := templater.New(cfg)
 		require.NoError(t, err)
 		buf := &bytes.Buffer{}
-		err = plugin.Run(nil, buf)
+		nodes, err := plugin.Filter(nil)
 		if tc.expectedErr != "" {
 			assert.EqualError(t, err, tc.expectedErr)
 		}
+		err = kio.ByteWriter{Writer: buf}.Write(nodes)
+		require.NoError(t, err)
 		assert.Equal(t, tc.expectedOut, buf.String())
 	}
 }
