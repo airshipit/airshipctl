@@ -30,6 +30,7 @@ Welcome to airshipctl's Documentation!
    plugins
    testing-guidelines
    virtual_redfish_bmc
+   hardware_profile
    Commands <cli/airshipctl>
 
 .. toctree::
