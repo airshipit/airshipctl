@@ -159,6 +159,49 @@ metadata:
   name: notImportantHere
 replacements:
 - source:
+    value: 1.17.0
+  target:
+    objref:
+      kind: Deployment
+    fieldrefs:
+    - spec.template.spec.containers[name=nginx-tagged].image%1.7.9%
+`,
+
+			in: `
+group: apps
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: deploy1
+spec:
+  template:
+    spec:
+      containers:
+      - image: nginx:1.7.9
+        name: nginx-tagged
+`,
+			expectedOut: `apiVersion: v1
+group: apps
+kind: Deployment
+metadata:
+  name: deploy1
+spec:
+  template:
+    spec:
+      containers:
+      - image: nginx:1.17.0
+        name: nginx-tagged
+`,
+		},
+
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: notImportantHere
+replacements:
+- source:
     objref:
       kind: Pod
       name: pod

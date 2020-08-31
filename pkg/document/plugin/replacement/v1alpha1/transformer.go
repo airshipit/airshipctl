@@ -170,8 +170,17 @@ func substitute(m resmap.ResMap, to *types.ReplTarget, replacement interface{}) 
 				tmp = append(tmp, part)
 			}
 			p = strings.Join(tmp, "[")
+			// Exclude substring portion from dot replacer
+			// substring can contain IP or any dot separated string
+			substringPattern := ""
+			p, substringPattern = extractSubstringPattern(p)
 
 			pathSlice := strings.Split(p, ".")
+			// append back the extracted substring
+			if len(substringPattern) > 0 {
+				pathSlice[len(pathSlice)-1] = pathSlice[len(pathSlice)-1] + "%" +
+					substringPattern + "%"
+			}
 			for i, part := range pathSlice {
 				pathSlice[i] = strings.ReplaceAll(part, dotReplacer, ".")
 			}
