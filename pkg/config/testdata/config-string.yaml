@@ -1,17 +1,9 @@
 apiVersion: airshipit.org/v1alpha1
-clusters:
-  dummy_cluster:
-    clusterType:
-      ephemeral:
-        clusterKubeconf: dummy_cluster_ephemeral
-        managementConfiguration: dummy_management_config
-      target:
-        clusterKubeconf: dummy_cluster_target
-        managementConfiguration: dummy_management_config
 contexts:
   dummy_context:
     contextKubeconf: dummy_cluster_ephemeral
     encryptionConfig: dummy_encryption_config
+    managementConfiguration: dummy_management_config
     manifest: dummy_manifest
 currentContext: dummy_context
 encryptionConfigs:
@@ -43,5 +35,3 @@ manifests:
 permissions:
   DirectoryPermission: 488
   FilePermission: 416
-users:
-  dummy_user: {}

@@ -53,4 +53,3 @@ mkdir -p $HOME/.airship
 echo "Generate ~/.airship/config and ~/.airship/kubeconfig"
 envsubst <"${AIRSHIPCTL_WS}/tools/deployment/templates/airshipconfig_template" > ~/.airship/config
 envsubst <"${AIRSHIPCTL_WS}/tools/deployment/templates/kubeconfig_template" > ~/.airship/kubeconfig
-

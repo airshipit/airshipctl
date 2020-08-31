@@ -60,7 +60,6 @@ func TestDeploy(t *testing.T) {
 	tests := []struct {
 		name                string
 		expectedErrorString string
-		clusterPurposes     map[string]*config.ClusterPurpose
 		phaseName           string
 		events              []applyevent.Event
 	}{
@@ -94,9 +93,6 @@ func TestDeploy(t *testing.T) {
 					}, k8sutils.SuccessEvents(), f)
 				ao.Applier = cliApplier
 				ao.EventChannel = ch
-			}
-			if tt.clusterPurposes != nil {
-				rs.Clusters = tt.clusterPurposes
 			}
 			if tt.phaseName != "" {
 				ao.PhaseName = tt.phaseName

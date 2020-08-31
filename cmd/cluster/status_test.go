@@ -82,8 +82,6 @@ func TestNewClusterStatusCmd(t *testing.T) {
 func clusterStatusTestSettings() config.Factory {
 	return func() (*config.Config, error) {
 		return &config.Config{
-			Clusters:  map[string]*config.ClusterPurpose{"testCluster": nil},
-			AuthInfos: map[string]*config.AuthInfo{"testAuthInfo": nil},
 			Contexts: map[string]*config.Context{
 				"testContext": {Manifest: "testManifest"},
 			},

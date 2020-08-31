@@ -54,17 +54,11 @@ function generate_airshipconf {
 
     cat <<EOL > ${AIRSHIPCONFIG}
 apiVersion: airshipit.org/v1alpha1
-clusters:
-  ${CONTEXT}_${cluster}:
-    clusterType:
-      ${cluster}:
-        bootstrapInfo: default
-        clusterKubeconf: ${CONTEXT}_${cluster}
-        managementConfiguration: default
 contexts:
   ${CONTEXT}_${cluster}:
     contextKubeconf: ${CONTEXT}_${cluster}
     manifest: ${CONTEXT}_${cluster}
+    managementConfiguration: default
 currentContext: ${CONTEXT}_${cluster}
 kind: Config
 managementConfiguration:
@@ -86,8 +80,6 @@ manifests:
         url: https://opendev.org/airship/treasuremap
     subPath: ${SITE_ROOT}/${SITE}
     targetPath: ${MANIFEST_ROOT}
-users:
-  ${CONTEXT}_${cluster}: {}
 EOL
 }
 

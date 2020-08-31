@@ -1,10 +1,6 @@
 Context: ContextBaz
 contextKubeconf: ContextBaz_ephemeral
+managementConfiguration: ""
 manifest: Manifest_ContextBaz
-
-LocationOfOrigin: ""
-cluster: dummycluster_ephemeral
-namespace: dummy_namespace
-user: dummy_user
 
 

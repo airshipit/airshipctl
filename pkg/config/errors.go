@@ -163,12 +163,12 @@ func (e ErrMissingCurrentContext) Error() string {
 
 // ErrMissingManagementConfiguration means the management configuration was not defined for the active cluster.
 type ErrMissingManagementConfiguration struct {
-	cluster *Cluster
+	context *Context
 }
 
 func (e ErrMissingManagementConfiguration) Error() string {
-	return fmt.Sprintf("Management configuration %s for cluster %s undefined.", e.cluster.ManagementConfiguration,
-		e.cluster.NameInKubeconf)
+	return fmt.Sprintf("Management configuration %s for cluster %s undefined.", e.context.ManagementConfiguration,
+		e.context.NameInKubeconf)
 }
 
 // ErrMissingPrimaryRepo returned when Primary Repository is not set in context manifest
@@ -204,14 +204,6 @@ type ErrConflictingClusterOptions struct {
 
 func (e ErrConflictingClusterOptions) Error() string {
 	return "Specifying certificate-authority and insecure-skip-tls-verify mode is not allowed at the same time."
-}
-
-// ErrEmptyClusterName returned when empty cluster name is set
-type ErrEmptyClusterName struct {
-}
-
-func (e ErrEmptyClusterName) Error() string {
-	return "Cluster name must not be empty."
 }
 
 // ErrConflictingContextOptions returned when both context and --current is set at same time

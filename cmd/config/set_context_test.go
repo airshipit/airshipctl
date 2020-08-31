@@ -30,11 +30,9 @@ import (
 )
 
 const (
-	testUser             = "admin@kubernetes"
-	defaultManifest      = "edge_cloud"
-	defaultNamespace     = "kube-system"
-	testManifest         = "test_manifest"
 	testEncryptionConfig = "test_encryption_config"
+	defaultManifest      = "edge_cloud"
+	testManifest         = "test_manifest"
 )
 
 type setContextTest struct {
@@ -86,9 +84,7 @@ func TestSetContext(t *testing.T) {
 			contextName: "dummycontext",
 			flags: []string{
 				"--cluster-type=target",
-				"--user=" + testUser,
 				"--manifest=" + defaultManifest,
-				"--namespace=" + defaultNamespace,
 				"--encryption-config=" + testEncryptionConfig,
 			},
 			givenConfig:      given,
@@ -152,9 +148,6 @@ func (test setContextTest) run(t *testing.T) {
 	afterRunContext, err := afterRunConf.GetContext(test.contextName)
 	require.NoError(t, err)
 	require.NotNil(t, afterRunContext)
-
-	afterKcontext := afterRunContext.KubeContext()
-	require.NotNil(t, afterKcontext)
 
 	if test.manifest != "" {
 		assert.EqualValues(t, afterRunContext.Manifest, test.manifest)

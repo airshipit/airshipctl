@@ -1,26 +1,7 @@
 apiVersion: airshipit.org/v1alpha1
-bootstrapInfo:
-  dummy_bootstrap_config:
-    container:
-      volume: /tmp/airship:/config
-      image: quay.io/airshipit/isogen:latest-ubuntu_focal
-      containerRuntime: docker
-    builder:
-      userDataFileName: user-data
-      networkConfigFileName: network-config
-      outputMetadataFileName: output-metadata.yaml
-    remoteDirect:
-      isoUrl: http://localhost:8099/ubuntu-focal.iso
-      remoteType: redfish
-clusters:
-  dummycluster:
-    clusterType:
-      ephemeral:
-        bootstrapInfo: dummy_bootstrap_config
-        clusterKubeconf: dummycluster_ephemeral
 contexts:
   dummy_cluster:
-    contextKubeconf: dummy_cluster
+    contextKubeconf: dummycluster_ephemeral
     manifest: dummy_manifest
 currentContext: dummy_cluster
 kind: Config
@@ -41,5 +22,3 @@ manifests:
           tag: v1.0.1
         url: http://dummy.url.com/primary.git
     subPath: valid_site
-users:
-  dummy_user: {}

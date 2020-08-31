@@ -27,15 +27,14 @@ func NewConfig() *Config {
 	return &Config{
 		Kind:       AirshipConfigKind,
 		APIVersion: AirshipConfigAPIVersion,
-		Clusters:   make(map[string]*ClusterPurpose),
 		Permissions: Permissions{
 			DirectoryPermission: AirshipDefaultDirectoryPermission,
 			FilePermission:      AirshipDefaultFilePermission,
 		},
-		AuthInfos: make(map[string]*AuthInfo),
 		Contexts: map[string]*Context{
 			AirshipDefaultContext: {
-				Manifest: AirshipDefaultManifest,
+				Manifest:                AirshipDefaultManifest,
+				ManagementConfiguration: AirshipDefaultManagementConfiguration,
 			},
 		},
 		CurrentContext: AirshipDefaultContext,
@@ -87,14 +86,6 @@ func NewContext() *Context {
 	return &Context{}
 }
 
-// NewCluster is a convenience function that returns a new Cluster
-func NewCluster() *Cluster {
-	return &Cluster{
-		NameInKubeconf:          "",
-		ManagementConfiguration: AirshipDefaultManagementConfiguration,
-	}
-}
-
 // NewManifest is a convenience function that returns a new Manifest
 // object with non-nil maps
 func NewManifest() *Manifest {
@@ -112,11 +103,6 @@ func NewRepository() *Repository {
 	return &Repository{
 		CheckoutOptions: &RepoCheckout{},
 	}
-}
-
-// NewAuthInfo is a convenience function that returns a new AuthInfo
-func NewAuthInfo() *AuthInfo {
-	return &AuthInfo{}
 }
 
 // EncodeString returns the base64 encoding of given string

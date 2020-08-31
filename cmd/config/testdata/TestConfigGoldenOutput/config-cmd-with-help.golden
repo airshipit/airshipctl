@@ -9,7 +9,6 @@ Available Commands:
   get-management-config View a management config or all management configs defined in the airshipctl config
   get-manifest          Get a manifest information from the airshipctl config
   help                  Help about any command
-  import                Merge information from a kubernetes config file
   init                  Generate initial configuration files for airshipctl
   set-context           Manage contexts
   set-encryption-config Manage encryption configs in airship config

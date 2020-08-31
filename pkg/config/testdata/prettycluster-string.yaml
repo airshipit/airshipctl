@@ -1,8 +1,0 @@
-Cluster: dummy_cluster
-target:
-clusterKubeconf: dummy_cluster_target
-managementConfiguration: dummy_management_config
-
-LocationOfOrigin: ""
-certificate-authority: dummy_ca
-server: http://dummy.server

@@ -18,8 +18,8 @@ package config
 
 import (
 	"fmt"
+	"strings"
 
-	"k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/yaml"
 )
 
@@ -37,8 +37,8 @@ type Context struct {
 	// +optional
 	EncryptionConfig string `json:"encryptionConfig,omitempty"`
 
-	// KubeConfig Context Object
-	context *api.Context
+	// Management configuration which will be used for all hosts in the cluster
+	ManagementConfiguration string `json:"managementConfiguration"`
 }
 
 func (c *Context) String() string {
@@ -46,28 +46,16 @@ func (c *Context) String() string {
 	if err != nil {
 		return ""
 	}
-	kcluster := c.KubeContext()
-	kyaml, err := yaml.Marshal(&kcluster)
 	if err != nil {
 		return string(cyaml)
 	}
-	return fmt.Sprintf("%s\n%s", string(cyaml), string(kyaml))
+	return string(cyaml)
 }
 
 // PrettyString returns cluster name in a formatted string
 func (c *Context) PrettyString() string {
 	clusterName := NewClusterComplexNameFromKubeClusterName(c.NameInKubeconf)
 	return fmt.Sprintf("Context: %s\n%s\n", clusterName.Name, c)
-}
-
-// KubeContext returns kube context object
-func (c *Context) KubeContext() *api.Context {
-	return c.context
-}
-
-// SetKubeContext updates kube contect with given context details
-func (c *Context) SetKubeContext(kc *api.Context) {
-	c.context = kc
 }
 
 // ClusterType returns cluster type by extracting the type portion from
@@ -80,4 +68,49 @@ func (c *Context) ClusterType() string {
 // the complex cluster name
 func (c *Context) ClusterName() string {
 	return NewClusterComplexNameFromKubeClusterName(c.NameInKubeconf).Name
+}
+
+// ClusterComplexName holds the complex cluster name information
+// Encapsulates the different operations around using it.
+type ClusterComplexName struct {
+	Name string
+	Type string
+}
+
+// NewClusterComplexName returns a ClusterComplexName with the given name and type.
+func NewClusterComplexName(clusterName, clusterType string) ClusterComplexName {
+	return ClusterComplexName{
+		Name: clusterName,
+		Type: clusterType,
+	}
+}
+
+// NewClusterComplexNameFromKubeClusterName takes the name of a cluster in a
+// format which might be found in a kubeconfig file. This may be a simple
+// string (e.g. myCluster), or it may be prepended with the type of the cluster
+// (e.g. myCluster_target)
+//
+// If a valid cluster type was appended, the returned ClusterComplexName will
+// have that type. If no cluster type is provided, the
+// AirshipDefaultClusterType will be used.
+func NewClusterComplexNameFromKubeClusterName(kubeClusterName string) ClusterComplexName {
+	parts := strings.Split(kubeClusterName, AirshipClusterNameSeparator)
+
+	if len(parts) == 1 {
+		return NewClusterComplexName(kubeClusterName, AirshipDefaultClusterType)
+	}
+
+	// kubeClusterName matches the format myCluster_something.
+	// Let's check if "something" is a clusterType.
+	potentialType := parts[len(parts)-1]
+	for _, ct := range AllClusterTypes {
+		if potentialType == ct {
+			// Rejoin the parts in the case of "my_cluster_etc_etc_<clusterType>"
+			name := strings.Join(parts[:len(parts)-1], AirshipClusterNameSeparator)
+			return NewClusterComplexName(name, potentialType)
+		}
+	}
+
+	// "something" is not a valid clusterType, so just use the default
+	return NewClusterComplexName(kubeClusterName, AirshipDefaultClusterType)
 }

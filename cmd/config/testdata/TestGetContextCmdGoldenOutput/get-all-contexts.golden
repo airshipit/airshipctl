@@ -1,30 +1,18 @@
 Context: ContextBar
 contextKubeconf: ContextBar_ephemeral
+managementConfiguration: ""
 manifest: Manifest_ContextBar
-
-LocationOfOrigin: ""
-cluster: dummycluster_ephemeral
-namespace: dummy_namespace
-user: dummy_user
 
 
 Context: ContextBaz
 contextKubeconf: ContextBaz_ephemeral
+managementConfiguration: ""
 manifest: Manifest_ContextBaz
-
-LocationOfOrigin: ""
-cluster: dummycluster_ephemeral
-namespace: dummy_namespace
-user: dummy_user
 
 
 Context: ContextFoo
 contextKubeconf: ContextFoo_ephemeral
+managementConfiguration: ""
 manifest: Manifest_ContextFoo
-
-LocationOfOrigin: ""
-cluster: dummycluster_ephemeral
-namespace: dummy_namespace
-user: dummy_user
 
 

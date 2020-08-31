@@ -25,61 +25,6 @@ import (
 	"opendev.org/airship/airshipctl/testutil"
 )
 
-func TestRunSetAuthInfo(t *testing.T) {
-	t.Run("testAddAuthInfo", func(t *testing.T) {
-		conf := testutil.DummyConfig()
-		dummyAuthInfoOptions := testutil.DummyAuthInfoOptions()
-		dummyAuthInfoOptions.Name = "second_user"
-		dummyAuthInfoOptions.Token = ""
-
-		modified, err := config.RunSetAuthInfo(dummyAuthInfoOptions, conf, false)
-		assert.NoError(t, err)
-		assert.False(t, modified)
-		assert.Contains(t, conf.AuthInfos, "second_user")
-	})
-
-	t.Run("testModifyAuthInfo", func(t *testing.T) {
-		conf := testutil.DummyConfig()
-		dummyAuthInfoOptions := testutil.DummyAuthInfoOptions()
-		dummyAuthInfoOptions.Name = "dummy_user"
-		dummyAuthInfoOptions.Password = "testpassword123"
-		dummyAuthInfoOptions.Token = ""
-
-		modified, err := config.RunSetAuthInfo(dummyAuthInfoOptions, conf, false)
-		assert.NoError(t, err)
-		assert.True(t, modified)
-		authInfo, err := conf.GetAuthInfo("dummy_user")
-		assert.NoError(t, err)
-		assert.Equal(t, dummyAuthInfoOptions.Password, authInfo.KubeAuthInfo().Password)
-	})
-}
-
-func TestRunSetCluster(t *testing.T) {
-	t.Run("testAddCluster", func(t *testing.T) {
-		conf := testutil.DummyConfig()
-		dummyClusterOptions := testutil.DummyClusterOptions()
-		dummyClusterOptions.Name = "second_cluster"
-
-		modified, err := config.RunSetCluster(dummyClusterOptions, conf, false)
-		assert.NoError(t, err)
-		assert.False(t, modified)
-		assert.Contains(t, conf.Clusters, "second_cluster")
-	})
-
-	t.Run("testModifyCluster", func(t *testing.T) {
-		conf := testutil.DummyConfig()
-		dummyClusterOptions := testutil.DummyClusterOptions()
-		dummyClusterOptions.Server = "http://123.45.67.890"
-
-		modified, err := config.RunSetCluster(dummyClusterOptions, conf, false)
-		assert.NoError(t, err)
-		assert.True(t, modified)
-		assert.Equal(
-			t, "http://123.45.67.890",
-			conf.Clusters["dummy_cluster"].ClusterTypes["ephemeral"].KubeCluster().Server)
-	})
-}
-
 func TestRunSetContext(t *testing.T) {
 	t.Run("testAddContext", func(t *testing.T) {
 		conf := testutil.DummyConfig()
@@ -95,12 +40,10 @@ func TestRunSetContext(t *testing.T) {
 	t.Run("testModifyContext", func(t *testing.T) {
 		conf := testutil.DummyConfig()
 		dummyContextOptions := testutil.DummyContextOptions()
-		dummyContextOptions.Namespace = "new_namespace"
 
 		modified, err := config.RunSetContext(dummyContextOptions, conf, false)
 		assert.NoError(t, err)
 		assert.True(t, modified)
-		assert.Equal(t, "new_namespace", conf.Contexts["dummy_context"].KubeContext().Namespace)
 	})
 }
 

@@ -32,10 +32,7 @@ Create or modify a context in the airshipctl config files.
 	setContextExample = `
 # Create a new context named "exampleContext"
 airshipctl config set-context exampleContext \
-  --namespace=kube-system \
   --manifest=exampleManifest \
-  --user=exampleUser
-  --cluster-type=target
   --encryption-config=exampleEncryptionConfig
 
 # Update the manifest of the current-context
@@ -92,18 +89,6 @@ func addSetContextFlags(o *config.ContextOptions, cmd *cobra.Command) {
 	flags := cmd.Flags()
 
 	flags.StringVar(
-		&o.Cluster,
-		"cluster",
-		"",
-		"set the cluster for the specified context")
-
-	flags.StringVar(
-		&o.AuthInfo,
-		"user",
-		"",
-		"set the user for the specified context")
-
-	flags.StringVar(
 		&o.Manifest,
 		"manifest",
 		"",
@@ -114,12 +99,6 @@ func addSetContextFlags(o *config.ContextOptions, cmd *cobra.Command) {
 		"encryption-config",
 		"",
 		"set the encryption config for the specified context")
-
-	flags.StringVar(
-		&o.Namespace,
-		"namespace",
-		"",
-		"set the namespace for the specified context")
 
 	flags.StringVar(
 		&o.ClusterType,

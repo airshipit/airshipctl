@@ -66,6 +66,7 @@ func NewCommand(cfgFactory config.Factory) (*Command, error) {
 
 // Init runs clusterctl init
 func (c *Command) Init() error {
+	log.Printf("config %s \n context %s", c.kubeconfigPath, c.kubeconfigContext)
 	return c.client.Init(c.kubeconfigPath, c.kubeconfigContext)
 }
 

@@ -34,7 +34,6 @@ func NewConfigCommand(cfgFactory config.Factory) *cobra.Command {
 	configRootCmd.AddCommand(NewGetManagementConfigCommand(cfgFactory))
 	configRootCmd.AddCommand(NewSetManagementConfigCommand(cfgFactory))
 
-	configRootCmd.AddCommand(NewImportCommand(cfgFactory))
 	configRootCmd.AddCommand(NewUseContextCommand(cfgFactory))
 
 	configRootCmd.AddCommand(NewGetManifestCommand(cfgFactory))

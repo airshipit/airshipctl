@@ -20,8 +20,6 @@ import (
 	"fmt"
 	"testing"
 
-	kubeconfig "k8s.io/client-go/tools/clientcmd/api"
-
 	cmd "opendev.org/airship/airshipctl/cmd/config"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/testutil"
@@ -94,17 +92,10 @@ func TestNoContextsGetContextCmd(t *testing.T) {
 }
 
 func getNamedTestContext(contextName string) *config.Context {
-	kContext := &kubeconfig.Context{
-		Namespace: "dummy_namespace",
-		AuthInfo:  "dummy_user",
-		Cluster:   fmt.Sprintf("dummycluster_%s", config.Ephemeral),
-	}
-
 	newContext := &config.Context{
 		NameInKubeconf: fmt.Sprintf("%s_%s", contextName, config.Ephemeral),
 		Manifest:       fmt.Sprintf("Manifest_%s", contextName),
 	}
-	newContext.SetKubeContext(kContext)
 
 	return newContext
 }

@@ -36,12 +36,6 @@ func DummyConfig() *config.Config {
 	conf := &config.Config{
 		Kind:       config.AirshipConfigKind,
 		APIVersion: config.AirshipConfigAPIVersion,
-		Clusters: map[string]*config.ClusterPurpose{
-			"dummy_cluster": DummyClusterPurpose(),
-		},
-		AuthInfos: map[string]*config.AuthInfo{
-			"dummy_user": DummyAuthInfo(),
-		},
 		Permissions: config.Permissions{
 			DirectoryPermission: config.AirshipDefaultDirectoryPermission,
 			FilePermission:      config.AirshipDefaultFilePermission,
@@ -61,10 +55,6 @@ func DummyConfig() *config.Config {
 		CurrentContext: "dummy_context",
 	}
 	conf.SetKubeConfig(kubeconfig.NewConfig())
-
-	dummyCluster := conf.Clusters["dummy_cluster"]
-	conf.KubeConfig().Clusters["dummy_cluster_target"] = dummyCluster.ClusterTypes[config.Target].KubeCluster()
-	conf.KubeConfig().Clusters["dummy_cluster_ephemeral"] = dummyCluster.ClusterTypes[config.Ephemeral].KubeCluster()
 	return conf
 }
 
@@ -73,26 +63,7 @@ func DummyContext() *config.Context {
 	c := config.NewContext()
 	c.NameInKubeconf = "dummy_cluster_ephemeral"
 	c.Manifest = "dummy_manifest"
-	context := kubeconfig.NewContext()
-	context.Namespace = "dummy_namespace"
-	context.AuthInfo = "dummy_user"
-	context.Cluster = "dummy_cluster_ephemeral"
 	c.EncryptionConfig = "dummy_encryption_config"
-	c.SetKubeContext(context)
-
-	return c
-}
-
-// DummyCluster creates a Cluster config object for unit testing
-func DummyCluster() *config.Cluster {
-	c := config.NewCluster()
-
-	cluster := kubeconfig.NewCluster()
-	cluster.Server = "http://dummy.server"
-	cluster.InsecureSkipTLSVerify = false
-	cluster.CertificateAuthority = "dummy_ca"
-	c.SetKubeCluster(cluster)
-	c.NameInKubeconf = "dummy_cluster_target"
 	c.ManagementConfiguration = "dummy_management_config"
 	return c
 }
@@ -140,29 +111,6 @@ func DummyRepoCheckout() *config.RepoCheckout {
 	}
 }
 
-// DummyAuthInfo creates a AuthInfo config object for unit testing
-func DummyAuthInfo() *config.AuthInfo {
-	a := config.NewAuthInfo()
-	authinfo := kubeconfig.NewAuthInfo()
-	authinfo.Username = "dummy_username"
-	authinfo.Password = "dummy_password"
-	authinfo.ClientCertificate = "dummy_certificate"
-	authinfo.ClientKey = "dummy_key"
-	authinfo.Token = "dummy_token"
-	encodedAuthInfo := config.EncodeAuthInfo(authinfo)
-	a.SetKubeAuthInfo(encodedAuthInfo)
-	return a
-}
-
-// DummyClusterPurpose creates ClusterPurpose config object for unit testing
-func DummyClusterPurpose() *config.ClusterPurpose {
-	cp := config.NewClusterPurpose()
-	cp.ClusterTypes["ephemeral"] = DummyCluster()
-	cp.ClusterTypes["ephemeral"].NameInKubeconf = "dummy_cluster_ephemeral"
-	cp.ClusterTypes["target"] = DummyCluster()
-	return cp
-}
-
 // InitConfig creates a Config object meant for testing.
 //
 // The returned config object will be associated with real files stored in a
@@ -188,44 +136,15 @@ func InitConfig(t *testing.T) (conf *config.Config, cleanup func(*testing.T)) {
 	return conf, cleanup
 }
 
-// DummyClusterOptions creates ClusterOptions config object
-// for unit testing
-func DummyClusterOptions() *config.ClusterOptions {
-	co := &config.ClusterOptions{}
-	co.Name = "dummy_cluster"
-	co.ClusterType = config.Ephemeral
-	co.Server = "http://1.1.1.1"
-	co.InsecureSkipTLSVerify = false
-	co.CertificateAuthority = ""
-	co.EmbedCAData = false
-
-	return co
-}
-
 // DummyContextOptions creates ContextOptions config object
 // for unit testing
 func DummyContextOptions() *config.ContextOptions {
 	co := &config.ContextOptions{}
 	co.Name = "dummy_context"
 	co.Manifest = "dummy_manifest"
-	co.AuthInfo = "dummy_user"
 	co.CurrentContext = false
-	co.Namespace = "dummy_namespace"
 	co.EncryptionConfig = "dummy_encryption_config"
-
 	return co
-}
-
-// DummyAuthInfoOptions creates AuthInfoOptions config object
-// for unit testing
-func DummyAuthInfoOptions() *config.AuthInfoOptions {
-	authinfo := &config.AuthInfoOptions{}
-	authinfo.Username = "dummy_username"
-	authinfo.Password = "dummy_password"
-	authinfo.ClientCertificate = "dummy_certificate"
-	authinfo.ClientKey = "dummy_key"
-	authinfo.Token = "dummy_token"
-	return authinfo
 }
 
 // DummyEncryptionConfig creates EncryptionConfigOptions object
@@ -275,31 +194,6 @@ func DummyManifestOptions() *config.ManifestOptions {
 
 const (
 	testConfigYAML = `apiVersion: airshipit.org/v1alpha1
-bootstrapInfo:
-  default: {}
-clusters:
-  straggler:
-    clusterType:
-      ephemeral:
-        clusterKubeconf: notThere
-  def:
-    clusterType:
-      ephemeral:
-        clusterKubeconf: def_ephemeral
-      target:
-        clusterKubeconf: def_target
-  onlyinkubeconf:
-    clusterType:
-      target:
-        clusterKubeconf: onlyinkubeconf_target
-  wrongonlyinconfig:
-    clusterType: {}
-  wrongonlyinkubeconf:
-    clusterType:
-      target:
-        clusterKubeconf: wrongonlyinkubeconf_target
-  clustertypenil:
-    clusterType: null
 contexts:
   def_ephemeral:
     contextKubeconf: def_ephemeral
@@ -310,11 +204,7 @@ contexts:
 encryptionConfigs: {}
 currentContext: ""
 kind: Config
-manifests: {}
-users:
-  k-admin: {}
-  k-other: {}
-  def-user: {}`
+manifests: {}`
 
 	//nolint:lll
 	testKubeConfigYAML = `apiVersion: v1

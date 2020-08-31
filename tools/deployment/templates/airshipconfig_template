@@ -1,19 +1,4 @@
 apiVersion: airshipit.org/v1alpha1
-bootstrapInfo:
-  dummy_bootstrap_config:
-    container:
-      volume: ${AIRSHIP_CONFIG_ISO_GEN_TARGET_PATH}:/config
-      image: ${AIRSHIP_CONFIG_ISO_BUILDER_DOCKER_IMAGE}
-      containerRuntime: docker
-    remoteDirect:
-      remoteType: ${REMOTE_TYPE}
-      insecure: ${REMOTE_INSECURE}
-      useproxy: ${REMOTE_PROXY}
-      isoUrl: http://${AIRSHIP_CONFIG_ISO_SERVE_HOST}:${AIRSHIP_CONFIG_ISO_PORT}/${AIRSHIP_CONFIG_ISO_NAME}
-    builder:
-      userDataFileName: user-data
-      networkConfigFileName: network-config
-      outputMetadataFileName: output-metadata.yaml
 managementConfiguration:
   dummy_management_config:
     type: ${REMOTE_TYPE}
@@ -21,26 +6,15 @@ managementConfiguration:
     useproxy: ${REMOTE_PROXY}
     systemActionRetries: ${SYSTEM_ACTION_RETRIES}
     systemRebootDelay: ${SYSTEM_REBOOT_DELAY}
-
-clusters:
-  ephemeral-cluster:
-    clusterType:
-      ephemeral:
-        bootstrapInfo: dummy_bootstrap_config
-        clusterKubeconf: ephemeral-cluster_ephemeral
-        managementConfiguration: dummy_management_config
-  target-cluster:
-    clusterType:
-      target:
-        clusterKubeconf: target-cluster_target
-        managementConfiguration: dummy_management_config
 contexts:
   ephemeral-cluster:
-    contextKubeconf: ephemeral-context
+    contextKubeconf: ephemeral-cluster_ephemeral
     manifest: dummy_manifest
+    managementConfiguration: dummy_management_config
   target-cluster:
-    contextKubeconf: target-context
+    contextKubeconf: target-cluster_target
     manifest: dummy_manifest
+    managementConfiguration: dummy_management_config
 currentContext: ephemeral-cluster
 kind: Config
 manifests:
@@ -57,6 +31,3 @@ manifests:
     metadataPath: manifests/metadata.yaml
     subPath: ${AIRSHIP_SITE_NAME}
     targetPath: ${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}
-users:
-  ephemeral-cluster-admin: {}
-  target-cluster-admin: {}

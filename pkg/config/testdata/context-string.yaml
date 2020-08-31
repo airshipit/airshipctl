@@ -1,8 +1,4 @@
 contextKubeconf: dummy_cluster_ephemeral
 encryptionConfig: dummy_encryption_config
+managementConfiguration: dummy_management_config
 manifest: dummy_manifest
-
-LocationOfOrigin: ""
-cluster: dummy_cluster_ephemeral
-namespace: dummy_namespace
-user: dummy_user

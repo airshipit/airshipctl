@@ -17,10 +17,7 @@ airshipctl config set-context NAME [flags]
 
 # Create a new context named "exampleContext"
 airshipctl config set-context exampleContext \
-  --namespace=kube-system \
   --manifest=exampleManifest \
-  --user=exampleUser
-  --cluster-type=target
   --encryption-config=exampleEncryptionConfig
 
 # Update the manifest of the current-context
@@ -33,14 +30,11 @@ airshipctl config set-context \
 ### Options
 
 ```
-      --cluster string             set the cluster for the specified context
       --cluster-type string        set the cluster-type for the specified context
       --current                    update the current context
       --encryption-config string   set the encryption config for the specified context
   -h, --help                       help for set-context
       --manifest string            set the manifest for the specified context
-      --namespace string           set the namespace for the specified context
-      --user string                set the user for the specified context
 ```
 
 ### Options inherited from parent commands
