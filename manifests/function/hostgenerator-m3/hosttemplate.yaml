@@ -47,6 +47,12 @@ template: |
       credentialsName: {{ $hostName }}-bmc-secret
     firmware:
   {{ toYaml $hardwareProfile.firmware | indent 4 }}
+  {{- /* If no raid is defined for a host, simply skip. There is no default setting for raid */ -}}
+  {{- /* Reference for RAID: https://github.com/metal3-io/metal3-docs/pull/134 */ -}}
+  {{- if $hardwareProfile.raid }}
+    raid:
+  {{ toYaml $hardwareProfile.raid | indent 4 }}
+  {{- end }}
 
   ---
   apiVersion: v1

@@ -8,3 +8,25 @@ hardwareProfile:
     sriovEnabled: false
     virtualizationDisabled: false
     simultaneousMultithreadingDisabled: false
+  raid:
+    hardwareRAIDVolumes:
+    - name: "VirtualDisk1"
+      level: "1+0"
+      sizeGibibytes: 1024
+      numberOfPhysicalDisks: 4
+      rotational: False
+    - name: "VirtualDisk2"
+      level: "1"
+      sizeGibibytes: 500
+      numberOfPhysicalDisks: 2
+      rotational: True
+    - name: "VirtualDisk3"
+      level: "0"
+      sizeGibibytes: 500
+      numberOfPhysicalDisks: 2
+      rotational: True
+    - name: "VirtualDisk4"
+      level: "0"
+      sizeGibibytes: 250
+      numberOfPhysicalDisks: 1
+      rotational: False
