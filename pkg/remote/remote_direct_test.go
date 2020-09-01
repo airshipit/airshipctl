@@ -20,8 +20,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/remote/power"
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 	"opendev.org/airship/airshipctl/testutil/redfishutils"
@@ -34,18 +32,6 @@ const (
 	username   = "admin"
 	password   = "password"
 )
-
-// withRemoteDirectConfig initializes the remote direct settings when used as an argument to "initSettings".
-func withRemoteDirectConfig(cfg *config.RemoteDirect) Configuration {
-	return func(settings *environment.AirshipCTLSettings) {
-		bootstrapInfo, err := settings.Config.CurrentContextBootstrapInfo()
-		if err != nil {
-			panic(fmt.Sprintf("Unable to initialize remote direct tests. Current Context error %q", err))
-		}
-
-		bootstrapInfo.RemoteDirect = cfg
-	}
-}
 
 func TestDoRemoteDirectMissingConfigOpts(t *testing.T) {
 	ctx, rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
@@ -60,8 +46,12 @@ func TestDoRemoteDirectMissingConfigOpts(t *testing.T) {
 		password,
 	}
 
-	settings := initSettings(t, withRemoteDirectConfig(nil), withTestDataPath("base"))
+	settings := initSettings(t, withTestDataPath("noremote"))
+	// there must be document.ErrDocNotFound
 	err = ephemeralHost.DoRemoteDirect(settings)
+	expectedErrorMessage := `document filtered by selector [Group="airshipit.org", Version="v1alpha1", ` +
+		`Kind="RemoteDirectConfiguration"] found no documents`
+	assert.Equal(t, expectedErrorMessage, fmt.Sprintf("%s", err))
 	assert.Error(t, err)
 }
 
@@ -81,10 +71,10 @@ func TestDoRemoteDirectMissingISOURL(t *testing.T) {
 		password,
 	}
 
-	cfg := &config.RemoteDirect{}
-
-	settings := initSettings(t, withRemoteDirectConfig(cfg), withTestDataPath("base"))
+	settings := initSettings(t, withTestDataPath("noisourl"))
 	err = ephemeralHost.DoRemoteDirect(settings)
+	expectedErrorMessage := `missing option: isoURL`
+	assert.Equal(t, expectedErrorMessage, fmt.Sprintf("%s", err))
 	assert.Error(t, err)
 }
 
@@ -108,11 +98,7 @@ func TestDoRemoteDirectRedfish(t *testing.T) {
 		password,
 	}
 
-	cfg := &config.RemoteDirect{
-		IsoURL: isoURL,
-	}
-
-	settings := initSettings(t, withRemoteDirectConfig(cfg), withTestDataPath("base"))
+	settings := initSettings(t, withTestDataPath("base"))
 	err = ephemeralHost.DoRemoteDirect(settings)
 	assert.NoError(t, err)
 }
@@ -138,11 +124,7 @@ func TestDoRemoteDirectRedfishNodePoweredOff(t *testing.T) {
 		password,
 	}
 
-	cfg := &config.RemoteDirect{
-		IsoURL: isoURL,
-	}
-
-	settings := initSettings(t, withRemoteDirectConfig(cfg), withTestDataPath("base"))
+	settings := initSettings(t, withTestDataPath("base"))
 	err = ephemeralHost.DoRemoteDirect(settings)
 	assert.NoError(t, err)
 }
@@ -169,11 +151,7 @@ func TestDoRemoteDirectRedfishVirtualMediaError(t *testing.T) {
 		password,
 	}
 
-	cfg := &config.RemoteDirect{
-		IsoURL: isoURL,
-	}
-
-	settings := initSettings(t, withRemoteDirectConfig(cfg), withTestDataPath("base"))
+	settings := initSettings(t, withTestDataPath("base"))
 
 	err = ephemeralHost.DoRemoteDirect(settings)
 	_, ok := err.(redfish.ErrRedfishClient)
@@ -202,11 +180,7 @@ func TestDoRemoteDirectRedfishBootSourceError(t *testing.T) {
 		password,
 	}
 
-	cfg := &config.RemoteDirect{
-		IsoURL: isoURL,
-	}
-
-	settings := initSettings(t, withRemoteDirectConfig(cfg), withTestDataPath("base"))
+	settings := initSettings(t, withTestDataPath("base"))
 
 	err = ephemeralHost.DoRemoteDirect(settings)
 	_, ok := err.(redfish.ErrRedfishClient)
@@ -236,11 +210,7 @@ func TestDoRemoteDirectRedfishRebootError(t *testing.T) {
 		password,
 	}
 
-	cfg := &config.RemoteDirect{
-		IsoURL: isoURL,
-	}
-
-	settings := initSettings(t, withRemoteDirectConfig(cfg), withTestDataPath("base"))
+	settings := initSettings(t, withTestDataPath("base"))
 
 	err = ephemeralHost.DoRemoteDirect(settings)
 	_, ok := err.(redfish.ErrRedfishClient)

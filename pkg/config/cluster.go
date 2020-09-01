@@ -34,9 +34,6 @@ type Cluster struct {
 
 	// Management configuration which will be used for all hosts in the cluster
 	ManagementConfiguration string `json:"managementConfiguration"`
-
-	// Bootstrap configuration this clusters ephemeral hosts will rely on
-	Bootstrap string `json:"bootstrapInfo"`
 }
 
 // ClusterPurpose encapsulates the Cluster Type as an enumeration

@@ -1,0 +1,74 @@
+---
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  labels:
+    airshipit.org/ephemeral-node: "true"
+  name: master-0
+spec:
+  online: true
+  bootMACAddress: 00:3b:8b:0c:ec:8b
+  bmc:
+    address: redfish+http://nolocalhost:8888/redfish/v1/Systems/ephemeral
+    credentialsName: master-0-bmc-secret
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    airshipit.org/ephemeral-node: "true"
+  name: master-0-bmc-secret
+type: Opaque
+data:
+  username: YWRtaW4=
+  password: cGFzc3dvcmQ=
+...
+---
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  labels:
+    airshipit.org/test-node: "true"
+  name: master-1
+spec:
+  online: true
+  bootMACAddress: 00:3b:8b:0c:ec:8b
+  bmc:
+    address: redfish+http://nolocalhost:8888/redfish/v1/Systems/node-master-1
+    credentialsName: master-1-bmc-secret
+---
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  labels:
+    airshipit.org/test-node: "true"
+  name: master-2
+spec:
+  online: true
+  bootMACAddress: 00:3b:8b:0c:ec:8b
+  bmc:
+    address: redfish+http://nolocalhost:8888/redfish/v1/Systems/node-master-2
+    credentialsName: master-1-bmc-secret
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    airshipit.org/ephemeral-node: "true"
+  name: master-1-bmc-secret
+type: Opaque
+data:
+  username: YWRtaW4=
+  password: cGFzc3dvcmQ=
+...
+---
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  name: no-creds
+spec:
+  online: true
+  bootMACAddress: 00:3b:8b:0c:ec:8b
+  bmc:
+    address: redfish+http://nolocalhost:8888/redfish/v1/Systems/test-node
+...

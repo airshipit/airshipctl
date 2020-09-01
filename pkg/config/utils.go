@@ -25,24 +25,7 @@ func NewConfig() *Config {
 	return &Config{
 		Kind:       AirshipConfigKind,
 		APIVersion: AirshipConfigAPIVersion,
-		BootstrapInfo: map[string]*Bootstrap{
-			AirshipDefaultBootstrapInfo: {
-				Container: &Container{
-					Volume:           "/srv/iso:/config",
-					Image:            AirshipDefaultBootstrapImage,
-					ContainerRuntime: "docker",
-				},
-				Builder: &Builder{
-					UserDataFileName:       "user-data",
-					NetworkConfigFileName:  "network-config",
-					OutputMetadataFileName: "output-metadata.yaml",
-				},
-				RemoteDirect: &RemoteDirect{
-					IsoURL: AirshipDefaultIsoURL,
-				},
-			},
-		},
-		Clusters: make(map[string]*ClusterPurpose),
+		Clusters:   make(map[string]*ClusterPurpose),
 		Permissions: Permissions{
 			DirectoryPermission: AirshipDefaultDirectoryPermission,
 			FilePermission:      AirshipDefaultFilePermission,
@@ -84,7 +67,6 @@ func NewContext() *Context {
 func NewCluster() *Cluster {
 	return &Cluster{
 		NameInKubeconf:          "",
-		Bootstrap:               AirshipDefaultBootstrapInfo,
 		ManagementConfiguration: AirshipDefaultManagementConfiguration,
 	}
 }

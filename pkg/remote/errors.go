@@ -45,14 +45,13 @@ func (e ErrUnknownManagementType) Error() string {
 	return fmt.Sprintf("unknown management type: %s", e.Type)
 }
 
-// ErrMissingBootstrapInfoOption is an error that indicates a bootstrap option is missing in the airshipctl
-// bootstrapInfo configuration.
-type ErrMissingBootstrapInfoOption struct {
+// ErrMissingOption is an error that indicates a remote direct config option is missing
+type ErrMissingOption struct {
 	What string
 }
 
-func (e ErrMissingBootstrapInfoOption) Error() string {
-	return fmt.Sprintf("missing bootstrapInfo option: %s", e.What)
+func (e ErrMissingOption) Error() string {
+	return fmt.Sprintf("missing option: %s", e.What)
 }
 
 // ErrNoHostsFound is an error that indicates that no hosts matched the selection criteria passed to a manager.

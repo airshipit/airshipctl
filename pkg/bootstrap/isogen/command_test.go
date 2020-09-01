@@ -21,9 +21,12 @@ import (
 	"strings"
 	"testing"
 
+	"opendev.org/airship/airshipctl/pkg/environment"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	api "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/log"
@@ -66,17 +69,26 @@ func TestBootstrapIso(t *testing.T) {
 	defer cleanup(t)
 
 	volBind := tempVol + ":/dst"
-	testErr := fmt.Errorf("testErr")
-	testCfg := &config.Bootstrap{
-		Container: &config.Container{
+	testErr := fmt.Errorf("TestErr")
+	testCfg := &api.ImageConfiguration{
+		Container: &api.Container{
 			Volume:           volBind,
 			ContainerRuntime: "docker",
 		},
-		Builder: &config.Builder{
+		Builder: &api.Builder{
 			UserDataFileName:      "user-data",
 			NetworkConfigFileName: "net-conf",
 		},
 	}
+	testDoc := &MockDocument{
+		MockAsYAML: func() ([]byte, error) { return []byte("TESTDOC"), nil },
+	}
+	testBuilder := &mockContainer{
+		runCommand:  func() error { return nil },
+		getID:       func() string { return "TESTID" },
+		rmContainer: func() error { return nil },
+	}
+
 	expOut := []string{
 		"Creating cloud-init for ephemeral K8s",
 		fmt.Sprintf("Running default container command. Mounted dir: [%s]", volBind),
@@ -87,7 +99,8 @@ func TestBootstrapIso(t *testing.T) {
 
 	tests := []struct {
 		builder     *mockContainer
-		cfg         *config.Bootstrap
+		cfg         *api.ImageConfiguration
+		doc         *MockDocument
 		debug       bool
 		expectedOut []string
 		expectedErr error
@@ -97,16 +110,15 @@ func TestBootstrapIso(t *testing.T) {
 				runCommand: func() error { return testErr },
 			},
 			cfg:         testCfg,
+			doc:         testDoc,
 			debug:       false,
 			expectedOut: []string{expOut[0], expOut[1]},
 			expectedErr: testErr,
 		},
 		{
-			builder: &mockContainer{
-				runCommand: func() error { return nil },
-				getID:      func() string { return "TESTID" },
-			},
+			builder:     testBuilder,
 			cfg:         testCfg,
+			doc:         testDoc,
 			debug:       true,
 			expectedOut: []string{expOut[0], expOut[1], expOut[2], expOut[3]},
 			expectedErr: nil,
@@ -118,8 +130,19 @@ func TestBootstrapIso(t *testing.T) {
 				rmContainer: func() error { return testErr },
 			},
 			cfg:         testCfg,
+			doc:         testDoc,
 			debug:       false,
 			expectedOut: []string{expOut[0], expOut[1], expOut[2], expOut[4]},
+			expectedErr: testErr,
+		},
+		{
+			builder: testBuilder,
+			cfg:     testCfg,
+			doc: &MockDocument{
+				MockAsYAML: func() ([]byte, error) { return nil, testErr },
+			},
+			debug:       false,
+			expectedOut: []string{expOut[0]},
 			expectedErr: testErr,
 		},
 	}
@@ -127,7 +150,7 @@ func TestBootstrapIso(t *testing.T) {
 	for _, tt := range tests {
 		outBuf := &bytes.Buffer{}
 		log.Init(tt.debug, outBuf)
-		actualErr := generateBootstrapIso(bundle, tt.builder, tt.cfg, tt.debug)
+		actualErr := generateBootstrapIso(bundle, tt.builder, tt.doc, tt.cfg, tt.debug)
 		actualOut := outBuf.String()
 
 		for _, line := range tt.expectedOut {
@@ -144,14 +167,14 @@ func TestVerifyInputs(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		cfg         *config.Bootstrap
+		cfg         *api.ImageConfiguration
 		args        []string
 		expectedErr error
 	}{
 		{
 			name: "missing-container-field",
-			cfg: &config.Bootstrap{
-				Container: &config.Container{},
+			cfg: &api.ImageConfiguration{
+				Container: &api.Container{},
 			},
 			expectedErr: config.ErrMissingConfig{
 				What: "Must specify volume bind for ISO builder container",
@@ -159,11 +182,11 @@ func TestVerifyInputs(t *testing.T) {
 		},
 		{
 			name: "missing-filenames",
-			cfg: &config.Bootstrap{
-				Container: &config.Container{
+			cfg: &api.ImageConfiguration{
+				Container: &api.Container{
 					Volume: tempVol + ":/dst",
 				},
-				Builder: &config.Builder{},
+				Builder: &api.Builder{},
 			},
 			expectedErr: config.ErrMissingConfig{
 				What: "UserDataFileName or NetworkConfigFileName are not specified in ISO builder config",
@@ -171,11 +194,11 @@ func TestVerifyInputs(t *testing.T) {
 		},
 		{
 			name: "invalid-host-path",
-			cfg: &config.Bootstrap{
-				Container: &config.Container{
+			cfg: &api.ImageConfiguration{
+				Container: &api.Container{
 					Volume: tempVol + ":/dst:/dst1",
 				},
-				Builder: &config.Builder{
+				Builder: &api.Builder{
 					UserDataFileName:      "user-data",
 					NetworkConfigFileName: "net-conf",
 				},
@@ -186,11 +209,11 @@ func TestVerifyInputs(t *testing.T) {
 		},
 		{
 			name: "success",
-			cfg: &config.Bootstrap{
-				Container: &config.Container{
+			cfg: &api.ImageConfiguration{
+				Container: &api.Container{
 					Volume: tempVol,
 				},
-				Builder: &config.Builder{
+				Builder: &api.Builder{
 					UserDataFileName:      "user-data",
 					NetworkConfigFileName: "net-conf",
 				},
@@ -206,4 +229,91 @@ func TestVerifyInputs(t *testing.T) {
 			assert.Equal(subTest, tt.expectedErr, actualErr)
 		})
 	}
+}
+
+func TestGenerateBootstrapIso(t *testing.T) {
+	t.Run("EnsureCompleteError", func(t *testing.T) {
+		settings := &environment.AirshipCTLSettings{
+			Debug:             false,
+			AirshipConfigPath: "testdata/config/config",
+			KubeConfigPath:    "testdata/config/kubeconfig",
+			Config:            &config.Config{},
+		}
+		expectedErr := config.ErrMissingConfig{What: "Current Context is not defined"}
+		settings.InitConfig()
+		settings.Config.CurrentContext = ""
+		actualErr := GenerateBootstrapIso(settings)
+		assert.Equal(t, expectedErr, actualErr)
+	})
+
+	t.Run("ContextEntryPointError", func(t *testing.T) {
+		settings := &environment.AirshipCTLSettings{
+			Debug:             false,
+			AirshipConfigPath: "testdata/config/config",
+			KubeConfigPath:    "testdata/config/kubeconfig",
+			Config:            &config.Config{},
+		}
+		expectedErr := config.ErrMissingPrimaryRepo{}
+		settings.InitConfig()
+		settings.Config.Manifests["default"].Repositories = make(map[string]*config.Repository)
+		actualErr := GenerateBootstrapIso(settings)
+		assert.Equal(t, expectedErr, actualErr)
+	})
+
+	t.Run("NewBundleByPathError", func(t *testing.T) {
+		settings := &environment.AirshipCTLSettings{
+			Debug:             false,
+			AirshipConfigPath: "testdata/config/config",
+			KubeConfigPath:    "testdata/config/kubeconfig",
+			Config:            &config.Config{},
+		}
+		expectedErr := config.ErrMissingPhaseDocument{PhaseName: "bootstrap"}
+		settings.InitConfig()
+		settings.Config.Manifests["default"].TargetPath = "/nonexistent"
+		actualErr := GenerateBootstrapIso(settings)
+		assert.Equal(t, expectedErr, actualErr)
+	})
+
+	t.Run("SelectOneError", func(t *testing.T) {
+		settings := &environment.AirshipCTLSettings{
+			Debug:             false,
+			AirshipConfigPath: "testdata/config/config",
+			KubeConfigPath:    "testdata/config/kubeconfig",
+			Config:            &config.Config{},
+		}
+		expectedErr := document.ErrDocNotFound{
+			Selector: document.NewSelector().ByGvk("airshipit.org", "v1alpha1", "ImageConfiguration")}
+		settings.InitConfig()
+		settings.Config.Manifests["default"].SubPath = "missingkinddoc/site/test-site"
+		actualErr := GenerateBootstrapIso(settings)
+		assert.Equal(t, expectedErr, actualErr)
+	})
+
+	t.Run("ToObjectError", func(t *testing.T) {
+		settings := &environment.AirshipCTLSettings{
+			Debug:             false,
+			AirshipConfigPath: "testdata/config/config",
+			KubeConfigPath:    "testdata/config/kubeconfig",
+			Config:            &config.Config{},
+		}
+		expectedErrMessage := "missing metadata.name in object"
+		settings.InitConfig()
+		settings.Config.Manifests["default"].SubPath = "missingmetadoc/site/test-site"
+		actualErr := GenerateBootstrapIso(settings)
+		assert.Contains(t, actualErr.Error(), expectedErrMessage)
+	})
+
+	t.Run("verifyInputsError", func(t *testing.T) {
+		settings := &environment.AirshipCTLSettings{
+			Debug:             false,
+			AirshipConfigPath: "testdata/config/config",
+			KubeConfigPath:    "testdata/config/kubeconfig",
+			Config:            &config.Config{},
+		}
+		expectedErr := config.ErrMissingConfig{What: "Must specify volume bind for ISO builder container"}
+		settings.InitConfig()
+		settings.Config.Manifests["default"].SubPath = "missingvoldoc/site/test-site"
+		actualErr := GenerateBootstrapIso(settings)
+		assert.Equal(t, expectedErr, actualErr)
+	})
 }

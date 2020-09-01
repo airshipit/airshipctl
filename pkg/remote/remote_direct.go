@@ -15,7 +15,9 @@
 package remote
 
 import (
+	api "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/log"
 
@@ -25,14 +27,30 @@ import (
 // DoRemoteDirect bootstraps the ephemeral node.
 func (b baremetalHost) DoRemoteDirect(settings *environment.AirshipCTLSettings) error {
 	cfg := settings.Config
-	bootstrapSettings, err := cfg.CurrentContextBootstrapInfo()
+
+	root, err := cfg.CurrentContextEntryPoint(config.BootstrapPhase)
 	if err != nil {
 		return err
 	}
 
-	remoteConfig := bootstrapSettings.RemoteDirect
-	if remoteConfig == nil {
-		return config.ErrMissingConfig{What: "RemoteDirect options not defined in bootstrap config"}
+	docBundle, err := document.NewBundleByPath(root)
+	if err != nil {
+		return err
+	}
+
+	remoteDirectConfiguration := &api.RemoteDirectConfiguration{}
+	selector, err := document.NewSelector().ByObject(remoteDirectConfiguration, api.Scheme)
+	if err != nil {
+		return err
+	}
+	doc, err := docBundle.SelectOne(selector)
+	if err != nil {
+		return err
+	}
+
+	err = doc.ToAPIObject(remoteDirectConfiguration, api.Scheme)
+	if err != nil {
+		return err
 	}
 
 	log.Debugf("Bootstrapping ephemeral host '%s' with ID '%s' and BMC Address '%s'.", b.HostName, b.NodeID(),
@@ -52,11 +70,11 @@ func (b baremetalHost) DoRemoteDirect(settings *environment.AirshipCTLSettings) 
 	}
 
 	// Perform remote direct operations
-	if remoteConfig.IsoURL == "" {
-		return ErrMissingBootstrapInfoOption{What: "isoURL"}
+	if remoteDirectConfiguration.IsoURL == "" {
+		return ErrMissingOption{What: "isoURL"}
 	}
 
-	err = b.SetVirtualMedia(b.Context, remoteConfig.IsoURL)
+	err = b.SetVirtualMedia(b.Context, remoteDirectConfiguration.IsoURL)
 	if err != nil {
 		return err
 	}

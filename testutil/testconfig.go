@@ -46,9 +46,6 @@ func DummyConfig() *config.Config {
 			DirectoryPermission: config.AirshipDefaultDirectoryPermission,
 			FilePermission:      config.AirshipDefaultFilePermission,
 		},
-		BootstrapInfo: map[string]*config.Bootstrap{
-			"dummy_bootstrap_config": DummyBootstrapInfo(),
-		},
 		Contexts: map[string]*config.Context{
 			"dummy_context": DummyContext(),
 		},
@@ -92,7 +89,6 @@ func DummyCluster() *config.Cluster {
 	cluster.CertificateAuthority = "dummy_ca"
 	c.SetKubeCluster(cluster)
 	c.NameInKubeconf = "dummy_cluster_target"
-	c.Bootstrap = "dummy_bootstrap_config"
 	c.ManagementConfiguration = "dummy_management_config"
 	return c
 }
@@ -227,26 +223,6 @@ func DummyAuthInfoOptions() *config.AuthInfoOptions {
 	return authinfo
 }
 
-// DummyBootstrapInfo creates a dummy BootstrapInfo config object for unit testing
-func DummyBootstrapInfo() *config.Bootstrap {
-	bs := &config.Bootstrap{}
-	cont := config.Container{
-		Volume:           "/dummy:dummy",
-		Image:            "dummy_image:dummy_tag",
-		ContainerRuntime: "docker",
-	}
-	builder := config.Builder{
-		UserDataFileName:       "user-data",
-		NetworkConfigFileName:  "netconfig",
-		OutputMetadataFileName: "output-metadata.yaml",
-	}
-
-	bs.Container = &cont
-	bs.Builder = &builder
-
-	return bs
-}
-
 // DummyManagementConfiguration creates a management configuration for unit testing
 func DummyManagementConfiguration() *config.ManagementConfiguration {
 	return &config.ManagementConfiguration{
@@ -283,22 +259,18 @@ clusters:
   def:
     clusterType:
       ephemeral:
-        bootstrapInfo: ""
         clusterKubeconf: def_ephemeral
       target:
-        bootstrapInfo: ""
         clusterKubeconf: def_target
   onlyinkubeconf:
     clusterType:
       target:
-        bootstrapInfo: ""
         clusterKubeconf: onlyinkubeconf_target
   wrongonlyinconfig:
     clusterType: {}
   wrongonlyinkubeconf:
     clusterType:
       target:
-        bootstrapInfo: ""
         clusterKubeconf: wrongonlyinkubeconf_target
   clustertypenil:
     clusterType: null

@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	api "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/bootstrap/cloudinit"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/container"
@@ -43,17 +44,6 @@ func GenerateBootstrapIso(settings *environment.AirshipCTLSettings) error {
 		return err
 	}
 
-	cfg, err := globalConf.CurrentContextBootstrapInfo()
-	if err != nil {
-		return err
-	}
-
-	if err = verifyInputs(cfg); err != nil {
-		return err
-	}
-
-	// TODO (dukov) replace with the appropriate function once it's available
-	// in document module
 	root, err := globalConf.CurrentContextEntryPoint(config.BootstrapPhase)
 	if err != nil {
 		return err
@@ -63,23 +53,41 @@ func GenerateBootstrapIso(settings *environment.AirshipCTLSettings) error {
 		return err
 	}
 
-	log.Print("Creating ISO builder container")
-	builder, err := container.NewContainer(
-		&ctx, cfg.Container.ContainerRuntime,
-		cfg.Container.Image)
+	imageConfiguration := &api.ImageConfiguration{}
+	selector, err := document.NewSelector().ByObject(imageConfiguration, api.Scheme)
+	if err != nil {
+		return err
+	}
+	doc, err := docBundle.SelectOne(selector)
 	if err != nil {
 		return err
 	}
 
-	err = generateBootstrapIso(docBundle, builder, cfg, log.DebugEnabled())
+	err = doc.ToAPIObject(imageConfiguration, api.Scheme)
+	if err != nil {
+		return err
+	}
+	if err = verifyInputs(imageConfiguration); err != nil {
+		return err
+	}
+
+	log.Print("Creating ISO builder container")
+	builder, err := container.NewContainer(
+		&ctx, imageConfiguration.Container.ContainerRuntime,
+		imageConfiguration.Container.Image)
+	if err != nil {
+		return err
+	}
+
+	err = generateBootstrapIso(docBundle, builder, doc, imageConfiguration, log.DebugEnabled())
 	if err != nil {
 		return err
 	}
 	log.Print("Checking artifacts")
-	return verifyArtifacts(cfg)
+	return verifyArtifacts(imageConfiguration)
 }
 
-func verifyInputs(cfg *config.Bootstrap) error {
+func verifyInputs(cfg *api.ImageConfiguration) error {
 	if cfg.Container.Volume == "" {
 		return config.ErrMissingConfig{
 			What: "Must specify volume bind for ISO builder container",
@@ -104,19 +112,22 @@ func verifyInputs(cfg *config.Bootstrap) error {
 	return nil
 }
 
-func getContainerCfg(cfg *config.Bootstrap, userData []byte, netConf []byte) map[string][]byte {
+func getContainerCfg(
+	cfg *api.ImageConfiguration,
+	builderCfgYaml []byte,
+	userData []byte,
+	netConf []byte,
+) map[string][]byte {
 	hostVol := strings.Split(cfg.Container.Volume, ":")[0]
 
 	fls := make(map[string][]byte)
 	fls[filepath.Join(hostVol, cfg.Builder.UserDataFileName)] = userData
 	fls[filepath.Join(hostVol, cfg.Builder.NetworkConfigFileName)] = netConf
-	// TODO (dukov) Get rid of this ugly conversion byte -> string -> byte
-	builderData := []byte(cfg.String())
-	fls[filepath.Join(hostVol, builderConfigFileName)] = builderData
+	fls[filepath.Join(hostVol, builderConfigFileName)] = builderCfgYaml
 	return fls
 }
 
-func verifyArtifacts(cfg *config.Bootstrap) error {
+func verifyArtifacts(cfg *api.ImageConfiguration) error {
 	hostVol := strings.Split(cfg.Container.Volume, ":")[0]
 	metadataPath := filepath.Join(hostVol, cfg.Builder.OutputMetadataFileName)
 	_, err := os.Stat(metadataPath)
@@ -126,7 +137,8 @@ func verifyArtifacts(cfg *config.Bootstrap) error {
 func generateBootstrapIso(
 	docBundle document.Bundle,
 	builder container.Container,
-	cfg *config.Bootstrap,
+	doc document.Document,
+	cfg *api.ImageConfiguration,
 	debug bool,
 ) error {
 	cntVol := strings.Split(cfg.Container.Volume, ":")[1]
@@ -136,7 +148,12 @@ func generateBootstrapIso(
 		return err
 	}
 
-	fls := getContainerCfg(cfg, userData, netConf)
+	builderCfgYaml, err := doc.AsYAML()
+	if err != nil {
+		return err
+	}
+
+	fls := getContainerCfg(cfg, builderCfgYaml, userData, netConf)
 	if err = util.WriteFiles(fls, 0600); err != nil {
 		return err
 	}

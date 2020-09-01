@@ -43,7 +43,6 @@ const (
 	AirshipConfigGroup                    = "airshipit.org"
 	AirshipConfigKind                     = "Config"
 	AirshipConfigVersion                  = "v1alpha1"
-	AirshipDefaultBootstrapInfo           = "default"
 	AirshipDefaultContext                 = "default"
 	AirshipDefaultDirectoryPermission     = 0750
 	AirshipDefaultFilePermission          = 0640
@@ -57,8 +56,6 @@ const (
 	AirshipPluginPathEnv                  = "AIRSHIP_KUSTOMIZE_PLUGINS"
 
 	// Modules
-	AirshipDefaultBootstrapImage = "quay.io/airshipit/isogen:latest-ubuntu_focal"
-	AirshipDefaultIsoURL         = "http://localhost:8099/ubuntu-focal.iso"
 	AirshipDefaultManagementType = redfish.ClientType
 )
 
