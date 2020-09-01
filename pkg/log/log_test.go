@@ -17,6 +17,7 @@ package log_test
 import (
 	"bytes"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -73,7 +74,8 @@ func TestLoggingDebug(t *testing.T) {
 
 		expected := "DebugTrue args 5\n"
 		require.Regexp(logFormatRegex, actual)
-		actual = actual[prefixLength:]
+		lastIndex := strings.LastIndex(actual, ":")
+		actual = actual[lastIndex+2:]
 		assert.Equal(expected, actual)
 	})
 
@@ -86,7 +88,8 @@ func TestLoggingDebug(t *testing.T) {
 
 		expected := "DebugfTrue args 5\n"
 		require.Regexp(logFormatRegex, actual)
-		actual = actual[prefixLength:]
+		lastIndex := strings.LastIndex(actual, ":")
+		actual = actual[lastIndex+2:]
 		assert.Equal(expected, actual)
 	})
 

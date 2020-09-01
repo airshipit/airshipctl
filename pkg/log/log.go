@@ -15,6 +15,7 @@
 package log
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -28,6 +29,9 @@ var (
 // Init initializes settings related to logging
 func Init(debugFlag bool, out io.Writer) {
 	debug = debugFlag
+	if debug {
+		airshipLog.SetFlags(log.LstdFlags | log.Llongfile)
+	}
 	airshipLog.SetOutput(out)
 }
 
@@ -39,25 +43,25 @@ func DebugEnabled() bool {
 // Debug is a wrapper for log.Debug
 func Debug(v ...interface{}) {
 	if debug {
-		airshipLog.Print(v...)
+		writeLog(v...)
 	}
 }
 
 // Debugf is a wrapper for log.Debugf
 func Debugf(format string, v ...interface{}) {
 	if debug {
-		airshipLog.Printf(format, v...)
+		writeLog(fmt.Sprintf(format, v...))
 	}
 }
 
 // Print is a wrapper for log.Print
 func Print(v ...interface{}) {
-	airshipLog.Print(v...)
+	writeLog(v...)
 }
 
 // Printf is a wrapper for log.Printf
 func Printf(format string, v ...interface{}) {
-	airshipLog.Printf(format, v...)
+	writeLog(fmt.Sprintf(format, v...))
 }
 
 // Fatal is a wrapper for log.Fatal
@@ -73,4 +77,16 @@ func Fatalf(format string, v ...interface{}) {
 // Writer returns log output writer object
 func Writer() io.Writer {
 	return airshipLog.Writer()
+}
+
+func writeLog(v ...interface{}) {
+	if debug {
+		err := airshipLog.Output(3, fmt.Sprint(v...))
+		if err != nil {
+			log.Print(v...)
+			log.Print(err)
+		}
+	} else {
+		airshipLog.Print(v...)
+	}
 }

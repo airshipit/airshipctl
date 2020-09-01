@@ -3,7 +3,7 @@ SHELL := /bin/bash
 GIT_VERSION         ?= v0.1.0
 GIT_MODULE          ?= opendev.org/airship/airshipctl/pkg/version
 
-GO_FLAGS            := -ldflags '-extldflags "-static"' -tags=netgo
+GO_FLAGS            := -ldflags '-extldflags "-static"' -tags=netgo -trimpath
 GO_FLAGS            += -ldflags "-X ${GIT_MODULE}.gitVersion=${GIT_VERSION}"
 
 BINDIR              := bin
