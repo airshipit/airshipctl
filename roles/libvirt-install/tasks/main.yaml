@@ -26,6 +26,7 @@
           - dnsmasq
           - ebtables
           - ovmf
+          - jq
           RedHat:
           - edk2-ovmf
           - libguestfs-tools
@@ -33,6 +34,7 @@
           - libvirt-devel
           - libvirt-daemon-kvm
           - qemu-kvm
+          - jq
     package:
       name: "{{ packages[ansible_os_family] }}"
       state: present
