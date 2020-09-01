@@ -14,10 +14,38 @@
 
 package kubeconfig
 
+import (
+	"fmt"
+)
+
 // ErrKubeConfigPathEmpty returned when kubeconfig path is not specified
 type ErrKubeConfigPathEmpty struct {
 }
 
 func (e *ErrKubeConfigPathEmpty) Error() string {
 	return "kubeconfig path is not defined"
+}
+
+// ErrClusterNameEmpty returned when cluster name is not provided
+type ErrClusterNameEmpty struct {
+}
+
+func (e ErrClusterNameEmpty) Error() string {
+	return "cluster name is not defined"
+}
+
+// ErrMalformedSecret error returned if secret data value is lost or empty
+type ErrMalformedSecret struct {
+	ClusterName string
+	Namespace   string
+	SecretName  string
+}
+
+func (e ErrMalformedSecret) Error() string {
+	return fmt.Sprintf(
+		"can't retrieve data from secret %s in cluster %s(namespace: %s)",
+		e.SecretName,
+		e.ClusterName,
+		e.Namespace,
+	)
 }

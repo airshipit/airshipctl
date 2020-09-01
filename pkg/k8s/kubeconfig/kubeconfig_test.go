@@ -23,16 +23,22 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	coreV1 "k8s.io/api/core/v1"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/client-go/tools/clientcmd/api/v1"
 	kustfs "sigs.k8s.io/kustomize/api/filesys"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/k8s/client/fake"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/testutil/fs"
 )
 
 const (
+	testClusterName     = "dummy_target_cluster"
+	testSecretName      = testClusterName + "-kubeconfig"
+	testNamespace       = "default"
 	testValidKubeconfig = `apiVersion: v1
 clusters:
 - cluster:
@@ -130,6 +136,171 @@ func TestKubeconfigContent(t *testing.T) {
 	assert.Equal(t, expectedData, actualData)
 }
 
+func TestFromSecret(t *testing.T) {
+	tests := []struct {
+		name         string
+		opts         *kubeconfig.FromClusterOptions
+		acc          fake.ResourceAccumulator
+		expectedData []byte
+		err          error
+	}{
+		{
+			name: "valid kubeconfig",
+			opts: &kubeconfig.FromClusterOptions{
+				ClusterName: testClusterName,
+				Namespace:   testNamespace,
+			},
+			acc: fake.WithTypedObjects(&coreV1.Secret{
+				TypeMeta: metaV1.TypeMeta{
+					Kind:       "Secret",
+					APIVersion: "v1",
+				},
+				ObjectMeta: metaV1.ObjectMeta{
+					Name:      testSecretName,
+					Namespace: testNamespace,
+				},
+				Data: map[string][]byte{
+					"value": []byte(testValidKubeconfig),
+				},
+			}),
+			expectedData: []byte(testValidKubeconfig),
+			err:          nil,
+		},
+		{
+			name: "no cluster name",
+			opts: &kubeconfig.FromClusterOptions{
+				ClusterName: "",
+				Namespace:   testNamespace,
+			},
+			acc: fake.WithTypedObjects(&coreV1.Secret{
+				TypeMeta: metaV1.TypeMeta{
+					Kind:       "Secret",
+					APIVersion: "v1",
+				},
+				ObjectMeta: metaV1.ObjectMeta{
+					Name:      testSecretName,
+					Namespace: testNamespace,
+				},
+				Data: map[string][]byte{
+					"value": []byte(testValidKubeconfig),
+				},
+			}),
+			expectedData: nil,
+			err:          kubeconfig.ErrClusterNameEmpty{},
+		},
+		{
+			name: "default namespace",
+			opts: &kubeconfig.FromClusterOptions{
+				ClusterName: testClusterName,
+				Namespace:   "",
+			},
+			acc: fake.WithTypedObjects(&coreV1.Secret{
+				TypeMeta: metaV1.TypeMeta{
+					Kind:       "Secret",
+					APIVersion: "v1",
+				},
+				ObjectMeta: metaV1.ObjectMeta{
+					Name:      testSecretName,
+					Namespace: testNamespace,
+				},
+				Data: map[string][]byte{
+					"value": []byte(testValidKubeconfig),
+				},
+			}),
+			expectedData: []byte(testValidKubeconfig),
+			err:          nil,
+		},
+		{
+			name: "no data in secret",
+			opts: &kubeconfig.FromClusterOptions{
+				ClusterName: testClusterName,
+				Namespace:   testNamespace,
+			},
+			acc: fake.WithTypedObjects(&coreV1.Secret{
+				TypeMeta: metaV1.TypeMeta{
+					Kind:       "Secret",
+					APIVersion: "v1",
+				},
+				ObjectMeta: metaV1.ObjectMeta{
+					Name:      testSecretName,
+					Namespace: testNamespace,
+				},
+			}),
+			expectedData: nil,
+			err: kubeconfig.ErrMalformedSecret{
+				ClusterName: testClusterName,
+				Namespace:   testNamespace,
+				SecretName:  testSecretName,
+			},
+		},
+		{
+			name: "empty data in secret",
+			opts: &kubeconfig.FromClusterOptions{
+				ClusterName: testClusterName,
+				Namespace:   testNamespace,
+			},
+			acc: fake.WithTypedObjects(&coreV1.Secret{
+				TypeMeta: metaV1.TypeMeta{
+					Kind:       "Secret",
+					APIVersion: "v1",
+				},
+				ObjectMeta: metaV1.ObjectMeta{
+					Name:      testSecretName,
+					Namespace: testNamespace,
+				},
+				Data: map[string][]byte{},
+			}),
+			expectedData: nil,
+			err: kubeconfig.ErrMalformedSecret{
+				ClusterName: testClusterName,
+				Namespace:   testNamespace,
+				SecretName:  testSecretName,
+			},
+		},
+		{
+			name: "empty value in data in secret",
+			opts: &kubeconfig.FromClusterOptions{
+				ClusterName: testClusterName,
+				Namespace:   testNamespace,
+			},
+			acc: fake.WithTypedObjects(&coreV1.Secret{
+				TypeMeta: metaV1.TypeMeta{
+					Kind:       "Secret",
+					APIVersion: "v1",
+				},
+				ObjectMeta: metaV1.ObjectMeta{
+					Name:      testSecretName,
+					Namespace: testNamespace,
+				},
+				Data: map[string][]byte{
+					"value": []byte(""),
+				},
+			}),
+			expectedData: nil,
+			err: kubeconfig.ErrMalformedSecret{
+				ClusterName: testClusterName,
+				Namespace:   testNamespace,
+				SecretName:  testSecretName,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			tt.opts.Client = fake.NewClient(tt.acc)
+			kubeconf, err := kubeconfig.FromSecret(tt.opts)()
+			if tt.err != nil {
+				assert.Equal(t, tt.err, err)
+				assert.Nil(t, kubeconf)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tt.expectedData, kubeconf)
+			}
+		})
+	}
+}
+
 func TestFromBundle(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -171,6 +342,7 @@ func TestFromBundle(t *testing.T) {
 		})
 	}
 }
+
 func TestNewKubeConfig(t *testing.T) {
 	tests := []struct {
 		shouldPanic           bool

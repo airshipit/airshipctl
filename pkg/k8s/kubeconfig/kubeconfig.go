@@ -88,6 +88,13 @@ func FromAPIalphaV1(apiObj *v1alpha1.KubeConfig) KubeSourceFunc {
 	}
 }
 
+// FromSecret returns KubeSource type, uses client interface to kubernetes cluster
+func FromSecret(kubeOpts *FromClusterOptions) KubeSourceFunc {
+	return func() ([]byte, error) {
+		return GetKubeconfigFromSecret(kubeOpts)
+	}
+}
+
 // FromFile returns KubeSource type, uses path to kubeconfig on FS as source to construct kubeconfig object
 func FromFile(path string, fs document.FileSystem) KubeSourceFunc {
 	return func() ([]byte, error) {
