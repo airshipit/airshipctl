@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - ../../../../../function/hostgenerator-m3
   - ../../../../../function/hardwareprofile-example
-  - ../../../shared/catalogues/
+  - ../../catalogues
   - host-generation.yaml
 
 transformers:

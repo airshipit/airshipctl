@@ -1,12 +1,9 @@
 resources:
-  - ../../../../composite/infra
-  - ../../../../function/clusterctl
-  - ../../../../function/airshipctl-catalogues
   - ../../../../function/baremetal-operator
+  - ../../../../function/clusterctl
   - ../../../../function/helm-operator
-
-patchesStrategicMerge:
-  - patch_bmo_config.yaml
+  - ../../../../composite/infra
+  - ../catalogues
 
 commonLabels:
   airshipit.org/stage: initinfra

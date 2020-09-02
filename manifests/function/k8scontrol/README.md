@@ -7,6 +7,12 @@ resources.
 
 Optional: a ``versions-airshipctl`` VariableCatalogue may be used to
 override the default Kubernetes version and controlplane disk image.
-A base example for this catalogue can be found in the ``airshipctl-catalogues``
+A base example for this catalogue can be found in the ``airshipctl-base-catalogues``
 function.  If using the catalogue, apply the ``replacements/`` entrypoint
 at the site level, as a Kubernetes transformer.
+
+Optional: a ``networking`` VariableCatalogue may be used to
+override some Kubernetes networking configuration.
+A base example for this catalogue can be found in the ``airshipctl-base-catalogues``
+function.  If using the catalogue, apply the ``replacements/`` entrypoint
+at the site level, as a Kustomize transformer.

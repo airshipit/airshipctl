@@ -1,0 +1,47 @@
+# These rules inject networking info artifacts into the ephemeral function.
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: ephemeral-networking-replacements
+replacements:
+# Substring-replace the ephemeral control plane's info
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: networking
+    fieldref: kubernetes.controlPlaneEndpoint.host
+  target:
+    objref:
+      name: ephemeral-bmc-secret
+      kind: Secret
+    fieldrefs: ["stringData.userData%REPLACEMENT_CP_IP%"]
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: networking
+    fieldref: kubernetes.controlPlaneEndpoint.port
+  target:
+    objref:
+      name: ephemeral-bmc-secret
+      kind: Secret
+    fieldrefs: ["stringData.userData%REPLACEMENT_CP_PORT%"]
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: networking
+    fieldref: kubernetes.apiserverCertSANs
+  target:
+    objref:
+      name: ephemeral-bmc-secret
+      kind: Secret
+    fieldrefs: ["stringData.userData%REPLACEMENT_CERT_SANS%"]
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: networking
+    fieldref: kubernetes.podCidr
+  target:
+    objref:
+      name: ephemeral-bmc-secret
+      kind: Secret
+    fieldrefs: ["stringData.userData%REPLACEMENT_POD_CIDR%"]
