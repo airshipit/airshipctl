@@ -171,12 +171,7 @@ func TestExecutorRun(t *testing.T) {
 				},
 			},
 		},
-		{
-			name:        "Regular Run move",
-			cfgDoc:      executorDoc(t, "move"),
-			bundlePath:  "testdata/executor_move",
-			expectedEvt: []events.Event{wrapError(airerrors.ErrNotImplemented{})},
-		},
+		// TODO add move tests here
 	}
 	for _, test := range testCases {
 		tt := test

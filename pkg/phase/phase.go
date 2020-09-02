@@ -22,7 +22,6 @@ import (
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	clusterctl "opendev.org/airship/airshipctl/pkg/clusterctl/client"
-	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/events"
@@ -31,7 +30,6 @@ import (
 	k8sutils "opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
-	"opendev.org/airship/airshipctl/pkg/util"
 )
 
 // ExecutorRegistry returns map with executor factories
@@ -107,6 +105,28 @@ func (p *Cmd) GetPhase(name string) (*airshipv1.Phase, error) {
 	return phaseConfig, nil
 }
 
+// GetClusterMap returns cluster map object
+func (p *Cmd) GetClusterMap() (*airshipv1.ClusterMap, error) {
+	bundle, err := p.getBundle()
+	if err != nil {
+		return nil, err
+	}
+	clusterMap := &airshipv1.ClusterMap{}
+	selector, err := document.NewSelector().ByObject(clusterMap, airshipv1.Scheme)
+	if err != nil {
+		return nil, err
+	}
+	doc, err := bundle.SelectOne(selector)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = doc.ToAPIObject(clusterMap, airshipv1.Scheme); err != nil {
+		return nil, err
+	}
+	return clusterMap, nil
+}
+
 // GetExecutor referenced in a phase configuration
 func (p *Cmd) GetExecutor(phase *airshipv1.Phase) (ifc.Executor, error) {
 	bundle, err := p.getBundle()
@@ -131,9 +151,14 @@ func (p *Cmd) GetExecutor(phase *airshipv1.Phase) (ifc.Executor, error) {
 	if err != nil {
 		return nil, err
 	}
-	executorDocBundle, err := document.NewBundleByPath(filepath.Join(targetPath, phaseConfig.DocumentEntryPoint))
-	if err != nil {
-		return nil, err
+	var executorDocBundle document.Bundle
+	// if entrypoint is defined use it, if not, just pass nil bundle, executors should be ready for that
+	if phaseConfig.DocumentEntryPoint != "" {
+		bundlePath := filepath.Join(targetPath, phaseConfig.DocumentEntryPoint)
+		executorDocBundle, err = document.NewBundleByPath(bundlePath)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if p.Registry == nil {
 		p.Registry = DefaultExecutorRegistry
@@ -143,25 +168,33 @@ func (p *Cmd) GetExecutor(phase *airshipv1.Phase) (ifc.Executor, error) {
 	if !found {
 		return nil, ErrExecutorNotFound{GVK: refGVK}
 	}
+	meta, err := p.Config.CurrentContextManifestMetadata()
+	if err != nil {
+		return nil, err
+	}
+	cMap, err := p.GetClusterMap()
+	if err != nil {
+		return nil, err
+	}
 
-	kubeConfPath := p.AirshipCTLSettings.Config.KubeConfigPath()
-	homeDir := util.UserHomeDir()
-	workDir := filepath.Join(homeDir, config.AirshipConfigDir)
-	fs := document.NewDocumentFs()
-	source := kubeconfig.FromFile(kubeConfPath, fs)
-	fileOption := kubeconfig.InjectFilePath(kubeConfPath, fs)
-	tempRootOption := kubeconfig.InjectTempRoot(workDir)
-	kubeConfig := kubeconfig.NewKubeConfig(source, fileOption, tempRootOption)
-
-	// TODO add function to decide on how to build kubeconfig instead of hardcoding it here,
-	// when more kubeconfigs sources are available.
-	return executorFactory(ifc.ExecutorConfig{
-		ExecutorBundle:   executorDocBundle,
-		PhaseName:        phase.Name,
-		ExecutorDocument: executorDoc,
-		AirshipSettings:  p.AirshipCTLSettings,
-		KubeConfig:       kubeConfig,
-	})
+	kubeConfig := kubeconfig.NewBuilder().
+		// TODO add kubeconfig flags path here, when kubeconfig flag is not controlled
+		// by config module during config loading.
+		WithBundle(meta.PhaseMeta.Path).
+		WithClusterMap(cMap).
+		WithClusterName(phase.ClusterName).
+		WithTempRoot(filepath.Dir(p.Config.LoadedConfigPath())).
+		Build()
+	return executorFactory(
+		ifc.ExecutorConfig{
+			ExecutorBundle:   executorDocBundle,
+			PhaseName:        phase.Name,
+			ExecutorDocument: executorDoc,
+			AirshipSettings:  p.AirshipCTLSettings,
+			KubeConfig:       kubeConfig,
+			ClusterName:      phase.ClusterName,
+			ClusterMap:       cMap,
+		})
 }
 
 // Exec starts executor goroutine and processes the events

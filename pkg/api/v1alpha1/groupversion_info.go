@@ -48,6 +48,7 @@ func init() {
 		&KubernetesApply{},
 		&ImageConfiguration{},
 		&RemoteDirectConfiguration{},
+		&ClusterMap{},
 	)
 	_ = AddToScheme(Scheme) //nolint:errcheck
 }

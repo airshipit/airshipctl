@@ -5,3 +5,4 @@ resources:
   - capi_init.yaml
   - clusterctl.yaml
   - kubernetes_apply.yaml
+  - cluster_map.yaml

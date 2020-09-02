@@ -15,22 +15,24 @@
 package v1alpha1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // +kubebuilder:object:root=true
 
-// Phase object to control deployment steps
-type Phase struct {
+// ClusterMap represents cluster defined for this manifest
+type ClusterMap struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Config            PhaseConfig `json:"config,omitempty"`
+	// Keys in this map MUST correspond to context names in kubeconfigs provided
+	Map map[string]*Cluster
 }
 
-// PhaseConfig represents configuration for a particular phase. It contins a reference to
-// phase runner object which should contain runner configuration
-type PhaseConfig struct {
-	ExecutorRef        *corev1.ObjectReference `json:"executorRef"`
-	DocumentEntryPoint string                  `json:"documentEntryPoint"`
+// Cluster uniquely identifies a cluster and its parent cluster
+type Cluster struct {
+	// Parent is a key in ClusterMap.Map that identifies the name of the parent(management) cluster
+	Parent string `json:"parent,omitempty"`
+	// DynamicKubeConfig kubeconfig allows to get kubeconfig from parent cluster, instead
+	// expecting it to be in document bundle. Parent kubeconfig will be used to get kubeconfig
+	DynamicKubeConfig bool `json:"dynamicKubeConf,omitempty"`
 }
