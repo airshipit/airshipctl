@@ -18,6 +18,8 @@ package config
 
 import (
 	"encoding/base64"
+
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
 // NewConfig returns a newly initialized Config object
@@ -53,6 +55,28 @@ func NewConfig() *Config {
 				TargetPath:            "/tmp/" + AirshipDefaultManifest,
 				PrimaryRepositoryName: DefaultTestPrimaryRepo,
 				SubPath:               AirshipDefaultManifestRepo + "/manifests/site",
+			},
+		},
+	}
+}
+
+// NewKubeConfig returns a newly initialized clientcmdapi.Config object, will be removed later
+func NewKubeConfig() *clientcmdapi.Config {
+	return &clientcmdapi.Config{
+		Clusters: map[string]*clientcmdapi.Cluster{
+			AirshipDefaultContext: {
+				Server: "https://172.17.0.1:6443",
+			},
+		},
+		AuthInfos: map[string]*clientcmdapi.AuthInfo{
+			"admin": {
+				Username: "airship-admin",
+			},
+		},
+		Contexts: map[string]*clientcmdapi.Context{
+			AirshipDefaultContext: {
+				Cluster:  AirshipDefaultContext,
+				AuthInfo: "admin",
 			},
 		},
 	}
