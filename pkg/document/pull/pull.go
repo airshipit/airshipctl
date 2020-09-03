@@ -15,34 +15,35 @@
 package pull
 
 import (
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document/repo"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 // Settings is a reference to environment.AirshipCTLSettings
 // AirshipCTLSettings is a container for all of the settings needed by airshipctl
 type Settings struct {
-	*environment.AirshipCTLSettings
+	*config.Config
 }
 
 // Pull clones repositories
-func (s *Settings) Pull() error {
-	if err := s.Config.EnsureComplete(); err != nil {
-		return err
-	}
-	err := s.cloneRepositories()
+func Pull(cfgFactory config.Factory) error {
+	cfg, err := cfgFactory()
 	if err != nil {
 		return err
 	}
 
+	settings := &Settings{cfg}
+	if err = settings.cloneRepositories(); err != nil {
+		return err
+	}
 	return nil
 }
 
 func (s *Settings) cloneRepositories() error {
 	// Clone main repository
-	currentManifest, err := s.Config.CurrentContextManifest()
-	log.Debugf("Reading current context manifest information from %s", s.AirshipConfigPath)
+	currentManifest, err := s.CurrentContextManifest()
+	log.Debugf("Reading current context manifest information from %s", s.LoadedConfigPath())
 	if err != nil {
 		return err
 	}

@@ -17,6 +17,7 @@ package document
 import (
 	"github.com/spf13/cobra"
 
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
@@ -27,7 +28,9 @@ func NewDocumentCommand(rootSettings *environment.AirshipCTLSettings) *cobra.Com
 		Short: "Manage deployment documents",
 	}
 
-	documentRootCmd.AddCommand(NewPullCommand(rootSettings))
+	cfgFactory := config.CreateFactory(&rootSettings.AirshipConfigPath, &rootSettings.KubeConfigPath)
+
+	documentRootCmd.AddCommand(NewPullCommand(cfgFactory))
 	documentRootCmd.AddCommand(NewPluginCommand())
 
 	return documentRootCmd

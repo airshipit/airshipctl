@@ -12,10 +12,11 @@
  limitations under the License.
 */
 
-package pull
+package pull_test
 
 import (
 	"io/ioutil"
+
 	"path"
 	"strings"
 	"testing"
@@ -25,17 +26,36 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/document/pull"
 	"opendev.org/airship/airshipctl/pkg/document/repo"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/util"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
-func getDummyPullSettings() *Settings {
-	return &Settings{
-		AirshipCTLSettings: &environment.AirshipCTLSettings{
-			Config: testutil.DummyConfig(),
-		},
+func mockConfigFactory(t *testing.T, testGitDir string, chkOutOpts *config.RepoCheckout, tmpDir string) config.Factory {
+	return func() (*config.Config, error) {
+		cfg := testutil.DummyConfig()
+		currentManifest, err := cfg.CurrentContextManifest()
+		require.NoError(t, err)
+		currentManifest.Repositories = map[string]*config.Repository{
+			currentManifest.PrimaryRepositoryName: {
+				URLString:       testGitDir,
+				CheckoutOptions: chkOutOpts,
+				Auth: &config.RepoAuth{
+					Type: "http-basic",
+				},
+			},
+		}
+
+		currentManifest.TargetPath = tmpDir
+
+		_, err = repo.NewRepository(
+			".",
+			currentManifest.Repositories[currentManifest.PrimaryRepositoryName],
+		)
+		require.NoError(t, err)
+
+		return cfg, nil
 	}
 }
 
@@ -79,9 +99,6 @@ func TestPull(t *testing.T) {
 			error: config.ErrMutuallyExclusiveCheckout{},
 		},
 	}
-	dummyPullSettings := getDummyPullSettings()
-	currentManifest, err := dummyPullSettings.Config.CurrentContextManifest()
-	require.NoError(err)
 
 	testGitDir := fixtures.Basic().One().DotGit().Root()
 	dirNameFromURL := util.GitDirNameFromURL(testGitDir)
@@ -93,25 +110,13 @@ func TestPull(t *testing.T) {
 		expectedErr := tt.error
 		chkOutOpts := tt.checkoutOpts
 		t.Run(tt.name, func(t *testing.T) {
-			currentManifest.Repositories = map[string]*config.Repository{
-				currentManifest.PrimaryRepositoryName: {
-					URLString:       testGitDir,
-					CheckoutOptions: chkOutOpts,
-					Auth: &config.RepoAuth{
-						Type: "http-basic",
-					},
-				},
-			}
-
-			currentManifest.TargetPath = tmpDir
-
-			_, err = repo.NewRepository(
-				".",
-				currentManifest.Repositories[currentManifest.PrimaryRepositoryName],
-			)
+			cfgFactory := mockConfigFactory(t, testGitDir, tt.checkoutOpts, tmpDir)
+			cfg, err := cfgFactory()
+			require.NoError(err)
+			currentManifest, err := cfg.CurrentContextManifest()
 			require.NoError(err)
 
-			err = dummyPullSettings.Pull()
+			err = pull.Pull(cfgFactory)
 			if expectedErr != nil {
 				assert.NotNil(err)
 				assert.Equal(expectedErr, err)
