@@ -15,9 +15,10 @@
 set -xe
 
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
+export WAIT_TIMEOUT=${WAIT_TIMEOUT:-"2000s"}
 
 echo "Deploy metal3.io components to ephemeral node"
-airshipctl phase apply initinfra --wait-timeout 1000s --debug
+airshipctl phase apply initinfra --wait-timeout $WAIT_TIMEOUT --debug
 
 echo "Getting metal3 pods as debug information"
 kubectl --kubeconfig $KUBECONFIG --namespace metal3 get pods
