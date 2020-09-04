@@ -29,9 +29,13 @@ type Context struct {
 	// NameInKubeconf is the Context name in kubeconf
 	NameInKubeconf string `json:"contextKubeconf"`
 
-	// Manifest is the default manifest to be use with this context
+	// Manifest is the default manifest to be used with this context
 	// +optional
 	Manifest string `json:"manifest,omitempty"`
+
+	// EncryptionConfig is the default encryption config to be used with this context
+	// +optional
+	EncryptionConfig string `json:"encryptionConfig,omitempty"`
 
 	// KubeConfig Context Object
 	context *api.Context

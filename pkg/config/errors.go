@@ -143,6 +143,16 @@ func (e ErrManagementConfigurationNotFound) Error() string {
 	return fmt.Sprintf("Unknown management configuration '%s'.", e.Name)
 }
 
+// ErrEncryptionConfigurationNotFound describes a situation in which a user has attempted to reference an encryption
+// configuration that cannot be referenced.
+type ErrEncryptionConfigurationNotFound struct {
+	Name string
+}
+
+func (e ErrEncryptionConfigurationNotFound) Error() string {
+	return fmt.Sprintf("Unknown encryption configuration '%s'.", e.Name)
+}
+
 // ErrMissingCurrentContext returned in case --current used without setting current-context
 type ErrMissingCurrentContext struct {
 }
@@ -246,6 +256,42 @@ type ErrMissingManifestName struct {
 
 func (e ErrMissingManifestName) Error() string {
 	return "missing manifest name"
+}
+
+// ErrMissingEncryptionConfigName is returned when encryption config name is empty
+type ErrMissingEncryptionConfigName struct {
+}
+
+func (e ErrMissingEncryptionConfigName) Error() string {
+	return "missing encryption config name"
+}
+
+// ErrMutuallyExclusiveEncryptionConfigType is returned when encryption config specifies both
+// local key files and secret information for keys stored as secrets in the apiserver
+type ErrMutuallyExclusiveEncryptionConfigType struct {
+}
+
+func (e ErrMutuallyExclusiveEncryptionConfigType) Error() string {
+	return "Specify mutually exclusive encryption config sources, use either: " +
+		"--decryption-key-path/--decryption-key-path or --secret-name/--secret-namespace."
+}
+
+// ErrInvalidEncryptionKeyPath is returned when encryption config specifies only one of
+// encryption and decryption keys
+type ErrInvalidEncryptionKeyPath struct {
+}
+
+func (e ErrInvalidEncryptionKeyPath) Error() string {
+	return "Specify both encryption and decryption keys when setting encryption config"
+}
+
+// ErrInvalidEncryptionKey is returned when encryption config specifies only one of
+// encryption keys secret name and namespace
+type ErrInvalidEncryptionKey struct {
+}
+
+func (e ErrInvalidEncryptionKey) Error() string {
+	return "Specify both secret name and namespace when setting encryption config"
 }
 
 // ErrMissingFlag is returned when flag is not provided

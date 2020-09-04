@@ -11,8 +11,13 @@ clusters:
 contexts:
   dummy_context:
     contextKubeconf: dummy_cluster_ephemeral
+    encryptionConfig: dummy_encryption_config
     manifest: dummy_manifest
 currentContext: dummy_context
+encryptionConfigs:
+  dummy_encryption_config:
+    decryptionKeyPath: /tmp/decryption.pub
+    encryptionKeyPath: /tmp/encryption.key
 kind: Config
 managementConfiguration:
   dummy_management_config:

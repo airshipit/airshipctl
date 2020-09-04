@@ -140,3 +140,59 @@ func TestRunSetManifest(t *testing.T) {
 		assert.Equal(t, "/tmp/default", conf.Manifests["dummy_manifest"].TargetPath)
 	})
 }
+
+func TestRunSetEncryptionConfigLocalFile(t *testing.T) {
+	t.Run("testAddEncryptionConfig", func(t *testing.T) {
+		conf := testutil.DummyConfig()
+		dummyEncryptionConfig := testutil.DummyEncryptionConfigOptions()
+		dummyEncryptionConfig.Name = "test_encryption_config"
+
+		modified, err := config.RunSetEncryptionConfig(dummyEncryptionConfig, conf, false)
+		assert.Error(t, err)
+		assert.False(t, modified)
+	})
+
+	t.Run("testModifyEncryptionConfig", func(t *testing.T) {
+		conf := testutil.DummyConfig()
+		dummyEncryptionConfigOptions := &config.EncryptionConfigOptions{
+			Name:              "testModifyEncryptionConfig",
+			EncryptionKeyPath: "testdata/ca.crt",
+			DecryptionKeyPath: "testdata/test-key.pem",
+		}
+
+		modified, err := config.RunSetEncryptionConfig(dummyEncryptionConfigOptions, conf, false)
+		assert.NoError(t, err)
+		assert.True(t, modified)
+		assert.Equal(t, "testdata/ca.crt", conf.EncryptionConfigs["testModifyEncryptionConfig"].EncryptionKeyPath)
+		assert.Equal(t, "testdata/test-key.pem", conf.EncryptionConfigs["testModifyEncryptionConfig"].DecryptionKeyPath)
+	})
+}
+
+func TestRunSetEncryptionConfigAPIBackend(t *testing.T) {
+	t.Run("testAddEncryptionConfig", func(t *testing.T) {
+		conf := testutil.DummyConfig()
+		dummyEncryptionConfig := testutil.DummyEncryptionConfigOptions()
+		dummyEncryptionConfig.Name = "test_encryption_config"
+
+		modified, err := config.RunSetEncryptionConfig(dummyEncryptionConfig, conf, false)
+		assert.Error(t, err)
+		assert.False(t, modified)
+	})
+
+	t.Run("testModifyEncryptionConfig", func(t *testing.T) {
+		conf := testutil.DummyConfig()
+		dummyEncryptionConfigOptions := &config.EncryptionConfigOptions{
+			Name:               "testModifyEncryptionConfig",
+			KeySecretName:      "dummySecret",
+			KeySecretNamespace: "dummyNamespace",
+			EncryptionKeyPath:  "",
+			DecryptionKeyPath:  "",
+		}
+
+		modified, err := config.RunSetEncryptionConfig(dummyEncryptionConfigOptions, conf, false)
+		assert.NoError(t, err)
+		assert.True(t, modified)
+		assert.Equal(t, "dummySecret", conf.EncryptionConfigs["testModifyEncryptionConfig"].KeySecretName)
+		assert.Equal(t, "dummyNamespace", conf.EncryptionConfigs["testModifyEncryptionConfig"].KeySecretNamespace)
+	})
+}

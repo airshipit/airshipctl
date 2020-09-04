@@ -1,4 +1,5 @@
 contextKubeconf: dummy_cluster_ephemeral
+encryptionConfig: dummy_encryption_config
 manifest: dummy_manifest
 
 LocationOfOrigin: ""

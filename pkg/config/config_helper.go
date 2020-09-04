@@ -197,3 +197,34 @@ func RunSetManifest(o *ManifestOptions, airconfig *Config, writeToStorage bool) 
 
 	return modified, nil
 }
+
+// RunSetEncryptionConfig validates the given command line options
+// and invokes AddEncryptionConfig/ModifyEncryptionConfig
+func RunSetEncryptionConfig(o *EncryptionConfigOptions, airconfig *Config, writeToStorage bool) (bool, error) {
+	modified := false
+	err := o.Validate()
+	if err != nil {
+		return modified, err
+	}
+
+	encryptionConfig, exists := airconfig.EncryptionConfigs[o.Name]
+	if !exists {
+		// encryption config didn't exist, create it
+		// ignoring the returned added encryption config
+		airconfig.AddEncryptionConfig(o)
+		modified = true
+	} else {
+		// encryption config exists, lets update
+		airconfig.ModifyEncryptionConfig(encryptionConfig, o)
+		modified = true
+	}
+	// Update configuration file just in time persistence approach
+	if writeToStorage {
+		if err := airconfig.PersistConfig(false); err != nil {
+			// Error that it didnt persist the changes
+			return modified, ErrConfigFailed{}
+		}
+	}
+
+	return modified, nil
+}
