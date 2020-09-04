@@ -180,6 +180,8 @@
         - ./tools/deployment/01_install_kubectl.sh
         - ./tools/deployment/provider_common/01_install_kind.sh
         - ./tools/deployment/provider_common/02_install_jq.sh
+        - ./tools/deployment/provider_common/03_install_pip.sh
+        - ./tools/deployment/provider_common/04_install_yq.sh
         - CLUSTER=ephemeral-cluster KIND_CONFIG=./tools/deployment/templates/kind-cluster-with-extramounts ./tools/document/start_kind.sh
         - AIRSHIP_CONFIG_METADATA_PATH=manifests/site/docker-test-site/metadata.yaml SITE=docker-test-site EXTERNAL_KUBECONFIG="true" ./tools/deployment/22_test_configs.sh
         - PROVIDER=default SITE=docker-test-site ./tools/deployment/26_deploy_capi_ephemeral_node.sh
@@ -187,6 +189,8 @@
         - KUBECONFIG=/tmp/target-cluster.kubeconfig ./tools/deployment/provider_common/32_cluster_init_target_node.sh
         - ./tools/deployment/provider_common/33_cluster_move_target_node.sh
         - WORKERS_COUNT=2 KUBECONFIG=/tmp/target-cluster.kubeconfig SITE=docker-test-site ./tools/deployment/provider_common/34_deploy_worker_node.sh
+        - KUBECONFIG=/tmp/target-cluster.kubeconfig ./tools/deployment/provider_common/41_check_certificate_expiration.sh
+        - KUBECONFIG=/tmp/target-cluster.kubeconfig ./tools/deployment/provider_common/42_rotate_sa_token.sh
     voting: false
 - job:
     name: airship-airshipctl-publish-image
