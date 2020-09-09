@@ -18,8 +18,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/events"
-	"opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/pkg/phase"
 )
 
@@ -37,8 +35,9 @@ airshipctl phase run ephemeral-control-plane
 
 // NewRunCommand creates a command to run specific phase
 func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
-	p := &phase.Cmd{
-		Processor: events.NewDefaultProcessor(utils.Streams()),
+	p := &phase.RunCommand{
+		Options: phase.RunFlags{},
+		Factory: cfgFactory,
 	}
 
 	runCmd := &cobra.Command{
@@ -48,17 +47,13 @@ func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
 		Args:    cobra.ExactArgs(1),
 		Example: runExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := cfgFactory()
-			if err != nil {
-				return err
-			}
-			p.Config = cfg
-			return p.Exec(args[0])
+			p.Options.PhaseID.Name = args[0]
+			return p.RunE()
 		},
 	}
 	flags := runCmd.Flags()
 	flags.BoolVar(
-		&p.DryRun,
+		&p.Options.DryRun,
 		"dry-run",
 		false,
 		"simulate phase execution")

@@ -15,13 +15,10 @@
 package phase
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/phase"
-	"opendev.org/airship/airshipctl/pkg/util"
 )
 
 const (
@@ -34,30 +31,15 @@ are executed in parallel.
 
 // NewPlanCommand creates a command which prints available phases
 func NewPlanCommand(cfgFactory config.Factory) *cobra.Command {
+	p := &phase.PlanCommand{Factory: cfgFactory}
+
 	planCmd := &cobra.Command{
 		Use:   "plan",
 		Short: "List phases",
 		Long:  cmdLong[1:],
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := cfgFactory()
-			if err != nil {
-				return err
-			}
-			p := &phase.Cmd{Config: cfg}
-			phases, err := p.Plan()
-			if err != nil {
-				return err
-			}
-			tw := util.NewTabWriter(cmd.OutOrStdout())
-			defer tw.Flush()
-			fmt.Fprintf(tw, "GROUP\tPHASE\n")
-			for group, phaseList := range phases {
-				fmt.Fprintf(tw, "%s\t\n", group)
-				for _, phase := range phaseList {
-					fmt.Fprintf(tw, "\t%s\n", phase)
-				}
-			}
-			return nil
+			p.Writer = cmd.OutOrStdout()
+			return p.RunE()
 		},
 	}
 	return planCmd
