@@ -15,16 +15,22 @@
 - hosts: primary
   vars:
     logs_dir: "/tmp/logs"
-  roles:
-    - gather-system-logs
-    - airship-gather-apache-logs
-    - airship-gather-libvirt-logs
-    - airship-gather-runtime-logs
-    - airship-airshipctl-gather-configs
   environment:
     LIBVIRT_DEFAULT_URI: qemu:///system
 
   tasks:
-    - name: save logs for ephemeral cluster
+    - name: set default roles
+      set_fact:
+        default_log_roles:
+          - gather-system-logs
+          - airship-gather-apache-logs
+          - airship-gather-libvirt-logs
+          - airship-gather-runtime-logs
+          - airship-airshipctl-gather-configs
+          - airship-gather-pod-logs
+    - name: run roles
       include_role:
-        name: airship-gather-pod-logs
+        name: "{{ role_name }}"
+      with_items: "{{ log_roles | default(default_log_roles) }}"
+      loop_control:
+        loop_var: role_name
