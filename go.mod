@@ -7,12 +7,10 @@ require (
 	github.com/Masterminds/goutils v1.1.0 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/sprig v2.22.0+incompatible
-	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1 // indirect
 	github.com/cheggaaa/pb/v3 v3.0.4
 	github.com/containerd/containerd v1.4.1 // indirect
 	github.com/docker/docker v1.4.2-0.20200203170920-46ec8731fbce
-	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
 	github.com/elazarl/goproxy v0.0.0-20190421051319-9d40249d3c2f // indirect
 	github.com/elazarl/goproxy/ext v0.0.0-20190421051319-9d40249d3c2f // indirect
@@ -25,14 +23,13 @@ require (
 	github.com/gopherjs/gopherjs v0.0.0-20191106031601-ce3c9ade29de // indirect
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc // indirect
-	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
 	github.com/huandu/xstrings v1.3.1 // indirect
-	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
-	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.6.1
+	go.mozilla.org/sops/v3 v3.6.0
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	k8s.io/api v0.17.9
 	k8s.io/apiextensions-apiserver v0.17.9
 	k8s.io/apimachinery v0.17.9
