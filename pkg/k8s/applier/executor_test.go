@@ -27,6 +27,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/k8s/applier"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/k8s/utils"
+	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	"opendev.org/airship/airshipctl/testutil/fs"
 )
@@ -84,15 +85,15 @@ func TestNewExecutor(t *testing.T) {
 		name        string
 		cfgDoc      string
 		expectedErr string
-		airConfig   *config.Config
+		helper      ifc.Helper
 		kubeconf    kubeconfig.Interface
 		bundleFunc  func(t *testing.T) document.Bundle
 	}{
 		{
-			name:      "valid executor",
-			cfgDoc:    ValidExecutorDoc,
-			kubeconf:  testKubeconfig(testValidKubeconfig),
-			airConfig: makeDefaultConfig(),
+			name:     "valid executor",
+			cfgDoc:   ValidExecutorDoc,
+			kubeconf: testKubeconfig(testValidKubeconfig),
+			helper:   makeDefaultHelper(t),
 			bundleFunc: func(t *testing.T) document.Bundle {
 				return newBundle("testdata/source_bundle", t)
 			},
@@ -107,7 +108,7 @@ metadata:
   labels:
     cli-utils.sigs.k8s.io/inventory-id: "some id"`,
 			expectedErr: "wrong config document",
-			airConfig:   makeDefaultConfig(),
+			helper:      makeDefaultHelper(t),
 			bundleFunc: func(t *testing.T) document.Bundle {
 				return newBundle("testdata/source_bundle", t)
 			},
@@ -126,7 +127,7 @@ metadata:
 					ExecutorDocument: doc,
 					ExecutorBundle:   tt.bundleFunc(t),
 					Kubeconfig:       tt.kubeconf,
-					AirshipConfig:    tt.airConfig,
+					Helper:           tt.helper,
 				})
 			if tt.expectedErr != "" {
 				require.Error(t, err)
@@ -151,12 +152,12 @@ func TestExecutorRun(t *testing.T) {
 		kubeconf   kubeconfig.Interface
 		execDoc    document.Document
 		bundleFunc func(t *testing.T) document.Bundle
-		airConfig  *config.Config
+		helper     ifc.Helper
 	}{
 		{
 			name:        "cant read kubeconfig error",
 			containsErr: "no such file or directory",
-			airConfig:   makeDefaultConfig(),
+			helper:      makeDefaultHelper(t),
 			bundleFunc: func(t *testing.T) document.Bundle {
 				return newBundle("testdata/source_bundle", t)
 			},
@@ -168,7 +169,7 @@ func TestExecutorRun(t *testing.T) {
 			execDoc:     toKubernetesApply(t, ValidExecutorDoc),
 			containsErr: "Cannot apply nil bundle",
 			kubeconf:    testKubeconfig(testValidKubeconfig),
-			airConfig:   makeDefaultConfig(),
+			helper:      makeDefaultHelper(t),
 			bundleFunc: func(t *testing.T) document.Bundle {
 				return nil
 			},
@@ -180,7 +181,7 @@ func TestExecutorRun(t *testing.T) {
 			exec, err := applier.NewExecutor(
 				applier.ExecutorOptions{
 					ExecutorDocument: tt.execDoc,
-					AirshipConfig:    tt.airConfig,
+					Helper:           tt.helper,
 					ExecutorBundle:   tt.bundleFunc(t),
 					Kubeconfig:       tt.kubeconf,
 				})
@@ -219,7 +220,8 @@ func TestRender(t *testing.T) {
 	assert.Contains(t, result, "ReplicationController")
 }
 
-func makeDefaultConfig() *config.Config {
+func makeDefaultHelper(t *testing.T) ifc.Helper {
+	t.Helper()
 	conf := &config.Config{
 		CurrentContext: "default",
 		Contexts: map[string]*config.Context{
@@ -229,12 +231,15 @@ func makeDefaultConfig() *config.Config {
 		},
 		Manifests: map[string]*config.Manifest{
 			"default-manifest": {
-				MetadataPath: "metadata-path",
+				MetadataPath: "metadata.yaml",
 				TargetPath:   "testdata",
 			},
 		},
 	}
-	return conf
+	helper, err := phase.NewHelper(conf)
+	require.NoError(t, err)
+	require.NotNil(t, helper)
+	return helper
 }
 
 // toKubernetesApply converts string to document object
