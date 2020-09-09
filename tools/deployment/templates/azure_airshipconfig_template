@@ -1,0 +1,34 @@
+apiVersion: airshipit.org/v1alpha1
+clusters:
+  kind-capi-azure:
+    clusterType:
+      target:
+        bootstrapInfo: default
+        clusterKubeconf: kind-capi-azure_target
+        managementConfiguration: default
+contexts:
+  kind-capi-azure:
+    contextKubeconf: kind-capi-azure_target
+    manifest: azure_manifest
+currentContext: kind-capi-azure
+kind: Config
+managementConfiguration:
+  default:
+    systemActionRetries: 30
+    systemRebootDelay: 30
+    type: azure
+manifests:
+  azure_manifest:
+    primaryRepositoryName: primary
+    repositories:
+      primary:
+        checkout:
+          branch: ${AIRSHIP_CONFIG_PRIMARY_REPO_BRANCH}
+          commitHash: ""
+          force: false
+          tag: ""
+        url: https://review.opendev.org/airship/airshipctl
+    subPath: manifests/site/az-test-site
+    targetPath: /home/zuul/src/opendev.org/airship/airshipctl
+users:
+  kind-capi-azure: {}

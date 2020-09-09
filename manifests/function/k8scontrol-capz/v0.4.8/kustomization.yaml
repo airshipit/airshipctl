@@ -1,0 +1,4 @@
+resources:
+  - cluster.yaml
+  - controlplane.yaml
+  - workers.yaml

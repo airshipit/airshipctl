@@ -126,6 +126,26 @@
     voting: false
 
 - job:
+    name: airship-airshipctl-gate-script-runner-azuretest
+    attempts: 1
+    timeout: 3600
+    pre-run: playbooks/airship-airshipctl-deploy-docker.yaml
+    post-run: playbooks/airship-collect-azure-logs.yaml
+    run: playbooks/airshipctl-gate-runner.yaml
+    nodeset: airship-airshipctl-single-node
+    vars:
+      site_name: azure-test-site
+      gate_scripts:
+        - ./tools/deployment/01_install_kubectl.sh
+        - ./tools/deployment/azure/11_build_kind_cluster.sh
+        - ./tools/deployment/21_systemwide_executable.sh
+        - ./tools/deployment/azure/31_create_configs.sh
+        - ./tools/deployment/azure/41_initialize_management_cluster.sh
+      serve_dir: /srv/iso
+      serve_port: 8099
+    voting: false
+
+- job:
     name: airship-airshipctl-publish-image
     parent: airship-airshipctl-build-image
     post-run: playbooks/airship-airshipctl-publish-images.yaml

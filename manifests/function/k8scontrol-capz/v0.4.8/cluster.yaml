@@ -1,0 +1,31 @@
+apiVersion: cluster.x-k8s.io/v1alpha3
+kind: Cluster
+metadata:
+  name: az-workload-cluster
+  namespace: default
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 192.168.0.0/16
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+    kind: KubeadmControlPlane
+    name: az-workload-cluster-control-plane
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+    kind: AzureCluster
+    name: az-workload-cluster
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: AzureCluster
+metadata:
+  name: az-workload-cluster
+  namespace: default
+spec:
+  location: centralus
+  networkSpec:
+    vnet:
+      name: azure-workload-vnet
+  resourceGroup: azure-workload
+  subscriptionID: 72e8991f-016d-4b25-8dad-819ab8cda24d
