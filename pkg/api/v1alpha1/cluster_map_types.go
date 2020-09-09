@@ -25,7 +25,7 @@ type ClusterMap struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 	// Keys in this map MUST correspond to context names in kubeconfigs provided
-	Map map[string]*Cluster
+	Map map[string]*Cluster `json:"map,omitempty"`
 }
 
 // Cluster uniquely identifies a cluster and its parent cluster

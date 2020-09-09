@@ -190,7 +190,7 @@ func TestExecutorRun(t *testing.T) {
 				})
 			require.NoError(t, err)
 			ch := make(chan events.Event)
-			go executor.Run(ch, ifc.RunOptions{Debug: true, DryRun: true})
+			go executor.Run(ch, ifc.RunOptions{DryRun: true})
 			var actualEvt []events.Event
 			for evt := range ch {
 				actualEvt = append(actualEvt, evt)

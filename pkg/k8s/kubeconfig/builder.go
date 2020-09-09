@@ -17,11 +17,10 @@ package kubeconfig
 import (
 	"path/filepath"
 
-	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/errors"
-	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/util"
 )
 
@@ -41,7 +40,7 @@ type Builder struct {
 	clusterName string
 	root        string
 
-	clusterMap *v1alpha1.ClusterMap
+	clusterMap clustermap.ClusterMap
 }
 
 // WithPath allows to set path to prexisting kubeconfig
@@ -57,7 +56,7 @@ func (b *Builder) WithBundle(bundlePath string) *Builder {
 }
 
 // WithClusterMap allows to set a parent cluster, that can be used to extract kubeconfig for target cluster
-func (b *Builder) WithClusterMap(cMap *v1alpha1.ClusterMap) *Builder {
+func (b *Builder) WithClusterMap(cMap clustermap.ClusterMap) *Builder {
 	b.clusterMap = cMap
 	return b
 }
@@ -101,16 +100,5 @@ func (b *Builder) fromParent() bool {
 	if b.clusterMap == nil {
 		return false
 	}
-	currentCluster, exists := b.clusterMap.Map[b.clusterName]
-	if !exists {
-		log.Debugf("cluster %s is not defined in cluster map %v", b.clusterName, b.clusterMap)
-		return false
-	}
-	// Check if DynamicKubeConfig is enabled, if so that means, we should get kubeconfig
-	// for this cluster from its parent
-	if currentCluster.Parent == "" || !currentCluster.DynamicKubeConfig {
-		log.Debugf("dynamic kubeconfig or parent cluster is not set for cluster %s", b.clusterName)
-		return false
-	}
-	return true
+	return b.clusterMap.DynamicKubeConfig(b.clusterName)
 }

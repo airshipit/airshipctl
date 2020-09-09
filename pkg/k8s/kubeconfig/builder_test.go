@@ -23,6 +23,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/util"
@@ -66,7 +67,7 @@ func TestBuilder(t *testing.T) {
 			},
 		}
 		builder := kubeconfig.NewBuilder().
-			WithClusterMap(clusterMap).
+			WithClusterMap(clustermap.NewClusterMap(clusterMap)).
 			WithClusterName(childCluster)
 		kube := builder.Build()
 		// This should not be implemented yet, and we need to check that we are getting there
@@ -81,7 +82,7 @@ func TestBuilder(t *testing.T) {
 	t.Run("No current cluster, fall to default", func(t *testing.T) {
 		clusterMap := &v1alpha1.ClusterMap{}
 		builder := kubeconfig.NewBuilder().
-			WithClusterMap(clusterMap).
+			WithClusterMap(clustermap.NewClusterMap(clusterMap)).
 			WithClusterName("some-cluster")
 		kube := builder.Build()
 		// We should get a default value for cluster since we don't have some-cluster set
@@ -92,7 +93,7 @@ func TestBuilder(t *testing.T) {
 		assert.Equal(t, path, actualPath)
 	})
 
-	t.Run("No parent cluster is defined, fall to default", func(t *testing.T) {
+	t.Run("Dynamic, but no parent", func(t *testing.T) {
 		childCluster := "child"
 		clusterMap := &v1alpha1.ClusterMap{
 			Map: map[string]*v1alpha1.Cluster{
@@ -102,15 +103,15 @@ func TestBuilder(t *testing.T) {
 			},
 		}
 		builder := kubeconfig.NewBuilder().
-			WithClusterMap(clusterMap).
+			WithClusterMap(clustermap.NewClusterMap(clusterMap)).
 			WithClusterName(childCluster)
 		kube := builder.Build()
 		// We should get a default value for cluster, as we can't find parent cluster
-		actualPath, cleanup, err := kube.GetFile()
-		defer cleanup()
-		require.NoError(t, err)
-		path := filepath.Join(util.UserHomeDir(), config.AirshipConfigDir, kubeconfig.KubeconfigDefaultFileName)
-		assert.Equal(t, path, actualPath)
+		filePath, cleanup, err := kube.GetFile()
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "not implemented")
+		assert.Equal(t, "", filePath)
+		require.Nil(t, cleanup)
 	})
 
 	t.Run("Default source", func(t *testing.T) {
@@ -119,8 +120,8 @@ func TestBuilder(t *testing.T) {
 		// When ClusterMap is specified, but it doesn't have cluster-name defined, and no
 		// other sources provided,
 		actualPath, cleanup, err := kube.GetFile()
-		defer cleanup()
 		require.NoError(t, err)
+		defer cleanup()
 		path := filepath.Join(util.UserHomeDir(), config.AirshipConfigDir, kubeconfig.KubeconfigDefaultFileName)
 		assert.Equal(t, path, actualPath)
 	})

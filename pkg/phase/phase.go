@@ -21,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	clusterctl "opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
@@ -106,7 +107,7 @@ func (p *Cmd) GetPhase(name string) (*airshipv1.Phase, error) {
 }
 
 // GetClusterMap returns cluster map object
-func (p *Cmd) GetClusterMap() (*airshipv1.ClusterMap, error) {
+func (p *Cmd) GetClusterMap() (clustermap.ClusterMap, error) {
 	bundle, err := p.getBundle()
 	if err != nil {
 		return nil, err
@@ -124,7 +125,7 @@ func (p *Cmd) GetClusterMap() (*airshipv1.ClusterMap, error) {
 	if err = doc.ToAPIObject(clusterMap, airshipv1.Scheme); err != nil {
 		return nil, err
 	}
-	return clusterMap, nil
+	return clustermap.NewClusterMap(clusterMap), nil
 }
 
 // GetExecutor referenced in a phase configuration

@@ -38,6 +38,8 @@ type Builder struct {
 	OutputMetadataFileName string `json:"outputMetadataFileName,omitempty"`
 }
 
+// +kubebuilder:object:root=true
+
 // ImageConfiguration structure is inherited from apimachinery TypeMeta and ObjectMeta and is a top level
 // configuration structure for building image
 type ImageConfiguration struct {

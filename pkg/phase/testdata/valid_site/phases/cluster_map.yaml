@@ -2,7 +2,7 @@ apiVersion: airshipit.org/v1alpha1
 kind: ClusterMap
 metadata:
   name: clusterctl-v1
-plan:
+map:
   target:
     parent: ephemeral
     dynamicKubeConf: false

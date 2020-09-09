@@ -18,6 +18,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// +kubebuilder:object:root=true
+
 // RemoteDirectConfiguration structure is inherited from apimachinery TypeMeta and ObjectMeta structures
 // and defines parameters used to bootstrap the ephemeral node during the remote direct
 type RemoteDirectConfiguration struct {
