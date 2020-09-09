@@ -64,7 +64,7 @@ func TestHelperPhase(t *testing.T) {
 						APIVersion: "airshipit.org/v1alpha1",
 						Name:       "clusterctl-v1",
 					},
-					DocumentEntryPoint: "manifests/site/test-site/auth",
+					DocumentEntryPoint: "valid_site/phases",
 				},
 			},
 		},
