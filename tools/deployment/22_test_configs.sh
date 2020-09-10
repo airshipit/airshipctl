@@ -50,9 +50,3 @@ echo "Generate ~/.airship/config and ~/.airship/kubeconfig"
 envsubst <"${AIRSHIPCTL_WS}/tools/deployment/templates/airshipconfig_template" > ~/.airship/config
 envsubst <"${AIRSHIPCTL_WS}/tools/deployment/templates/kubeconfig_template" > ~/.airship/kubeconfig
 
-if ! airshipctl config get-cluster | grep -q 'dummycluster_ephemeral' ; then
-  echo "Unable to verify the ephemeral cluster details. Please verify the ephemeral cluster configuration."
-else
-  echo "Verify airshipctl configuration"
-  airshipctl config get-cluster
-fi
