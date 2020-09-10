@@ -1,0 +1,24 @@
+Error: accepts 1 arg(s), received 2
+Usage:
+  set-encryption-config NAME [flags]
+
+Examples:
+
+# Create an encryption config with local gpg key source
+airshipctl config set-encryption-config exampleConfig \
+  --encryption-key path-to-encryption-key \
+  --decryption-key path-to-encryption-key
+
+# Create an encryption config with kube api server secret as the store to store encryption keys
+airshipctl config set-encryption-config exampleConfig \
+  --secret-name secretName \
+  --secret-namespace secretNamespace
+
+
+Flags:
+      --decryption-key-path string   the path to the decryption key file
+      --encryption-key-path string   the path to the encryption key file
+  -h, --help                         help for set-encryption-config
+      --secret-name string           name of the secret consisting of the encryption and decryption keys
+      --secret-namespace string      namespace of the secret consisting of the encryption and decryption keys
+
