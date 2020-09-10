@@ -10,20 +10,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-## This task will populate kctl_context_list variable with list of contexts if they exist
-- name: "Get context list"
-  include_tasks: get-contexts.yaml
+  - name: "Save kubeconfig contexts"
+    shell: |-
+      kubectl --kubeconfig {{ kubeconfig }} config get-contexts -o name
+    register: kctl_context_command
 
-- name: "Save logs for each context"
-  include_tasks: save-context-logs.yaml
-  when: kctl_context_list | length > 0
-  with_items: "{{ kctl_context_list }}"
-  loop_control:
-    loop_var: kctl_context
-
-- name: "Downloads pod logs to executor"
-  synchronize:
-    src: "{{ logs_dir }}/pod-logs"
-    dest: "{{ zuul.executor.log_root }}/{{ inventory_hostname }}"
-    mode: pull
-  ignore_errors: True
+  - name: "Save kubeconfig contexts to list"
+    set_fact:
+      kctl_context_list: "{{ kctl_context_command.stdout.split('\n') }}"
