@@ -1,0 +1,9 @@
+# Adds namespace to all resources.
+namespace: capi-kubeadm-bootstrap-system
+
+resources:
+- namespace.yaml
+
+bases:
+- ../rbac
+- ../manager
