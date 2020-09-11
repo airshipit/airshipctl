@@ -7,7 +7,7 @@ rm -f /shared/sed_commands
 for var_name in $( ls ) ; do
     echo -n s!\$\($var_name\)! >> /shared/sed_commands
     cat $var_name >> /shared/sed_commands
-    echo ! >> /shared/sed_commands
+    echo !g >> /shared/sed_commands
     export $var_name=$(cat $var_name)
 done
 popd

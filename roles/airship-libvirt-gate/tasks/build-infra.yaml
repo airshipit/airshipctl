@@ -170,7 +170,7 @@
     name: libvirt-domain
   vars:
     libvirt_domain:
-      boot_mode: UEFI
+      boot_mode: "{{ chosen_flavor.worker_vm_cfg[vm_index|int - 1].boot_mode | default('UEFI') }}"
       enable_vnc: true
       console_log_enabled: true
       state: shutdown
@@ -188,9 +188,9 @@
           pool: "{{ airship_gate_names.pool }}"
       interfaces:
         - network: "{{ airship_gate_names.nat_network }}"
-          mac: ""
+          mac: "{{ chosen_flavor.worker_vm_cfg[vm_index|int - 1].nat_mac | default('') }}"
         - network: "{{ airship_gate_names.provision_network }}"
-          mac: ""
+          mac: "{{ chosen_flavor.worker_vm_cfg[vm_index|int - 1].provision_mac | default('') }}"
   loop_control:
     loop_var: vm_index
   with_sequence: "start=1 end={{ chosen_flavor.worker_vms_count }}"

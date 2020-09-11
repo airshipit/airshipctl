@@ -27,6 +27,7 @@
           - ./tools/deployment/31_deploy_initinfra_target_node.sh
           - ./tools/deployment/32_cluster_init_target_node.sh
           - ./tools/deployment/33_cluster_move_target_node.sh
+          - ./tools/deployment/34_deploy_worker_node.sh
 
     - name: "Run gate scripts"
       include_role:
