@@ -75,7 +75,7 @@
         pass-to-parent: true
 
 - job:
-    name: airship-airshipctl-gate-script-runner-test
+    name: airship-airshipctl-gate-script-runner
     attempts: 1
     timeout: 5400
     pre-run:
@@ -101,6 +101,13 @@
         - ./tools/deployment/34_deploy_worker_node.sh
       serve_dir: /srv/iso
       serve_port: 8099
+      log_roles:
+        - gather-system-logs
+        - airship-gather-apache-logs
+        - airship-gather-libvirt-logs
+        - airship-gather-runtime-logs
+        - airship-airshipctl-gather-configs
+        - airship-gather-pod-logs
     voting: false
 
 - job:
