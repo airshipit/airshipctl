@@ -104,23 +104,23 @@ local-path-storage   local-path-provisioner-7745554f7f-2qcv7             1/1    
 
 $ mkdir ~/.airship
 
-$ cp ~/.kube/config ~/.airship/kubeconfig
-
 $ airshipctl config init
 
-$ airshipctl config use-context kind-capi-docker
-
-$ airshipctl config set-manifest docker_manifest --repo primary --url \
-https://opendev.org/airship/airshipctl --branch master --primary \
---sub-path manifests/site/docker-test-site --target-path /tmp/airship
+Run the below command to configure docker manifest, and add it to airship config
 
 ```
-Manifest "docker_manifest" created.
+$ airshipctl config set-manifest docker_manifest --repo primary \
+--url https://opendev.org/airship/airshipctl --branch master \
+--primary --sub-path manifests/site/docker-test-site --target-path /tmp/airship
 ```
+
 $ airshipctl config set-context kind-capi-docker --manifest docker_manifest
+
 ```
 Context "kind-capi-docker" modified.
 ```
+$ cp ~/.kube/config ~/.airship/kubeconfig
+
 $ airshipctl config get-context
 
 ```
@@ -132,6 +132,11 @@ LocationOfOrigin: /home/rishabh/.airship/kubeconfig
 cluster: kind-capi-docker_target
 user: kind-capi-docker
 ```
+$ airshipctl config use-context kind-capi-docker
+
+```
+Manifest "docker_manifest" created.
+```
 
 $ airshipctl document pull --debug
 
@@ -142,6 +147,7 @@ $ airshipctl document pull --debug
 [airshipctl] 2020/08/12 14:07:13 Attempting to clone the repository airshipctl from https://review.opendev.org/airship/airshipctl
 [airshipctl] 2020/08/12 14:07:23 Attempting to checkout the repository airshipctl from branch refs/heads/master
 ```
+$ airshipctl config set-manifest docker_manifest --target-path /tmp/airship/airshipctl
 
 ## Initialize the management cluster
 
@@ -522,6 +528,25 @@ kube-system   kube-proxy-fkvpc                                      1/1     Runn
 kube-system   kube-scheduler-dtc-dtc-control-plane-p4fsx            1/1     Running   0          5m49s
 ```
 
+## Tear Down Clusters
+
+The command shown below can be used to delete the control plane, worker nodes and all
+associated cluster resources
+
+$ airshipctl phase render controlplane -k Cluster | kubectl delete -f -
+
+```
+cluster.cluster.x-k8s.io "dtc" deleted
+```
+
+To delete the kind cluster, use the following command:
+
+$ kind delete cluster --name capi-docker
+
+```
+Deleting cluster "capi-docker" ...
+```
+
 ## Reference
 
 ### Provider Manifests
@@ -645,10 +670,10 @@ to initialize management cluster with defined provider components and version.
 
 There are 3 phases currently available in `docker-test-site/target`.
 
-|Phase Name | Purpose |
-|-----------|---------|
-| controlplane     | Patches templates in manifests/function/k8scontrol-capd |
-| workers          | Patches template in manifests/function/workers-capd |                                                     |
+| Phase Name  | Purpose |
+| ----------- | --------- |
+| controlplane | Patches templates in manifests/function/k8scontrol-capd |
+| workers   | Patches template in manifests/function/workers-capd |
 | initinfra | Simply calls `docker-test-site/shared/clusterctl` |
 
 Note: `airshipctl cluster init` initializes all the provider components
@@ -669,9 +694,9 @@ Json patch to patch `workers machine count` is applied on templates in `manifest
 from `airshipctl/manifests/site/docker-test-site/target/workers` when `airshipctl phase apply
 workers` is executed.
 
-| Patch Name                      | Purpose                                                            |
-| ------------------------------- | ------------------------------------------------------------------ |
-| controlplane/machine_count.json | patches control plane machine count in template function/k8scontrol-capd        |
+| Patch Name | Purpose  |
+| ---------- | -------- |
+| controlplane/machine_count.json | patches control plane machine count in template function/k8scontrol-capd |
 | workers/machine_count.json      | patches workers machine count in template function/workers-capd |
 
 $ tree airshipctl/manifests/site/docker-test-site/target/
