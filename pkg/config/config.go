@@ -1137,7 +1137,11 @@ func (c *Config) CurrentContextManifestMetadata() (*Metadata, error) {
 	if err != nil {
 		return nil, err
 	}
-	meta := &Metadata{}
+	meta := &Metadata{
+		// Populate with empty values to avoid nil pointers
+		Inventory: &InventoryMeta{},
+		PhaseMeta: &PhaseMeta{},
+	}
 	err = util.ReadYAMLFile(filepath.Join(manifest.TargetPath, manifest.MetadataPath), meta)
 	if err != nil {
 		return nil, err
