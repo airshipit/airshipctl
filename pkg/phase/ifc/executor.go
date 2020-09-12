@@ -60,5 +60,6 @@ type ExecutorConfig struct {
 	ExecutorDocument document.Document
 	ExecutorBundle   document.Bundle
 	AirshipConfig    *config.Config
+	Helper           Helper
 	KubeConfig       kubeconfig.Interface
 }

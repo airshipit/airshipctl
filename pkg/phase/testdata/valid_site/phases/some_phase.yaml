@@ -5,6 +5,5 @@ metadata:
 config:
   executorRef:
     apiVersion: airshipit.org/v1alpha1
-    kind: SomeExecutor
+    kind: Does not exist
     name: executor-name
-  documentEntryPoint: manifests/site/test-site/auth
