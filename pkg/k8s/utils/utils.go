@@ -28,11 +28,12 @@ import (
 	"opendev.org/airship/airshipctl/pkg/document"
 )
 
-// FactoryFromKubeConfigPath returns a factory with the
-// default Kubernetes resources for the given kube config path
-func FactoryFromKubeConfigPath(kp string) cmdutil.Factory {
+// FactoryFromKubeConfig returns a factory with the
+// default Kubernetes resources for the given kube config path and context
+func FactoryFromKubeConfig(path, context string) cmdutil.Factory {
 	kf := genericclioptions.NewConfigFlags(false)
-	kf.KubeConfig = &kp
+	kf.KubeConfig = &path
+	kf.Context = &context
 	return cmdutil.NewFactory(kf)
 }
 

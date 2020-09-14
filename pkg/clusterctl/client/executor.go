@@ -145,6 +145,7 @@ func (c *ClusterctlExecutor) init(opts ifc.RunOptions, evtCh chan events.Event) 
 		}
 		return
 	}
+	// Use cluster name as context in kubeconfig file
 	err = c.Init(kubeConfigFile, c.clusterName)
 	if err != nil {
 		c.handleErr(err, evtCh)

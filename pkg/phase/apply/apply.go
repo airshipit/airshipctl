@@ -42,7 +42,7 @@ type Options struct {
 
 // Initialize Options with required field, such as Applier
 func (o *Options) Initialize(kubeConfigPath string) {
-	f := utils.FactoryFromKubeConfigPath(kubeConfigPath)
+	f := utils.FactoryFromKubeConfig(kubeConfigPath, "")
 	streams := utils.Streams()
 	o.EventChannel = make(chan events.Event)
 	o.Applier = applier.NewApplier(o.EventChannel, f, streams)

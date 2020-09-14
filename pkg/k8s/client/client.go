@@ -65,7 +65,8 @@ func NewClient(cfg *config.Config) (Interface, error) {
 	client := new(Client)
 	var err error
 
-	f := k8sutils.FactoryFromKubeConfigPath(cfg.KubeConfigPath())
+	// TODO add support for kubeconfig context, for now use current context
+	f := k8sutils.FactoryFromKubeConfig(cfg.KubeConfigPath(), "")
 
 	pathToBufferDir := filepath.Dir(cfg.LoadedConfigPath())
 	client.kubectl = kubectl.NewKubectl(f).WithBufferDir(pathToBufferDir)
