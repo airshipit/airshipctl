@@ -147,6 +147,16 @@ func TestClientByAPIObj(t *testing.T) {
 	require.NotNil(t, p)
 }
 
+// assertEqualExecutor allows to compare executor interfaces
+// check if we expect nil, and if so actual interface must be nil also otherwise compare types
+func assertEqualExecutor(t *testing.T, expected, actual ifc.Executor) {
+	if expected == nil {
+		assert.Nil(t, actual)
+		return
+	}
+	assert.IsType(t, expected, actual)
+}
+
 func fakeRegistry() map[schema.GroupVersionKind]ifc.ExecutorFactory {
 	gvk := schema.GroupVersionKind{
 		Group:   "airshipit.org",
