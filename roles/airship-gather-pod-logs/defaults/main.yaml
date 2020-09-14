@@ -10,5 +10,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-kctl_context: dummy_cluster
 kubeconfig: "{{ airshipctl_config_dir_default | default(ansible_env.HOME) }}/.airship/kubeconfig"
