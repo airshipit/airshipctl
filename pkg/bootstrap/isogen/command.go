@@ -21,7 +21,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	api "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/bootstrap/cloudinit"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/container"
@@ -35,6 +35,8 @@ const (
 )
 
 // GenerateBootstrapIso will generate data for cloud init and start ISO builder container
+// TODO (vkuzmin): Remove this public function and move another functions
+// to the executor module when the phases will be ready
 func GenerateBootstrapIso(cfgFactory config.Factory) error {
 	ctx := context.Background()
 
@@ -52,8 +54,8 @@ func GenerateBootstrapIso(cfgFactory config.Factory) error {
 		return err
 	}
 
-	imageConfiguration := &api.ImageConfiguration{}
-	selector, err := document.NewSelector().ByObject(imageConfiguration, api.Scheme)
+	imageConfiguration := &v1alpha1.ImageConfiguration{}
+	selector, err := document.NewSelector().ByObject(imageConfiguration, v1alpha1.Scheme)
 	if err != nil {
 		return err
 	}
@@ -62,7 +64,7 @@ func GenerateBootstrapIso(cfgFactory config.Factory) error {
 		return err
 	}
 
-	err = doc.ToAPIObject(imageConfiguration, api.Scheme)
+	err = doc.ToAPIObject(imageConfiguration, v1alpha1.Scheme)
 	if err != nil {
 		return err
 	}
@@ -78,7 +80,7 @@ func GenerateBootstrapIso(cfgFactory config.Factory) error {
 		return err
 	}
 
-	err = generateBootstrapIso(docBundle, builder, doc, imageConfiguration, log.DebugEnabled())
+	err = createBootstrapIso(docBundle, builder, doc, imageConfiguration, log.DebugEnabled())
 	if err != nil {
 		return err
 	}
@@ -86,7 +88,7 @@ func GenerateBootstrapIso(cfgFactory config.Factory) error {
 	return verifyArtifacts(imageConfiguration)
 }
 
-func verifyInputs(cfg *api.ImageConfiguration) error {
+func verifyInputs(cfg *v1alpha1.ImageConfiguration) error {
 	if cfg.Container.Volume == "" {
 		return config.ErrMissingConfig{
 			What: "Must specify volume bind for ISO builder container",
@@ -112,7 +114,7 @@ func verifyInputs(cfg *api.ImageConfiguration) error {
 }
 
 func getContainerCfg(
-	cfg *api.ImageConfiguration,
+	cfg *v1alpha1.ImageConfiguration,
 	builderCfgYaml []byte,
 	userData []byte,
 	netConf []byte,
@@ -126,18 +128,18 @@ func getContainerCfg(
 	return fls
 }
 
-func verifyArtifacts(cfg *api.ImageConfiguration) error {
+func verifyArtifacts(cfg *v1alpha1.ImageConfiguration) error {
 	hostVol := strings.Split(cfg.Container.Volume, ":")[0]
 	metadataPath := filepath.Join(hostVol, cfg.Builder.OutputMetadataFileName)
 	_, err := os.Stat(metadataPath)
 	return err
 }
 
-func generateBootstrapIso(
+func createBootstrapIso(
 	docBundle document.Bundle,
 	builder container.Container,
 	doc document.Document,
-	cfg *api.ImageConfiguration,
+	cfg *v1alpha1.ImageConfiguration,
 	debug bool,
 ) error {
 	cntVol := strings.Split(cfg.Container.Volume, ":")[1]

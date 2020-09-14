@@ -33,6 +33,8 @@ const (
 	WaitType
 	// ClusterctlType event emitted by Clusterctl executor
 	ClusterctlType
+	// IsogenType event emitted by Isogen executor
+	IsogenType
 )
 
 // Event holds all possible events that can be produced by airship
@@ -42,6 +44,7 @@ type Event struct {
 	ErrorEvent        ErrorEvent
 	StatusPollerEvent statuspollerevent.Event
 	ClusterctlEvent   ClusterctlEvent
+	IsogenEvent       IsogenEvent
 }
 
 // ErrorEvent is produced when error is encountered
@@ -63,7 +66,24 @@ const (
 	ClusterctlMoveEnd
 )
 
-// ClusterctlEvent is prodiced by clusterctl executor
+// ClusterctlEvent is produced by clusterctl executor
 type ClusterctlEvent struct {
 	Operation ClusterctlOperation
+}
+
+// IsogenOperation type
+type IsogenOperation int
+
+const (
+	// IsogenStart operation
+	IsogenStart IsogenOperation = iota
+	// IsogenValidation opearation
+	IsogenValidation
+	// IsogenEnd operation
+	IsogenEnd
+)
+
+// IsogenEvent needs to to track events in isogen executor
+type IsogenEvent struct {
+	Operation IsogenOperation
 }

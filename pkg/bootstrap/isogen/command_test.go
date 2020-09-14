@@ -148,7 +148,7 @@ func TestBootstrapIso(t *testing.T) {
 	for _, tt := range tests {
 		outBuf := &bytes.Buffer{}
 		log.Init(tt.debug, outBuf)
-		actualErr := generateBootstrapIso(bundle, tt.builder, tt.doc, tt.cfg, tt.debug)
+		actualErr := createBootstrapIso(bundle, tt.builder, tt.doc, tt.cfg, tt.debug)
 		actualOut := outBuf.String()
 
 		for _, line := range tt.expectedOut {
