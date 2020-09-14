@@ -17,6 +17,7 @@ set -ex
 TARGET_IMAGE_DIR="/srv/iso"
 EPHEMERAL_DOMAIN_NAME="air-ephemeral"
 TARGET_IMAGE_URL="https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img"
+export WAIT_TIMEOUT=${WAIT_TIMEOUT:-"2000s"}
 
 # TODO (dukov) this is needed due to sushy tools inserts cdrom image to
 # all vms. This can be removed once sushy tool is fixed
@@ -46,7 +47,7 @@ fi
 md5sum /srv/iso/target-image.qcow2 | cut -d ' ' -f 1 > ${TARGET_IMAGE_DIR}/target-image.qcow2.md5sum
 
 echo "Create target k8s cluster resources"
-airshipctl phase apply controlplane
+airshipctl phase apply controlplane --wait-timeout $WAIT_TIMEOUT --debug
 
 echo "Get kubeconfig from secret"
 KUBECONFIG=""

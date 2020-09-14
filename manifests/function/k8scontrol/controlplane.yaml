@@ -10,6 +10,9 @@ spec:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
     name: cluster-controlplane
   kubeadmConfigSpec:
+    clusterConfiguration:
+      apiServer:
+        timeoutForControlPlane: 1000s
     preKubeadmCommands:
       - echo 'root:r00tme' | chpasswd
       - echo 'ubuntu:r00tme' | chpasswd

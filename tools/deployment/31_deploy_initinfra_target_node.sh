@@ -17,6 +17,7 @@ set -xe
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
 export TIMEOUT=${TIMEOUT:-60}
 NODENAME="node01"
+export WAIT_TIMEOUT=${WAIT_TIMEOUT:-"2000s"}
 
 # TODO need to run another config command after use-context to update kubeconfig
 echo "Switch context to target cluster and set manifest"
@@ -44,7 +45,7 @@ done
 kubectl --kubeconfig $KUBECONFIG taint node $NODENAME node-role.kubernetes.io/master-
 
 echo "Deploy infra to cluster"
-airshipctl phase apply initinfra --debug --wait-timeout 1000s
+airshipctl phase apply initinfra --debug --wait-timeout $WAIT_TIMEOUT
 
 echo "List all pods"
 kubectl --kubeconfig $KUBECONFIG get pods --all-namespaces
