@@ -1,6 +1,6 @@
 resources:
   - ../../../../composite/infra
-  - ../../shared/clusterctl
+  - ../../../../function/clusterctl
   - ../../../../function/airshipctl-catalogues
   - ../../../../function/baremetal-operator
 patchesStrategicMerge:
