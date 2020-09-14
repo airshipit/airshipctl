@@ -16,7 +16,6 @@ package client
 
 import (
 	"io"
-	"path/filepath"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -34,7 +33,6 @@ var _ ifc.Executor = &ClusterctlExecutor{}
 // ClusterctlExecutor phase executor
 type ClusterctlExecutor struct {
 	clusterName string
-	dumpRoot    string
 
 	Interface
 	bundle  document.Bundle
@@ -59,11 +57,7 @@ func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 	if err := cfg.ExecutorDocument.ToAPIObject(options, airshipv1.Scheme); err != nil {
 		return nil, err
 	}
-	tgtPath, err := cfg.AirshipConfig.CurrentContextTargetPath()
-	if err != nil {
-		return nil, err
-	}
-	client, err := NewClient(tgtPath, log.DebugEnabled(), options)
+	client, err := NewClient(cfg.Helper.TargetPath(), log.DebugEnabled(), options)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +67,6 @@ func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 		bundle:      cfg.ExecutorBundle,
 		options:     options,
 		kubecfg:     cfg.KubeConfig,
-		dumpRoot:    filepath.Dir(cfg.AirshipConfig.LoadedConfigPath()),
 	}, nil
 }
 
@@ -100,7 +93,7 @@ func (c *ClusterctlExecutor) init(opts ifc.RunOptions, evtCh chan events.Event) 
 			Operation: events.ClusterctlInitStart,
 		},
 	}
-	kubeConfigFile, cleanup, err := c.kubecfg.WriteTempFile(c.dumpRoot)
+	kubeConfigFile, cleanup, err := c.kubecfg.GetFile()
 	if err != nil {
 		c.handleErr(err, evtCh)
 		return

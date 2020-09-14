@@ -31,6 +31,7 @@ import (
 	airerrors "opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
+	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	"opendev.org/airship/airshipctl/testutil/fs"
 )
@@ -76,21 +77,12 @@ func TestNewExecutor(t *testing.T) {
 
 	testCases := []struct {
 		name        string
-		settings    *config.Config
+		helper      ifc.Helper
 		expectedErr error
 	}{
 		{
-			name:     "New Clusterctl Executor",
-			settings: sampleSettings(),
-		},
-		{
-			name: "New Clusterctl Executor",
-			settings: func() *config.Config {
-				s := sampleSettings()
-				s.CurrentContext = "non-existent-ctx"
-				return s
-			}(),
-			expectedErr: config.ErrMissingConfig{What: "Context with name 'non-existent-ctx'"},
+			name:   "New Clusterctl Executor",
+			helper: makeDefaultHelper(t),
 		},
 	}
 	for _, test := range testCases {
@@ -99,7 +91,7 @@ func TestNewExecutor(t *testing.T) {
 			_, actualErr := cctlclient.NewExecutor(ifc.ExecutorConfig{
 				ExecutorDocument: sampleCfgDoc,
 				ExecutorBundle:   bundle,
-				AirshipConfig:    tt.settings,
+				Helper:           tt.helper,
 			})
 			assert.Equal(t, tt.expectedErr, actualErr)
 		})
@@ -185,7 +177,7 @@ func TestExecutorRun(t *testing.T) {
 				ifc.ExecutorConfig{
 					ExecutorDocument: tt.cfgDoc,
 					ExecutorBundle:   bundle,
-					AirshipConfig:    sampleSettings(),
+					Helper:           makeDefaultHelper(t),
 					KubeConfig:       kubeCfg,
 				})
 			require.NoError(t, err)
@@ -208,7 +200,7 @@ func TestExecutorValidate(t *testing.T) {
 		ifc.ExecutorConfig{
 			ExecutorDocument: sampleCfgDoc,
 			ExecutorBundle:   bundle,
-			AirshipConfig:    sampleSettings(),
+			Helper:           makeDefaultHelper(t),
 		})
 	require.NoError(t, err)
 	expectedErr := airerrors.ErrNotImplemented{}
@@ -225,7 +217,7 @@ func TestExecutorRender(t *testing.T) {
 		ifc.ExecutorConfig{
 			ExecutorDocument: sampleCfgDoc,
 			ExecutorBundle:   bundle,
-			AirshipConfig:    sampleSettings(),
+			Helper:           makeDefaultHelper(t),
 		})
 	require.NoError(t, err)
 	actualOut := &bytes.Buffer{}
@@ -233,11 +225,16 @@ func TestExecutorRender(t *testing.T) {
 	assert.Equal(t, expectedErr, actualErr)
 }
 
-func sampleSettings() *config.Config {
+func makeDefaultHelper(t *testing.T) ifc.Helper {
+	t.Helper()
 	cfg := config.NewConfig()
 	cfg.Manifests[config.AirshipDefaultManifest].TargetPath = "./testdata"
+	cfg.Manifests[config.AirshipDefaultManifest].MetadataPath = "metadata.yaml"
 	cfg.SetLoadedConfigPath(".")
-	return cfg
+	helper, err := phase.NewHelper(cfg)
+	require.NoError(t, err)
+	require.NotNil(t, helper)
+	return helper
 }
 
 func executorDoc(t *testing.T, action string) document.Document {

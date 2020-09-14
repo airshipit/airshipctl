@@ -22,7 +22,6 @@ import (
 	"sigs.k8s.io/cli-utils/pkg/common"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
-	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
@@ -39,7 +38,7 @@ type ExecutorOptions struct {
 	ExecutorDocument document.Document
 	ExecutorBundle   document.Bundle
 	Kubeconfig       kubeconfig.Interface
-	AirshipConfig    *config.Config
+	Helper           ifc.Helper
 }
 
 var _ ifc.Executor = &Executor{}
@@ -59,7 +58,7 @@ func RegisterExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFactory) 
 func registerExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 	return NewExecutor(ExecutorOptions{
 		BundleName:       cfg.PhaseName,
-		AirshipConfig:    cfg.AirshipConfig,
+		Helper:           cfg.Helper,
 		ExecutorBundle:   cfg.ExecutorBundle,
 		ExecutorDocument: cfg.ExecutorDocument,
 		Kubeconfig:       cfg.KubeConfig,
