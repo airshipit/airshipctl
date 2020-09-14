@@ -5,40 +5,40 @@ metadata:
     airshipit.org/deploy-k8s: "false"
   name: clusterctl-v1
 init-options:
-  core-provider: "cluster-api:v0.3.3"
+  core-provider: "cluster-api:v0.3.7"
   bootstrap-providers:
-    - "kubeadm:v0.3.3"
+    - "kubeadm:v0.3.7"
   infrastructure-providers:
-    - "metal3:v0.3.1"
+    - "metal3:v0.3.2"
   control-plane-providers:
-    - "kubeadm:v0.3.3"
+    - "kubeadm:v0.3.7"
 providers:
   - name: "metal3"
     type: "InfrastructureProvider"
     variable-substitution: true
     versions:
-      v0.3.1: manifests/function/capm3/v0.3.1
+      v0.3.2: manifests/function/capm3/v0.3.2
   - name: "kubeadm"
     type: "BootstrapProvider"
     variable-substitution: true
     versions:
-      v0.3.3: manifests/function/cabpk/v0.3.3
+      v0.3.7: manifests/function/cabpk/v0.3.7
   - name: "cluster-api"
     type: "CoreProvider"
     variable-substitution: true
     versions:
-      v0.3.3: manifests/function/capi/v0.3.3
+      v0.3.7: manifests/function/capi/v0.3.7
   - name: "kubeadm"
     type: "ControlPlaneProvider"
     variable-substitution: true
     versions:
-      v0.3.3: manifests/function/cacpk/v0.3.3
+      v0.3.7: manifests/function/cacpk/v0.3.7
 # These default images can be overridden via the `replacements/` entrypoint
 additional-vars:
-  CONTAINER_CAPM3_MANAGER: quay.io/metal3-io/cluster-api-provider-metal3:v0.3.1
-  CONTAINER_CACPK_MANAGER: us.gcr.io/k8s-artifacts-prod/cluster-api/kubeadm-control-plane-controller:v0.3.3
-  CONTAINER_CABPK_MANAGER: us.gcr.io/k8s-artifacts-prod/cluster-api/kubeadm-bootstrap-controller:v0.3.3
-  CONTAINER_CAPI_MANAGER:  us.gcr.io/k8s-artifacts-prod/cluster-api/cluster-api-controller:v0.3.3
+  CONTAINER_CAPM3_MANAGER: quay.io/metal3-io/cluster-api-provider-metal3:v0.3.2
+  CONTAINER_CACPK_MANAGER: us.gcr.io/k8s-artifacts-prod/cluster-api/kubeadm-control-plane-controller:v0.3.7
+  CONTAINER_CABPK_MANAGER: us.gcr.io/k8s-artifacts-prod/cluster-api/kubeadm-bootstrap-controller:v0.3.7
+  CONTAINER_CAPI_MANAGER:  us.gcr.io/k8s-artifacts-prod/cluster-api/cluster-api-controller:v0.3.7
   CONTAINER_CAPM3_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.0
   CONTAINER_CACPK_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
   CONTAINER_CABPK_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
