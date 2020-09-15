@@ -33,7 +33,8 @@ import (
 
 // ExecutorOptions provide a way to configure executor
 type ExecutorOptions struct {
-	BundleName string
+	BundleName  string
+	ClusterName string
 
 	ExecutorDocument document.Document
 	ExecutorBundle   document.Bundle
@@ -57,6 +58,7 @@ func RegisterExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFactory) 
 // registerExecutor is here so that executor in theory can be used outside phases
 func registerExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 	return NewExecutor(ExecutorOptions{
+		ClusterName:      cfg.ClusterName,
 		BundleName:       cfg.PhaseName,
 		Helper:           cfg.Helper,
 		ExecutorBundle:   cfg.ExecutorBundle,
@@ -125,8 +127,8 @@ func (e *Executor) prepareApplier(ch chan events.Event) (*Applier, document.Bund
 	}
 	// set up cleanup only if all calls up to here were successful
 	e.cleanup = cleanup
-
-	factory := utils.FactoryFromKubeConfigPath(path)
+	// Use cluster name as context in kubeconfig file
+	factory := utils.FactoryFromKubeConfig(path, e.Options.ClusterName)
 	streams := utils.Streams()
 	return NewApplier(ch, factory, streams), bundle, nil
 }

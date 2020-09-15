@@ -29,7 +29,7 @@ import (
 func TestDefaultManifestFactory(t *testing.T) {
 	bundle, err := document.NewBundleByPath("testdata/source_bundle")
 	require.NoError(t, err)
-	reader := DefaultManifestReaderFactory(false, bundle, FactoryFromKubeConfigPath("testdata/kubeconfig.yaml"))
+	reader := DefaultManifestReaderFactory(false, bundle, FactoryFromKubeConfig("testdata/kubeconfig.yaml", ""))
 	require.NotNil(t, reader)
 }
 
@@ -64,7 +64,7 @@ func TestManifestBundleReader(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			reader := NewManifestBundleReader(false, bundle, FactoryFromKubeConfigPath("testdata/kubeconfig.yaml"))
+			reader := NewManifestBundleReader(false, bundle, FactoryFromKubeConfig("testdata/kubeconfig.yaml", ""))
 			if tt.reader != nil {
 				reader.StreamReader.Reader = tt.reader
 			}

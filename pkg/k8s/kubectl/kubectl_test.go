@@ -39,7 +39,7 @@ var (
 )
 
 func TestNewKubectlFromKubeConfigPath(t *testing.T) {
-	f := k8sutils.FactoryFromKubeConfigPath(kubeconfigPath)
+	f := k8sutils.FactoryFromKubeConfig(kubeconfigPath, "")
 	kctl := kubectl.NewKubectl(f).WithBufferDir("/tmp/.airship")
 
 	assert.NotNil(t, kctl.Factory)

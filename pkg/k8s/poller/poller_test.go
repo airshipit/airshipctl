@@ -30,7 +30,7 @@ import (
 func TestNewStatusPoller(t *testing.T) {
 	airClient := fake.NewClient()
 
-	f := k8sutils.FactoryFromKubeConfigPath("testdata/kubeconfig.yaml")
+	f := k8sutils.FactoryFromKubeConfig("testdata/kubeconfig.yaml", "")
 	restConfig, err := f.ToRESTConfig()
 	require.NoError(t, err)
 	restMapper, err := f.ToRESTMapper()
