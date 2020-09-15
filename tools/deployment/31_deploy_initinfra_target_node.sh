@@ -18,16 +18,17 @@ export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
 export TIMEOUT=${TIMEOUT:-60}
 NODENAME="node01"
 export WAIT_TIMEOUT=${WAIT_TIMEOUT:-"2000s"}
+export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-context"}
 
 # TODO need to run another config command after use-context to update kubeconfig
 echo "Switch context to target cluster and set manifest"
-airshipctl config use-context target-cluster-admin@target-cluster
-airshipctl config set-context target-cluster-admin@target-cluster --manifest dummy_manifest
+airshipctl config use-context target-context
+airshipctl config set-context target-context --manifest dummy_manifest
 
 end=$(($(date +%s) + $TIMEOUT))
 echo "Waiting $TIMEOUT seconds for $NODENAME to be created."
 while true; do
-  if (kubectl --request-timeout 10s --kubeconfig $KUBECONFIG get nodes | grep -q $NODENAME) ; then
+  if (kubectl --request-timeout 10s --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get nodes | grep -q $NODENAME) ; then
     echo -e "\n$NODENAME found"
     break
   else
@@ -42,10 +43,10 @@ while true; do
 done
 
 # TODO remove taint
-kubectl --kubeconfig $KUBECONFIG taint node $NODENAME node-role.kubernetes.io/master-
+kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT taint node $NODENAME node-role.kubernetes.io/master-
 
 echo "Deploy infra to cluster"
 airshipctl phase apply initinfra --debug --wait-timeout $WAIT_TIMEOUT
 
 echo "List all pods"
-kubectl --kubeconfig $KUBECONFIG get pods --all-namespaces
+kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get pods --all-namespaces

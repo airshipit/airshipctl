@@ -17,6 +17,7 @@ set -xe
 #Default wait timeout is 3600 seconds
 export TIMEOUT=${TIMEOUT:-3600}
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
+export KUBECONFIG_EPHEMERAL_CONTEXT=${KUBECONFIG_EPHEMERAL_CONTEXT:-"ephemeral-context"}
 
 echo "Deploy ephemeral node using redfish with iso"
 airshipctl baremetal remotedirect --debug
@@ -27,7 +28,7 @@ MAX_RETRY=30
 DELAY=60
 until [ "$N" -ge ${MAX_RETRY} ]
 do
-  if timeout 20 kubectl --kubeconfig $KUBECONFIG get node; then
+  if timeout 20 kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT get node; then
       break
   fi
 
@@ -42,4 +43,4 @@ if [ "$N" -ge ${MAX_RETRY} ]; then
 fi
 
 echo "List all pods"
-kubectl --kubeconfig $KUBECONFIG get pods --all-namespaces
+kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT get pods --all-namespaces

@@ -17,10 +17,11 @@ set -xe
 #Default wait timeout is 3600 seconds
 export TIMEOUT=${TIMEOUT:-3600}
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
+export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-context"}
 
 echo "Switch context to target cluster and set manifest"
-airshipctl config use-context target-cluster-admin@target-cluster
-airshipctl config set-context target-cluster-admin@target-cluster --manifest dummy_manifest
+airshipctl config use-context target-context
+airshipctl config set-context target-context --manifest dummy_manifest
 
 echo "Stop ephemeral node"
 sudo virsh destroy air-ephemeral
@@ -32,9 +33,9 @@ airshipctl phase apply workers --debug
 end=$(($(date +%s) + $TIMEOUT))
 echo "Waiting $TIMEOUT seconds for node to be provisioned."
 while true; do
-    if (kubectl --request-timeout 20s --kubeconfig $KUBECONFIG get node node03 | grep -qw Ready) ; then
+    if (kubectl --request-timeout 20s --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get node node03 | grep -qw Ready) ; then
         echo -e "\nGet node status"
-        kubectl --kubeconfig $KUBECONFIG get node
+        kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get node
         break
     else
         now=$(date +%s)

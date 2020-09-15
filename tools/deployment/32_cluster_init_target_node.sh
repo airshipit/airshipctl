@@ -15,15 +15,16 @@
 set -xe
 
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
+export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-context"}
 
 # TODO need to run another config command after use-context to update kubeconfig
 echo "Switch context to target cluster and set manifest"
-airshipctl config use-context target-cluster-admin@target-cluster
-airshipctl config set-context target-cluster-admin@target-cluster --manifest dummy_manifest
+airshipctl config use-context target-context
+airshipctl config set-context target-context --manifest dummy_manifest
 
 echo "Deploy CAPI components"
 airshipctl cluster init --debug
 
 echo "Waiting for pods to be ready"
-kubectl --kubeconfig $KUBECONFIG wait --all-namespaces --for=condition=Ready pods --all --timeout=600s
-kubectl --kubeconfig $KUBECONFIG get pods --all-namespaces
+kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT wait --all-namespaces --for=condition=Ready pods --all --timeout=600s
+kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get pods --all-namespaces
