@@ -37,14 +37,14 @@ Move Cluster API objects, provider specific objects and all dependencies to the 
 
 // NewMoveCommand creates a command to move capi and bmo resources to the target cluster
 func NewMoveCommand(cfgFactory config.Factory) *cobra.Command {
-	var toKubeconfigContext string
+	var toKubeconfigContext, kubeconfig string
 	moveCmd := &cobra.Command{
 		Use:     "move",
 		Short:   "Move Cluster API objects, provider specific objects and all dependencies to the target cluster",
 		Long:    moveLong[1:],
 		Example: moveExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			command, err := clusterctlcmd.NewCommand(cfgFactory)
+			command, err := clusterctlcmd.NewCommand(cfgFactory, kubeconfig)
 			if err != nil {
 				return err
 			}
@@ -52,6 +52,11 @@ func NewMoveCommand(cfgFactory config.Factory) *cobra.Command {
 		},
 	}
 
+	moveCmd.Flags().StringVar(
+		&kubeconfig,
+		"kubeconfig",
+		"",
+		"Path to kubeconfig associated with cluster being managed")
 	moveCmd.Flags().StringVar(&toKubeconfigContext, "target-context", "",
 		"Context to be used within the kubeconfig file for the target cluster. If empty, current context will be used.")
 	return moveCmd

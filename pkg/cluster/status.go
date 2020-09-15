@@ -43,18 +43,19 @@ type StatusOptions interface {
 }
 
 type statusOptions struct {
-	ConfigFactory config.Factory
+	CfgFactory    config.Factory
 	ClientFactory client.Factory
+	Kubeconfig    string
 }
 
 // NewStatusOptions constructs a new StatusOptions interface based on inner struct
-func NewStatusOptions(cfgFactory config.Factory, clientFactory client.Factory) StatusOptions {
-	return &statusOptions{ConfigFactory: cfgFactory, ClientFactory: clientFactory}
+func NewStatusOptions(cfgFactory config.Factory, clientFactory client.Factory, kubeconfig string) StatusOptions {
+	return &statusOptions{CfgFactory: cfgFactory, ClientFactory: clientFactory, Kubeconfig: kubeconfig}
 }
 
 // GetStatusMapDocs returns status map within all the documents in the bundle
 func (o *statusOptions) GetStatusMapDocs() (*StatusMap, []document.Document, error) {
-	conf, err := o.ConfigFactory()
+	conf, err := o.CfgFactory()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -74,7 +75,7 @@ func (o *statusOptions) GetStatusMapDocs() (*StatusMap, []document.Document, err
 		return nil, nil, err
 	}
 
-	client, err := o.ClientFactory(conf)
+	client, err := o.ClientFactory(conf.LoadedConfigPath(), o.Kubeconfig)
 	if err != nil {
 		return nil, nil, err
 	}

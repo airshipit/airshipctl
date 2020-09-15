@@ -256,10 +256,9 @@ func TestVerifyInputs(t *testing.T) {
 
 func TestGenerateBootstrapIso(t *testing.T) {
 	airshipConfigPath := "testdata/config/config"
-	kubeConfigPath := "testdata/config/kubeconfig"
 
 	t.Run("ContextEntryPointError", func(t *testing.T) {
-		cfg, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
+		cfg, err := config.CreateFactory(&airshipConfigPath)()
 		require.NoError(t, err)
 		cfg.Manifests["default"].Repositories = make(map[string]*config.Repository)
 		settings := func() (*config.Config, error) {
@@ -271,7 +270,7 @@ func TestGenerateBootstrapIso(t *testing.T) {
 	})
 
 	t.Run("NewBundleByPathError", func(t *testing.T) {
-		cfg, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
+		cfg, err := config.CreateFactory(&airshipConfigPath)()
 		require.NoError(t, err)
 		cfg.Manifests["default"].TargetPath = "/nonexistent"
 		settings := func() (*config.Config, error) {
@@ -283,7 +282,7 @@ func TestGenerateBootstrapIso(t *testing.T) {
 	})
 
 	t.Run("SelectOneError", func(t *testing.T) {
-		cfg, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
+		cfg, err := config.CreateFactory(&airshipConfigPath)()
 		require.NoError(t, err)
 		cfg.Manifests["default"].SubPath = "missingkinddoc/site/test-site"
 		settings := func() (*config.Config, error) {
@@ -296,7 +295,7 @@ func TestGenerateBootstrapIso(t *testing.T) {
 	})
 
 	t.Run("ToObjectError", func(t *testing.T) {
-		cfg, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
+		cfg, err := config.CreateFactory(&airshipConfigPath)()
 		require.NoError(t, err)
 		cfg.Manifests["default"].SubPath = "missingmetadoc/site/test-site"
 		settings := func() (*config.Config, error) {
@@ -304,11 +303,12 @@ func TestGenerateBootstrapIso(t *testing.T) {
 		}
 		expectedErrMessage := "missing metadata.name in object"
 		actualErr := GenerateBootstrapIso(settings, false)
+		require.NotNil(t, actualErr)
 		assert.Contains(t, actualErr.Error(), expectedErrMessage)
 	})
 
 	t.Run("verifyInputsError", func(t *testing.T) {
-		cfg, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
+		cfg, err := config.CreateFactory(&airshipConfigPath)()
 		require.NoError(t, err)
 		cfg.Manifests["default"].SubPath = "missingvoldoc/site/test-site"
 		settings := func() (*config.Config, error) {

@@ -41,9 +41,8 @@ func TestNewClient(t *testing.T) {
 	require.NoError(t, err)
 
 	conf.SetLoadedConfigPath(adir)
-	conf.SetKubeConfigPath(akp)
 
-	client, err := client.NewClient(conf)
+	client, err := client.NewClient(conf.LoadedConfigPath(), akp)
 	assert.NoError(t, err)
 	assert.NotNil(t, client)
 	assert.NotNil(t, client.ClientSet())

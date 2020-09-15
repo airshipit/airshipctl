@@ -26,7 +26,7 @@ func TestNewClusterStatusCmd(t *testing.T) {
 		{
 			Name:    "cluster-status-cmd-with-help",
 			CmdLine: "--help",
-			Cmd:     cluster.NewStatusCommand(nil, nil),
+			Cmd:     cluster.NewStatusCommand(nil),
 		},
 	}
 	for _, testcase := range tests {

@@ -18,7 +18,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/k8s/client"
 )
 
 const (
@@ -39,7 +38,7 @@ func NewClusterCommand(cfgFactory config.Factory) *cobra.Command {
 
 	clusterRootCmd.AddCommand(NewInitCommand(cfgFactory))
 	clusterRootCmd.AddCommand(NewMoveCommand(cfgFactory))
-	clusterRootCmd.AddCommand(NewStatusCommand(cfgFactory, client.DefaultClient))
+	clusterRootCmd.AddCommand(NewStatusCommand(cfgFactory))
 
 	return clusterRootCmd
 }

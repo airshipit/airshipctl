@@ -34,8 +34,8 @@ airshipctl phase run ephemeral-control-plane
 // NewRunCommand creates a command to run specific phase
 func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
 	p := &phase.RunCommand{
-		Options: phase.RunFlags{},
 		Factory: cfgFactory,
+		Options: phase.RunFlags{},
 	}
 
 	runCmd := &cobra.Command{
@@ -60,5 +60,10 @@ func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
 		"wait-timeout",
 		0,
 		"wait timeout")
+	flags.StringVar(
+		&p.Options.Kubeconfig,
+		"kubeconfig",
+		"",
+		"Path to kubeconfig associated with site being managed")
 	return runCmd
 }

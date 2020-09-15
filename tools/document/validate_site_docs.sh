@@ -115,7 +115,7 @@ for cluster in ephemeral target; do
                 # step 1: actually apply all crds in the phase
                 # TODO: will need to loop through phases in order, eventually
                 # e.g., load CRDs from initinfra first, so they're present when validating later phases
-                ${ACTL} phase render ${phase} -k CustomResourceDefinition > ${TMP}/${phase}-crds.yaml
+                ${AIRSHIPCTL} --airshipconf ${AIRSHIPCONFIG} phase render ${phase} -k CustomResourceDefinition > ${TMP}/${phase}-crds.yaml
                 if [ -s ${TMP}/${phase}-crds.yaml ]; then
                     ${KUBECTL} --context ${CONTEXT} --kubeconfig ${KUBECONFIG} apply -f ${TMP}/${phase}-crds.yaml
                 fi

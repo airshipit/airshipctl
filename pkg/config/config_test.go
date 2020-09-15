@@ -98,16 +98,12 @@ func TestPersistConfig(t *testing.T) {
 	defer cleanup(t)
 
 	conf.SetLoadedConfigPath(conf.LoadedConfigPath() + ".new")
-	conf.SetKubeConfigPath(conf.KubeConfigPath() + ".new")
 
-	err := conf.PersistConfig(true)
+	err := conf.PersistConfig()
 	require.NoError(t, err)
 
 	// Check that the files were created
 	assert.FileExists(t, conf.LoadedConfigPath())
-	assert.FileExists(t, conf.KubeConfigPath())
-	// Check that the invalid name was changed to a valid one
-	assert.Contains(t, conf.KubeConfig().Clusters, "def_ephemeral")
 }
 
 func TestEnsureComplete(t *testing.T) {
@@ -208,7 +204,7 @@ func TestPurge(t *testing.T) {
 	defer cleanup(t)
 
 	// Store it
-	err := conf.PersistConfig(true)
+	err := conf.PersistConfig()
 	assert.NoErrorf(t, err, "Unable to persist configuration expected at %v", conf.LoadedConfigPath())
 
 	// Verify that the file is there
@@ -234,17 +230,6 @@ func TestSetLoadedConfigPath(t *testing.T) {
 	assert.NotEqual(t, testPath, conf.LoadedConfigPath())
 	conf.SetLoadedConfigPath(testPath)
 	assert.Equal(t, testPath, conf.LoadedConfigPath())
-}
-
-func TestSetKubeConfigPath(t *testing.T) {
-	conf, cleanup := testutil.InitConfig(t)
-	defer cleanup(t)
-
-	testPath := "/tmp/kubeconfig"
-
-	assert.NotEqual(t, testPath, conf.KubeConfigPath())
-	conf.SetKubeConfigPath(testPath)
-	assert.Equal(t, testPath, conf.KubeConfigPath())
 }
 
 func TestGetContexts(t *testing.T) {
@@ -297,14 +282,10 @@ func TestGetCurrentContext(t *testing.T) {
 		conf, cleanup := testutil.InitConfig(t)
 		defer cleanup(t)
 
-		context, err := conf.GetCurrentContext()
-		require.Error(t, err)
-		assert.Nil(t, context)
-
 		conf.CurrentContext = currentContextName
 		conf.Contexts[currentContextName].Manifest = defaultString
 
-		context, err = conf.GetCurrentContext()
+		context, err := conf.GetCurrentContext()
 		require.NoError(t, err)
 		assert.Equal(t, conf.Contexts[currentContextName], context)
 	})
@@ -314,14 +295,10 @@ func TestCurrentContextManifest(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
-	manifest, err := conf.CurrentContextManifest()
-	require.Error(t, err)
-	assert.Nil(t, manifest)
-
 	conf.CurrentContext = currentContextName
 	conf.Contexts[currentContextName].Manifest = defaultString
 
-	manifest, err = conf.CurrentContextManifest()
+	manifest, err := conf.CurrentContextManifest()
 	require.NoError(t, err)
 	assert.Equal(t, conf.Manifests[defaultString], manifest)
 }
@@ -329,10 +306,6 @@ func TestCurrentContextManifest(t *testing.T) {
 func TestCurrentTargetPath(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
-
-	manifest, err := conf.CurrentContextManifest()
-	require.Error(t, err)
-	assert.Nil(t, manifest)
 
 	conf.CurrentContext = currentContextName
 	conf.Contexts[currentContextName].Manifest = defaultString
@@ -364,10 +337,6 @@ func TestCurrentContextClusterType(t *testing.T) {
 
 	expectedClusterType := "ephemeral"
 
-	clusterTypeEmpty, err := conf.CurrentContextClusterType()
-	require.Error(t, err)
-	assert.Equal(t, "", clusterTypeEmpty)
-
 	conf.CurrentContext = currentContextName
 	conf.Contexts[currentContextName].Manifest = defaultString
 
@@ -381,10 +350,6 @@ func TestCurrentContextClusterName(t *testing.T) {
 	defer cleanup(t)
 
 	expectedClusterName := "def"
-
-	clusterNameEmpty, err := conf.CurrentContextClusterName()
-	require.Error(t, err)
-	assert.Equal(t, "", clusterNameEmpty)
 
 	conf.CurrentContext = currentContextName
 	conf.Contexts[currentContextName].Manifest = defaultString

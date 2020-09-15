@@ -24,6 +24,7 @@ airshipctl phase run ephemeral-control-plane
 ```
       --dry-run                 simulate phase execution
   -h, --help                    help for run
+      --kubeconfig string       Path to kubeconfig associated with site being managed
       --wait-timeout duration   wait timeout
 ```
 
@@ -32,7 +33,6 @@ airshipctl phase run ephemeral-control-plane
 ```
       --airshipconf string   Path to file for airshipctl configuration. (default "$HOME/.airship/config")
       --debug                enable verbose output
-      --kubeconfig string    Path to kubeconfig associated with airshipctl configuration. (default "$HOME/.airship/kubeconfig")
 ```
 
 ### SEE ALSO

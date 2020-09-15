@@ -24,9 +24,10 @@ import (
 
 // RunFlags options for phase run command
 type RunFlags struct {
-	DryRun  bool
-	Timeout time.Duration
-	PhaseID ifc.ID
+	DryRun     bool
+	Timeout    time.Duration
+	PhaseID    ifc.ID
+	Kubeconfig string
 }
 
 // RunCommand phase run command
@@ -47,7 +48,8 @@ func (c *RunCommand) RunE() error {
 		return err
 	}
 
-	client := NewClient(helper)
+	kubeconfigOption := InjectKubeconfigPath(c.Options.Kubeconfig)
+	client := NewClient(helper, kubeconfigOption)
 
 	phase, err := client.PhaseByID(c.Options.PhaseID)
 	if err != nil {

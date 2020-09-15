@@ -55,10 +55,11 @@ var _ ifc.Phase = &phase{}
 
 // Phase implements phase interface
 type phase struct {
-	helper    ifc.Helper
-	apiObj    *v1alpha1.Phase
-	registry  ExecutorRegistry
-	processor events.EventProcessor
+	helper     ifc.Helper
+	apiObj     *v1alpha1.Phase
+	registry   ExecutorRegistry
+	processor  events.EventProcessor
+	kubeconfig string
 }
 
 // Executor returns executor interface associated with the phase
@@ -96,6 +97,7 @@ func (p *phase) Executor() (ifc.Executor, error) {
 		WithBundle(p.helper.PhaseRoot()).
 		WithClusterMap(cMap).
 		WithClusterName(p.apiObj.ClusterName).
+		WithPath(p.kubeconfig).
 		WithTempRoot(wd).
 		Build()
 
@@ -169,6 +171,7 @@ type client struct {
 
 	registry      ExecutorRegistry
 	processorFunc ProcessorFunc
+	kubeconfig    string
 }
 
 // ProcessorFunc that returns processor interface
@@ -188,6 +191,13 @@ func InjectProcessor(procFunc ProcessorFunc) Option {
 func InjectRegistry(registry ExecutorRegistry) Option {
 	return func(c *client) {
 		c.registry = registry
+	}
+}
+
+// InjectKubeconfigPath is an option that allows to inject path to kubeconfig into phase client
+func InjectKubeconfigPath(path string) Option {
+	return func(c *client) {
+		c.kubeconfig = path
 	}
 }
 

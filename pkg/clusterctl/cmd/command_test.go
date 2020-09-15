@@ -31,8 +31,7 @@ const (
 // TODO (kkalynovskyi) expand test cases
 func TestNewCommand(t *testing.T) {
 	airshipConfigPath := "testdata/airshipconfig.yaml"
-	kubeConfigPath := "testdata/kubeconfig.yaml"
-	cfg, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
+	cfg, err := config.CreateFactory(&airshipConfigPath)()
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -120,7 +119,7 @@ func TestNewCommand(t *testing.T) {
 			cfg.CurrentContext = context
 			command, err := NewCommand(func() (*config.Config, error) {
 				return cfg, nil
-			})
+			}, "")
 			if expectErr {
 				assert.Error(t, err)
 				assert.Nil(t, command)

@@ -63,11 +63,12 @@ func TestGetStatusMapDocs(t *testing.T) {
 		fakeClient := fake.NewClient(
 			fake.WithDynamicObjects(tt.resources...),
 			fake.WithCRDs(tt.CRDs...))
+		clientFactory := func(_ string, _ string) (client.Interface, error) {
+			return fakeClient, nil
+		}
 		statusOptions := cluster.NewStatusOptions(func() (*config.Config, error) {
 			return settings, nil
-		}, func(_ *config.Config) (client.Interface, error) {
-			return fakeClient, nil
-		})
+		}, clientFactory, "")
 
 		expectedSM, err := cluster.NewStatusMap(fakeClient)
 		require.NoError(t, err)

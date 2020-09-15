@@ -47,4 +47,5 @@ airshipctl cluster init
 
 
 Flags:
-  -h, --help   help for init
+  -h, --help                help for init
+      --kubeconfig string   Path to kubeconfig associated with cluster being managed

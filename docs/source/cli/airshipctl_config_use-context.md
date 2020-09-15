@@ -32,7 +32,6 @@ airshipctl config use-context exampleContext
 ```
       --airshipconf string   Path to file for airshipctl configuration. (default "$HOME/.airship/config")
       --debug                enable verbose output
-      --kubeconfig string    Path to kubeconfig associated with airshipctl configuration. (default "$HOME/.airship/kubeconfig")
 ```
 
 ### SEE ALSO
