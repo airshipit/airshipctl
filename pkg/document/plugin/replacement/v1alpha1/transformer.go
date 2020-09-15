@@ -231,9 +231,17 @@ func applySubstringPattern(target interface{}, replacement interface{},
 		return replacement, nil
 	}
 
-	repl, ok := replacement.(string)
-	if !ok {
-		return nil, ErrPatternSubstring{Msg: "pattern-based substitution can only be applied with string replacement values"}
+	// if replacement is numeric, convert it to a string for the sake of
+	// substring substitution.
+	var replacementString string
+	switch t := replacement.(type) {
+	case uint, uint8, uint16, uint32, uint64, int, int8, int16, int32, int64:
+		replacementString = fmt.Sprint(t)
+	case string:
+		replacementString = t
+	default:
+		return nil, ErrPatternSubstring{Msg: "pattern-based substitution can only be applied " +
+			"with string or numeric replacement values"}
 	}
 
 	tgt, ok := target.(string)
@@ -248,7 +256,7 @@ func applySubstringPattern(target interface{}, replacement interface{},
 				substringPattern, tgt),
 		}
 	}
-	return p.ReplaceAllString(tgt, repl), nil
+	return p.ReplaceAllString(tgt, replacementString), nil
 }
 
 func updateMapField(m map[string]interface{}, pathToField []string, replacement interface{}) error {
