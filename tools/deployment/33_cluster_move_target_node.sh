@@ -17,12 +17,8 @@ set -xe
 #Default wait timeout is 3600 seconds
 export TIMEOUT=${TIMEOUT:-3600}
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
-export KUBECONFIG_EPHEMERAL_CONTEXT=${KUBECONFIG_EPHEMERAL_CONTEXT:-"ephemeral-context"}
-export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-context"}
-
-echo "Switch context to ephemeral cluster and set manifest"
-airshipctl config use-context ephemeral-context
-airshipctl config set-context ephemeral-context --manifest dummy_manifest
+export KUBECONFIG_EPHEMERAL_CONTEXT=${KUBECONFIG_EPHEMERAL_CONTEXT:-"ephemeral-cluster"}
+export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
 
 echo "Check Cluster Status"
 kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT get cluster target-cluster -o json | jq '.status.controlPlaneReady'
@@ -30,12 +26,9 @@ kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT get clu
 echo "Annotate BMH for target node"
 kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT annotate bmh node01 baremetalhost.metal3.io/paused=true
 
+# Switch to airshipctl phase clusterctl-move when it is working
 echo "Move Cluster Object to Target Cluster"
 clusterctl --v 20 move --kubeconfig $KUBECONFIG --kubeconfig-context $KUBECONFIG_EPHEMERAL_CONTEXT --to-kubeconfig $KUBECONFIG --to-kubeconfig-context $KUBECONFIG_TARGET_CONTEXT
-
-echo "Switch context to target cluster and set manifest"
-airshipctl config use-context target-context
-airshipctl config set-context target-context --manifest dummy_manifest
 
 echo "Waiting for pods to be ready"
 kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT wait --all-namespaces --for=condition=Ready pods --all --timeout=3000s

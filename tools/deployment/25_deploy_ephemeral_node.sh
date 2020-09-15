@@ -17,7 +17,7 @@ set -xe
 #Default wait timeout is 3600 seconds
 export TIMEOUT=${TIMEOUT:-3600}
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
-export KUBECONFIG_EPHEMERAL_CONTEXT=${KUBECONFIG_EPHEMERAL_CONTEXT:-"ephemeral-context"}
+export KUBECONFIG_EPHEMERAL_CONTEXT=${KUBECONFIG_EPHEMERAL_CONTEXT:-"ephemeral-cluster"}
 
 echo "Deploy ephemeral node using redfish with iso"
 airshipctl baremetal remotedirect --debug

@@ -15,17 +15,16 @@
 set -xe
 
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
-export WAIT_TIMEOUT=${WAIT_TIMEOUT:-"2000s"}
-export KUBECONFIG_EPHEMERAL_CONTEXT=${KUBECONFIG_EPHEMERAL_CONTEXT:-"ephemeral-context"}
+export KUBECONFIG_EPHEMERAL_CONTEXT=${KUBECONFIG_EPHEMERAL_CONTEXT:-"ephemeral-cluster"}
 
 echo "Deploy metal3.io components to ephemeral node"
-airshipctl phase apply initinfra --wait-timeout $WAIT_TIMEOUT --debug
+airshipctl phase run initinfra-ephemeral --debug
 
 echo "Getting metal3 pods as debug information"
 kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT --namespace metal3 get pods
 
-echo "Deploy cluster components to ephemeral node"
-airshipctl cluster init --debug
+echo "Deploy cluster-api components to ephemeral node"
+airshipctl phase run clusterctl-init-ephemeral --debug
 
 echo "Waiting for clusterapi pods to come up"
 kubectl --kubeconfig $KUBECONFIG  --context $KUBECONFIG_EPHEMERAL_CONTEXT wait --for=condition=available deploy --all --timeout=1000s -A
