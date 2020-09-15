@@ -17,13 +17,34 @@ package phase
 import (
 	"path/filepath"
 
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	clusterctl "opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
+	"opendev.org/airship/airshipctl/pkg/k8s/applier"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/k8s/utils"
+	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
+
+// ExecutorRegistry returns map with executor factories
+type ExecutorRegistry func() map[schema.GroupVersionKind]ifc.ExecutorFactory
+
+// DefaultExecutorRegistry returns map with executor factories
+func DefaultExecutorRegistry() map[schema.GroupVersionKind]ifc.ExecutorFactory {
+	execMap := make(map[schema.GroupVersionKind]ifc.ExecutorFactory)
+
+	if err := clusterctl.RegisterExecutor(execMap); err != nil {
+		log.Fatal(ErrExecutorRegistration{ExecutorName: "clusterctl", Err: err})
+	}
+	if err := applier.RegisterExecutor(execMap); err != nil {
+		log.Fatal(ErrExecutorRegistration{ExecutorName: "kubernetes-apply", Err: err})
+	}
+	return execMap
+}
 
 var _ ifc.Phase = &phase{}
 
