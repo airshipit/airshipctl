@@ -113,6 +113,9 @@ func TestPersistConfig(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
+	conf.SetLoadedConfigPath(conf.LoadedConfigPath() + ".new")
+	conf.SetKubeConfigPath(conf.KubeConfigPath() + ".new")
+
 	err := conf.PersistConfig(true)
 	require.NoError(t, err)
 
