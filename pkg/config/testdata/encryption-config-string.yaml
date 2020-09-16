@@ -1,0 +1,2 @@
+decryptionKeyPath: /tmp/decryption.pub
+encryptionKeyPath: /tmp/encryption.key

@@ -84,6 +84,10 @@ func TestString(t *testing.T) {
 			name:     "managementconfiguration",
 			stringer: testutil.DummyManagementConfiguration(),
 		},
+		{
+			name:     "encryption-config",
+			stringer: testutil.DummyEncryptionConfig(),
+		},
 	}
 
 	for _, tt := range tests {
@@ -219,11 +223,12 @@ func TestEnsureComplete(t *testing.T) {
 		{
 			name: "complete config",
 			config: config.Config{
-				Clusters:       map[string]*config.ClusterPurpose{"testCluster": {}},
-				AuthInfos:      map[string]*config.AuthInfo{"testAuthInfo": {}},
-				Contexts:       map[string]*config.Context{"testContext": {Manifest: "testManifest"}},
-				Manifests:      map[string]*config.Manifest{"testManifest": {}},
-				CurrentContext: "testContext",
+				Clusters:          map[string]*config.ClusterPurpose{"testCluster": {}},
+				AuthInfos:         map[string]*config.AuthInfo{"testAuthInfo": {}},
+				Contexts:          map[string]*config.Context{"testContext": {Manifest: "testManifest"}},
+				Manifests:         map[string]*config.Manifest{"testManifest": {}},
+				EncryptionConfigs: map[string]*config.EncryptionConfig{"testEncryptionConfig": {}},
+				CurrentContext:    "testContext",
 			},
 			expectedErr: nil,
 		},
@@ -843,4 +848,40 @@ func TestModifyManifests(t *testing.T) {
 	mo.URL = ""
 	err = conf.ModifyManifest(manifest, mo)
 	require.Error(t, err)
+}
+
+func TestGetDefaultEncryptionConfigs(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	encryptionConfigs := conf.GetEncryptionConfigs()
+	require.NotNil(t, encryptionConfigs)
+	// by default, we dont expect any encryption configs
+	assert.Equal(t, 0, len(encryptionConfigs))
+}
+
+func TestModifyEncryptionConfigs(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	eco := testutil.DummyEncryptionConfigOptions()
+	encryptionConfig := conf.AddEncryptionConfig(eco)
+	require.NotNil(t, encryptionConfig)
+
+	eco.KeySecretName += stringDelta
+	conf.ModifyEncryptionConfig(encryptionConfig, eco)
+	modifiedConfig := conf.EncryptionConfigs[eco.Name]
+	assert.Equal(t, eco.KeySecretName, modifiedConfig.KeySecretName)
+
+	eco.KeySecretNamespace += stringDelta
+	conf.ModifyEncryptionConfig(encryptionConfig, eco)
+	assert.Equal(t, eco.KeySecretNamespace, modifiedConfig.KeySecretNamespace)
+
+	eco.EncryptionKeyPath += stringDelta
+	conf.ModifyEncryptionConfig(encryptionConfig, eco)
+	assert.Equal(t, eco.EncryptionKeyPath, modifiedConfig.EncryptionKeyPath)
+
+	eco.DecryptionKeyPath += stringDelta
+	conf.ModifyEncryptionConfig(encryptionConfig, eco)
+	assert.Equal(t, eco.DecryptionKeyPath, modifiedConfig.DecryptionKeyPath)
 }

@@ -55,6 +55,9 @@ func DummyConfig() *config.Config {
 		ManagementConfiguration: map[string]*config.ManagementConfiguration{
 			"dummy_management_config": DummyManagementConfiguration(),
 		},
+		EncryptionConfigs: map[string]*config.EncryptionConfig{
+			"dummy_encryption_config": DummyEncryptionConfig(),
+		},
 		CurrentContext: "dummy_context",
 	}
 	conf.SetKubeConfig(kubeconfig.NewConfig())
@@ -74,6 +77,7 @@ func DummyContext() *config.Context {
 	context.Namespace = "dummy_namespace"
 	context.AuthInfo = "dummy_user"
 	context.Cluster = "dummy_cluster_ephemeral"
+	c.EncryptionConfig = "dummy_encryption_config"
 	c.SetKubeContext(context)
 
 	return c
@@ -207,6 +211,7 @@ func DummyContextOptions() *config.ContextOptions {
 	co.AuthInfo = "dummy_user"
 	co.CurrentContext = false
 	co.Namespace = "dummy_namespace"
+	co.EncryptionConfig = "dummy_encryption_config"
 
 	return co
 }
@@ -221,6 +226,27 @@ func DummyAuthInfoOptions() *config.AuthInfoOptions {
 	authinfo.ClientKey = "dummy_key"
 	authinfo.Token = "dummy_token"
 	return authinfo
+}
+
+// DummyEncryptionConfig creates EncryptionConfigOptions object
+// for unit testing
+func DummyEncryptionConfig() *config.EncryptionConfig {
+	return &config.EncryptionConfig{
+		EncryptionKeyFileSource: config.EncryptionKeyFileSource{
+			EncryptionKeyPath: "/tmp/encryption.key",
+			DecryptionKeyPath: "/tmp/decryption.pub",
+		},
+	}
+}
+
+// DummyEncryptionConfigOptions creates ManifestOptions config object
+// for unit testing
+func DummyEncryptionConfigOptions() *config.EncryptionConfigOptions {
+	return &config.EncryptionConfigOptions{
+		Name:              "dummy_encryption_config",
+		EncryptionKeyPath: "/tmp/encryption.key",
+		DecryptionKeyPath: "/tmp/decryption.pub",
+	}
 }
 
 // DummyManagementConfiguration creates a management configuration for unit testing
@@ -281,6 +307,7 @@ contexts:
     contextKubeconf: def_target
   onlyink:
     contextKubeconf: onlyinkubeconf_target
+encryptionConfigs: {}
 currentContext: ""
 kind: Config
 manifests: {}
