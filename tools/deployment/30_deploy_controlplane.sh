@@ -17,9 +17,8 @@ set -ex
 TARGET_IMAGE_DIR="/srv/iso"
 EPHEMERAL_DOMAIN_NAME="air-ephemeral"
 TARGET_IMAGE_URL="https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img"
-export WAIT_TIMEOUT=${WAIT_TIMEOUT:-"2000s"}
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
-export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-context"}
+export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
 
 # TODO (dukov) this is needed due to sushy tools inserts cdrom image to
 # all vms. This can be removed once sushy tool is fixed
@@ -49,31 +48,20 @@ fi
 md5sum /srv/iso/target-image.qcow2 | cut -d ' ' -f 1 > ${TARGET_IMAGE_DIR}/target-image.qcow2.md5sum
 
 echo "Create target k8s cluster resources"
-airshipctl phase apply controlplane --wait-timeout $WAIT_TIMEOUT --debug
+airshipctl phase run controlplane-ephemeral --debug
 
-echo "Switch context to target cluster and set manifest"
-airshipctl config use-context target-context
-airshipctl config set-context target-context --manifest dummy_manifest
+echo "List all nodes in target cluster"
+kubectl \
+  --kubeconfig $KUBECONFIG \
+  --context $KUBECONFIG_TARGET_CONTEXT \
+  --request-timeout 10s \
+  get node
 
-echo "Wait for apiserver to become available"
-N=0
-MAX_RETRY=30
-DELAY=60
-until [ "$N" -ge ${MAX_RETRY} ]
-do
-  if timeout 20 kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get node; then
-      break
-  fi
 
-  N=$((N+1))
-  echo "$N: Retrying to reach the apiserver"
-  sleep ${DELAY}
-done
-
-if [ "$N" -ge ${MAX_RETRY} ]; then
-  echo "Could not reach the apiserver"
-  exit 1
-fi
-
-echo "List all pods"
-kubectl --kubeconfig  $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get pods --all-namespaces
+echo "List all pods in target cluster"
+kubectl \
+  --kubeconfig  $KUBECONFIG \
+  --context $KUBECONFIG_TARGET_CONTEXT \
+  --request-timeout 10s \
+  get pods \
+  --all-namespaces

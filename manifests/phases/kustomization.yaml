@@ -1,0 +1,6 @@
+resources:
+  - phases.yaml
+  - plan.yaml
+  - executors.yaml
+  - cluster-map.yaml
+  - kubeconfig.yaml

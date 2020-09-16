@@ -35,13 +35,13 @@ clusters:
         clusterKubeconf: target-cluster_target
         managementConfiguration: dummy_management_config
 contexts:
-  ephemeral-context:
+  ephemeral-cluster:
     contextKubeconf: ephemeral-context
     manifest: dummy_manifest
-  target-context:
+  target-cluster:
     contextKubeconf: target-context
     manifest: dummy_manifest
-currentContext: ephemeral-context
+currentContext: ephemeral-cluster
 kind: Config
 manifests:
   dummy_manifest:
@@ -54,6 +54,7 @@ manifests:
           remoteRef: ""
           tag: ""
         url: ${AIRSHIP_CONFIG_PRIMARY_REPO_URL}
+    metadataPath: manifests/metadata.yaml
     subPath: ${AIRSHIP_SITE_NAME}
     targetPath: ${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}
 users:

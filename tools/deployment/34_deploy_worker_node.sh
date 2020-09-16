@@ -17,17 +17,13 @@ set -xe
 #Default wait timeout is 3600 seconds
 export TIMEOUT=${TIMEOUT:-3600}
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
-export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-context"}
-
-echo "Switch context to target cluster and set manifest"
-airshipctl config use-context target-context
-airshipctl config set-context target-context --manifest dummy_manifest
+export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
 
 echo "Stop ephemeral node"
 sudo virsh destroy air-ephemeral
 
 echo "Deploy worker node"
-airshipctl phase apply workers --debug
+airshipctl phase run  workers-target --debug
 
 #Wait till node is created
 end=$(($(date +%s) + $TIMEOUT))
