@@ -36,7 +36,7 @@ sudo apt update
 sudo DEBIAN_FRONTEND=noninteractive apt -y install software-properties-common python3-pip curl wget ca-certificates
 sudo DEBIAN_FRONTEND=noninteractive apt -y --no-install-recommends install docker.io make
 
-PACKAGES="ansible netaddr"
+PACKAGES="ansible netaddr yq"
 if [[ -z "${http_proxy}" ]]; then
   sudo pip3 install $PACKAGES
 else

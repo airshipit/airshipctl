@@ -42,7 +42,7 @@ export AIRSHIP_CONFIG_MANIFEST_DIRECTORY=${AIRSHIP_CONFIG_MANIFEST_DIRECTORY:-"/
 export EXTERNAL_KUBECONFIG=${EXTERNAL_KUBECONFIG:-""}
 
 # Remove the contents of the .airship folder, preserving the kustomize plugin directory
-rm -rf $HOME/.airship/config
+rm -rf $HOME/.airship/*config*
 mkdir -p $HOME/.airship
 
 echo "Generate ~/.airship/config and ~/.airship/kubeconfig"
