@@ -99,6 +99,7 @@
         - ./tools/deployment/32_cluster_init_target_node.sh
         - ./tools/deployment/33_cluster_move_target_node.sh
         - ./tools/deployment/34_deploy_worker_node.sh
+        - ./tools/deployment/35_deploy_workload.sh
       serve_dir: /srv/iso
       serve_port: 8099
       log_roles:

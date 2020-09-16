@@ -1,0 +1,32 @@
+---
+apiVersion: "helm.fluxcd.io/v1"
+kind: HelmRelease
+metadata:
+  name: ingress
+spec:
+  wait: true
+  timeout: 600
+  # This chart doesn't have any helm tests, but this still runs a noop
+  # helm test flow, to ensure we can do this.
+  test:
+    enable: true
+  values:
+    defaultBackend:
+      enabled: true
+    controller:
+      service:
+        type: NodePort
+        nodePorts:
+          http: 30000
+          https: 30001
+      kind: DaemonSet
+      hostNetwork: "false"
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+  chart:
+    repository: https://kubernetes-charts.storage.googleapis.com
+    name: nginx-ingress
+    version: 1.40.1

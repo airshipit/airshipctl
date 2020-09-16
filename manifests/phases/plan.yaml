@@ -10,3 +10,4 @@ phaseGroups:
       - name: controlplane-ephemeral
       - name: initinfra-target
       - name: workers-target
+      - name: workload-target
