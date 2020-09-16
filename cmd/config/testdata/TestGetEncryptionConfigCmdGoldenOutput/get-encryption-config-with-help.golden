@@ -1,0 +1,19 @@
+Display a specific encryption config information, or all defined encryption configs if no name is provided.
+
+Usage:
+  get-encryption-config NAME [flags]
+
+Aliases:
+  get-encryption-config, get-encryption-configs
+
+Examples:
+
+# List all the encryption configs airshipctl knows about
+airshipctl config get-encryption-configs
+
+# Display a specific encryption config
+airshipctl config get-encryption-config exampleConfig
+
+
+Flags:
+  -h, --help   help for get-encryption-config

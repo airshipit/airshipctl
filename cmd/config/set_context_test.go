@@ -30,10 +30,11 @@ import (
 )
 
 const (
-	testUser         = "admin@kubernetes"
-	defaultManifest  = "edge_cloud"
-	defaultNamespace = "kube-system"
-	testManifest     = "test_manifest"
+	testUser             = "admin@kubernetes"
+	defaultManifest      = "edge_cloud"
+	defaultNamespace     = "kube-system"
+	testManifest         = "test_manifest"
+	testEncryptionConfig = "test_encryption_config"
 )
 
 type setContextTest struct {
@@ -73,11 +74,12 @@ func TestSetContext(t *testing.T) {
 	defer cleanupGiven(t)
 
 	tests := []struct {
-		testName    string
-		contextName string
-		flags       []string
-		givenConfig *config.Config
-		manifest    string
+		testName         string
+		contextName      string
+		flags            []string
+		givenConfig      *config.Config
+		manifest         string
+		encryptionConfig string
 	}{
 		{
 			testName:    "set-context",
@@ -87,9 +89,11 @@ func TestSetContext(t *testing.T) {
 				"--user=" + testUser,
 				"--manifest=" + defaultManifest,
 				"--namespace=" + defaultNamespace,
+				"--encryption-config=" + testEncryptionConfig,
 			},
-			givenConfig: given,
-			manifest:    defaultManifest,
+			givenConfig:      given,
+			manifest:         defaultManifest,
+			encryptionConfig: testEncryptionConfig,
 		},
 		{
 			testName:    "set-current-context",
@@ -105,6 +109,15 @@ func TestSetContext(t *testing.T) {
 			},
 			givenConfig: given,
 			manifest:    testManifest,
+		},
+		{
+			testName:    "modify-context",
+			contextName: "def_target",
+			flags: []string{
+				"--encryption-config=" + testEncryptionConfig,
+			},
+			givenConfig:      given,
+			encryptionConfig: testEncryptionConfig,
 		},
 	}
 
