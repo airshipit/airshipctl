@@ -82,14 +82,6 @@ func TestPull(t *testing.T) {
 			error: nil,
 		},
 		{
-			name: "TestCloneRepositoriesNonMasterBranch",
-			checkoutOpts: &config.RepoCheckout{
-				Branch:        "branch",
-				ForceCheckout: false,
-			},
-			error: nil,
-		},
-		{
 			name: "TestCloneRepositoriesInvalidOpts",
 			checkoutOpts: &config.RepoCheckout{
 				Branch:        "master",
@@ -116,7 +108,7 @@ func TestPull(t *testing.T) {
 			currentManifest, err := cfg.CurrentContextManifest()
 			require.NoError(err)
 
-			err = pull.Pull(cfgFactory)
+			err = pull.Pull(cfgFactory, false)
 			if expectedErr != nil {
 				assert.NotNil(err)
 				assert.Equal(expectedErr, err)

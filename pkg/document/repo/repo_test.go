@@ -44,7 +44,7 @@ func (md mockBuilder) ToAuth() (transport.AuthMethod, error) {
 func (md mockBuilder) ToCloneOptions(transport.AuthMethod) *git.CloneOptions {
 	return md.CloneOptions
 }
-func (md mockBuilder) ToCheckoutOptions(bool) *git.CheckoutOptions {
+func (md mockBuilder) ToCheckoutOptions() *git.CheckoutOptions {
 	return md.CheckoutOptions
 }
 func (md mockBuilder) ToFetchOptions(transport.AuthMethod) *git.FetchOptions {
@@ -131,15 +131,15 @@ func TestUpdate(t *testing.T) {
 	require.NotEqual(t, prevCommitHash.String(), headHash.String())
 	builder.CheckoutOptions = &git.CheckoutOptions{Hash: *prevCommitHash}
 	// Checkout previous commit
-	err = repo.Checkout(true)
+	err = repo.Checkout()
 	require.NoError(t, err)
 
 	// Set checkout back to master
 	builder.CheckoutOptions = checkout
-	err = repo.Checkout(true)
+	err = repo.Checkout()
 	assert.NoError(t, err)
 	// update repository
-	require.NoError(t, repo.Update(true))
+	require.NoError(t, repo.Update())
 
 	currentHash, err := repo.Driver.Head()
 	assert.NoError(t, err)
@@ -147,7 +147,7 @@ func TestUpdate(t *testing.T) {
 	assert.Equal(t, headHash.String(), currentHash.Hash().String())
 
 	repo.Driver.Close()
-	updateError := repo.Update(true)
+	updateError := repo.Update()
 	assert.Error(t, updateError)
 }
 
@@ -206,6 +206,6 @@ func TestCheckout(t *testing.T) {
 
 	repo, err := NewRepository(".", builder)
 	require.NoError(t, err)
-	err = repo.Checkout(true)
+	err = repo.Checkout()
 	assert.Error(t, err)
 }

@@ -217,11 +217,10 @@ func (repo *Repository) ToAuth() (transport.AuthMethod, error) {
 // ToCheckoutOptions returns an instance of git.CheckoutOptions with
 // respective values(Branch/Tag/Hash) in checkout options initialized
 // CheckoutOptions describes how a checkout operation should be performed
-func (repo *Repository) ToCheckoutOptions(force bool) *git.CheckoutOptions {
-	co := &git.CheckoutOptions{
-		Force: force,
-	}
+func (repo *Repository) ToCheckoutOptions() *git.CheckoutOptions {
+	co := &git.CheckoutOptions{}
 	if repo.CheckoutOptions != nil {
+		co.Force = repo.CheckoutOptions.ForceCheckout
 		switch {
 		case repo.CheckoutOptions.Branch != "":
 			co.Branch = plumbing.NewBranchReferenceName(repo.CheckoutOptions.Branch)
@@ -238,19 +237,10 @@ func (repo *Repository) ToCheckoutOptions(force bool) *git.CheckoutOptions {
 // authentication and URL set
 // CloneOptions describes how a clone should be performed
 func (repo *Repository) ToCloneOptions(auth transport.AuthMethod) *git.CloneOptions {
-	cl := &git.CloneOptions{
+	return &git.CloneOptions{
 		Auth: auth,
 		URL:  repo.URLString,
 	}
-	if repo.CheckoutOptions != nil {
-		switch {
-		case repo.CheckoutOptions.Branch != "":
-			cl.ReferenceName = plumbing.NewBranchReferenceName(repo.CheckoutOptions.Branch)
-		case repo.CheckoutOptions.Tag != "":
-			cl.ReferenceName = plumbing.NewTagReferenceName(repo.CheckoutOptions.Tag)
-		}
-	}
-	return cl
 }
 
 // ToFetchOptions returns an instance of git.FetchOptions for given authentication

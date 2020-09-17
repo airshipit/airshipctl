@@ -18,11 +18,10 @@ set -xe
 
 # The root of the manifest structure to be validated.
 # This corresponds to the targetPath in an airshipctl config
-: ${MANIFEST_ROOT:="${PWD}"}
+: ${MANIFEST_ROOT:="$(dirname "${PWD}")"}
 # The space-separated locations of sites whose manifests should be validated.
-# These are relative to MANIFEST_ROOT above, and correspond to
-# the base of the subPath in an airshipctl config
-: ${SITE_ROOTS:="manifests/site"}
+# These are relative to MANIFEST_ROOT above
+: ${SITE_ROOTS:="$(basename "${PWD}")/manifests/site"}
 
 # get kind
 echo "Fetching kind from ${KIND_URL}..."
