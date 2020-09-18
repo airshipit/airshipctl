@@ -64,3 +64,18 @@ additional-vars:
   CONTAINER_CACPK_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
   CONTAINER_CABPK_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
   CONTAINER_CAPI_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
+---
+apiVersion: airshipit.org/v1alpha1
+kind: ImageConfiguration
+metadata:
+  name: isogen
+  labels:
+    airshipit.org/deploy-k8s: "false"
+builder:
+  networkConfigFileName: network-config
+  outputMetadataFileName: output-metadata.yaml
+  userDataFileName: user-data
+container:
+  containerRuntime: docker
+  image: quay.io/airshipit/isogen:latest-ubuntu_focal
+  volume: /srv/iso:/config

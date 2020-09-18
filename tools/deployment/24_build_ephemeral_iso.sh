@@ -27,7 +27,7 @@ sudo chmod -R 755 ${ISO_DIR}
 sudo chown -R ${USER_NAME} ${ISO_DIR}
 
 echo "Build ephemeral iso"
-airshipctl image build --debug
+airshipctl phase run bootstrap --debug
 
 echo "List generated iso"
 ls -lth ${ISO_DIR}

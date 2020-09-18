@@ -1,3 +1,13 @@
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: bootstrap
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: ImageConfiguration
+    name: isogen
+  documentEntryPoint: manifests/site/test-site/ephemeral/bootstrap
 ---
 apiVersion: airshipit.org/v1alpha1
 kind: Phase
