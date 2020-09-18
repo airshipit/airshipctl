@@ -130,7 +130,7 @@ func (helper *Helper) ListPhases() ([]*v1alpha1.Phase, error) {
 		if err = doc.ToAPIObject(p, v1alpha1.Scheme); err != nil {
 			return nil, err
 		}
-		phases = append(phases, phase)
+		phases = append(phases, p)
 	}
 	return phases, nil
 }
