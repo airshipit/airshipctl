@@ -110,16 +110,19 @@ func TestExecutorRun(t *testing.T) {
 			},
 			expectedEvt: []events.Event{
 				{
+					Type: events.IsogenType,
 					IsogenEvent: events.IsogenEvent{
 						Operation: events.IsogenStart,
 					},
 				},
 				{
+					Type: events.IsogenType,
 					IsogenEvent: events.IsogenEvent{
 						Operation: events.IsogenValidation,
 					},
 				},
 				{
+					Type: events.IsogenType,
 					IsogenEvent: events.IsogenEvent{
 						Operation: events.IsogenEnd,
 					},
@@ -138,6 +141,7 @@ func TestExecutorRun(t *testing.T) {
 
 			expectedEvt: []events.Event{
 				{
+					Type: events.IsogenType,
 					IsogenEvent: events.IsogenEvent{
 						Operation: events.IsogenStart,
 					},
@@ -160,6 +164,10 @@ func TestExecutorRun(t *testing.T) {
 			go executor.Run(ch, ifc.RunOptions{})
 			var actualEvt []events.Event
 			for evt := range ch {
+				if evt.Type == events.IsogenType {
+					// Set message to empty string, so it's not compared
+					evt.IsogenEvent.Message = ""
+				}
 				actualEvt = append(actualEvt, evt)
 			}
 			assert.Equal(t, tt.expectedEvt, actualEvt)

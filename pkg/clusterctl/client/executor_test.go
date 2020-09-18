@@ -128,6 +128,7 @@ func TestExecutorRun(t *testing.T) {
 			bundlePath: "testdata/executor_init",
 			expectedEvt: []events.Event{
 				{
+					Type: events.ClusterctlType,
 					ClusterctlEvent: events.ClusterctlEvent{
 						Operation: events.ClusterctlInitStart,
 					},
@@ -151,11 +152,13 @@ func TestExecutorRun(t *testing.T) {
 			bundlePath: "testdata/executor_init",
 			expectedEvt: []events.Event{
 				{
+					Type: events.ClusterctlType,
 					ClusterctlEvent: events.ClusterctlEvent{
 						Operation: events.ClusterctlInitStart,
 					},
 				},
 				{
+					Type: events.ClusterctlType,
 					ClusterctlEvent: events.ClusterctlEvent{
 						Operation: events.ClusterctlInitEnd,
 					},
@@ -185,6 +188,10 @@ func TestExecutorRun(t *testing.T) {
 			go executor.Run(ch, ifc.RunOptions{DryRun: true})
 			var actualEvt []events.Event
 			for evt := range ch {
+				if evt.Type == events.ClusterctlType {
+					// Set message to empty string, so it's not compared
+					evt.ClusterctlEvent.Message = ""
+				}
 				actualEvt = append(actualEvt, evt)
 			}
 			assert.Equal(t, tt.expectedEvt, actualEvt)

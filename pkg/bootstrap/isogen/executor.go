@@ -53,7 +53,10 @@ func RegisterExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFactory) 
 
 // NewExecutor creates instance of phase executor
 func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
-	apiObj := &v1alpha1.ImageConfiguration{}
+	apiObj := &v1alpha1.ImageConfiguration{
+		Container: &v1alpha1.Container{},
+		Builder:   &v1alpha1.Builder{},
+	}
 	err := cfg.ExecutorDocument.ToAPIObject(apiObj, v1alpha1.Scheme)
 	if err != nil {
 		return nil, err
@@ -70,15 +73,23 @@ func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 func (c *Executor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 	defer close(evtCh)
 
+	if c.ExecutorBundle == nil {
+		handleError(evtCh, ErrIsoGenNilBundle{})
+		return
+	}
+
 	evtCh <- events.Event{
+		Type: events.IsogenType,
 		IsogenEvent: events.IsogenEvent{
 			Operation: events.IsogenStart,
+			Message:   "starting ISO generation",
 		},
 	}
 
 	if opts.DryRun {
 		log.Print("command isogen will be executed")
 		evtCh <- events.Event{
+			Type: events.IsogenType,
 			IsogenEvent: events.IsogenEvent{
 				Operation: events.IsogenEnd,
 			},
@@ -106,8 +117,10 @@ func (c *Executor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 	}
 
 	evtCh <- events.Event{
+		Type: events.IsogenType,
 		IsogenEvent: events.IsogenEvent{
 			Operation: events.IsogenValidation,
+			Message:   "image is generated successfully, verifying artifacts",
 		},
 	}
 	err = verifyArtifacts(c.imgConf)
@@ -117,8 +130,10 @@ func (c *Executor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 	}
 
 	evtCh <- events.Event{
+		Type: events.IsogenType,
 		IsogenEvent: events.IsogenEvent{
 			Operation: events.IsogenEnd,
+			Message:   "iso generation is complete and artifacts verified",
 		},
 	}
 }

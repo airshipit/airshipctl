@@ -12,18 +12,12 @@
  limitations under the License.
 */
 
-package events
+package isogen
 
-import (
-	"fmt"
-)
-
-// ErrEventReceived returned for not implemented features
-type ErrEventReceived struct {
-	Errors []error
+// ErrIsoGenNilBundle is returned when isogen executor is not provided with bundle
+type ErrIsoGenNilBundle struct {
 }
 
-func (e ErrEventReceived) Error() string {
-	// TODO make printing more readable here
-	return fmt.Sprintf("Error events received on channel, errors are:\n%v", e.Errors)
+func (e ErrIsoGenNilBundle) Error() string {
+	return "Cannot build iso with empty bundle, no data source is available"
 }

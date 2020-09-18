@@ -69,6 +69,7 @@ const (
 // ClusterctlEvent is produced by clusterctl executor
 type ClusterctlEvent struct {
 	Operation ClusterctlOperation
+	Message   string
 }
 
 // IsogenOperation type
@@ -86,4 +87,5 @@ const (
 // IsogenEvent needs to to track events in isogen executor
 type IsogenEvent struct {
 	Operation IsogenOperation
+	Message   string
 }

@@ -88,8 +88,10 @@ func (c *ClusterctlExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 
 func (c *ClusterctlExecutor) move(opts ifc.RunOptions, evtCh chan events.Event) {
 	evtCh <- events.Event{
+		Type: events.ClusterctlType,
 		ClusterctlEvent: events.ClusterctlEvent{
 			Operation: events.ClusterctlMoveStart,
+			Message:   "starting clusterctl move executor",
 		},
 	}
 	ns := c.options.MoveOptions.Namespace
@@ -115,16 +117,20 @@ func (c *ClusterctlExecutor) move(opts ifc.RunOptions, evtCh chan events.Event) 
 	}
 
 	evtCh <- events.Event{
+		Type: events.ClusterctlType,
 		ClusterctlEvent: events.ClusterctlEvent{
 			Operation: events.ClusterctlMoveEnd,
+			Message:   "clusterctl move completed successfully",
 		},
 	}
 }
 
 func (c *ClusterctlExecutor) init(opts ifc.RunOptions, evtCh chan events.Event) {
 	evtCh <- events.Event{
+		Type: events.ClusterctlType,
 		ClusterctlEvent: events.ClusterctlEvent{
 			Operation: events.ClusterctlInitStart,
+			Message:   "starting clusterctl init executor",
 		},
 	}
 	kubeConfigFile, cleanup, err := c.kubecfg.GetFile()
@@ -139,8 +145,10 @@ func (c *ClusterctlExecutor) init(opts ifc.RunOptions, evtCh chan events.Event) 
 		// TODO (dukov) add more details to dry-run
 		log.Print("command 'clusterctl init' is going to be executed")
 		evtCh <- events.Event{
+			Type: events.ClusterctlType,
 			ClusterctlEvent: events.ClusterctlEvent{
 				Operation: events.ClusterctlInitEnd,
+				Message:   "clusterctl init dry-run completed successfully",
 			},
 		}
 		return
@@ -151,8 +159,10 @@ func (c *ClusterctlExecutor) init(opts ifc.RunOptions, evtCh chan events.Event) 
 		c.handleErr(err, evtCh)
 	}
 	evtCh <- events.Event{
+		Type: events.ClusterctlType,
 		ClusterctlEvent: events.ClusterctlEvent{
 			Operation: events.ClusterctlInitEnd,
+			Message:   "clusterctl init completed successfully",
 		},
 	}
 }
