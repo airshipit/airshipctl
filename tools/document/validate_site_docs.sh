@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e
+set -xe
 
 # The root of the manifest structure to be validated.
 # This corresponds to the targetPath in an airshipctl config
@@ -109,7 +109,7 @@ for cluster in ephemeral target; do
         # removed since it was choking in certain cases and got to be more trouble than was worth.
         # This should be removed once we have a phase map that is smarter.
         # In the meantime, as new phases are added, please add them here as well.
-        phases="bootstrap initinfra controlplane baremetalhost workers workload tenant"
+        phases="initinfra-ephemeral controlplane-ephemeral initinfra-target workers-target"
 
         for phase in $phases; do
             # Guard against bootstrap or initinfra being missing, which could be the case for some configs

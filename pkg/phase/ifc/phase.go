@@ -15,18 +15,20 @@
 package ifc
 
 import (
+	"io"
+
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 )
 
 // Phase provides a way to interact with a phase
-// TODO add render method
 type Phase interface {
 	Validate() error
 	Run(RunOptions) error
 	DocumentRoot() string
 	Details() (string, error)
 	Executor() (Executor, error)
+	Render(io.Writer, RenderOptions) error
 }
 
 // ID uniquely identifies the phase

@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package render
+package phase
 
 import (
 	"io"
@@ -20,26 +20,40 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
+// FilterOptions holds filters for selector
+type FilterOptions struct {
+	// Label filters documents by label string
+	Label string
+	// Annotation filters documents by annotation string
+	Annotation string
+	// APIVersion filters documents by API group and version
+	APIVersion string
+	// Kind filters documents by document kind
+	Kind string
+}
+
 // Render prints out filtered documents
-func (s *Settings) Render(cfgFactory config.Factory, phaseName string, out io.Writer) error {
+func (fo *FilterOptions) Render(cfgFactory config.Factory, phaseName string, out io.Writer) error {
 	cfg, err := cfgFactory()
 	if err != nil {
 		return err
 	}
 
-	path, err := cfg.CurrentContextEntryPoint(phaseName)
+	helper, err := NewHelper(cfg)
 	if err != nil {
 		return err
 	}
 
-	docBundle, err := document.NewBundleByPath(path)
+	client := NewClient(helper)
+	phase, err := client.PhaseByID(ifc.ID{Name: phaseName})
 	if err != nil {
 		return err
 	}
 
-	groupVersion := strings.Split(s.APIVersion, "/")
+	groupVersion := strings.Split(fo.APIVersion, "/")
 	group := ""
 	version := groupVersion[0]
 	if len(groupVersion) > 1 {
@@ -47,11 +61,7 @@ func (s *Settings) Render(cfgFactory config.Factory, phaseName string, out io.Wr
 		version = strings.Join(groupVersion[1:], "/")
 	}
 
-	sel := document.NewSelector().ByLabel(s.Label).ByAnnotation(s.Annotation).ByGvk(group, version, s.Kind)
-	filteredBundle, err := docBundle.SelectBundle(sel)
-	if err != nil {
-		return err
-	}
+	sel := document.NewSelector().ByLabel(fo.Label).ByAnnotation(fo.Annotation).ByGvk(group, version, fo.Kind)
 
-	return filteredBundle.Write(out)
+	return phase.Render(out, ifc.RenderOptions{FilterSelector: sel})
 }

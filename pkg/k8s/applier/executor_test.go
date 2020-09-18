@@ -167,7 +167,7 @@ func TestExecutorRun(t *testing.T) {
 		{
 			name:        "Nil bundle provided",
 			execDoc:     toKubernetesApply(t, ValidExecutorDoc),
-			containsErr: "Cannot apply nil bundle",
+			containsErr: "nil bundle provided",
 			kubeconf:    testKubeconfig(testValidKubeconfig),
 			helper:      makeDefaultHelper(t),
 			bundleFunc: func(t *testing.T) document.Bundle {
@@ -185,17 +185,22 @@ func TestExecutorRun(t *testing.T) {
 					ExecutorBundle:   tt.bundleFunc(t),
 					Kubeconfig:       tt.kubeconf,
 				})
-			require.NoError(t, err)
-			require.NotNil(t, exec)
-			ch := make(chan events.Event)
-			go exec.Run(ch, ifc.RunOptions{})
-			processor := events.NewDefaultProcessor(utils.Streams())
-			err = processor.Process(ch)
-			if tt.containsErr != "" {
+			if tt.name == "Nil bundle provided" {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), tt.containsErr)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
+				require.NotNil(t, exec)
+				ch := make(chan events.Event)
+				go exec.Run(ch, ifc.RunOptions{})
+				processor := events.NewDefaultProcessor(utils.Streams())
+				err = processor.Process(ch)
+				if tt.containsErr != "" {
+					require.Error(t, err)
+					assert.Contains(t, err.Error(), tt.containsErr)
+				} else {
+					assert.NoError(t, err)
+				}
 			}
 		})
 	}

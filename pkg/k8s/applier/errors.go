@@ -28,10 +28,10 @@ func (e ErrApply) Error() string {
 	return fmt.Sprintf("Applying of resources to kubernetes cluster has failed, errors are:\n%v", e.errors)
 }
 
-// ErrApplyNilBundle returned when nil bundle is passed to ApplyBundle function
-type ErrApplyNilBundle struct {
+// ErrNilBundle returned when bundle is nil
+type ErrNilBundle struct {
 }
 
-func (e ErrApplyNilBundle) Error() string {
-	return "Cannot apply nil bundle"
+func (e ErrNilBundle) Error() string {
+	return "nil bundle provided"
 }

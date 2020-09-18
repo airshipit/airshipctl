@@ -144,8 +144,10 @@ func (c *Executor) Validate() error {
 }
 
 // Render executor documents
-func (c *Executor) Render(_ io.Writer, _ ifc.RenderOptions) error {
-	return errors.ErrNotImplemented{}
+func (c *Executor) Render(w io.Writer, _ ifc.RenderOptions) error {
+	// will be implemented later
+	_, err := w.Write([]byte{})
+	return err
 }
 
 func handleError(ch chan<- events.Event, err error) {

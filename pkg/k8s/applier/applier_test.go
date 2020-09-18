@@ -94,7 +94,7 @@ func TestApplierRun(t *testing.T) {
 		},
 		{
 			name:           "bundle failure",
-			expectedString: "Cannot apply nil bundle",
+			expectedString: "nil bundle provided",
 			expectErr:      true,
 		},
 		{

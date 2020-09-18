@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package render_test
+package phase_test
 
 import (
 	"bytes"
@@ -25,7 +25,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/phase/render"
+	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
@@ -34,22 +34,23 @@ func TestRender(t *testing.T) {
 	dummyManifest := rs.Manifests["dummy_manifest"]
 	dummyManifest.TargetPath = "testdata"
 	dummyManifest.SubPath = ""
+	dummyManifest.MetadataPath = "metadata.yaml"
 	fixturePath := "phase"
 	tests := []struct {
 		name       string
-		settings   *render.Settings
+		settings   *phase.FilterOptions
 		expResFile string
 		expErr     error
 	}{
 		{
 			name:       "No Filters",
-			settings:   &render.Settings{},
+			settings:   &phase.FilterOptions{},
 			expResFile: "noFilter.yaml",
 			expErr:     nil,
 		},
 		{
 			name: "All Filters",
-			settings: &render.Settings{
+			settings: &phase.FilterOptions{
 				Label:      "airshipit.org/deploy-k8s=false",
 				Annotation: "airshipit.org/clustertype=ephemeral",
 				APIVersion: "metal3.io/v1alpha1",
@@ -60,7 +61,7 @@ func TestRender(t *testing.T) {
 		},
 		{
 			name: "Multiple Labels",
-			settings: &render.Settings{
+			settings: &phase.FilterOptions{
 				Label: "airshipit.org/deploy-k8s=false, airshipit.org/ephemeral-node=true",
 			},
 			expResFile: "multiLabels.yaml",
@@ -68,7 +69,7 @@ func TestRender(t *testing.T) {
 		},
 		{
 			name: "Malformed Label",
-			settings: &render.Settings{
+			settings: &phase.FilterOptions{
 				Label: "app=(",
 			},
 			expResFile: "",

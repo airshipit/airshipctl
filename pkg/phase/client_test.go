@@ -177,11 +177,11 @@ var _ ifc.Executor = fakeExecutor{}
 type fakeExecutor struct {
 }
 
-func (e fakeExecutor) Render(w io.Writer, ro ifc.RenderOptions) error {
+func (e fakeExecutor) Render(_ io.Writer, _ ifc.RenderOptions) error {
 	return nil
 }
 
-func (e fakeExecutor) Run(ch chan events.Event, ro ifc.RunOptions) {
+func (e fakeExecutor) Run(ch chan events.Event, _ ifc.RunOptions) {
 	defer close(ch)
 }
 

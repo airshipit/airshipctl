@@ -82,6 +82,9 @@ func NewExecutor(opts ExecutorOptions) (*Executor, error) {
 	if err != nil {
 		return nil, err
 	}
+	if opts.ExecutorBundle == nil {
+		return nil, ErrNilBundle{}
+	}
 	return &Executor{
 		Options:   opts,
 		apiObject: apiObj,
@@ -116,9 +119,6 @@ func (e *Executor) prepareApplier(ch chan events.Event) (*Applier, document.Bund
 	if err != nil {
 		return nil, nil, err
 	}
-	if e.Options.ExecutorBundle == nil {
-		return nil, nil, ErrApplyNilBundle{}
-	}
 	log.Debug("Filtering out documents that shouldn't be applied to kubernetes from document bundle")
 	bundle, err := e.Options.ExecutorBundle.SelectBundle(document.NewDeployToK8sSelector())
 	if err != nil {
@@ -139,6 +139,10 @@ func (e *Executor) Validate() error {
 }
 
 // Render document set
-func (e *Executor) Render(w io.Writer, _ ifc.RenderOptions) error {
-	return e.Options.ExecutorBundle.Write(w)
+func (e *Executor) Render(w io.Writer, o ifc.RenderOptions) error {
+	bundle, err := e.Options.ExecutorBundle.SelectBundle(o.FilterSelector)
+	if err != nil {
+		return err
+	}
+	return bundle.Write(w)
 }

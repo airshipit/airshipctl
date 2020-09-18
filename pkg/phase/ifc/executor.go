@@ -40,8 +40,10 @@ type RunOptions struct {
 	Timeout time.Duration
 }
 
-// RenderOptions is empty for now, but may hold things like format in future
-type RenderOptions struct{}
+// RenderOptions holds options for render method
+type RenderOptions struct {
+	FilterSelector document.Selector
+}
 
 // WaitOptions holds only timeout now, but may be extended in the future
 type WaitOptions struct {

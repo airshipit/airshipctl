@@ -18,7 +18,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/phase/render"
+	"opendev.org/airship/airshipctl/pkg/phase"
 )
 
 const (
@@ -35,48 +35,48 @@ airshipctl phase render initinfra -l app=helm,service=tiller -k Deployment
 
 // NewRenderCommand create a new command for document rendering
 func NewRenderCommand(cfgFactory config.Factory) *cobra.Command {
-	renderSettings := &render.Settings{}
+	filterOptions := &phase.FilterOptions{}
 	renderCmd := &cobra.Command{
 		Use:     "render PHASE_NAME",
 		Short:   "Render phase documents from model",
 		Example: renderExample,
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return renderSettings.Render(cfgFactory, args[0], cmd.OutOrStdout())
+			return filterOptions.Render(cfgFactory, args[0], cmd.OutOrStdout())
 		},
 	}
 
-	addRenderFlags(renderSettings, renderCmd)
+	addRenderFlags(filterOptions, renderCmd)
 	return renderCmd
 }
 
 // addRenderFlags adds flags for document render sub-command
-func addRenderFlags(settings *render.Settings, cmd *cobra.Command) {
+func addRenderFlags(filterOptions *phase.FilterOptions, cmd *cobra.Command) {
 	flags := cmd.Flags()
 
 	flags.StringVarP(
-		&settings.Label,
+		&filterOptions.Label,
 		"label",
 		"l",
 		"",
 		"filter documents by Labels")
 
 	flags.StringVarP(
-		&settings.Annotation,
+		&filterOptions.Annotation,
 		"annotation",
 		"a",
 		"",
 		"filter documents by Annotations")
 
 	flags.StringVarP(
-		&settings.APIVersion,
+		&filterOptions.APIVersion,
 		"apiversion",
 		"g",
 		"",
 		"filter documents by API version")
 
 	flags.StringVarP(
-		&settings.Kind,
+		&filterOptions.Kind,
 		"kind",
 		"k",
 		"",

@@ -93,7 +93,7 @@ func (a *Applier) ApplyBundle(bundle document.Bundle, ao ApplyOptions) {
 
 func (a *Applier) getInfos(bundleName string, bundle document.Bundle) ([]*resource.Info, error) {
 	if bundle == nil {
-		return nil, ErrApplyNilBundle{}
+		return nil, ErrNilBundle{}
 	}
 	selector := document.
 		NewSelector().

@@ -182,6 +182,8 @@ func (c *ClusterctlExecutor) Validate() error {
 }
 
 // Render executor documents
-func (c *ClusterctlExecutor) Render(_ io.Writer, _ ifc.RenderOptions) error {
-	return errors.ErrNotImplemented{}
+func (c *ClusterctlExecutor) Render(w io.Writer, _ ifc.RenderOptions) error {
+	// will be implemented later
+	_, err := w.Write([]byte{})
+	return err
 }

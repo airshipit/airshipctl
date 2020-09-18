@@ -218,7 +218,6 @@ func TestExecutorRender(t *testing.T) {
 	sampleCfgDoc := executorDoc(t, "init")
 	bundle, err := document.NewBundleByPath("testdata/executor_init")
 	require.NoError(t, err)
-	expectedErr := airerrors.ErrNotImplemented{}
 
 	executor, err := cctlclient.NewExecutor(
 		ifc.ExecutorConfig{
@@ -229,7 +228,7 @@ func TestExecutorRender(t *testing.T) {
 	require.NoError(t, err)
 	actualOut := &bytes.Buffer{}
 	actualErr := executor.Render(actualOut, ifc.RenderOptions{})
-	assert.Equal(t, expectedErr, actualErr)
+	assert.Equal(t, nil, actualErr)
 }
 
 func makeDefaultHelper(t *testing.T) ifc.Helper {

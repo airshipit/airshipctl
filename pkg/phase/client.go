@@ -15,6 +15,7 @@
 package phase
 
 import (
+	"io"
 	"path/filepath"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -129,6 +130,16 @@ func (p *phase) Run(ro ifc.RunOptions) error {
 // TODO implement this
 func (p *phase) Validate() error {
 	return nil
+}
+
+// Render executor documents
+func (p *phase) Render(w io.Writer, options ifc.RenderOptions) error {
+	executor, err := p.Executor()
+	if err != nil {
+		return err
+	}
+
+	return executor.Render(w, options)
 }
 
 // DocumentRoot root that holds all the documents associated with the phase
