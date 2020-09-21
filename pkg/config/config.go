@@ -405,7 +405,7 @@ func (c *Config) ModifyContext(context *Context, theContext *ContextOptions) {
 }
 
 // GetCurrentContext methods Returns the appropriate information for the current context
-// Current Context holds labels for the approriate config objects
+// Current Context holds labels for the appropriate config objects
 //      ClusterType is the name of the clustertype for this context, it should be a flag we pass to it??
 //      Manifest is the default manifest to be use with this context
 // Purpose for this method is simplifying the current context information

@@ -95,12 +95,12 @@ func allowFromEnv(key string) bool {
 }
 
 func allowAppend(key, _ string) bool {
-	// TODO Investigate if more vaildation should be done here
-	forbidenVars := map[string]string{
+	// TODO Investigate if more validation should be done here
+	forbiddenVars := map[string]string{
 		config.ProvidersConfigKey: "",
 		imagesConfigKey:           "",
 	}
-	_, forbid := forbidenVars[key]
+	_, forbid := forbiddenVars[key]
 	log.Debugf("Verifying that variable %s is allowed to be appended", key)
 	return !forbid
 }

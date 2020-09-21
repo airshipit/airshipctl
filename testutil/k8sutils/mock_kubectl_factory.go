@@ -319,7 +319,7 @@ func (i *InventoryObjectHandler) Handle(t *testing.T, req *http.Request) (*http.
 type GenericHandler struct {
 	Obj       runtime.Object
 	Namespace string
-	// URLPath is a string for formater in which it should be defined how to inject a namespace into it
+	// URLPath is a string for formatter in which it should be defined how to inject a namespace into it
 	// example : /namespaces/%s/deployments
 	URLPath string
 	Bytes   []byte

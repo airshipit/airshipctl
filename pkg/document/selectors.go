@@ -44,7 +44,7 @@ func (s Selector) ByName(name string) Selector {
 	return s
 }
 
-// ByNamespace select by namepace
+// ByNamespace select by namespace
 func (s Selector) ByNamespace(namespace string) Selector {
 	s.Namespace = namespace
 	return s

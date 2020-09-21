@@ -77,7 +77,7 @@ func (f RepositoryFactory) repoFactory(provider config.Provider) (repository.Cli
 		}
 		// inject repository into repository client
 		o := repository.InjectRepository(repo)
-		log.Printf("Creating arishipctl repository implementation interface for provider %s of type %s\n",
+		log.Printf("Creating airshipctl repository implementation interface for provider %s of type %s\n",
 			name,
 			repoType)
 

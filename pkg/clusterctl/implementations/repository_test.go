@@ -208,10 +208,10 @@ func TestGetFile(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				if fileToUse == "metadata.yaml" {
-					gotMetdata := metadata(t, b)
+					gotMetadata := metadata(t, b)
 					parsedVersion, err := versionclient.ParseSemantic(versionToUse)
 					require.NoError(t, err)
-					assert.Equal(t, resultContract, gotMetdata.GetReleaseSeriesForVersion(parsedVersion).Contract)
+					assert.Equal(t, resultContract, gotMetadata.GetReleaseSeriesForVersion(parsedVersion).Contract)
 				} else {
 					gotVersion := version(t, b)
 					assert.Equal(t, resultVersion, gotVersion.Spec.Version)

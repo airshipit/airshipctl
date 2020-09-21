@@ -137,15 +137,15 @@ func (auth *RepoAuth) Validate() error {
 	switch auth.Type {
 	case SSHAuth:
 		if auth.HTTPPassword != "" || auth.SSHPassword != "" {
-			return NewErrIncompetibleAuthOptions([]string{"http-pass, ssh-pass"}, auth.Type)
+			return NewErrIncompatibleAuthOptions([]string{"http-pass, ssh-pass"}, auth.Type)
 		}
 	case HTTPBasic:
 		if auth.SSHPassword != "" || auth.KeyPath != "" || auth.KeyPassword != "" {
-			return NewErrIncompetibleAuthOptions([]string{"ssh-pass, ssh-key, key-pass"}, auth.Type)
+			return NewErrIncompatibleAuthOptions([]string{"ssh-pass, ssh-key, key-pass"}, auth.Type)
 		}
 	case SSHPass:
 		if auth.KeyPath != "" || auth.KeyPassword != "" || auth.HTTPPassword != "" {
-			return NewErrIncompetibleAuthOptions([]string{"ssh-key, key-pass, http-pass"}, auth.Type)
+			return NewErrIncompatibleAuthOptions([]string{"ssh-key, key-pass, http-pass"}, auth.Type)
 		}
 	}
 	return nil

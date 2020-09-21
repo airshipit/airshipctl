@@ -26,7 +26,7 @@ type GenericError struct {
 	Message string
 }
 
-// NewRemoteDirectErrorf retruns formatted remote direct errors
+// NewRemoteDirectErrorf returns formatted remote direct errors
 func NewRemoteDirectErrorf(format string, v ...interface{}) error {
 	return &GenericError{Message: fmt.Sprintf(format, v...)}
 }

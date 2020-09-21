@@ -36,14 +36,14 @@ func TestNewCommand(t *testing.T) {
 	require.NoError(t, err)
 
 	tests := []struct {
-		name          string
-		expectErr     bool
-		currentConext string
-		manifests     map[string]*config.Manifest
+		name           string
+		expectErr      bool
+		currentContext string
+		manifests      map[string]*config.Manifest
 	}{
 		{
-			name:          "default success",
-			currentConext: validContext,
+			name:           "default success",
+			currentContext: validContext,
 			manifests: map[string]*config.Manifest{
 				manifestName: {
 					TargetPath:            "testdata",
@@ -56,9 +56,9 @@ func TestNewCommand(t *testing.T) {
 			},
 		},
 		{
-			name:          "Bundle build failure",
-			currentConext: validContext,
-			expectErr:     true,
+			name:           "Bundle build failure",
+			currentContext: validContext,
+			expectErr:      true,
 			manifests: map[string]*config.Manifest{
 				manifestName: {
 					TargetPath:            "testdata",
@@ -71,9 +71,9 @@ func TestNewCommand(t *testing.T) {
 			},
 		},
 		{
-			name:          "invalid clusterctl kind",
-			currentConext: validContext,
-			expectErr:     true,
+			name:           "invalid clusterctl kind",
+			currentContext: validContext,
+			expectErr:      true,
 			manifests: map[string]*config.Manifest{
 				manifestName: {
 					TargetPath:            "testdata",
@@ -95,9 +95,9 @@ func TestNewCommand(t *testing.T) {
 			},
 		},
 		{
-			name:          "cant find context",
-			currentConext: "invalid-context",
-			expectErr:     true,
+			name:           "cant find context",
+			currentContext: "invalid-context",
+			expectErr:      true,
 			manifests: map[string]*config.Manifest{
 				manifestName: {
 					TargetPath:            "testdata",
@@ -114,7 +114,7 @@ func TestNewCommand(t *testing.T) {
 		expectErr := tt.expectErr
 		manifests := tt.manifests
 		cfg.Manifests = manifests
-		context := tt.currentConext
+		context := tt.currentContext
 		t.Run(tt.name, func(t *testing.T) {
 			cfg.Manifests = manifests
 			cfg.CurrentContext = context

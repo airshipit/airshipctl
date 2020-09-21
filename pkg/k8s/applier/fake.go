@@ -40,7 +40,7 @@ type FakeAdaptor struct {
 
 var _ Driver = FakeAdaptor{}
 
-// NewFakeAdaptor returns a fake driver interface with convience methods for testing
+// NewFakeAdaptor returns a fake driver interface with convenience methods for testing
 func NewFakeAdaptor() FakeAdaptor {
 	return FakeAdaptor{}
 }
@@ -69,7 +69,7 @@ func (fa FakeAdaptor) WithEvents(events []applyevent.Event) FakeAdaptor {
 	return fa
 }
 
-// WithInitError adds error to Inititialize method
+// WithInitError adds error to Initialize method
 func (fa FakeAdaptor) WithInitError(err error) FakeAdaptor {
 	fa.initErr = err
 	return fa

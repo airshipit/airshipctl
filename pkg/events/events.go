@@ -77,7 +77,7 @@ type IsogenOperation int
 const (
 	// IsogenStart operation
 	IsogenStart IsogenOperation = iota
-	// IsogenValidation opearation
+	// IsogenValidation operation
 	IsogenValidation
 	// IsogenEnd operation
 	IsogenEnd

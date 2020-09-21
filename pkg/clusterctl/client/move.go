@@ -156,7 +156,7 @@ func pauseUnpauseBMHs(ctx context.Context, crClient client.Client, namespace str
 	return nil
 }
 
-// getBMHs will return all BareMetalHost objects in the specified namepace.
+// getBMHs will return all BareMetalHost objects in the specified namespace.
 // It also checks to see if the BareMetalHost resource is installed, if not,
 // it will return false.
 func getBMHs(ctx context.Context, crClient client.Client, namespace string) (bmh.BareMetalHostList, error) {
