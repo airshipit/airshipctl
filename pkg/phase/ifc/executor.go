@@ -60,8 +60,8 @@ type ExecutorConfig struct {
 
 	ClusterMap       clustermap.ClusterMap
 	ExecutorDocument document.Document
-	ExecutorBundle   document.Bundle
 	AirshipConfig    *config.Config
 	Helper           Helper
 	KubeConfig       kubeconfig.Interface
+	BundleFactory    document.BundleFactoryFunc
 }

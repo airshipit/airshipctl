@@ -37,7 +37,7 @@ type ExecutorOptions struct {
 	ClusterName string
 
 	ExecutorDocument document.Document
-	ExecutorBundle   document.Bundle
+	BundleFactory    document.BundleFactoryFunc
 	Kubeconfig       kubeconfig.Interface
 	Helper           ifc.Helper
 }
@@ -61,15 +61,16 @@ func registerExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 		ClusterName:      cfg.ClusterName,
 		BundleName:       cfg.PhaseName,
 		Helper:           cfg.Helper,
-		ExecutorBundle:   cfg.ExecutorBundle,
 		ExecutorDocument: cfg.ExecutorDocument,
+		BundleFactory:    cfg.BundleFactory,
 		Kubeconfig:       cfg.KubeConfig,
 	})
 }
 
 // Executor applies resources to kubernetes
 type Executor struct {
-	Options ExecutorOptions
+	Options        ExecutorOptions
+	ExecutorBundle document.Bundle
 
 	apiObject *airshipv1.KubernetesApply
 	cleanup   kubeconfig.Cleanup
@@ -82,12 +83,14 @@ func NewExecutor(opts ExecutorOptions) (*Executor, error) {
 	if err != nil {
 		return nil, err
 	}
-	if opts.ExecutorBundle == nil {
-		return nil, ErrNilBundle{}
+	bundle, err := opts.BundleFactory()
+	if err != nil {
+		return nil, err
 	}
 	return &Executor{
-		Options:   opts,
-		apiObject: apiObj,
+		ExecutorBundle: bundle,
+		Options:        opts,
+		apiObject:      apiObj,
 	}, nil
 }
 
@@ -120,7 +123,7 @@ func (e *Executor) prepareApplier(ch chan events.Event) (*Applier, document.Bund
 		return nil, nil, err
 	}
 	log.Debug("Filtering out documents that shouldn't be applied to kubernetes from document bundle")
-	bundle, err := e.Options.ExecutorBundle.SelectBundle(document.NewDeployToK8sSelector())
+	bundle, err := e.ExecutorBundle.SelectBundle(document.NewDeployToK8sSelector())
 	if err != nil {
 		cleanup()
 		return nil, nil, err
@@ -140,7 +143,7 @@ func (e *Executor) Validate() error {
 
 // Render document set
 func (e *Executor) Render(w io.Writer, o ifc.RenderOptions) error {
-	bundle, err := e.Options.ExecutorBundle.SelectBundle(o.FilterSelector)
+	bundle, err := e.ExecutorBundle.SelectBundle(o.FilterSelector)
 	if err != nil {
 		return err
 	}
