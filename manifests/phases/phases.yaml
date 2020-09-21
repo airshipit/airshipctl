@@ -49,6 +49,18 @@ config:
 apiVersion: airshipit.org/v1alpha1
 kind: Phase
 metadata:
+  name: controlplane-target
+  clusterName: target-cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: KubernetesApply
+    name: kubernetes-apply
+  documentEntryPoint: target/controlplane
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
   name: workers-target
   clusterName: target-cluster
 config:
