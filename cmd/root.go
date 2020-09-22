@@ -60,7 +60,7 @@ func NewRootCommand(out io.Writer) (*cobra.Command, *RootOptions) {
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			log.Init(options.Debug, cmd.OutOrStdout())
+			log.Init(options.Debug, cmd.ErrOrStderr())
 		},
 	}
 	rootCmd.SetOut(out)
