@@ -105,3 +105,12 @@ type MoveOptions struct {
 	// The namespace where the workload cluster is hosted. If unspecified, the target context's namespace is used.
 	Namespace string `json:"namespace,omitempty"`
 }
+
+// DefaultClusterctl can be used to safely unmarshal Clusterctl object without nil pointers
+func DefaultClusterctl() *Clusterctl {
+	return &Clusterctl{
+		InitOptions: &InitOptions{},
+		MoveOptions: &MoveOptions{},
+		Providers:   make([]*Provider, 0),
+	}
+}

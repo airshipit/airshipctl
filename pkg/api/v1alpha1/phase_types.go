@@ -34,3 +34,12 @@ type PhaseConfig struct {
 	ExecutorRef        *corev1.ObjectReference `json:"executorRef"`
 	DocumentEntryPoint string                  `json:"documentEntryPoint"`
 }
+
+// DefaultPhase can be used to safely unmarshal phase object without nil pointers
+func DefaultPhase() *Phase {
+	return &Phase{
+		Config: PhaseConfig{
+			ExecutorRef: &corev1.ObjectReference{},
+		},
+	}
+}

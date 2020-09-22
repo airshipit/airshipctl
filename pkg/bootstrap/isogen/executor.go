@@ -42,7 +42,7 @@ type Executor struct {
 
 // RegisterExecutor adds executor to phase executor registry
 func RegisterExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFactory) error {
-	obj := &v1alpha1.ImageConfiguration{}
+	obj := v1alpha1.DefaultImageConfiguration()
 	gvks, _, err := v1alpha1.Scheme.ObjectKinds(obj)
 	if err != nil {
 		return err

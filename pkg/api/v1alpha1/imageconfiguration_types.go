@@ -49,3 +49,11 @@ type ImageConfiguration struct {
 	Container *Container `json:"container,omitempty"`
 	Builder   *Builder   `json:"builder,omitempty"`
 }
+
+// DefaultImageConfiguration can be used to safely unmarshal ImageConfiguration object without nil pointers
+func DefaultImageConfiguration() *ImageConfiguration {
+	return &ImageConfiguration{
+		Container: &Container{},
+		Builder:   &Builder{},
+	}
+}
