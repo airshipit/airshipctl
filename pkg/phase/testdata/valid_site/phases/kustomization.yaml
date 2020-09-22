@@ -6,3 +6,4 @@ resources:
   - clusterctl.yaml
   - kubernetes_apply.yaml
   - cluster_map.yaml
+  - phase_no_docentrypoint.yaml

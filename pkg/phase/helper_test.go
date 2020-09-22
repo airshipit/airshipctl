@@ -194,7 +194,7 @@ func TestHelperListPhases(t *testing.T) {
 	}{
 		{
 			name:     "Success phase list",
-			phaseLen: 2,
+			phaseLen: 3,
 			config:   testConfig,
 		},
 		{
