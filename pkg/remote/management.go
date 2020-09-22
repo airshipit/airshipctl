@@ -21,6 +21,8 @@ import (
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/log"
+	"opendev.org/airship/airshipctl/pkg/phase"
+	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	"opendev.org/airship/airshipctl/pkg/remote/power"
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 	redfishdell "opendev.org/airship/airshipctl/pkg/remote/redfish/vendors/dell"
@@ -115,7 +117,7 @@ func ByName(name string) HostSelector {
 
 // NewManager provides a manager that exposes the capability to perform remote direct functionality and other
 // out-of-band management on multiple hosts.
-func NewManager(cfg *config.Config, phase string, hosts ...HostSelector) (*Manager, error) {
+func NewManager(cfg *config.Config, phaseName string, hosts ...HostSelector) (*Manager, error) {
 	managementCfg, err := cfg.CurrentContextManagementConfig()
 	if err != nil {
 		return nil, err
@@ -125,12 +127,18 @@ func NewManager(cfg *config.Config, phase string, hosts ...HostSelector) (*Manag
 		return nil, err
 	}
 
-	entrypoint, err := cfg.CurrentContextEntryPoint(phase)
+	helper, err := phase.NewHelper(cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	docBundle, err := document.NewBundleByPath(entrypoint)
+	phaseClient := phase.NewClient(helper)
+	phase, err := phaseClient.PhaseByID(ifc.ID{Name: phaseName})
+	if err != nil {
+		return nil, err
+	}
+
+	docBundle, err := document.NewBundleByPath(phase.DocumentRoot())
 	if err != nil {
 		return nil, err
 	}

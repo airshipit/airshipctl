@@ -56,8 +56,8 @@ func withTestDataPath(path string) Configuration {
 		if err != nil {
 			panic(fmt.Sprintf("Unable to initialize management tests. Current Context error %q", err))
 		}
-
 		manifest.TargetPath = fmt.Sprintf("testdata/%s", path)
+		manifest.MetadataPath = "metadata.yaml"
 	}
 }
 
@@ -108,6 +108,9 @@ func TestNewManagerMultipleSelectorsNoMatch(t *testing.T) {
 
 	manager, err := NewManager(settings, config.BootstrapPhase, ByName("master-2"),
 		ByLabel(document.EphemeralHostSelector))
+
+	// Must return ErrNoHostsFound here, without check for specific error, test can panic
+	require.Equal(t, ErrNoHostsFound{}, err)
 	require.Equal(t, 0, len(manager.Hosts))
 	assert.Error(t, err)
 }

@@ -1,2 +1,3 @@
 resources:
- - baremetal.yaml
+- baremetal.yaml
+- phase.yaml

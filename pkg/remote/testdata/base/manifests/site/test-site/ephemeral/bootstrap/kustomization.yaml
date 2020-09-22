@@ -1,3 +1,4 @@
 resources:
- - baremetal.yaml
- - remote_direct_configuration.yaml
+- baremetal.yaml
+- remote_direct_configuration.yaml
+- phase.yaml

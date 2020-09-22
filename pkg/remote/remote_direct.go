@@ -19,17 +19,25 @@ import (
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/log"
+	"opendev.org/airship/airshipctl/pkg/phase"
+	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	"opendev.org/airship/airshipctl/pkg/remote/power"
 )
 
 // DoRemoteDirect bootstraps the ephemeral node.
 func (b baremetalHost) DoRemoteDirect(cfg *config.Config) error {
-	root, err := cfg.CurrentContextEntryPoint(config.BootstrapPhase)
+	helper, err := phase.NewHelper(cfg)
 	if err != nil {
 		return err
 	}
 
-	docBundle, err := document.NewBundleByPath(root)
+	phaseClient := phase.NewClient(helper)
+	phase, err := phaseClient.PhaseByID(ifc.ID{Name: config.BootstrapPhase})
+	if err != nil {
+		return err
+	}
+
+	docBundle, err := document.NewBundleByPath(phase.DocumentRoot())
 	if err != nil {
 		return err
 	}
