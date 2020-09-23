@@ -71,7 +71,7 @@ func DummyContext() *config.Context {
 // DummyManifest creates a Manifest config object for unit testing
 func DummyManifest() *config.Manifest {
 	m := config.NewManifest()
-	// Repositories is the map of repository adddressable by a name
+	// Repositories is the map of repository addressable by a name
 	m.Repositories = map[string]*config.Repository{"primary": DummyRepository()}
 	m.PrimaryRepositoryName = "primary"
 	m.TargetPath = "/var/tmp/"

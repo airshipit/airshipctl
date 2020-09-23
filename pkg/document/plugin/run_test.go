@@ -45,9 +45,9 @@ spec:
 		{
 			pluginCfg: []byte(`---
 apiVersion: airshipit.org/v1alpha1
-kind: BareMetalGenereator
+kind: BareMetalGenerator
 spec: -
-  someField: someValu`),
+  someField: someValue`),
 			expectedError: "error converting YAML to JSON: yaml: line 4: block sequence entries are not allowed in this context",
 		},
 	}

@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	// TODO (kkalynovskyi) when different phase executors will be implmeneted, and their description is more clear,
+	// TODO (kkalynovskyi) when different phase executors will be implemented, and their description is more clear,
 	// add documentation here. also consider adding dynamic phase descriptions based on executors.
 	// TODO (kkalynovskyi) when this command is fully functional and phase executors are developed
 	// remove phase apply command

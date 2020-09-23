@@ -164,13 +164,13 @@ func TestDocument(t *testing.T) {
 		docs, err := bundle.GetAllDocuments()
 		require.NoError(err, "Unexpected error trying to GetAllDocuments")
 		annotationMap := map[string]string{
-			"test-annotation": "test-annotaiton-value",
+			"test-annotation": "test-annotation-value",
 		}
 
 		for _, doc := range docs {
 			doc.Annotate(annotationMap)
 			annotationList := doc.GetAnnotations()
-			assert.Equal(annotationList["test-annotation"], "test-annotaiton-value")
+			assert.Equal(annotationList["test-annotation"], "test-annotation-value")
 		}
 	})
 
@@ -268,7 +268,7 @@ stringData:
 			expectedDocName: "control-0-bmc",
 		},
 		{
-			name: "Manformed Bytes",
+			name: "Malformed Bytes",
 			stringData: `
 			broken:fas -<
 				fasd`,

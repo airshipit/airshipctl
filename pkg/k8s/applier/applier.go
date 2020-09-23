@@ -45,7 +45,7 @@ const (
 	DefaultNamespace = "airshipit"
 )
 
-// Applier delivers documents to kubernetes in a declerative way
+// Applier delivers documents to kubernetes in a declarative way
 type Applier struct {
 	Driver                Driver
 	Factory               cmdutil.Factory
@@ -101,20 +101,20 @@ func (a *Applier) getInfos(bundleName string, bundle document.Bundle) ([]*resour
 		ByKind(document.ConfigMapKind)
 	// if we could find exactly one inventory document, we don't do anything else with it
 	_, err := bundle.SelectOne(selector)
-	// if we got an error, which means we could not find Config Map with invetory ID at rest
+	// if we got an error, which means we could not find Config Map with inventory ID at rest
 	// now we need to generate and inject one at runtime
 	if err != nil && errors.As(err, &document.ErrDocNotFound{}) {
-		log.Debug("Inventory Object config Map not found, auto generating Invetory object")
+		log.Debug("Inventory Object config Map not found, auto generating Inventory object")
 		invDoc, innerErr := NewInventoryDocument(bundleName)
 		if innerErr != nil {
 			// this should never happen
-			log.Debug("Failed to create new invetory document")
+			log.Debug("Failed to create new inventory document")
 			return nil, innerErr
 		}
-		log.Debugf("Injecting Invetory Object: %v into bundle", invDoc)
+		log.Debugf("Injecting Inventory Object: %v into bundle", invDoc)
 		innerErr = bundle.Append(invDoc)
 		if innerErr != nil {
-			log.Debug("Couldn't append bunlde with inventory document")
+			log.Debug("Couldn't append bundle with inventory document")
 			return nil, innerErr
 		}
 		log.Debugf("Making sure that inventory object namespace %s exists", invDoc.GetNamespace())
@@ -180,7 +180,7 @@ type Adaptor struct {
 	Factory         cmdutil.Factory
 }
 
-// Initialize sets fake required command line flags for underlaying cli-utils package
+// Initialize sets fake required command line flags for underlying cli-utils package
 func (a *Adaptor) Initialize(p poller.Poller) error {
 	cmd := &cobra.Command{}
 	// Code below is copied from cli-utils package and used the same way as in upstream:
@@ -215,7 +215,7 @@ func (a *Adaptor) Run(ctx context.Context, infos []*resource.Info, options cliap
 	return a.CliUtilsApplier.Run(ctx, infos, options)
 }
 
-// NewInventoryDocument returns default config map with invetory Id to group up the objects
+// NewInventoryDocument returns default config map with inventory Id to group up the objects
 func NewInventoryDocument(inventoryID string) (document.Document, error) {
 	cm := v1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
@@ -224,7 +224,7 @@ func NewInventoryDocument(inventoryID string) (document.Document, error) {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			// name here is a dummy name, cli utils won't use this name, this config map simply parsed
-			// for invetory ID from label, and then ignores this config map
+			// for inventory ID from label, and then ignores this config map
 			Name: fmt.Sprintf("%s-%s", "airshipit", inventoryID),
 			// TODO this limits us to single namespace. research passing this as parameter from
 			// somewhere higher level package that uses this module

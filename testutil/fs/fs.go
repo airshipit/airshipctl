@@ -31,15 +31,15 @@ type MockFileSystem struct {
 	fs.FileSystem
 }
 
-// RemoveAll Filesystem interface imlementation
+// RemoveAll Filesystem interface implementation
 func (fsys MockFileSystem) RemoveAll(string) error { return fsys.MockRemoveAll() }
 
-// TempFile Filesystem interface imlementation
+// TempFile Filesystem interface implementation
 func (fsys MockFileSystem) TempFile(root, pattern string) (document.File, error) {
 	return fsys.MockTempFile(root, pattern)
 }
 
-// TempDir Filesystem interface imlementation
+// TempDir Filesystem interface implementation
 func (fsys MockFileSystem) TempDir(string, string) (string, error) {
 	return fsys.MockTempDir()
 }
@@ -52,11 +52,11 @@ type TestFile struct {
 	MockClose func() error
 }
 
-// Name File interface imlementation
+// Name File interface implementation
 func (f TestFile) Name() string { return f.MockName() }
 
-// Write File interface imlementation
+// Write File interface implementation
 func (f TestFile) Write([]byte) (int, error) { return f.MockWrite() }
 
-// Close File interface imlementation
+// Close File interface implementation
 func (f TestFile) Close() error { return f.MockClose() }

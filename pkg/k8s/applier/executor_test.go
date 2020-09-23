@@ -141,7 +141,7 @@ metadata:
 	}
 }
 
-// TODO We need valid test that checks that actuall bundle has arrived to applier
+// TODO We need valid test that checks that actual bundle has arrived to applier
 // for that we need a way to inject fake applier, which is not doable with `black box` test currently
 // since we tests are in different package from executor
 func TestExecutorRun(t *testing.T) {

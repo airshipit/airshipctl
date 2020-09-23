@@ -29,9 +29,9 @@ type ErrIncompatibleAuthOptions struct {
 	AuthType         string
 }
 
-// NewErrIncompetibleAuthOptions returns Error of type
+// NewErrIncompatibleAuthOptions returns Error of type
 // ErrIncompatibleAuthOptions
-func NewErrIncompetibleAuthOptions(fo []string, ao string) error {
+func NewErrIncompatibleAuthOptions(fo []string, ao string) error {
 	return ErrIncompatibleAuthOptions{
 		ForbiddenOptions: fo,
 		AuthType:         ao,

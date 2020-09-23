@@ -28,7 +28,7 @@ type Phase struct {
 	Config            PhaseConfig `json:"config,omitempty"`
 }
 
-// PhaseConfig represents configuration for a particular phase. It contins a reference to
+// PhaseConfig represents configuration for a particular phase. It contains a reference to
 // phase runner object which should contain runner configuration
 type PhaseConfig struct {
 	ExecutorRef        *corev1.ObjectReference `json:"executorRef"`

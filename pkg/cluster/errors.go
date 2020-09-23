@@ -26,7 +26,7 @@ func (err ErrInvalidStatusCheck) Error() string {
 	return fmt.Sprintf("invalid status-check: %s", err.What)
 }
 
-// ErrResourceNotFound is used when a resource is requrested from a StatusMap,
+// ErrResourceNotFound is used when a resource is requested from a StatusMap,
 // but that resource can't be found
 type ErrResourceNotFound struct {
 	Resource string

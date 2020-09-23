@@ -76,7 +76,7 @@ func (c *Client) Init(kubeconfigPath, kubeconfigContext string) error {
 // newConfig returns clusterctl config client
 func newConfig(options *airshipv1.Clusterctl, root string) (clusterctlconfig.Client, error) {
 	for _, provider := range options.Providers {
-		// this is a workaround as cluserctl validates if URL is empty, even though it is not
+		// this is a workaround as clusterctl validates if URL is empty, even though it is not
 		// used anywhere outside repository factory which we override
 		// TODO (kkalynovskyi) we need to create issue for this in clusterctl, and remove URL
 		// validation and move it to be an error during repository interface initialization

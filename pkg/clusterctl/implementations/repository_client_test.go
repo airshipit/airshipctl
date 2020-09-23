@@ -72,7 +72,7 @@ func TestMissingVariableRepoClient(t *testing.T) {
 	assert.Nil(t, c)
 }
 
-func TestEnvVariableSubstiutionRepoClient(t *testing.T) {
+func TestEnvVariableSubstitutionRepoClient(t *testing.T) {
 	airRepoClient := testRepoClient(testRepoOpts{
 		kustRoot:        "functions/5",
 		envVars:         true,
@@ -114,7 +114,7 @@ func TestEnvVariableSubstiutionRepoClient(t *testing.T) {
 // are not. Clusterctl behavior doesn't allow to skip variable substitution completely
 // instead if SkipVariables is set to True, it will not throw errors if these variables
 // are not set in config reader.
-func TestAdditionalVariableSubstiutionRepoClient(t *testing.T) {
+func TestAdditionalVariableSubstitutionRepoClient(t *testing.T) {
 	vars := map[string]string{
 		"AZURE_SUBSCRIPTION_ID_B64": "c29tZS1iYXNlNjQtSUQtdGV4dAo=",
 		"AZURE_TENANT_ID_B64":       "c29tZS1iYXNlNjQtVEVOQU5ULUlELXRleHQK",

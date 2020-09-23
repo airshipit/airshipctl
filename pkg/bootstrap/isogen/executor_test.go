@@ -102,7 +102,7 @@ func TestExecutorRun(t *testing.T) {
 		expectedEvt []events.Event
 	}{
 		{
-			name: "Run isogen successefully",
+			name: "Run isogen successfully",
 			builder: &mockContainer{
 				runCommand:  func() error { return nil },
 				getID:       func() string { return "TESTID" },

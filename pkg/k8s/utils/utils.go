@@ -60,7 +60,7 @@ var DefaultManifestReaderFactory ManifestReaderFactory = func(
 	return NewManifestBundleReader(validate, bundle, factory)
 }
 
-// NewManifestBundleReader returns impleemntation of manifestreader interface
+// NewManifestBundleReader returns implementation of manifestreader interface
 func NewManifestBundleReader(
 	validate bool,
 	bundle document.Bundle,

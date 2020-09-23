@@ -53,7 +53,7 @@ type Provider struct {
 	// ignored if IsClusterctlRepository is set to true
 	Versions map[string]string `json:"versions,omitempty"`
 
-	// VariableSubstitution indicates weather you want to substitute variales in the cluster-api manifests
+	// VariableSubstitution indicates weather you want to substitute variables in the cluster-api manifests
 	// if set to true, variables will be substituted only if they are defined either in Environment or
 	// in AdditionalComponentVariables, if not they will be left as is.
 	VariableSubstitution bool `json:"variable-substitution,omitempty"`
