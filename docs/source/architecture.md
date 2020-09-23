@@ -25,7 +25,7 @@ In a nutshell, users of `airshipctl` should be able to do the following:
    instance that `airshipctl` can communicate with for subsequent steps. This
    ephemeral host provides a foothold in the target environment so we can follow
    the standard cluster-api bootstrap flow.
-6. Run `airshipctl phase apply initinfra` to bootstrap the new ephemeral cluster
+6. Run `airshipctl phase run initinfra-ephemeral` to bootstrap the new ephemeral cluster
    with enough of the chosen cluster-api provider components to provision the
    target cluster.
 7. Run `airshipctl clusterctl` to use the ephemeral Kubernetes host to provision

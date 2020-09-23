@@ -125,7 +125,7 @@ for cluster in ephemeral target; do
                 fi
 
                 # step 2: dry-run the entire phase
-                ${ACTL} phase apply --dry-run ${phase}
+                ${ACTL} phase run --dry-run ${phase}
             fi
         done
 

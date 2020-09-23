@@ -35,7 +35,6 @@ func NewPhaseCommand(cfgFactory config.Factory) *cobra.Command {
 		Long:  clusterLong[1:],
 	}
 
-	phaseRootCmd.AddCommand(NewApplyCommand(cfgFactory))
 	phaseRootCmd.AddCommand(NewRenderCommand(cfgFactory))
 	phaseRootCmd.AddCommand(NewPlanCommand(cfgFactory))
 	phaseRootCmd.AddCommand(NewRunCommand(cfgFactory))

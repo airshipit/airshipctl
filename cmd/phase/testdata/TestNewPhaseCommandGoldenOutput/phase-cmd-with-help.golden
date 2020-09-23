@@ -5,7 +5,6 @@ Usage:
   phase [command]
 
 Available Commands:
-  apply       Apply phase to a cluster
   help        Help about any command
   plan        List phases
   render      Render phase documents from model

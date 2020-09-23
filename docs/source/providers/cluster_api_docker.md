@@ -15,11 +15,11 @@ components**
 
 **Create a workload cluster, with control plane and worker nodes**
 
-> airshipctl phase apply controlplane
+> airshipctl phase run controlplane
 
-> airshipctl phase apply workers
+> airshipctl phase run workers
 
-Note: `airshipctl phase apply initinfra` is not used because all the provider
+Note: `airshipctl phase run initinfra-ephemeral` is not used because all the provider
 components are initialized  using `airshipctl cluster init`
 
 The phase `initinfra` is included just to get `validate docs` to
@@ -378,7 +378,7 @@ b9690cecdcf2        kindest/node:v1.18.2           "/usr/local/bin/entr…"   14
 
 ## Create your first workload cluster
 
-$ airshipctl phase apply controlplane --debug
+$ airshipctl phase run controlplane --debug
 
 ```
 [airshipctl] 2020/08/12 14:10:12 building bundle from kustomize path /tmp/airship/airshipctl/manifests/site/docker-test-site/target/controlplane
@@ -452,7 +452,7 @@ NAME                      PROVIDERID                               PHASE
 dtc-control-plane-p4fsx   docker:////dtc-dtc-control-plane-p4fsx   Running
 ```
 
-$ airshipctl phase apply workers --debug
+$ airshipctl phase run workers --debug
 
 ```
 [airshipctl] 2020/08/12 14:11:55 building bundle from kustomize path /tmp/airship/airshipctl/manifests/site/docker-test-site/target/worker
@@ -678,7 +678,7 @@ There are 3 phases currently available in `docker-test-site/target`.
 
 Note: `airshipctl cluster init` initializes all the provider components
 including the docker infrastructure provider component. As a result, `airshipctl
-phase apply initinfra` is not used.
+phase run initinfra-ephemeral` is not used.
 
 At the moment, `phase initinfra` is only present for two reasons:
 - `airshipctl` complains if the phase is not found
@@ -687,11 +687,11 @@ At the moment, `phase initinfra` is only present for two reasons:
 #### Patch Merge Strategy
 
 Json patch to patch `control plane machine count` is applied on templates in `manifests/function/k8scontrol-capd`
-from `airshipctl/manifests/site/docker-test-site/target/controlplane` when `airshipctl phase apply
+from `airshipctl/manifests/site/docker-test-site/target/controlplane` when `airshipctl phase run
 controlplane` is executed
 
 Json patch to patch `workers machine count` is applied on templates in `manifests/function/workers-capd`
-from `airshipctl/manifests/site/docker-test-site/target/workers` when `airshipctl phase apply
+from `airshipctl/manifests/site/docker-test-site/target/workers` when `airshipctl phase run
 workers` is executed.
 
 | Patch Name | Purpose  |
