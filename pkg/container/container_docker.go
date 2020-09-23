@@ -175,6 +175,7 @@ func (c *DockerContainer) getConfig(
 		AttachStdin: true,
 		OpenStdin:   true,
 		Env:         envVars,
+		Tty:         true,
 	}
 	hCfg := container.HostConfig{
 		Binds: volumeMounts,
