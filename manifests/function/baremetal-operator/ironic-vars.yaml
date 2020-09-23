@@ -5,6 +5,12 @@ metadata:
   labels:
   name: ironic-vars
 data:
+  HTTP_PROXY: ""
+  HTTPS_PROXY: ""
+  http_proxy: ""
+  https_proxy: ""
+  NO_PROXY: ""
+  no_proxy: ""
   PROVISIONING_IP: "192.168.10.100"
   DHCP_RANGE: "192.168.10.200,192.168.10.250"
   PROVISIONING_INTERFACE: "pxe"

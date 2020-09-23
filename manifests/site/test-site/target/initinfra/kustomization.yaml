@@ -4,9 +4,15 @@ resources:
   - ../../../../function/airshipctl-catalogues
   - ../../../../function/baremetal-operator
   - ../../../../function/helm-operator
+
 patchesStrategicMerge:
   - patch_bmo_config.yaml
+
 commonLabels:
   airshipit.org/stage: initinfra
+
+generators:
+  - ../../../../function/airshipctl-catalogues
+
 transformers:
   - ../../../../function/baremetal-operator/replacements

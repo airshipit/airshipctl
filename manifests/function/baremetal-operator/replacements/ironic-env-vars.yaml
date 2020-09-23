@@ -1,0 +1,61 @@
+# These rules inject env vars into the baremetal-operator function.
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: baremetal-operator-env-vars-replacements
+replacements:
+# Replace the proxy vars
+- source:
+    objref:
+      name: env-vars-catalogue
+    fieldref: env.HTTP_PROXY
+  target:
+    objref:
+      kind: ConfigMap
+      name: ironic-vars
+    fieldrefs: ["data.HTTP_PROXY"]
+- source:
+    objref:
+      name: env-vars-catalogue
+    fieldref: env.HTTPS_PROXY
+  target:
+    objref:
+      kind: ConfigMap
+      name: ironic-vars
+    fieldrefs: ["data.HTTPS_PROXY"]
+- source:
+    objref:
+      name: env-vars-catalogue
+    fieldref: env.http_proxy
+  target:
+    objref:
+      kind: ConfigMap
+      name: ironic-vars
+    fieldrefs: ["data.http_proxy"]
+- source:
+    objref:
+      name: env-vars-catalogue
+    fieldref: env.https_proxy
+  target:
+    objref:
+      kind: ConfigMap
+      name: ironic-vars
+    fieldrefs: ["data.https_proxy"]
+- source:
+    objref:
+      name: env-vars-catalogue
+    fieldref: env.NO_PROXY
+  target:
+    objref:
+      kind: ConfigMap
+      name: ironic-vars
+    fieldrefs: ["data.NO_PROXY"]
+- source:
+    objref:
+      name: env-vars-catalogue
+    fieldref: env.no_proxy
+  target:
+    objref:
+      kind: ConfigMap
+      name: ironic-vars
+    fieldrefs: ["data.no_proxy"]

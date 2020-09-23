@@ -6,7 +6,12 @@ resources:
   - nodes
   - ../../../../function/airshipctl-catalogues
   - ../../../../function/k8scontrol
+
 patchesStrategicMerge:
   - versions-catalogue-patch.yaml
+
+generators:
+  - ../../../../function/airshipctl-catalogues
+
 transformers:
   - ../../../../function/k8scontrol/replacements
