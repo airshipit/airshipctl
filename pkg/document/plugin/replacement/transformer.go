@@ -19,8 +19,8 @@ import (
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/document/plugin/kyamlutils"
 	plugtypes "opendev.org/airship/airshipctl/pkg/document/plugin/types"
-	"opendev.org/airship/airshipctl/pkg/errors"
 )
 
 var (
@@ -115,7 +115,130 @@ func (p *plugin) Transform(m resmap.ResMap) error {
 }
 
 func (p *plugin) Filter(items []*yaml.RNode) ([]*yaml.RNode, error) {
-	return nil, errors.ErrNotImplemented{What: "`Exec` method for replacement transformer"}
+	for _, r := range p.Replacements {
+		val, err := getValue(items, r.Source)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := replace(items, r.Target, val); err != nil {
+			return nil, err
+		}
+	}
+	return items, nil
+}
+
+func getValue(items []*yaml.RNode, source *types.ReplSource) (*yaml.RNode, error) {
+	if source.Value != "" {
+		return yaml.NewScalarRNode(source.Value), nil
+	}
+	sources, err := kyamlutils.DocumentSelector{}.
+		ByAPIVersion(source.ObjRef.APIVersion).
+		ByGVK(source.ObjRef.Group, source.ObjRef.Version, source.ObjRef.Kind).
+		ByName(source.ObjRef.Name).
+		ByNamespace(source.ObjRef.Namespace).
+		Filter(items)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(sources) > 1 {
+		return nil, ErrMultipleResources{ObjRef: source.ObjRef}
+	}
+	if len(sources) == 0 {
+		return nil, ErrSourceNotFound{ObjRef: source.ObjRef}
+	}
+
+	path := fmt.Sprintf("{.%s.%s}", yaml.MetadataField, yaml.NameField)
+	if source.FieldRef != "" {
+		path = source.FieldRef
+	}
+	return sources[0].Pipe(kyamlutils.JSONPathFilter{Path: path})
+}
+
+func mutateField(rnSource *yaml.RNode) func([]*yaml.RNode) error {
+	return func(rns []*yaml.RNode) error {
+		for _, rn := range rns {
+			rn.SetYNode(rnSource.YNode())
+		}
+		return nil
+	}
+}
+
+func replace(items []*yaml.RNode, target *types.ReplTarget, value *yaml.RNode) error {
+	targets, err := kyamlutils.DocumentSelector{}.
+		ByGVK(target.ObjRef.Group, target.ObjRef.Version, target.ObjRef.Kind).
+		ByName(target.ObjRef.Name).
+		ByNamespace(target.ObjRef.Namespace).
+		Filter(items)
+	if err != nil {
+		return err
+	}
+	if len(targets) == 0 {
+		return ErrTargetNotFound{ObjRef: target.ObjRef}
+	}
+	for _, tgt := range targets {
+		for _, fieldRef := range target.FieldRefs {
+			// fieldref can contain substring pattern for regexp - we need to get it
+			groups := substringPatternRegex.FindStringSubmatch(fieldRef)
+			// if there is no substring pattern
+			if len(groups) != 3 {
+				filter := kyamlutils.JSONPathFilter{Path: fieldRef, Mutator: mutateField(value), Create: true}
+				if _, err := tgt.Pipe(filter); err != nil {
+					return err
+				}
+				continue
+			}
+
+			if err := substituteSubstring(tgt, groups[1], groups[2], value); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func substituteSubstring(tgt *yaml.RNode, fieldRef, substringPattern string, value *yaml.RNode) error {
+	if err := yaml.ErrorIfInvalid(value, yaml.ScalarNode); err != nil {
+		return err
+	}
+	curVal, err := tgt.Pipe(kyamlutils.JSONPathFilter{Path: fieldRef})
+	if yaml.IsMissingOrError(curVal, err) {
+		return err
+	}
+	switch curVal.YNode().Kind {
+	case yaml.ScalarNode:
+		p := regexp.MustCompile(substringPattern)
+		if !p.MatchString(yaml.GetValue(curVal)) {
+			return ErrPatternSubstring{
+				Msg: fmt.Sprintf("pattern '%s' is defined in configuration but was not found in target value %s",
+					substringPattern, yaml.GetValue(curVal)),
+			}
+		}
+		curVal.YNode().Value = p.ReplaceAllString(yaml.GetValue(curVal), yaml.GetValue(value))
+
+	case yaml.SequenceNode:
+		items, err := curVal.Elements()
+		if err != nil {
+			return err
+		}
+		for _, item := range items {
+			if err := yaml.ErrorIfInvalid(item, yaml.ScalarNode); err != nil {
+				return err
+			}
+			p := regexp.MustCompile(substringPattern)
+			if !p.MatchString(yaml.GetValue(item)) {
+				return ErrPatternSubstring{
+					Msg: fmt.Sprintf("pattern '%s' is defined in configuration but was not found in target value %s",
+						substringPattern, yaml.GetValue(item)),
+				}
+			}
+			item.YNode().Value = p.ReplaceAllString(yaml.GetValue(item), yaml.GetValue(value))
+		}
+	default:
+		return ErrPatternSubstring{Msg: fmt.Sprintf("value identified by %s expected to be string", fieldRef)}
+	}
+	return nil
 }
 
 func getReplacement(m resmap.ResMap, objRef *types.Target, fieldRef string) (interface{}, error) {
@@ -129,7 +252,11 @@ func getReplacement(m resmap.ResMap, objRef *types.Target, fieldRef string) (int
 		return nil, err
 	}
 	if len(resources) > 1 {
-		return nil, ErrMultipleResources{ResList: resources}
+		resList := make([]string, len(resources))
+		for i := range resources {
+			resList[i] = resources[i].String()
+		}
+		return nil, ErrMultipleResources{ObjRef: objRef}
 	}
 	if len(resources) == 0 {
 		return nil, ErrSourceNotFound{ObjRef: objRef}
@@ -305,7 +432,7 @@ func updateSliceField(m []interface{}, pathToField []string, replacement interfa
 	if len(pathToField) == 0 {
 		return nil
 	}
-	path, key, value, isArray := getFirstPathSegment(pathToField[0])
+	_, key, value, isArray := getFirstPathSegment(pathToField[0])
 
 	if isArray {
 		for _, item := range m {
@@ -319,7 +446,7 @@ func updateSliceField(m []interface{}, pathToField []string, replacement interfa
 				}
 			}
 		}
-		return ErrMapNotFound{Key: key, Value: value, ListKey: path}
+		return nil
 	}
 
 	index, err := strconv.Atoi(pathToField[0])
