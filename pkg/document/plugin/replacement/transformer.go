@@ -328,7 +328,7 @@ func updateSliceField(m []interface{}, pathToField []string, replacement interfa
 	}
 
 	if len(m) < index || index < 0 {
-		return ErrIndexOutOfBound{Index: index}
+		return ErrIndexOutOfBound{Index: index, Length: len(m)}
 	}
 	if len(pathToField) == 1 {
 		m[index] = replacement
