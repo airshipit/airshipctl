@@ -28,21 +28,24 @@ import (
 )
 
 const (
-	mName       = "dummymanifest"
-	mRepoName   = "treasuremap"
-	mURL        = "https://github.com/airshipit/treasuremap"
-	mBranch     = "master"
-	mSubPath    = "manifests/test-site"
-	mTargetPath = "/tmp/airship"
+	mName         = "dummymanifest"
+	mRepoName     = "treasuremap"
+	mURL          = "https://github.com/airshipit/treasuremap"
+	mBranch       = "master"
+	mSubPath      = "manifests/test-site"
+	mTargetPath   = "/tmp/airship"
+	mMetadataPath = "manifests/metadata.yaml"
 
-	testTargetPath = "/tmp/e2e"
+	testTargetPath   = "/tmp/e2e"
+	testMetadataPath = "manifests/docker_metadata.yaml"
 )
 
 type setManifestTest struct {
-	inputConfig        *config.Config
-	cmdTest            *testutil.CmdTest
-	manifestName       string
-	manifestTargetPath string
+	inputConfig          *config.Config
+	cmdTest              *testutil.CmdTest
+	manifestName         string
+	manifestTargetPath   string
+	manifestMetadataPath string
 }
 
 func TestConfigSetManifest(t *testing.T) {
@@ -81,6 +84,7 @@ func TestSetManifest(t *testing.T) {
 		flags        []string
 		givenConfig  *config.Config
 		targetPath   string
+		metadataPath string
 	}{
 		{
 			testName:     "set-manifest",
@@ -92,18 +96,22 @@ func TestSetManifest(t *testing.T) {
 				"--primary",
 				"--sub-path " + mSubPath,
 				"--target-path " + mTargetPath,
+				"--metadata-path " + mMetadataPath,
 			},
-			givenConfig: given,
-			targetPath:  mTargetPath,
+			givenConfig:  given,
+			targetPath:   mTargetPath,
+			metadataPath: mMetadataPath,
 		},
 		{
 			testName:     "modify-manifest",
 			manifestName: mName,
 			flags: []string{
 				"--target-path " + testTargetPath,
+				"--metadata-path " + testMetadataPath,
 			},
-			givenConfig: given,
-			targetPath:  testTargetPath,
+			givenConfig:  given,
+			targetPath:   testTargetPath,
+			metadataPath: mMetadataPath,
 		},
 	}
 
@@ -114,10 +122,11 @@ func TestSetManifest(t *testing.T) {
 			CmdLine: fmt.Sprintf("%s %s", tt.manifestName, strings.Join(tt.flags, " ")),
 		}
 		test := setManifestTest{
-			inputConfig:        tt.givenConfig,
-			cmdTest:            cmd,
-			manifestName:       tt.manifestName,
-			manifestTargetPath: tt.targetPath,
+			inputConfig:          tt.givenConfig,
+			cmdTest:              cmd,
+			manifestName:         tt.manifestName,
+			manifestTargetPath:   tt.targetPath,
+			manifestMetadataPath: tt.metadataPath,
 		}
 		test.run(t)
 	}

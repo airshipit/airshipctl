@@ -515,6 +515,9 @@ func (c *Config) ModifyManifest(manifest *Manifest, theManifest *ManifestOptions
 	if theManifest.TargetPath != "" {
 		manifest.TargetPath = theManifest.TargetPath
 	}
+	if theManifest.MetadataPath != "" {
+		manifest.MetadataPath = theManifest.MetadataPath
+	}
 	// There is no repository details to be updated
 	if theManifest.RepoName == "" {
 		return nil
