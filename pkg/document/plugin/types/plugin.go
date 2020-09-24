@@ -25,4 +25,4 @@ type Plugin interface {
 
 // Factory function for plugins. Functions of such type are used in the plugin
 // registry to instantiate a plugin object
-type Factory func([]byte) (Plugin, error)
+type Factory func(map[string]interface{}) (Plugin, error)

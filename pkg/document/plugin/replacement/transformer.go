@@ -1,7 +1,7 @@
 // Copyright 2019 The Kubernetes Authors.
 // SPDX-License-Identifier: Apache-2.0
 
-package v1alpha1
+package replacement
 
 import (
 	"fmt"
@@ -11,13 +11,13 @@ import (
 	"strconv"
 	"strings"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/kustomize/api/k8sdeps/kunstruct"
 	"sigs.k8s.io/kustomize/api/resmap"
 	"sigs.k8s.io/kustomize/api/resource"
 	"sigs.k8s.io/kustomize/api/types"
-	"sigs.k8s.io/yaml"
 
+	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	plugtypes "opendev.org/airship/airshipctl/pkg/document/plugin/types"
 )
 
@@ -31,21 +31,28 @@ const (
 	dotReplacer = "$$$$"
 )
 
-// GetGVK returns group, version, kind object used to register version
-// of the plugin
-func GetGVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "airshipit.org",
-		Version: "v1alpha1",
-		Kind:    "ReplacementTransformer",
-	}
+type plugin struct {
+	*airshipv1.ReplacementTransformer
 }
 
 // New creates new instance of the plugin
-func New(cfg []byte) (plugtypes.Plugin, error) {
-	p := &plugin{}
-	if err := p.Config(nil, cfg); err != nil {
+func New(obj map[string]interface{}) (plugtypes.Plugin, error) {
+	cfg := &airshipv1.ReplacementTransformer{}
+	err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj, cfg)
+	if err != nil {
 		return nil, err
+	}
+	p := &plugin{ReplacementTransformer: cfg}
+	for _, r := range p.Replacements {
+		if r.Source == nil {
+			return nil, ErrBadConfiguration{Msg: "`from` must be specified in one replacement"}
+		}
+		if r.Target == nil {
+			return nil, ErrBadConfiguration{Msg: "`to` must be specified in one replacement"}
+		}
+		if r.Source.ObjRef != nil && r.Source.Value != "" {
+			return nil, ErrBadConfiguration{Msg: "only one of fieldref and value is allowed in one replacement"}
+		}
 	}
 	return p, nil
 }
@@ -79,28 +86,6 @@ func (p *plugin) Run(in io.Reader, out io.Writer) error {
 		return err
 	}
 	fmt.Fprint(out, string(result))
-	return nil
-}
-
-// Config function reads replacements configuration
-func (p *plugin) Config(
-	_ *resmap.PluginHelpers, c []byte) error {
-	p.Replacements = []types.Replacement{}
-	err := yaml.Unmarshal(c, p)
-	if err != nil {
-		return err
-	}
-	for _, r := range p.Replacements {
-		if r.Source == nil {
-			return ErrBadConfiguration{Msg: "`from` must be specified in one replacement"}
-		}
-		if r.Target == nil {
-			return ErrBadConfiguration{Msg: "`to` must be specified in one replacement"}
-		}
-		if r.Source.ObjRef != nil && r.Source.Value != "" {
-			return ErrBadConfiguration{Msg: "only one of fieldref and value is allowed in one replacement"}
-		}
-	}
 	return nil
 }
 

@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package v1alpha1_test
+package templater_test
 
 import (
 	"bytes"
@@ -20,14 +20,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"sigs.k8s.io/yaml"
 
-	tmplv1alpha1 "opendev.org/airship/airshipctl/pkg/document/plugin/templater/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/document/plugin/templater"
 )
-
-func TestMalformedConfig(t *testing.T) {
-	_, err := tmplv1alpha1.New([]byte("--"))
-	assert.Error(t, err)
-}
 
 func TestTemplater(t *testing.T) {
 	testCases := []struct {
@@ -119,7 +115,10 @@ template: |
 	}
 
 	for _, tc := range testCases {
-		plugin, err := tmplv1alpha1.New([]byte(tc.cfg))
+		cfg := make(map[string]interface{})
+		err := yaml.Unmarshal([]byte(tc.cfg), &cfg)
+		require.NoError(t, err)
+		plugin, err := templater.New(cfg)
 		require.NoError(t, err)
 		buf := &bytes.Buffer{}
 		err = plugin.Run(nil, buf)
