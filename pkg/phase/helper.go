@@ -76,6 +76,8 @@ func (helper *Helper) Phase(phaseID ifc.ID) (*v1alpha1.Phase, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Overwrite phase used for selector, with a phase with default values
+	phase = v1alpha1.DefaultPhase()
 	if err = doc.ToAPIObject(phase, v1alpha1.Scheme); err != nil {
 		return nil, err
 	}
@@ -126,7 +128,7 @@ func (helper *Helper) ListPhases() ([]*v1alpha1.Phase, error) {
 
 	phases := []*v1alpha1.Phase{}
 	for _, doc := range docs {
-		p := &v1alpha1.Phase{}
+		p := v1alpha1.DefaultPhase()
 		if err = doc.ToAPIObject(p, v1alpha1.Scheme); err != nil {
 			return nil, err
 		}
@@ -142,7 +144,7 @@ func (helper *Helper) ClusterMapAPIobj() (*v1alpha1.ClusterMap, error) {
 		return nil, err
 	}
 
-	cMap := &v1alpha1.ClusterMap{}
+	cMap := v1alpha1.DefaultClusterMap()
 	selector, err := document.NewSelector().ByObject(cMap, v1alpha1.Scheme)
 	if err != nil {
 		return nil, err

@@ -55,7 +55,7 @@ func RegisterExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFactory) 
 
 // NewExecutor creates instance of 'clusterctl init' phase executor
 func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
-	options := &airshipv1.Clusterctl{}
+	options := airshipv1.DefaultClusterctl()
 	if err := cfg.ExecutorDocument.ToAPIObject(options, airshipv1.Scheme); err != nil {
 		return nil, err
 	}

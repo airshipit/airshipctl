@@ -36,3 +36,10 @@ type Cluster struct {
 	// expecting it to be in document bundle. Parent kubeconfig will be used to get kubeconfig
 	DynamicKubeConfig bool `json:"dynamicKubeConf,omitempty"`
 }
+
+// DefaultClusterMap can be used to safely unmarshal ClusterMap object without nil pointers
+func DefaultClusterMap() *ClusterMap {
+	return &ClusterMap{
+		Map: make(map[string]*Cluster),
+	}
+}
