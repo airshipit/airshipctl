@@ -15,68 +15,26 @@
 package cluster
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/cluster"
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/k8s/client"
-	"opendev.org/airship/airshipctl/pkg/log"
-	"opendev.org/airship/airshipctl/pkg/util"
 )
 
 // NewStatusCommand creates a command which reports the statuses of a cluster's deployed components.
 func NewStatusCommand(cfgFactory config.Factory, factory client.Factory) *cobra.Command {
+	o := cluster.NewStatusOptions(cfgFactory, factory)
 	cmd := &cobra.Command{
 		Use:   "status",
 		Short: "Retrieve statuses of deployed cluster components",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			conf, err := cfgFactory()
-			if err != nil {
-				return err
-			}
-
-			manifest, err := conf.CurrentContextManifest()
-			if err != nil {
-				return err
-			}
-
-			docBundle, err := document.NewBundleByPath(manifest.TargetPath)
-			if err != nil {
-				return err
-			}
-
-			docs, err := docBundle.GetAllDocuments()
-			if err != nil {
-				return err
-			}
-
-			client, err := factory(conf)
-			if err != nil {
-				return err
-			}
-
-			statusMap, err := cluster.NewStatusMap(client)
-			if err != nil {
-				return err
-			}
-
-			tw := util.NewTabWriter(cmd.OutOrStdout())
-			fmt.Fprintf(tw, "Kind\tName\tStatus\n")
-			for _, doc := range docs {
-				status, err := statusMap.GetStatusForResource(doc)
-				if err != nil {
-					log.Debug(err)
-				} else {
-					fmt.Fprintf(tw, "%s\t%s\t%s\n", doc.GetKind(), doc.GetName(), status)
-				}
-			}
-			tw.Flush()
-			return nil
-		},
+		RunE:  clusterStatusRunE(o),
 	}
-
 	return cmd
+}
+
+func clusterStatusRunE(o cluster.StatusOptions) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		return cluster.StatusRunner(o, cmd.OutOrStdout())
+	}
 }

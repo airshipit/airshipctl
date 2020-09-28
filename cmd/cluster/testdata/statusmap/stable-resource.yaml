@@ -1,7 +1,0 @@
-# this resource is stable because the fake version in the cluster will have
-# .status.state == "stable"
-apiVersion: "example.com/v1"
-kind: Resource
-metadata:
-  name: stable-resource
-  namespace: default

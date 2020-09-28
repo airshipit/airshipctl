@@ -23,15 +23,77 @@ import (
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/cli-utils/pkg/kstatus/status"
 	"sigs.k8s.io/cli-utils/pkg/object"
 
 	"opendev.org/airship/airshipctl/pkg/cluster"
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/k8s/client"
 	"opendev.org/airship/airshipctl/pkg/k8s/client/fake"
 	"opendev.org/airship/airshipctl/testutil"
 )
+
+func TestGetStatusMapDocs(t *testing.T) {
+	tests := []struct {
+		name      string
+		resources []runtime.Object
+		CRDs      []runtime.Object
+	}{
+		{
+			name: "get-status-map-docs-no-resources",
+		},
+		{
+			name: "get-status-map-docs-with-resources",
+			resources: []runtime.Object{
+				makeResource("stable-resource", "stable"),
+				makeResource("pending-resource", "pending"),
+			},
+			CRDs: []runtime.Object{
+				makeResourceCRD(annotationValidStatusCheck()),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		settings := clusterStatusTestSettings()
+		fakeClient := fake.NewClient(
+			fake.WithDynamicObjects(tt.resources...),
+			fake.WithCRDs(tt.CRDs...))
+		statusOptions := cluster.NewStatusOptions(func() (*config.Config, error) {
+			return settings, nil
+		}, func(_ *config.Config) (client.Interface, error) {
+			return fakeClient, nil
+		})
+
+		expectedSM, err := cluster.NewStatusMap(fakeClient)
+		require.NoError(t, err)
+		docBundle, err := document.NewBundleByPath(settings.Manifests["testManifest"].TargetPath)
+		require.NoError(t, err)
+		expectedDocs, err := docBundle.GetAllDocuments()
+		require.NoError(t, err)
+
+		sm, docs, err := statusOptions.GetStatusMapDocs()
+		require.NoError(t, err)
+		assert.Equal(t, expectedSM, sm)
+		assert.Equal(t, expectedDocs, docs)
+	}
+}
+
+func clusterStatusTestSettings() *config.Config {
+	return &config.Config{
+		Contexts: map[string]*config.Context{
+			"testContext": {Manifest: "testManifest"},
+		},
+		Manifests: map[string]*config.Manifest{
+			"testManifest": {TargetPath: "testdata/statusmap"},
+		},
+		CurrentContext: "testContext",
+	}
+}
 
 func TestNewStatusMap(t *testing.T) {
 	tests := []struct {
