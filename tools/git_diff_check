@@ -23,11 +23,25 @@ then
     exit 1
 fi
 
+git diff-files --quiet --ignore-submodules **/*.md
+if [ $? -ne 0 ]
+then
+    echo "git diff found modified cli help, please run make cli-docs"
+    exit 1
+fi
+
 # Evaluate git index for differences, if found print message and fail.
 git diff-index --cached --quiet --ignore-submodules HEAD -- **/*.golden
 if [ $? -ne 0 ]
 then
     echo "git diff found modified test cases, please run make update-golden"
+    exit 1
+fi
+
+git diff-index --cached --quiet --ignore-submodules HEAD -- **/*.md
+if [ $? -ne 0 ]
+then
+    echo "git diff found modified cli help, please run make cli-docs"
     exit 1
 fi
 
