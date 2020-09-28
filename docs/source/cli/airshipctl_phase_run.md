@@ -22,8 +22,9 @@ airshipctl phase run ephemeral-control-plane
 ### Options
 
 ```
-      --dry-run   simulate phase execution
-  -h, --help      help for run
+      --dry-run                 simulate phase execution
+  -h, --help                    help for run
+      --wait-timeout duration   wait timeout
 ```
 
 ### Options inherited from parent commands

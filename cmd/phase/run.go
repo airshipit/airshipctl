@@ -55,5 +55,10 @@ func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
 		"dry-run",
 		false,
 		"simulate phase execution")
+	flags.DurationVar(
+		&p.Options.Timeout,
+		"wait-timeout",
+		0,
+		"wait timeout")
 	return runCmd
 }

@@ -10,5 +10,6 @@ airshipctl phase run ephemeral-control-plane
 
 
 Flags:
-      --dry-run   simulate phase execution
-  -h, --help      help for run
+      --dry-run                 simulate phase execution
+  -h, --help                    help for run
+      --wait-timeout duration   wait timeout

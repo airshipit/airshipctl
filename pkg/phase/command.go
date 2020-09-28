@@ -16,6 +16,7 @@ package phase
 
 import (
 	"io"
+	"time"
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
@@ -24,6 +25,7 @@ import (
 // RunFlags options for phase run command
 type RunFlags struct {
 	DryRun  bool
+	Timeout time.Duration
 	PhaseID ifc.ID
 }
 
@@ -51,7 +53,7 @@ func (c *RunCommand) RunE() error {
 	if err != nil {
 		return err
 	}
-	return phase.Run(ifc.RunOptions{DryRun: c.Options.DryRun})
+	return phase.Run(ifc.RunOptions{DryRun: c.Options.DryRun, Timeout: c.Options.Timeout})
 }
 
 // PlanCommand plan command
