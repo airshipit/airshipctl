@@ -13,7 +13,8 @@ airshipctl document pull [flags]
 ### Options
 
 ```
-  -h, --help   help for pull
+  -h, --help          help for pull
+  -n, --no-checkout   No checkout is performed after the clone is complete.
 ```
 
 ### Options inherited from parent commands

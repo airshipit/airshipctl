@@ -4,4 +4,5 @@ Usage:
   pull [flags]
 
 Flags:
-  -h, --help   help for pull
+  -h, --help          help for pull
+  -n, --no-checkout   No checkout is performed after the clone is complete.

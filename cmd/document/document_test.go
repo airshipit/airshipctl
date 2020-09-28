@@ -33,11 +33,6 @@ func TestDocument(t *testing.T) {
 			CmdLine: "-h",
 			Cmd:     document.NewPluginCommand(),
 		},
-		{
-			Name:    "document-pull-with-help",
-			CmdLine: "-h",
-			Cmd:     document.NewPullCommand(nil),
-		},
 	}
 	for _, tt := range tests {
 		testutil.RunTest(t, tt)

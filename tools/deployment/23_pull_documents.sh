@@ -15,4 +15,4 @@
 set -xe
 
 echo "Pull site documents using airshipctl"
-airshipctl document pull --debug
+airshipctl document pull -n --debug

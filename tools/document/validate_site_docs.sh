@@ -16,11 +16,10 @@ set -xe
 
 # The root of the manifest structure to be validated.
 # This corresponds to the targetPath in an airshipctl config
-: ${MANIFEST_ROOT:="${PWD}"}
+: ${MANIFEST_ROOT:="$(dirname "${PWD}")"}
 # The location of sites whose manifests should be validated.
-# This are relative to MANIFEST_ROOT above, and correspond to
-# the base of the subPath in an airshipctl config
-: ${SITE_ROOT:="manifests/site"}
+# This are relative to MANIFEST_ROOT above
+: ${SITE_ROOT:="$(basename "${PWD}")/manifests/site"}
 
 : ${SITE:="test-workload"}
 : ${CONTEXT:="kind-airship"}
@@ -78,7 +77,6 @@ manifests:
           force: false
           tag: ""
         url: https://opendev.org/airship/treasuremap
-    subPath: ${SITE_ROOT}/${SITE}
     targetPath: ${MANIFEST_ROOT}
 EOL
 }
@@ -102,8 +100,6 @@ for cluster in ephemeral target; do
         # change the cluster name (as well as context and user) to avoid kubeconfig reconciliation
         sed -i "s/${CONTEXT}/${CONTEXT}_${cluster}/" ${AIRSHIPKUBECONFIG}
         generate_airshipconf ${cluster}
-
-        ${ACTL} cluster init
 
         # A sequential list of potential phases.  A fancier attempt at this has been
         # removed since it was choking in certain cases and got to be more trouble than was worth.

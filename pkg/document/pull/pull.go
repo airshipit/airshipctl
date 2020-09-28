@@ -20,30 +20,20 @@ import (
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
-// Settings is a reference to environment.AirshipCTLSettings
-// AirshipCTLSettings is a container for all of the settings needed by airshipctl
-type Settings struct {
-	*config.Config
-}
-
 // Pull clones repositories
-func Pull(cfgFactory config.Factory) error {
+func Pull(cfgFactory config.Factory, noCheckout bool) error {
 	cfg, err := cfgFactory()
 	if err != nil {
 		return err
 	}
 
-	settings := &Settings{cfg}
-	if err = settings.cloneRepositories(); err != nil {
-		return err
-	}
-	return nil
+	return cloneRepositories(cfg, noCheckout)
 }
 
-func (s *Settings) cloneRepositories() error {
+func cloneRepositories(cfg *config.Config, noCheckout bool) error {
 	// Clone main repository
-	currentManifest, err := s.CurrentContextManifest()
-	log.Debugf("Reading current context manifest information from %s", s.LoadedConfigPath())
+	currentManifest, err := cfg.CurrentContextManifest()
+	log.Debugf("Reading current context manifest information from %s", cfg.LoadedConfigPath())
 	if err != nil {
 		return err
 	}
@@ -60,7 +50,7 @@ func (s *Settings) cloneRepositories() error {
 		}
 		log.Printf("Downloading %s repository %s from %s into %s",
 			repoName, repository.Name, extraRepoConfig.URL(), currentManifest.TargetPath)
-		err = repository.Download(extraRepoConfig.ToCheckoutOptions(true).Force)
+		err = repository.Download(noCheckout)
 		if err != nil {
 			return err
 		}

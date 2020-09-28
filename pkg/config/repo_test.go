@@ -182,7 +182,7 @@ func TestToCheckout(t *testing.T) {
 	for _, name := range testCase.dataMapEntry {
 		repo := data.TestData[name]
 		require.NotNil(t, repo)
-		co := repo.ToCheckoutOptions(false)
+		co := repo.ToCheckoutOptions()
 		if testCase.expectedNil {
 			assert.Nil(t, co)
 		} else {

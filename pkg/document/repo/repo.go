@@ -35,7 +35,7 @@ import (
 type OptionsBuilder interface {
 	ToAuth() (transport.AuthMethod, error)
 	ToCloneOptions(auth transport.AuthMethod) *git.CloneOptions
-	ToCheckoutOptions(force bool) *git.CheckoutOptions
+	ToCheckoutOptions() *git.CheckoutOptions
 	ToFetchOptions(auth transport.AuthMethod) *git.FetchOptions
 	URL() string
 }
@@ -79,7 +79,7 @@ func storerFromFs(fs billy.Filesystem) (storage.Storer, error) {
 }
 
 // Update fetches new refs, and checkout according to checkout options
-func (repo *Repository) Update(force bool) error {
+func (repo *Repository) Update() error {
 	log.Debugf("Updating repository %s", repo.Name)
 	if !repo.Driver.IsOpen() {
 		return ErrNoOpenRepo{}
@@ -92,15 +92,15 @@ func (repo *Repository) Update(force bool) error {
 	if err != nil && err != git.NoErrAlreadyUpToDate {
 		return fmt.Errorf("failed to fetch refs for repository %v: %w", repo.Name, err)
 	}
-	return repo.Checkout(force)
+	return repo.Checkout()
 }
 
 // Checkout git repository, ToCheckoutOptions method will be used go get CheckoutOptions
-func (repo *Repository) Checkout(enforce bool) error {
+func (repo *Repository) Checkout() error {
 	if !repo.Driver.IsOpen() {
 		return ErrNoOpenRepo{}
 	}
-	co := repo.ToCheckoutOptions(enforce)
+	co := repo.ToCheckoutOptions()
 	var branchHash string
 	if co.Hash == plumbing.ZeroHash {
 		branchHash = fmt.Sprintf("branch %s", co.Branch.String())
@@ -137,7 +137,7 @@ func (repo *Repository) Clone() error {
 // no remotes will be modified in this case, also no refs will be updated.
 // enforce parameter is used to simulate git reset --hard option.
 // If you want to enforce state of the repository, please delete current git repository before downloading.
-func (repo *Repository) Download(enforceCheckout bool) error {
+func (repo *Repository) Download(noCheckout bool) error {
 	log.Debugf("Attempting to download the repository %s", repo.Name)
 
 	if !repo.Driver.IsOpen() {
@@ -152,5 +152,8 @@ func (repo *Repository) Download(enforceCheckout bool) error {
 		}
 	}
 
-	return repo.Checkout(enforceCheckout)
+	if noCheckout {
+		return nil
+	}
+	return repo.Checkout()
 }

@@ -23,13 +23,17 @@ import (
 
 // NewPullCommand creates a new command for pulling airship document repositories
 func NewPullCommand(cfgFactory config.Factory) *cobra.Command {
+	var noCheckout bool
 	documentPullCmd := &cobra.Command{
 		Use:   "pull",
 		Short: "Pulls documents from remote git repository",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return pull.Pull(cfgFactory)
+			return pull.Pull(cfgFactory, noCheckout)
 		},
 	}
+
+	documentPullCmd.Flags().BoolVarP(&noCheckout, "no-checkout", "n", false,
+		"No checkout is performed after the clone is complete.")
 
 	return documentPullCmd
 }
