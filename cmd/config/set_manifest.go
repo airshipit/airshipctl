@@ -145,5 +145,11 @@ func addSetManifestFlags(o *config.ManifestOptions, cmd *cobra.Command) {
 		&o.TargetPath,
 		"target-path",
 		"",
-		"the target path for to be set for this manifest")
+		"the target path to be set for this manifest")
+
+	flags.StringVar(
+		&o.MetadataPath,
+		"metadata-path",
+		"",
+		"the metadata path to be set for this manifest")
 }

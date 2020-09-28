@@ -33,17 +33,18 @@ type ContextOptions struct {
 
 // ManifestOptions holds all configurable options for manifest configuration
 type ManifestOptions struct {
-	Name       string
-	RepoName   string
-	URL        string
-	Branch     string
-	CommitHash string
-	Tag        string
-	RemoteRef  string
-	Force      bool
-	IsPrimary  bool
-	SubPath    string
-	TargetPath string
+	Name         string
+	RepoName     string
+	URL          string
+	Branch       string
+	CommitHash   string
+	Tag          string
+	RemoteRef    string
+	Force        bool
+	IsPrimary    bool
+	SubPath      string
+	TargetPath   string
+	MetadataPath string
 }
 
 // EncryptionConfigOptions holds all configurable options for encryption configuration
