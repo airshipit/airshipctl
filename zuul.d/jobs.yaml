@@ -84,6 +84,11 @@
     post-run: playbooks/airship-collect-logs.yaml
     run: playbooks/airshipctl-gate-runner.yaml
     nodeset: airship-airshipctl-single-16GB-bionic-node
+    irrelevant-files:
+      - ^certs/.*$
+      - ^docs/.*$
+      - ^.*\.md$
+      - ^\.github/.*$
     vars:
       site_name: test-site
       gate_scripts:
