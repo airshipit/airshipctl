@@ -83,7 +83,7 @@ var testCases = []struct {
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: notImportantHere
+  name: Test_Case_0
 replacements:
 - source:
     value: nginx:newtag
@@ -158,7 +158,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: notImportantHere
+  name: Test_Case_1
 replacements:
 - source:
     value: 1.17.0
@@ -195,13 +195,82 @@ spec:
         name: nginx-tagged
 `,
 	},
-
 	{
 		cfg: `
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: notImportantHere
+  name: Test_Case_2
+replacements:
+- source:
+    value: test.proxy.com
+  target:
+    objref:
+      kind: Secret
+      name: deploy1_secret
+    fieldrefs:
+    - stringData%REPLACEME%
+`,
+
+		in: `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: deploy1_secret
+stringData: PROXY=REPLACEME
+type: Opaque
+`,
+		expectedOut: `apiVersion: v1
+kind: Secret
+metadata:
+  name: deploy1_secret
+stringData: PROXY=test.proxy.com
+type: Opaque
+`,
+	},
+	{
+		cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: Test_Case_3
+replacements:
+- source:
+    value: testString
+  target:
+    objref:
+      kind: KubeadmControlPlane
+      name: cluster-controlplane
+    fieldrefs:
+    - spec.kubeadmConfigSpec.preKubeadmCommands%REPLACEME%
+`,
+
+		in: `
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+kind: KubeadmControlPlane
+metadata:
+  name: cluster-controlplane
+spec:
+  kubeadmConfigSpec:
+    preKubeadmCommands:
+    - echo REPLACEME
+`,
+		expectedOut: `apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+kind: KubeadmControlPlane
+metadata:
+  name: cluster-controlplane
+spec:
+  kubeadmConfigSpec:
+    preKubeadmCommands:
+    - echo testString
+`,
+	},
+	{
+		cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: Test_Case_4
 replacements:
 - source:
     objref:
@@ -270,7 +339,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: notImportantHere
+  name: Test_Case_5
 replacements:
 - source:
     objref:
@@ -370,7 +439,7 @@ metadata:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: notImportantHere
+  name: Test_Case_6
 replacements:
 - source:
     value: regexedtag
@@ -442,7 +511,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: notImportantHere
+  name: Test_Case_7
 replacements:
 - source:
     objref:
@@ -499,7 +568,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: notImportantHere
+  name: Test_Case_8
 replacements:
 - source:
     objref:
@@ -558,7 +627,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: test-for-numeric-conversion
+  name: Test_Case_9
 replacements:
 - source:
     objref:
@@ -617,7 +686,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: notImportantHere
+  name: Test_Case_10
 replacements:
 - source:
     objref:
@@ -652,7 +721,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: notImportantHere
+  name: Test_Case_11
 replacements:
 - source:
     objref:
@@ -676,7 +745,7 @@ metadata:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: notImportantHere
+  name: Test_Case_12
 replacements:
 - source:
     objref:
@@ -703,7 +772,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: notImportantHere
+  name: Test_Case_13
 replacements:
 - source:
     objref:
@@ -742,7 +811,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: notImportantHere
+  name: Test_Case_14
 replacements:
 - source:
     objref:
@@ -781,7 +850,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: notImportantHere
+  name: Test_Case_15
 replacements:
 - source:
     objref:
@@ -822,7 +891,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: notImportantHere
+  name: Test_Case_16
 replacements:
 - source:
     objref:
@@ -861,7 +930,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: notImportantHere
+  name: Test_Case_17
 replacements:
 - source:
     objref:
@@ -900,7 +969,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: notImportantHere
+  name: Test_Case_18
 replacements:
 - source:
     objref:
@@ -932,53 +1001,14 @@ spec:
       containers:
       - image: nginx:TAG
         name: nginx-latest`,
-		expectedErr: "pattern-based substitution can only be applied to string target fields",
+		expectedErr: "pattern-based substitution can only be applied to string or array of strings target fields",
 	},
 	{
 		cfg: `
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: notImportantHere
-replacements:
-- source:
-    objref:
-      kind: Pod
-      name: pod1
-  target:
-    objref:
-      kind: Deployment
-    fieldrefs:
-    - spec.template.spec.containers[name=nginx-latest].image%TAG%`,
-		in: `
-apiVersion: v1
-kind: Pod
-metadata:
-  name: pod1
-spec:
-  containers:
-  - name: myapp-container
-    image: busybox
----
-group: apps
-apiVersion: v1
-kind: Deployment
-metadata:
-  name: deploy1
-spec:
-  template:
-    spec:
-      containers:
-      - image: nginx:latest
-        name: nginx-latest`,
-		expectedErr: "pattern 'TAG' is defined in configuration but was not found in target value nginx:latest",
-	},
-	{
-		cfg: `
-apiVersion: airshipit.org/v1alpha1
-kind: ReplacementTransformer
-metadata:
-  name: notImportantHere
+  name: Test_Case_19
 replacements:
 - source:
     value: "12345678"
@@ -1050,15 +1080,15 @@ func TestReplacementTransformer(t *testing.T) {
 func TestExec(t *testing.T) {
 	// TODO (dukov) Remove this once we migrate to new kustomize plugin approach
 	// NOTE (dukov) we need this since error format is different for new kustomize plugins
-	testCases[11].expectedErr = "wrong Node Kind for labels.somelabel expected: " +
+	testCases[13].expectedErr = "wrong Node Kind for labels.somelabel expected: " +
 		"MappingNode was ScalarNode: value: {'some string value'}"
-	testCases[12].expectedErr = "wrong Node Kind for labels.somelabel expected: " +
+	testCases[14].expectedErr = "wrong Node Kind for labels.somelabel expected: " +
 		"SequenceNode was ScalarNode: value: {'some string value'}"
-	testCases[13].expectedErr = "wrong Node Kind for spec expected: " +
+	testCases[15].expectedErr = "wrong Node Kind for spec expected: " +
 		"SequenceNode was MappingNode: value: {containers:\n- name: myapp-container\n  image: busybox}"
-	testCases[15].expectedErr = "wrong Node Kind for spec.containers expected: " +
+	testCases[17].expectedErr = "wrong Node Kind for spec.containers expected: " +
 		"MappingNode was SequenceNode: value: {- name: myapp-container\n  image: busybox}"
-	testCases[16].expectedErr = "wrong Node Kind for  expected: " +
+	testCases[18].expectedErr = "wrong Node Kind for  expected: " +
 		"ScalarNode was MappingNode: value: {image: nginx:TAG\nname: nginx-latest}"
 
 	for i, tc := range testCases {

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -209,12 +210,6 @@ func substituteSubstring(tgt *yaml.RNode, fieldRef, substringPattern string, val
 	switch curVal.YNode().Kind {
 	case yaml.ScalarNode:
 		p := regexp.MustCompile(substringPattern)
-		if !p.MatchString(yaml.GetValue(curVal)) {
-			return ErrPatternSubstring{
-				Msg: fmt.Sprintf("pattern '%s' is defined in configuration but was not found in target value %s",
-					substringPattern, yaml.GetValue(curVal)),
-			}
-		}
 		curVal.YNode().Value = p.ReplaceAllString(yaml.GetValue(curVal), yaml.GetValue(value))
 
 	case yaml.SequenceNode:
@@ -227,12 +222,6 @@ func substituteSubstring(tgt *yaml.RNode, fieldRef, substringPattern string, val
 				return err
 			}
 			p := regexp.MustCompile(substringPattern)
-			if !p.MatchString(yaml.GetValue(item)) {
-				return ErrPatternSubstring{
-					Msg: fmt.Sprintf("pattern '%s' is defined in configuration but was not found in target value %s",
-						substringPattern, yaml.GetValue(item)),
-				}
-			}
 			item.YNode().Value = p.ReplaceAllString(yaml.GetValue(item), yaml.GetValue(value))
 		}
 	default:
@@ -343,6 +332,32 @@ func extractSubstringPattern(path string) (extractedPath string, substringPatter
 	return groups[1], groups[2]
 }
 
+// replaces substring in a string if pattern applies
+func processString(field string, substringPattern string, replacement string) string {
+	pattern := regexp.MustCompile(substringPattern)
+	return pattern.ReplaceAllString(field, replacement)
+}
+
+// replaces substring in any string in the array if pattern applies
+func processArray(tgt []string, pattern string, replacement string) []string {
+	result := make([]string, 0, len(tgt))
+	for _, field := range tgt {
+		result = append(result, processString(field, pattern, replacement))
+	}
+	return result
+}
+
+// converts array of interfaces to array of strings
+func convertToStrings(iFaces []interface{}) ([]string, bool) {
+	result := []string{}
+	for _, val := range iFaces {
+		if str, ok := val.(string); ok {
+			result = append(result, str)
+		}
+	}
+	return result, (len(result) != 0)
+}
+
 // apply a substring substitution based on a pattern
 func applySubstringPattern(target interface{}, replacement interface{},
 	substringPattern string) (regexedReplacement interface{}, err error) {
@@ -364,19 +379,23 @@ func applySubstringPattern(target interface{}, replacement interface{},
 			"with string or numeric replacement values"}
 	}
 
-	tgt, ok := target.(string)
-	if !ok {
-		return nil, ErrPatternSubstring{Msg: "pattern-based substitution can only be applied to string target fields"}
-	}
-
-	p := regexp.MustCompile(substringPattern)
-	if !p.MatchString(tgt) {
-		return nil, ErrPatternSubstring{
-			Msg: fmt.Sprintf("pattern '%s' is defined in configuration but was not found in target value %s",
-				substringPattern, tgt),
+	switch reflect.TypeOf(target).Kind() {
+	case reflect.String:
+		return processString(target.(string), substringPattern, replacementString), nil
+	case reflect.Slice:
+		if ifaceArray, ok := target.([]interface{}); ok {
+			if strArray, ok := convertToStrings(ifaceArray); ok {
+				return processArray(strArray, substringPattern, replacementString), nil
+			}
+		}
+		if strArray, ok := target.([]string); ok {
+			return processArray(strArray, substringPattern, replacementString), nil
 		}
 	}
-	return p.ReplaceAllString(tgt, replacementString), nil
+	return nil, ErrPatternSubstring{
+		Msg: "pattern-based substitution can only be applied to string " +
+			"or array of strings target fields",
+	}
 }
 
 func updateMapField(m map[string]interface{}, pathToField []string, replacement interface{}) error {

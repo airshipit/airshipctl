@@ -13,6 +13,13 @@ spec:
     clusterConfiguration:
       apiServer:
         timeoutForControlPlane: 1000s
+    files:
+      - path: "/etc/systemd/system/docker.service.d/http-proxy.conf"
+        content: |
+          [Service]
+          Environment="HTTP_PROXY=REPLACEMENT_HTTP_PROXY"
+          Environment="HTTPS_PROXY=REPLACEMENT_HTTPS_PROXY"
+          Environment="NO_PROXY=REPLACEMENT_NO_PROXY"
     preKubeadmCommands:
       - echo 'root:r00tme' | chpasswd
       - echo 'ubuntu:r00tme' | chpasswd
@@ -23,6 +30,12 @@ spec:
         EOF
       - sysctl --system
       - swapoff -a
+      - export HTTP_PROXY=REPLACEMENT_HTTP_PROXY
+      - export HTTPS_PROXY=REPLACEMENT_HTTPS_PROXY
+      - export http_proxy=${HTTP_PROXY}
+      - export https_proxy=${HTTPS_PROXY}
+      - export NO_PROXY=REPLACEMENT_NO_PROXY
+      - export no_proxy=${NO_PROXY}
       - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
       - curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
       - echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee -a /etc/apt/sources.list
@@ -35,6 +48,7 @@ spec:
           containerd.io
       - apt install -y kubelet=1.18.6-00 kubeadm=1.18.6-00 kubectl=1.18.6-00
       - apt-mark hold docker-ce docker-ce-cli containerd.io kubelet kubeadm kubectl
+      - unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY no_proxy NO_PROXY
     initConfiguration:
       nodeRegistration:
         name: '{{ ds.meta_data.local_hostname }}'
