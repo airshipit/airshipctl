@@ -2,8 +2,10 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../../../../function/hostgenerator-m3
+  - ../../../../../function/hardwareprofile-example
   - ../../../shared/catalogues/
   - host-generation.yaml
 
 transformers:
+  - ../../../../../function/hardwareprofile-example/replacements
   - ../../../../../function/hostgenerator-m3/replacements
