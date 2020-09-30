@@ -62,8 +62,13 @@ func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 		return nil, err
 	}
 
+	bundle, err := cfg.BundleFactory()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Executor{
-		ExecutorBundle:   cfg.ExecutorBundle,
+		ExecutorBundle:   bundle,
 		ExecutorDocument: cfg.ExecutorDocument,
 		imgConf:          apiObj,
 	}, nil

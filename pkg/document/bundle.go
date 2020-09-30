@@ -66,6 +66,10 @@ type Bundle interface {
 var pluginPath string
 var pluginPathLock = &sync.Mutex{}
 
+// BundleFactoryFunc is a function that returns bundle, can be used to build bundle on demand
+// instead of inplace, useful, when you don't know if bundle will be needed or not, see phase for detail
+type BundleFactoryFunc func() (Bundle, error)
+
 // NewBundleByPath helper function that returns new document.Bundle interface based on clusterType and
 // phase, example: helpers.NewBunde(airConfig, "ephemeral", "initinfra")
 func NewBundleByPath(rootPath string) (Bundle, error) {

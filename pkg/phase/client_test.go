@@ -168,6 +168,44 @@ func fakeRegistry() map[schema.GroupVersionKind]ifc.ExecutorFactory {
 	}
 }
 
+func TestDocumentRoot(t *testing.T) {
+	tests := []struct {
+		name         string
+		expectedRoot string
+		phaseID      ifc.ID
+		expectedErr  error
+	}{
+		{
+			name:         "Success entrypoint exists",
+			expectedRoot: "testdata/valid_site/phases",
+			phaseID:      ifc.ID{Name: "capi_init"},
+		},
+		{
+			name:        "Error entrypoint does not exists",
+			phaseID:     ifc.ID{Name: "some_phase"},
+			expectedErr: phase.ErrDocumentEntrypointNotDefined{PhaseName: "some_phase"},
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			cfg := testConfig(t)
+			helper, err := phase.NewHelper(cfg)
+			require.NoError(t, err)
+			require.NotNil(t, helper)
+
+			c := phase.NewClient(helper)
+			p, err := c.PhaseByID(ifc.ID{Name: tt.phaseID.Name, Namespace: tt.phaseID.Namespace})
+			require.NoError(t, err)
+			require.NotNil(t, p)
+
+			root, err := p.DocumentRoot()
+			assert.Equal(t, tt.expectedErr, err)
+			assert.Equal(t, tt.expectedRoot, root)
+		})
+	}
+}
+
 func fakeExecFactory(config ifc.ExecutorConfig) (ifc.Executor, error) {
 	return fakeExecutor{}, nil
 }

@@ -25,7 +25,7 @@ import (
 type Phase interface {
 	Validate() error
 	Run(RunOptions) error
-	DocumentRoot() string
+	DocumentRoot() (string, error)
 	Details() (string, error)
 	Executor() (Executor, error)
 	Render(io.Writer, RenderOptions) error

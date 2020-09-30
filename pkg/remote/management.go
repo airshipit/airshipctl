@@ -138,7 +138,12 @@ func NewManager(cfg *config.Config, phaseName string, hosts ...HostSelector) (*M
 		return nil, err
 	}
 
-	docBundle, err := document.NewBundleByPath(phase.DocumentRoot())
+	docRoot, err := phase.DocumentRoot()
+	if err != nil {
+		return nil, err
+	}
+
+	docBundle, err := document.NewBundleByPath(docRoot)
 	if err != nil {
 		return nil, err
 	}

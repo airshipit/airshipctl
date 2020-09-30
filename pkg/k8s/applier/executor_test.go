@@ -82,21 +82,19 @@ users:
 
 func TestNewExecutor(t *testing.T) {
 	tests := []struct {
-		name        string
-		cfgDoc      string
-		expectedErr string
-		helper      ifc.Helper
-		kubeconf    kubeconfig.Interface
-		bundleFunc  func(t *testing.T) document.Bundle
+		name          string
+		cfgDoc        string
+		expectedErr   string
+		helper        ifc.Helper
+		kubeconf      kubeconfig.Interface
+		bundleFactory document.BundleFactoryFunc
 	}{
 		{
-			name:     "valid executor",
-			cfgDoc:   ValidExecutorDoc,
-			kubeconf: testKubeconfig(testValidKubeconfig),
-			helper:   makeDefaultHelper(t),
-			bundleFunc: func(t *testing.T) document.Bundle {
-				return newBundle("testdata/source_bundle", t)
-			},
+			name:          "valid executor",
+			cfgDoc:        ValidExecutorDoc,
+			kubeconf:      testKubeconfig(testValidKubeconfig),
+			helper:        makeDefaultHelper(t),
+			bundleFactory: testBundleFactory("testdata/source_bundle"),
 		},
 		{
 			name: "wrong config document",
@@ -107,11 +105,18 @@ metadata:
   namespace: default
   labels:
     cli-utils.sigs.k8s.io/inventory-id: "some id"`,
-			expectedErr: "wrong config document",
-			helper:      makeDefaultHelper(t),
-			bundleFunc: func(t *testing.T) document.Bundle {
-				return newBundle("testdata/source_bundle", t)
-			},
+			expectedErr:   "wrong config document",
+			helper:        makeDefaultHelper(t),
+			bundleFactory: testBundleFactory("testdata/source_bundle"),
+		},
+
+		{
+			name:          "path to bundle does not exist",
+			cfgDoc:        ValidExecutorDoc,
+			expectedErr:   "no such file or directory",
+			kubeconf:      testKubeconfig(testValidKubeconfig),
+			helper:        makeDefaultHelper(t),
+			bundleFactory: testBundleFactory("does not exist"),
 		},
 	}
 
@@ -125,7 +130,7 @@ metadata:
 			exec, err := applier.NewExecutor(
 				applier.ExecutorOptions{
 					ExecutorDocument: doc,
-					ExecutorBundle:   tt.bundleFunc(t),
+					BundleFactory:    tt.bundleFactory,
 					Kubeconfig:       tt.kubeconf,
 					Helper:           tt.helper,
 				})
@@ -149,30 +154,18 @@ func TestExecutorRun(t *testing.T) {
 		name        string
 		containsErr string
 
-		kubeconf   kubeconfig.Interface
-		execDoc    document.Document
-		bundleFunc func(t *testing.T) document.Bundle
-		helper     ifc.Helper
+		kubeconf      kubeconfig.Interface
+		execDoc       document.Document
+		bundleFactory document.BundleFactoryFunc
+		helper        ifc.Helper
 	}{
 		{
-			name:        "cant read kubeconfig error",
-			containsErr: "no such file or directory",
-			helper:      makeDefaultHelper(t),
-			bundleFunc: func(t *testing.T) document.Bundle {
-				return newBundle("testdata/source_bundle", t)
-			},
-			kubeconf: testKubeconfig(`invalid kubeconfig`),
-			execDoc:  toKubernetesApply(t, ValidExecutorDocNamespaced),
-		},
-		{
-			name:        "Nil bundle provided",
-			execDoc:     toKubernetesApply(t, ValidExecutorDoc),
-			containsErr: "nil bundle provided",
-			kubeconf:    testKubeconfig(testValidKubeconfig),
-			helper:      makeDefaultHelper(t),
-			bundleFunc: func(t *testing.T) document.Bundle {
-				return nil
-			},
+			name:          "cant read kubeconfig error",
+			containsErr:   "no such file or directory",
+			helper:        makeDefaultHelper(t),
+			bundleFactory: testBundleFactory("testdata/source_bundle"),
+			kubeconf:      testKubeconfig(`invalid kubeconfig`),
+			execDoc:       toKubernetesApply(t, ValidExecutorDocNamespaced),
 		},
 	}
 	for _, tt := range tests {
@@ -182,7 +175,7 @@ func TestExecutorRun(t *testing.T) {
 				applier.ExecutorOptions{
 					ExecutorDocument: tt.execDoc,
 					Helper:           tt.helper,
-					ExecutorBundle:   tt.bundleFunc(t),
+					BundleFactory:    tt.bundleFactory,
 					Kubeconfig:       tt.kubeconf,
 				})
 			if tt.name == "Nil bundle provided" {
@@ -211,7 +204,7 @@ func TestRender(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, execDoc)
 	exec, err := applier.NewExecutor(applier.ExecutorOptions{
-		ExecutorBundle:   newBundle("testdata/source_bundle", t),
+		BundleFactory:    testBundleFactory("testdata/source_bundle"),
 		ExecutorDocument: execDoc,
 	})
 	require.NoError(t, err)
@@ -270,4 +263,10 @@ func testKubeconfig(stringData string) kubeconfig.Interface {
 				MockRemoveAll: func() error { return nil },
 			},
 		))
+}
+
+func testBundleFactory(path string) document.BundleFactoryFunc {
+	return func() (document.Bundle, error) {
+		return document.NewBundleByPath(path)
+	}
 }

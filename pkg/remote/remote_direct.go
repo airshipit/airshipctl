@@ -37,7 +37,12 @@ func (b baremetalHost) DoRemoteDirect(cfg *config.Config) error {
 		return err
 	}
 
-	docBundle, err := document.NewBundleByPath(phase.DocumentRoot())
+	docRoot, err := phase.DocumentRoot()
+	if err != nil {
+		return err
+	}
+
+	docBundle, err := document.NewBundleByPath(docRoot)
 	if err != nil {
 		return err
 	}

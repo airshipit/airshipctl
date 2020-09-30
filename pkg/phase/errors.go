@@ -39,3 +39,15 @@ type ErrExecutorRegistration struct {
 func (e ErrExecutorRegistration) Error() string {
 	return fmt.Sprintf("failed to register executor %s, registration function returned %s", e.ExecutorName, e.Err.Error())
 }
+
+// ErrDocumentEntrypointNotDefined returned when phase has no entrypoint defined and phase needs it
+type ErrDocumentEntrypointNotDefined struct {
+	PhaseName      string
+	PhaseNamespace string
+}
+
+func (e ErrDocumentEntrypointNotDefined) Error() string {
+	return fmt.Sprintf("documentEntryPoint is not defined for the phase '%s' in namespace '%s'",
+		e.PhaseName,
+		e.PhaseNamespace)
+}

@@ -66,17 +66,16 @@ func TestRegisterExecutor(t *testing.T) {
 func TestNewExecutor(t *testing.T) {
 	execDoc, err := document.NewDocumentFromBytes([]byte(executorDoc))
 	require.NoError(t, err)
-	bundle, err := document.NewBundleByPath(executorBundlePath)
-	require.NoError(t, err)
 	_, err = NewExecutor(ifc.ExecutorConfig{
 		ExecutorDocument: execDoc,
-		ExecutorBundle:   bundle})
+		BundleFactory:    testBundleFactory(executorBundlePath)})
 	require.NoError(t, err)
 }
 
 func TestExecutorRun(t *testing.T) {
 	bundle, err := document.NewBundleByPath(executorBundlePath)
-	require.NoError(t, err, "Building Bundle Failed")
+	require.NoError(t, err)
+	require.NotNil(t, bundle)
 
 	tempVol, cleanup := testutil.TempDir(t, "bootstrap-test")
 	defer cleanup(t)
@@ -159,7 +158,6 @@ func TestExecutorRun(t *testing.T) {
 				imgConf:          testCfg,
 				builder:          tt.builder,
 			}
-			require.NoError(t, err)
 			ch := make(chan events.Event)
 			go executor.Run(ch, ifc.RunOptions{})
 			var actualEvt []events.Event
@@ -181,5 +179,11 @@ func wrapError(err error) events.Event {
 		ErrorEvent: events.ErrorEvent{
 			Error: err,
 		},
+	}
+}
+
+func testBundleFactory(path string) document.BundleFactoryFunc {
+	return func() (document.Bundle, error) {
+		return document.NewBundleByPath(path)
 	}
 }

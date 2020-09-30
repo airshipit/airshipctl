@@ -21,7 +21,6 @@ import (
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
-	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
@@ -36,7 +35,6 @@ type ClusterctlExecutor struct {
 	clusterName string
 
 	Interface
-	bundle     document.Bundle
 	clusterMap clustermap.ClusterMap
 	options    *airshipv1.Clusterctl
 	kubecfg    kubeconfig.Interface
@@ -66,7 +64,6 @@ func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 	return &ClusterctlExecutor{
 		clusterName: cfg.ClusterName,
 		Interface:   client,
-		bundle:      cfg.ExecutorBundle,
 		options:     options,
 		kubecfg:     cfg.KubeConfig,
 		clusterMap:  cfg.ClusterMap,

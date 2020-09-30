@@ -72,9 +72,6 @@ func TestRegisterExecutor(t *testing.T) {
 
 func TestNewExecutor(t *testing.T) {
 	sampleCfgDoc := executorDoc(t, "init")
-	bundle, err := document.NewBundleByPath("testdata/executor_init")
-	require.NoError(t, err)
-
 	testCases := []struct {
 		name        string
 		helper      ifc.Helper
@@ -90,13 +87,11 @@ func TestNewExecutor(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			_, actualErr := cctlclient.NewExecutor(ifc.ExecutorConfig{
 				ExecutorDocument: sampleCfgDoc,
-				ExecutorBundle:   bundle,
 				Helper:           tt.helper,
 			})
 			assert.Equal(t, tt.expectedErr, actualErr)
 		})
 	}
-	require.NoError(t, err)
 }
 
 func TestExecutorRun(t *testing.T) {
@@ -170,8 +165,6 @@ func TestExecutorRun(t *testing.T) {
 	for _, test := range testCases {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
-			bundle, err := document.NewBundleByPath(tt.bundlePath)
-			require.NoError(t, err)
 			kubeCfg := kubeconfig.NewKubeConfig(
 				kubeconfig.FromByte([]byte("someKubeConfig")),
 				kubeconfig.InjectFileSystem(tt.fs),
@@ -179,7 +172,6 @@ func TestExecutorRun(t *testing.T) {
 			executor, err := cctlclient.NewExecutor(
 				ifc.ExecutorConfig{
 					ExecutorDocument: tt.cfgDoc,
-					ExecutorBundle:   bundle,
 					Helper:           makeDefaultHelper(t),
 					KubeConfig:       kubeCfg,
 				})
@@ -201,12 +193,9 @@ func TestExecutorRun(t *testing.T) {
 
 func TestExecutorValidate(t *testing.T) {
 	sampleCfgDoc := executorDoc(t, "init")
-	bundle, err := document.NewBundleByPath("testdata/executor_init")
-	require.NoError(t, err)
 	executor, err := cctlclient.NewExecutor(
 		ifc.ExecutorConfig{
 			ExecutorDocument: sampleCfgDoc,
-			ExecutorBundle:   bundle,
 			Helper:           makeDefaultHelper(t),
 		})
 	require.NoError(t, err)
@@ -216,19 +205,16 @@ func TestExecutorValidate(t *testing.T) {
 }
 func TestExecutorRender(t *testing.T) {
 	sampleCfgDoc := executorDoc(t, "init")
-	bundle, err := document.NewBundleByPath("testdata/executor_init")
-	require.NoError(t, err)
-
 	executor, err := cctlclient.NewExecutor(
 		ifc.ExecutorConfig{
 			ExecutorDocument: sampleCfgDoc,
-			ExecutorBundle:   bundle,
 			Helper:           makeDefaultHelper(t),
 		})
 	require.NoError(t, err)
 	actualOut := &bytes.Buffer{}
 	actualErr := executor.Render(actualOut, ifc.RenderOptions{})
-	assert.Equal(t, nil, actualErr)
+	assert.Len(t, actualOut.Bytes(), 0)
+	assert.NoError(t, actualErr)
 }
 
 func makeDefaultHelper(t *testing.T) ifc.Helper {
