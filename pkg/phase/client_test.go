@@ -206,6 +206,47 @@ func TestDocumentRoot(t *testing.T) {
 	}
 }
 
+func TestBundleFactoryExecutor(t *testing.T) {
+	cfg := testConfig(t)
+
+	helper, err := phase.NewHelper(cfg)
+	require.NoError(t, err)
+	require.NotNil(t, helper)
+
+	fakeRegistry := func() map[schema.GroupVersionKind]ifc.ExecutorFactory {
+		validBundleFactory := schema.GroupVersionKind{
+			Group:   "airshipit.org",
+			Version: "v1alpha1",
+			Kind:    "Clusterctl",
+		}
+		invalidBundleFactory := schema.GroupVersionKind{
+			Group:   "airshipit.org",
+			Version: "v1alpha1",
+			Kind:    "SomeExecutor",
+		}
+		bundleCheckFunc := func(config ifc.ExecutorConfig) (ifc.Executor, error) {
+			_, bundleErr := config.BundleFactory()
+			return nil, bundleErr
+		}
+		return map[schema.GroupVersionKind]ifc.ExecutorFactory{
+			// validBundleFactory has DocumentEntryPoint defined
+			validBundleFactory: bundleCheckFunc,
+			// invalidBundleFactory does not have DocumentEntryPoint defined, error should be returned
+			invalidBundleFactory: bundleCheckFunc,
+		}
+	}
+	c := phase.NewClient(helper, phase.InjectRegistry(fakeRegistry))
+	p, err := c.PhaseByID(ifc.ID{Name: "capi_init"})
+	require.NoError(t, err)
+	_, err = p.Executor()
+	assert.NoError(t, err)
+	p, err = c.PhaseByID(ifc.ID{Name: "no_entry_point"})
+	require.NoError(t, err)
+	_, err = p.Executor()
+	assert.Error(t, err)
+	assert.Equal(t, phase.ErrDocumentEntrypointNotDefined{PhaseName: "no_entry_point"}, err)
+}
+
 func fakeExecFactory(config ifc.ExecutorConfig) (ifc.Executor, error) {
 	return fakeExecutor{}, nil
 }
