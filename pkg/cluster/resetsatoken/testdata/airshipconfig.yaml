@@ -1,0 +1,23 @@
+apiVersion: airshipit.org/v1alpha1
+contexts:
+  dummy_cluster:
+    contextKubeconf: dummycluster_ephemeral
+    manifest: dummy_manifest
+currentContext: dummy_cluster
+kind: Config
+manifests:
+  dummy_manifest:
+    primaryRepositoryName: primary
+    repositories:
+      primary:
+        auth:
+          sshKey: testdata/test-key.pem
+          type: ssh-key
+        checkout:
+          branch: ""
+          force: false
+          remoteRef: ""
+          tag: v1.0.1
+        url: http://dummy.url.com/primary.git
+    subPath: site
+    targetPath: testdata

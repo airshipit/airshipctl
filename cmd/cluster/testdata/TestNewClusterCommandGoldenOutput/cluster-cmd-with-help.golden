@@ -5,10 +5,11 @@ Usage:
   cluster [command]
 
 Available Commands:
-  help        Help about any command
-  init        Deploy cluster-api provider components
-  move        Move Cluster API objects, provider specific objects and all dependencies to the target cluster
-  status      Retrieve statuses of deployed cluster components
+  help            Help about any command
+  init            Deploy cluster-api provider components
+  move            Move Cluster API objects, provider specific objects and all dependencies to the target cluster
+  rotate-sa-token Rotate tokens of Service Accounts
+  status          Retrieve statuses of deployed cluster components
 
 Flags:
   -h, --help   help for cluster
