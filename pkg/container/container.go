@@ -24,10 +24,11 @@ import (
 // defines methods that must be implemented for CRE (e.g. docker, containerd or CRI-O)
 type Container interface {
 	ImagePull() error
-	RunCommand([]string, io.Reader, []string, []string, bool) error
-	RunCommandOutput([]string, io.Reader, []string, []string) (io.ReadCloser, error)
+	RunCommand([]string, io.Reader, []string, []string) error
+	GetContainerLogs() (io.ReadCloser, error)
 	RmContainer() error
 	GetID() string
+	WaitUntilFinished() error
 }
 
 // NewContainer returns instance of Container interface implemented by particular driver

@@ -23,13 +23,23 @@ import (
 
 // NewImageBuildCommand creates a new command with the capability to build an ISO image.
 func NewImageBuildCommand(cfgFactory config.Factory) *cobra.Command {
+	options := &isogen.Options{
+		CfgFactory: cfgFactory,
+	}
 	cmd := &cobra.Command{
 		Use:   "build",
 		Short: "Build ISO image",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return isogen.GenerateBootstrapIso(cfgFactory)
+			return options.GenerateBootstrapIso()
 		},
 	}
+
+	flags := cmd.Flags()
+	flags.BoolVar(
+		&options.Progress,
+		"progress",
+		false,
+		"show progress")
 
 	return cmd
 }
