@@ -48,21 +48,30 @@ const (
 	multiplier = 3
 	// reInstallActions is a regular expression to check whether the log line contains of this substrings
 	reInstallActions = `Extracting|Unpacking|Configuring|Preparing|Setting`
+	reInstallBegin   = `Retrieving Packages|newly installed`
+	reInstallFinish  = `Base system installed successfully|mksquashfs`
 )
 
-// Options is used for generate bootstrap ISO
-type Options struct {
-	CfgFactory config.Factory
-	Progress   bool
+// BootstrapIsoOptions are used to generate bootstrap ISO
+type BootstrapIsoOptions struct {
+	docBundle document.Bundle
+	builder   container.Container
+	doc       document.Document
+	cfg       *v1alpha1.ImageConfiguration
+
+	// optional fields for verbose output
+	debug    bool
+	progress bool
+	writer   io.Writer
 }
 
 // GenerateBootstrapIso will generate data for cloud init and start ISO builder container
 // TODO (vkuzmin): Remove this public function and move another functions
 // to the executor module when the phases will be ready
-func (s *Options) GenerateBootstrapIso() error {
+func GenerateBootstrapIso(cfgFactory config.Factory, progress bool) error {
 	ctx := context.Background()
 
-	globalConf, err := s.CfgFactory()
+	globalConf, err := cfgFactory()
 	if err != nil {
 		return err
 	}
@@ -102,7 +111,16 @@ func (s *Options) GenerateBootstrapIso() error {
 		return err
 	}
 
-	err = createBootstrapIso(docBundle, builder, doc, imageConfiguration, log.DebugEnabled(), s.Progress)
+	bootstrapIsoOptions := BootstrapIsoOptions{
+		docBundle: docBundle,
+		builder:   builder,
+		doc:       doc,
+		cfg:       imageConfiguration,
+		debug:     log.DebugEnabled(),
+		progress:  progress,
+		writer:    log.Writer(),
+	}
+	err = bootstrapIsoOptions.createBootstrapIso()
 	if err != nil {
 		return err
 	}
@@ -157,32 +175,25 @@ func verifyArtifacts(cfg *v1alpha1.ImageConfiguration) error {
 	return err
 }
 
-func createBootstrapIso(
-	docBundle document.Bundle,
-	builder container.Container,
-	doc document.Document,
-	cfg *v1alpha1.ImageConfiguration,
-	debug bool,
-	progress bool,
-) error {
-	cntVol := strings.Split(cfg.Container.Volume, ":")[1]
+func (opts BootstrapIsoOptions) createBootstrapIso() error {
+	cntVol := strings.Split(opts.cfg.Container.Volume, ":")[1]
 	log.Print("Creating cloud-init for ephemeral K8s")
-	userData, netConf, err := cloudinit.GetCloudData(docBundle)
+	userData, netConf, err := cloudinit.GetCloudData(opts.docBundle)
 	if err != nil {
 		return err
 	}
 
-	builderCfgYaml, err := doc.AsYAML()
+	builderCfgYaml, err := opts.doc.AsYAML()
 	if err != nil {
 		return err
 	}
 
-	fls := getContainerCfg(cfg, builderCfgYaml, userData, netConf)
+	fls := getContainerCfg(opts.cfg, builderCfgYaml, userData, netConf)
 	if err = util.WriteFiles(fls, 0600); err != nil {
 		return err
 	}
 
-	vols := []string{cfg.Container.Volume}
+	vols := []string{opts.cfg.Container.Volume}
 	builderCfgLocation := filepath.Join(cntVol, builderConfigFileName)
 	log.Printf("Running default container command. Mounted dir: %s", vols)
 
@@ -195,23 +206,25 @@ func createBootstrapIso(
 		fmt.Sprintf("NO_PROXY=%s", os.Getenv("NO_PROXY")),
 	}
 
-	err = builder.RunCommand([]string{}, nil, vols, envVars)
+	err = opts.builder.RunCommand([]string{}, nil, vols, envVars)
 	if err != nil {
 		return err
 	}
 
 	log.Print("ISO generation is in progress. The whole process could take up to several minutes, please wait...")
 
-	if debug || progress {
+	if opts.debug || opts.progress {
 		var cLogs io.ReadCloser
-		cLogs, err = builder.GetContainerLogs()
+		cLogs, err = opts.builder.GetContainerLogs()
 		if err != nil {
 			log.Printf("failed to read container logs %s", err)
 		} else {
 			switch {
-			case progress:
-				showProgress(cLogs, log.Writer())
-			case debug:
+			case opts.progress:
+				if err = showProgress(cLogs, opts.writer); err != nil {
+					log.Debugf("the following error occurred while showing progress bar: %s", err.Error())
+				}
+			case opts.debug:
 				log.Print("start reading container logs")
 				// either container log output or progress bar will be shown
 				if _, err = io.Copy(log.Writer(), cLogs); err != nil {
@@ -222,22 +235,24 @@ func createBootstrapIso(
 		}
 	}
 
-	if err = builder.WaitUntilFinished(); err != nil {
+	if err = opts.builder.WaitUntilFinished(); err != nil {
 		return err
 	}
 
 	log.Print("ISO successfully built.")
-	if !debug {
+	if !opts.debug {
 		log.Print("Removing container.")
-		return builder.RmContainer()
+		return opts.builder.RmContainer()
 	}
 
-	log.Debugf("Debug flag is set. Container %s stopped but not deleted.", builder.GetID())
+	log.Debugf("Debug flag is set. Container %s stopped but not deleted.", opts.builder.GetID())
 	return nil
 }
 
-func showProgress(reader io.ReadCloser, writer io.Writer) {
+func showProgress(reader io.ReadCloser, writer io.Writer) error {
 	reFindActions := regexp.MustCompile(reInstallActions)
+	reBeginInstall := regexp.MustCompile(reInstallBegin)
+	reFinishInstall := regexp.MustCompile(reInstallFinish)
 
 	var bar *pb.ProgressBar
 
@@ -248,41 +263,77 @@ func showProgress(reader io.ReadCloser, writer io.Writer) {
 		curLine := scanner.Text()
 		// Trying to find entry points of package installation
 		switch {
-		case strings.Contains(curLine, "Retrieving Packages") ||
-			strings.Contains(curLine, "newly installed"):
-			finalizePb(bar, "Completed")
-
-			pkgCount := calculatePkgCount(scanner, writer, curLine)
-			if pkgCount > 0 {
-				bar = pb.ProgressBarTemplate(progressBarTemplate).Start(pkgCount * multiplier)
-				bar.SetWriter(writer)
-				setPbPrefix(bar, "Installing required packages")
+		case reBeginInstall.MatchString(curLine):
+			if err := finalizePb(bar, nil); err != nil {
+				return err
 			}
-		case strings.Contains(curLine, "Base system installed successfully") ||
-			strings.Contains(curLine, "mksquashfs"):
-			finalizePb(bar, "Completed")
 
-		case bar != nil && bar.IsStarted():
-			if reFindActions.MatchString(curLine) {
-				if bar.Current() < bar.Total() {
-					setPbPrefix(bar, curLine)
-					bar.Increment()
-				}
+			pkgCount, err := calculatePkgCount(scanner, writer, curLine)
+			if err != nil {
+				return finalizePb(bar, err)
+			}
+
+			bar, err = initPb(pkgCount, writer)
+			if err != nil {
+				return err
+			}
+		case reFinishInstall.MatchString(curLine):
+			if err := finalizePb(bar, nil); err != nil {
+				return err
+			}
+		case reFindActions.MatchString(curLine):
+			if err := incrementPb(bar, curLine); err != nil {
+				return finalizePb(bar, err)
 			}
 		case strings.Contains(curLine, "filesystem.squashfs"):
 			fmt.Fprintln(writer, curLine)
 		}
 	}
 
-	finalizePb(bar, "An unexpected error occurred while log parsing")
+	if bar != nil && bar.IsStarted() {
+		return finalizePb(bar, ErrUnexpectedPb{})
+	}
+
+	return nil
 }
 
-func finalizePb(bar *pb.ProgressBar, msg string) {
+func finalizePb(bar *pb.ProgressBar, e error) error {
 	if bar != nil && bar.IsStarted() {
 		bar.SetCurrent(bar.Total())
-		setPbPrefix(bar, msg)
+		if e != nil {
+			setPbPrefix(bar, "An error occurred while log parsing")
+			bar.Finish()
+			return e
+		}
+
+		setPbPrefix(bar, "Completed")
 		bar.Finish()
+		if err := bar.Err(); err != nil {
+			return err
+		}
 	}
+	return e
+}
+
+func initPb(pkgCount int, w io.Writer) (*pb.ProgressBar, error) {
+	bar := pb.ProgressBarTemplate(progressBarTemplate).New(pkgCount * multiplier)
+	bar.SetWriter(w).Start()
+	setPbPrefix(bar, "Installing required packages")
+	if err := bar.Err(); err != nil {
+		return nil, finalizePb(bar, err)
+	}
+	return bar, nil
+}
+
+func incrementPb(bar *pb.ProgressBar, curLine string) error {
+	if bar != nil && bar.IsStarted() && bar.Current() < bar.Total() {
+		setPbPrefix(bar, curLine)
+		bar.Increment()
+		if err := bar.Err(); err != nil {
+			return finalizePb(bar, err)
+		}
+	}
+	return nil
 }
 
 func setPbPrefix(bar *pb.ProgressBar, msg string) {
@@ -297,14 +348,14 @@ func setPbPrefix(bar *pb.ProgressBar, msg string) {
 	bar.Set("prefix", msg)
 }
 
-func calculatePkgCount(scanner *bufio.Scanner, writer io.Writer, curLine string) int {
+func calculatePkgCount(scanner *bufio.Scanner, writer io.Writer, curLine string) (int, error) {
 	reFindNumbers := regexp.MustCompile("[0-9]+")
 
 	// Trying to count how many packages is going to be installed
 	pkgCount := 0
 	matches := reFindNumbers.FindAllString(curLine, -1)
 	if matches == nil {
-		// There is no numbers is line about base packages, counting them manually to get estimates
+		// There is no numbers in line about base packages, counting them manually to get estimates
 		fmt.Fprint(writer, "Retrieving base packages ")
 		for scanner.Scan() {
 			curLine = scanner.Text()
@@ -314,7 +365,7 @@ func calculatePkgCount(scanner *bufio.Scanner, writer io.Writer, curLine string)
 			}
 			if strings.Contains(curLine, "Chosen extractor") {
 				fmt.Fprintln(writer, " Done")
-				return pkgCount
+				return pkgCount, nil
 			}
 		}
 	}
@@ -326,6 +377,10 @@ func calculatePkgCount(scanner *bufio.Scanner, writer io.Writer, curLine string)
 			}
 			pkgCount += j
 		}
+		if pkgCount > 0 {
+			return pkgCount, nil
+		}
 	}
-	return pkgCount
+
+	return pkgCount, ErrNoParsedNumPkgs{}
 }

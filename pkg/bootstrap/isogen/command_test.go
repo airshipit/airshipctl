@@ -15,12 +15,11 @@
 package isogen
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -167,7 +166,14 @@ func TestBootstrapIso(t *testing.T) {
 	for _, tt := range tests {
 		outBuf := &bytes.Buffer{}
 		log.Init(tt.debug, outBuf)
-		actualErr := createBootstrapIso(bundle, tt.builder, tt.doc, tt.cfg, tt.debug, false)
+		bootstrapOpts := BootstrapIsoOptions{
+			docBundle: bundle,
+			builder:   tt.builder,
+			doc:       tt.doc,
+			cfg:       tt.cfg,
+			debug:     tt.debug,
+		}
+		actualErr := bootstrapOpts.createBootstrapIso()
 		actualOut := outBuf.String()
 
 		for _, line := range tt.expectedOut {
@@ -256,11 +262,11 @@ func TestGenerateBootstrapIso(t *testing.T) {
 		cfg, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
 		require.NoError(t, err)
 		cfg.Manifests["default"].Repositories = make(map[string]*config.Repository)
-		settings := &Options{CfgFactory: func() (*config.Config, error) {
+		settings := func() (*config.Config, error) {
 			return cfg, nil
-		}}
+		}
 		expectedErr := config.ErrMissingPrimaryRepo{}
-		actualErr := settings.GenerateBootstrapIso()
+		actualErr := GenerateBootstrapIso(settings, false)
 		assert.Equal(t, expectedErr, actualErr)
 	})
 
@@ -268,11 +274,11 @@ func TestGenerateBootstrapIso(t *testing.T) {
 		cfg, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
 		require.NoError(t, err)
 		cfg.Manifests["default"].TargetPath = "/nonexistent"
-		settings := &Options{CfgFactory: func() (*config.Config, error) {
+		settings := func() (*config.Config, error) {
 			return cfg, nil
-		}}
+		}
 		expectedErr := config.ErrMissingPhaseDocument{PhaseName: "bootstrap"}
-		actualErr := settings.GenerateBootstrapIso()
+		actualErr := GenerateBootstrapIso(settings, false)
 		assert.Equal(t, expectedErr, actualErr)
 	})
 
@@ -280,12 +286,12 @@ func TestGenerateBootstrapIso(t *testing.T) {
 		cfg, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
 		require.NoError(t, err)
 		cfg.Manifests["default"].SubPath = "missingkinddoc/site/test-site"
-		settings := &Options{CfgFactory: func() (*config.Config, error) {
+		settings := func() (*config.Config, error) {
 			return cfg, nil
-		}}
+		}
 		expectedErr := document.ErrDocNotFound{
 			Selector: document.NewSelector().ByGvk("airshipit.org", "v1alpha1", "ImageConfiguration")}
-		actualErr := settings.GenerateBootstrapIso()
+		actualErr := GenerateBootstrapIso(settings, false)
 		assert.Equal(t, expectedErr, actualErr)
 	})
 
@@ -293,11 +299,11 @@ func TestGenerateBootstrapIso(t *testing.T) {
 		cfg, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
 		require.NoError(t, err)
 		cfg.Manifests["default"].SubPath = "missingmetadoc/site/test-site"
-		settings := &Options{CfgFactory: func() (*config.Config, error) {
+		settings := func() (*config.Config, error) {
 			return cfg, nil
-		}}
+		}
 		expectedErrMessage := "missing metadata.name in object"
-		actualErr := settings.GenerateBootstrapIso()
+		actualErr := GenerateBootstrapIso(settings, false)
 		assert.Contains(t, actualErr.Error(), expectedErrMessage)
 	})
 
@@ -305,11 +311,11 @@ func TestGenerateBootstrapIso(t *testing.T) {
 		cfg, err := config.CreateFactory(&airshipConfigPath, &kubeConfigPath)()
 		require.NoError(t, err)
 		cfg.Manifests["default"].SubPath = "missingvoldoc/site/test-site"
-		settings := &Options{CfgFactory: func() (*config.Config, error) {
+		settings := func() (*config.Config, error) {
 			return cfg, nil
-		}}
+		}
 		expectedErr := config.ErrMissingConfig{What: "Must specify volume bind for ISO builder container"}
-		actualErr := settings.GenerateBootstrapIso()
+		actualErr := GenerateBootstrapIso(settings, false)
 		assert.Equal(t, expectedErr, actualErr)
 	})
 }
@@ -329,15 +335,17 @@ func TestShowProgress(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt
-		file, err := os.Open(tt.input)
+
+		testInput, err := ioutil.ReadFile(tt.input)
 		require.NoError(t, err)
-		reader := ioutil.NopCloser(bufio.NewReader(file))
-		writer := &bytes.Buffer{}
-		showProgress(reader, writer)
-		err = file.Close()
+		reader := ioutil.NopCloser(bytes.NewReader(testInput))
+		writer := bytes.NewBuffer(nil)
+		err = showProgress(reader, writer)
 		require.NoError(t, err)
 		expected, err := ioutil.ReadFile(tt.output)
 		require.NoError(t, err)
-		assert.Equal(t, expected, writer.Bytes())
+		space := regexp.MustCompile(`\s+`)
+		assert.Equal(t, space.ReplaceAllString(string(expected), " "),
+			space.ReplaceAllString(writer.String(), " "))
 	}
 }
