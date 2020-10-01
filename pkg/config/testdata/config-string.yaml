@@ -30,7 +30,6 @@ manifests:
           force: false
           tag: v1.0.1
         url: http://dummy.url.com/manifests.git
-    subPath: manifests/site/test-site
     targetPath: /var/tmp/
 permissions:
   DirectoryPermission: 488

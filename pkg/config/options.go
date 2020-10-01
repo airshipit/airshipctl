@@ -41,7 +41,6 @@ type ManifestOptions struct {
 	RemoteRef    string
 	Force        bool
 	IsPhase      bool
-	SubPath      string
 	TargetPath   string
 	MetadataPath string
 }

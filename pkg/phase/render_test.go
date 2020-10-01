@@ -39,7 +39,6 @@ func TestRender(t *testing.T) {
 			URLString: "",
 		},
 	}
-	dummyManifest.SubPath = ""
 	dummyManifest.MetadataPath = "metadata.yaml"
 	fixturePath := "phase"
 	tests := []struct {

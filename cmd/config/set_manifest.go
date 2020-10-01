@@ -35,17 +35,12 @@ airshipctl config set-manifest exampleManifest \
   --url https://github.com/site \
   --branch master \
   --phase \
-  --sub-path exampleSubpath \
   --target-path exampleTargetpath
 
 # Change the phase repo for manifest
 airshipctl config set-manifest e2e \
   --repo exampleRepo \
   --phase
-
-# Change the sub-path for manifest
-airshipctl config set-manifest e2e \
-  --sub-path treasuremap/manifests/e2e
 
 # Change the target-path for manifest
 airshipctl config set-manifest e2e \
@@ -134,12 +129,6 @@ func addSetManifestFlags(o *config.ManifestOptions, cmd *cobra.Command) {
 		"phase",
 		false,
 		"if set, enable this repository as phase repository to be used with this manifest")
-
-	flags.StringVar(
-		&o.SubPath,
-		"sub-path",
-		"",
-		"the sub path to be set for this manifest")
 
 	flags.StringVar(
 		&o.TargetPath,

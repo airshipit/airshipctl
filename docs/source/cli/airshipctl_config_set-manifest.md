@@ -21,17 +21,12 @@ airshipctl config set-manifest exampleManifest \
   --url https://github.com/site \
   --branch master \
   --phase \
-  --sub-path exampleSubpath \
   --target-path exampleTargetpath
 
 # Change the phase repo for manifest
 airshipctl config set-manifest e2e \
   --repo exampleRepo \
   --phase
-
-# Change the sub-path for manifest
-airshipctl config set-manifest e2e \
-  --sub-path treasuremap/manifests/e2e
 
 # Change the target-path for manifest
 airshipctl config set-manifest e2e \
@@ -49,7 +44,6 @@ airshipctl config set-manifest e2e \
       --metadata-path string   the metadata path to be set for this manifest
       --phase                  if set, enable this repository as phase repository to be used with this manifest
       --repo string            the name of the repository to be associated with this manifest
-      --sub-path string        the sub path to be set for this manifest
       --tag string             the tag to be associated with repository in this manifest
       --target-path string     the target path to be set for this manifest
       --url string             the repository url to be associated with this manifest

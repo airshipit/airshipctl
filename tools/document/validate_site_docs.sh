@@ -46,7 +46,7 @@ export KUSTOMIZE_PLUGIN_HOME
 export KUBECONFIG
 
 # TODO: use `airshipctl config` to do this once all the needed knobs are exposed
-# The non-default parts are to set the targetPath and subPath appropriately,
+# The non-default parts are to set the targetPath appropriately,
 # and to craft up cluster/contexts to avoid the need for automatic kubectl reconciliation
 function generate_airshipconf {
     cluster=$1

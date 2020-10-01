@@ -26,13 +26,6 @@ type Manifest struct {
 	Repositories map[string]*Repository `json:"repositories,omitempty"`
 	// TargetPath Local Target path for working or home directory for all Manifest Cloned/Returned/Generated
 	TargetPath string `json:"targetPath"`
-	// SubPath is a path relative to TargetPath + Path where PhaseRepository is cloned and contains
-	// directories with ClusterType and Phase bundles, example:
-	// Repositories[PhaseRepositoryName].Url = 'https://github.com/airshipit/treasuremap'
-	// SubPath = "manifests"
-	// you would expect that at treasuremap/manifests you would have ephemeral/initinfra and
-	// ephemera/target directories, containing kustomize.yaml.
-	SubPath string `json:"subPath"`
 	// MetadataPath path to a metadata file relative to TargetPath
 	MetadataPath string `json:"metadataPath"`
 }

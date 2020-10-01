@@ -375,9 +375,6 @@ func (c *Config) ModifyManifest(manifest *Manifest, theManifest *ManifestOptions
 	if theManifest.IsPhase {
 		manifest.PhaseRepositoryName = theManifest.RepoName
 	}
-	if theManifest.SubPath != "" {
-		manifest.SubPath = theManifest.SubPath
-	}
 	if theManifest.TargetPath != "" {
 		manifest.TargetPath = theManifest.TargetPath
 	}

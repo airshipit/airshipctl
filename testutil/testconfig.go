@@ -71,7 +71,6 @@ func DummyManifest() *config.Manifest {
 	m.PhaseRepositoryName = "primary"
 	m.MetadataPath = "metadata.yaml"
 	m.TargetPath = "/var/tmp/"
-	m.SubPath = "manifests/site/test-site"
 	return m
 }
 
@@ -153,7 +152,6 @@ func DummyManagementConfiguration() *config.ManagementConfiguration {
 func DummyManifestOptions() *config.ManifestOptions {
 	return &config.ManifestOptions{
 		Name:       "dummy_manifest",
-		SubPath:    "manifests/dummy_site",
 		TargetPath: "/tmp/dummy_site",
 		IsPhase:    true,
 		RepoName:   "dummy_repo",

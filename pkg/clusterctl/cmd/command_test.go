@@ -46,7 +46,6 @@ func TestNewCommand(t *testing.T) {
 			manifests: map[string]*config.Manifest{
 				manifestName: {
 					TargetPath:          "testdata",
-					SubPath:             "valid",
 					PhaseRepositoryName: "primary",
 					MetadataPath:        "metadata.yaml",
 					Repositories: map[string]*config.Repository{
@@ -62,7 +61,6 @@ func TestNewCommand(t *testing.T) {
 			manifests: map[string]*config.Manifest{
 				manifestName: {
 					TargetPath:          "testdata",
-					SubPath:             "invalid-path",
 					PhaseRepositoryName: "primary",
 					Repositories: map[string]*config.Repository{
 						"primary": {},
@@ -77,7 +75,6 @@ func TestNewCommand(t *testing.T) {
 			manifests: map[string]*config.Manifest{
 				manifestName: {
 					TargetPath:          "testdata",
-					SubPath:             "no-clusterctl",
 					PhaseRepositoryName: "primary",
 					Repositories: map[string]*config.Repository{
 						"primary": {},
@@ -89,9 +86,7 @@ func TestNewCommand(t *testing.T) {
 			name:      "no phase repo",
 			expectErr: true,
 			manifests: map[string]*config.Manifest{
-				manifestName: {
-					SubPath: "no-clusterctl",
-				},
+				manifestName: {},
 			},
 		},
 		{
@@ -101,7 +96,6 @@ func TestNewCommand(t *testing.T) {
 			manifests: map[string]*config.Manifest{
 				manifestName: {
 					TargetPath:          "testdata",
-					SubPath:             "can't build bundle",
 					PhaseRepositoryName: "primary",
 					Repositories: map[string]*config.Repository{
 						"primary": {},

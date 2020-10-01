@@ -51,7 +51,6 @@ func NewConfig() *Config {
 				},
 				TargetPath:          "/tmp/" + AirshipDefaultManifest,
 				PhaseRepositoryName: DefaultTestPhaseRepo,
-				SubPath:             AirshipDefaultManifestRepo + "/manifests/site",
 				MetadataPath:        DefaultManifestMetadataFile,
 			},
 		},
@@ -91,7 +90,6 @@ func NewManifest() *Manifest {
 	return &Manifest{
 		PhaseRepositoryName: DefaultTestPhaseRepo,
 		TargetPath:          DefaultTargetPath,
-		SubPath:             DefaultSubPath,
 		Repositories:        map[string]*Repository{DefaultTestPhaseRepo: NewRepository()},
 		MetadataPath:        DefaultManifestMetadataFile,
 	}

@@ -32,7 +32,6 @@ const (
 	mRepoName     = "treasuremap"
 	mURL          = "https://github.com/airshipit/treasuremap"
 	mBranch       = "master"
-	mSubPath      = "manifests/test-site"
 	mTargetPath   = "/tmp/airship"
 	mMetadataPath = "manifests/metadata.yaml"
 
@@ -94,7 +93,6 @@ func TestSetManifest(t *testing.T) {
 				"--url " + mURL,
 				"--branch " + mBranch,
 				"--phase",
-				"--sub-path " + mSubPath,
 				"--target-path " + mTargetPath,
 				"--metadata-path " + mMetadataPath,
 			},

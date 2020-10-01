@@ -155,7 +155,8 @@ managementConfiguration:
     type: azure
 manifests:
   azure_manifest:
-    primaryRepositoryName: primary
+    phaseRepositoryName: primary
+    metadataPath: manifests/site/az-test-site/metadata.yaml
     repositories:
       primary:
         checkout:
@@ -164,10 +165,10 @@ manifests:
           force: false
           tag: ""
         url: https://review.opendev.org/airship/airshipctl
-    subPath: airshipctl/manifests/site/az-test-site
     targetPath: /tmp/airship
   default:
-    primaryRepositoryName: primary
+    phaseRepositoryName: primary
+    metadataPath: manifests/metadata.yaml
     repositories:
       primary:
         checkout:
@@ -176,6 +177,5 @@ manifests:
           force: false
           tag: ""
         url: https://opendev.org/airship/treasuremap
-    subPath: treasuremap/manifests/site
     targetPath: /tmp/default
 ```

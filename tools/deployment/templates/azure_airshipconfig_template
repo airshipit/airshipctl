@@ -12,7 +12,7 @@ managementConfiguration:
     type: azure
 manifests:
   azure_manifest:
-    primaryRepositoryName: primary
+    phaseRepositoryName: primary
     repositories:
       primary:
         checkout:
@@ -21,7 +21,6 @@ manifests:
           force: false
           tag: ""
         url: https://review.opendev.org/airship/airshipctl
-    subPath: manifests/site/az-test-site
-    targetPath: /home/zuul/src/opendev.org/airship/airshipctl
+    targetPath: /home/zuul/src/opendev.org/airship
 users:
   kind-capi-azure: {}

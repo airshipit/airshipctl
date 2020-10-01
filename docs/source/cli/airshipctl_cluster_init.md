@@ -7,8 +7,8 @@ Deploy cluster-api provider components
 
 Initialize cluster-api providers based on airshipctl document set.
 document set must contain document of Kind: Clusterctl in phase initinfra.
-Path to initinfra phase is built based on airshipctl config
-<manifest.target-path>/<subpath>/ephemeral/initinfra.
+Path to initinfra phase is defined in the initinfra phase document located
+in the manifest repository.
 Clusterctl document example:
 ---
 apiVersion: airshipit.org/v1alpha1

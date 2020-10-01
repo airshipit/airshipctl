@@ -484,7 +484,6 @@ manifests:
     phaseRepositoryName: primary
     targetPath: testdata
     metadataPath: valid_site/metadata.yaml
-    subPath: valid_site
     repositories:
       primary:
         url: "empty/filename/"
