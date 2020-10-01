@@ -1,0 +1,3 @@
+phase:
+  path: manifests/site/openstack-test-site/phases
+  docEntryPointPrefix: manifests/site/openstack-test-site
