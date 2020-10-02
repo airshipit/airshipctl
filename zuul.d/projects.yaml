@@ -15,19 +15,19 @@
       sphinx_build_dir: docs/build
     check:
       jobs:
-        - airship-airshipctl-roles-test:
+        - openstack-tox-docs: &docs
             files:
-              - "roles/*"
-        - openstack-tox-docs
-        - airship-airshipctl-lint-unit
+              - ^docs/.*$
         - airship-airshipctl-golint
+        - airship-airshipctl-lint-unit
+        - airship-airshipctl-roles-test
         - airship-airshipctl-build-image
         - airship-airshipctl-validate-site-docs
 #        - airship-airshipctl-functional-existing-k8s TODO: Enable this when functional tests exist, and a cluster is up
         - airship-airshipctl-gate-script-runner
     gate:
       jobs:
-        - openstack-tox-docs
+        - openstack-tox-docs: *docs
         - airship-airshipctl-lint-unit
         - airship-airshipctl-build-image
         - airship-airshipctl-validate-site-docs
@@ -38,5 +38,5 @@
         - airship-airshipctl-upload-git-mirror
     promote:
       jobs:
-        - promote-airship-project-docs
+        - promote-airship-project-docs: *docs
         - airship-airshipctl-update-github-issues

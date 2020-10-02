@@ -14,6 +14,8 @@
     name: airship-airshipctl-roles-test
     run: tests/ansible/role-test-runner.yaml
     nodeset: airship-airshipctl-single-node
+    files:
+      - ^roles/.*$
 
 - job:
     name: airship-airshipctl-golint
@@ -21,12 +23,19 @@
     run: playbooks/airship-airshipctl-golint.yaml
     nodeset: airship-airshipctl-single-node
     voting: false
+    files: &gofiles
+      - ^Makefile$
+      - ^\.golangci\.yaml$
+      - ^(go\.(mod|sum)|.*\.go)$
+      - ^playbooks/airship-airshipctl-(golint|lint-unit)\.yaml$
+      - ^tools/(coverage_check|golint|gomod_check|install_linter)$
 
 - job:
     name: airship-airshipctl-lint-unit
     pre-run: playbooks/airship-airshipctl-deploy-docker.yaml
     run: playbooks/airship-airshipctl-lint-unit.yaml
     nodeset: airship-airshipctl-single-node
+    files: *gofiles
 
 - job:
     name: airship-airshipctl-update-github-issues
@@ -41,9 +50,11 @@
     name: airship-airshipctl-build-image
     nodeset: airship-airshipctl-single-node
     run: playbooks/airship-airshipctl-build-images.yaml
-    irrelevant-files:
-      - ^.*\.md$
+    irrelevant-files: &noncodefiles
+      - ^certs/.*$
       - ^docs/.*$
+      - ^.*\.md$
+      - ^\.github/.*$
 
 - job:
     name: airship-airshipctl-validate-site-docs
@@ -51,6 +62,7 @@
       - playbooks/airship-airshipctl-deploy-docker.yaml
     run: playbooks/airshipctl-gate-runner.yaml
     nodeset: airship-airshipctl-single-node
+    irrelevant-files: *noncodefiles
     vars:
       gate_scripts:
         - ./tools/deployment/01_install_kubectl.sh
@@ -84,11 +96,7 @@
     post-run: playbooks/airship-collect-logs.yaml
     run: playbooks/airshipctl-gate-runner.yaml
     nodeset: airship-airshipctl-single-16GB-bionic-node
-    irrelevant-files:
-      - ^certs/.*$
-      - ^docs/.*$
-      - ^.*\.md$
-      - ^\.github/.*$
+    irrelevant-files: *noncodefiles
     vars:
       site_name: test-site
       gate_scripts:
@@ -121,6 +129,7 @@
     name: airship-airshipctl-publish-image
     parent: airship-airshipctl-build-image
     post-run: playbooks/airship-airshipctl-publish-images.yaml
+    irrelevant-files: *noncodefiles
     secrets:
       - name: airshipctl_image_repo_credentials
         secret: airshipctl_image_repo_credentials
