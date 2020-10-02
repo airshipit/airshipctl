@@ -15,52 +15,23 @@ Licensed under the Apache License, Version 2.0 (the "License");
 package baremetal
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/remote"
 )
 
 // NewPowerOnCommand provides a command with the capability to power on baremetal hosts.
-func NewPowerOnCommand(cfgFactory config.Factory) *cobra.Command {
-	var labels string
-	var name string
-	var phase string
-
+func NewPowerOnCommand(cfgFactory config.Factory, options *CommonOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "poweron",
 		Short: "Power on a host",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := cfgFactory()
-			if err != nil {
-				return err
-			}
-
-			selectors := GetHostSelections(name, labels)
-			m, err := remote.NewManager(cfg, phase, selectors...)
-			if err != nil {
-				return err
-			}
-
-			for _, host := range m.Hosts {
-				if err := host.SystemPowerOn(host.Context); err != nil {
-					return err
-				}
-
-				fmt.Fprintf(cmd.OutOrStdout(), "Powered on host '%s'.\n", host.HostName)
-			}
-
-			return nil
+			return performAction(cfgFactory, options, powerOnAction, cmd.OutOrStdout())
 		},
 	}
 
-	flags := cmd.Flags()
-	flags.StringVarP(&labels, flagLabel, flagLabelShort, "", flagLabelDescription)
-	flags.StringVarP(&name, flagName, flagNameShort, "", flagNameDescription)
-	flags.StringVar(&phase, flagPhase, config.BootstrapPhase, flagPhaseDescription)
+	initFlags(options, cmd)
 
 	return cmd
 }

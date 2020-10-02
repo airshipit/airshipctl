@@ -115,6 +115,35 @@ func ByName(name string) HostSelector {
 	}
 }
 
+// All adds the host to a manager whose documents match the BareMetalHostKind.
+func All() HostSelector {
+	return func(a *Manager, mgmtCfg config.ManagementConfiguration, docBundle document.Bundle) error {
+		selector := document.NewSelector().ByKind(document.BareMetalHostKind)
+		docs, err := docBundle.Select(selector)
+		if err != nil {
+			return err
+		}
+
+		if len(docs) == 0 {
+			return document.ErrDocNotFound{Selector: selector}
+		}
+
+		var matchingHosts []baremetalHost
+		for _, doc := range docs {
+			host, err := newBaremetalHost(mgmtCfg, doc, docBundle)
+			if err != nil {
+				return err
+			}
+
+			matchingHosts = append(matchingHosts, host)
+		}
+
+		a.Hosts = reconcileHosts(a.Hosts, matchingHosts...)
+
+		return nil
+	}
+}
+
 // NewManager provides a manager that exposes the capability to perform remote direct functionality and other
 // out-of-band management on multiple hosts.
 func NewManager(cfg *config.Config, phaseName string, hosts ...HostSelector) (*Manager, error) {

@@ -33,32 +33,32 @@ func TestBaremetal(t *testing.T) {
 		{
 			Name:    "baremetal-ejectmedia-with-help",
 			CmdLine: "-h",
-			Cmd:     baremetal.NewEjectMediaCommand(nil),
+			Cmd:     baremetal.NewEjectMediaCommand(nil, &baremetal.CommonOptions{}),
 		},
 		{
 			Name:    "baremetal-poweroff-with-help",
 			CmdLine: "-h",
-			Cmd:     baremetal.NewPowerOffCommand(nil),
+			Cmd:     baremetal.NewPowerOffCommand(nil, &baremetal.CommonOptions{}),
 		},
 		{
 			Name:    "baremetal-poweron-with-help",
 			CmdLine: "-h",
-			Cmd:     baremetal.NewPowerOnCommand(nil),
+			Cmd:     baremetal.NewPowerOnCommand(nil, &baremetal.CommonOptions{}),
 		},
 		{
 			Name:    "baremetal-powerstatus-with-help",
 			CmdLine: "-h",
-			Cmd:     baremetal.NewPowerStatusCommand(nil),
+			Cmd:     baremetal.NewPowerStatusCommand(nil, &baremetal.CommonOptions{}),
 		},
 		{
 			Name:    "baremetal-reboot-with-help",
 			CmdLine: "-h",
-			Cmd:     baremetal.NewRebootCommand(nil),
+			Cmd:     baremetal.NewRebootCommand(nil, &baremetal.CommonOptions{}),
 		},
 		{
 			Name:    "baremetal-remotedirect-with-help",
 			CmdLine: "-h",
-			Cmd:     baremetal.NewRemoteDirectCommand(nil),
+			Cmd:     baremetal.NewRemoteDirectCommand(nil, &baremetal.CommonOptions{}),
 		},
 	}
 
@@ -79,5 +79,5 @@ func TestGetHostSelectionsBothSelectors(t *testing.T) {
 
 func TestGetHostSelectionsNone(t *testing.T) {
 	selectors := baremetal.GetHostSelections("", "")
-	assert.Len(t, selectors, 0)
+	assert.Len(t, selectors, 1)
 }
