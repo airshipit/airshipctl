@@ -1,0 +1,26 @@
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: hwcc-versions-replacements
+replacements:
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: versions-airshipctl
+    fieldref: images.hwcc.manager.manager
+  target:
+    objref:
+      kind: Deployment
+      name: controller-manager
+    fieldrefs: ["spec.template.spec.containers[name=manager].image"]
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: versions-airshipctl
+    fieldref: images.hwcc.manager.kube_rbac_proxy
+  target:
+    objref:
+      kind: Deployment
+      name: controller-manager
+    fieldrefs: ["spec.template.spec.containers[name=kube-rbac-proxy].image"]
+
