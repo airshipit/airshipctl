@@ -115,7 +115,17 @@ func (c *Executor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 		}
 	}
 
-	err := createBootstrapIso(c.ExecutorBundle, c.builder, c.ExecutorDocument, c.imgConf, log.DebugEnabled(), false)
+	bootstrapOpts := BootstrapIsoOptions{
+		docBundle: c.ExecutorBundle,
+		builder:   c.builder,
+		doc:       c.ExecutorDocument,
+		cfg:       c.imgConf,
+		debug:     log.DebugEnabled(),
+		progress:  false,
+		writer:    nil,
+	}
+
+	err := bootstrapOpts.createBootstrapIso()
 	if err != nil {
 		handleError(evtCh, err)
 		return
