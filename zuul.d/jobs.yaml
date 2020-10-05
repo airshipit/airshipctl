@@ -97,6 +97,17 @@
     run: playbooks/airshipctl-gate-runner.yaml
     nodeset: airship-airshipctl-single-16GB-bionic-node
     irrelevant-files: *noncodefiles
+    dependencies:
+      - name: openstack-tox-docs
+        soft: true
+      - name: airship-airshipctl-lint-unit
+        soft: true
+      - name: airship-airshipctl-golint
+        soft: true
+      - name: airship-airshipctl-build-image
+        soft: true
+      - name: airship-airshipctl-validate-site-docs
+        soft: true
     vars:
       site_name: test-site
       gate_scripts:
