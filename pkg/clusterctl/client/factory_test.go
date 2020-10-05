@@ -25,6 +25,7 @@ import (
 	clusterctlclient "sigs.k8s.io/cluster-api/cmd/clusterctl/client"
 	clusterctlconfig "sigs.k8s.io/cluster-api/cmd/clusterctl/client/config"
 	"sigs.k8s.io/cluster-api/cmd/clusterctl/client/repository"
+	"sigs.k8s.io/cluster-api/cmd/clusterctl/client/yamlprocessor"
 	"sigs.k8s.io/yaml"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
@@ -126,7 +127,10 @@ func TestFactory(t *testing.T) {
 			provider, err := pclient.Get(useName, clusterctlv1.ProviderType(useType))
 			require.NoError(t, err)
 			require.NotNil(t, provider)
-			repo, err := repoFactory(provider)
+			repo, err := repoFactory(clusterctlclient.RepositoryClientFactoryInput{
+				Provider:  provider,
+				Processor: yamlprocessor.NewSimpleProcessor(),
+			})
 			require.NoError(t, err)
 			require.NotNil(t, repo)
 			versions, err := repo.GetVersions()
@@ -166,9 +170,12 @@ func TestClientRepositoryFactory(t *testing.T) {
 		ConfigClient: configClient,
 	}
 	clusterclientFactory := factory.ClusterClientFactory()
-	clusterClient, err := clusterclientFactory(clusterctlclient.Kubeconfig{
-		Path:    "testdata/kubeconfig.yaml",
-		Context: ""})
+	clusterClient, err := clusterclientFactory(clusterctlclient.ClusterClientFactoryInput{
+		Kubeconfig: clusterctlclient.Kubeconfig{
+			Path:    "testdata/kubeconfig.yaml",
+			Context: ""},
+		Processor: yamlprocessor.NewSimpleProcessor(),
+	})
 	assert.NoError(t, err)
 	assert.NotNil(t, clusterClient)
 }
@@ -185,7 +192,10 @@ func TestRepoFactoryFunction(t *testing.T) {
 	require.NotNil(t, pclient)
 	provider, err := pclient.Get("custom-airship-infra", "InfrastructureProvider")
 	require.NoError(t, err)
-	repoClient, err := factory.repoFactory(provider)
+	repoClient, err := factory.repoFactory(clusterctlclient.RepositoryClientFactoryInput{
+		Provider:  provider,
+		Processor: yamlprocessor.NewSimpleProcessor(),
+	})
 	require.NoError(t, err)
 	require.NotNil(t, repoClient)
 	versions, err := repoClient.GetVersions()
@@ -206,7 +216,10 @@ func TestClusterctlRepoFactoryFunction(t *testing.T) {
 	pclient := configClient.Providers()
 	provider, err := pclient.Get("aws", "InfrastructureProvider")
 	require.NoError(t, err)
-	repoClient, err := factory.repoFactory(provider)
+	repoClient, err := factory.repoFactory(clusterctlclient.RepositoryClientFactoryInput{
+		Provider:  provider,
+		Processor: yamlprocessor.NewSimpleProcessor(),
+	})
 	require.NoError(t, err)
 	require.NotNil(t, repoClient)
 }
@@ -274,7 +287,10 @@ func TestRepositoryFactoryErrors(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// set airship providers so it does not correspond to clusterctl provider
 			o.Providers = airProvs
-			crc, err := factory.repoFactory(provider)
+			crc, err := factory.repoFactory(clusterctlclient.RepositoryClientFactoryInput{
+				Provider:  provider,
+				Processor: yamlprocessor.NewSimpleProcessor(),
+			})
 			// expect error since we have mismatch of airship providers vs clusterctl providers
 			require.Nil(t, crc)
 			assert.Error(t, err)

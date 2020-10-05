@@ -33,11 +33,11 @@ type RepositoryFactory struct {
 
 // ClusterClientFactory returns cluster factory function for clusterctl client
 func (f RepositoryFactory) ClusterClientFactory() client.ClusterClientFactory {
-	return func(kubeconfig client.Kubeconfig) (cluster.Client, error) {
-		o := cluster.InjectRepositoryFactory(f.repoFactoryClusterClient())
+	return func(input client.ClusterClientFactoryInput) (cluster.Client, error) {
+		o := cluster.InjectRepositoryFactory(f.repoFactoryClusterClient(input))
 		return cluster.New(cluster.Kubeconfig{
-			Path:    kubeconfig.Path,
-			Context: kubeconfig.Context}, f.ConfigClient, o), nil
+			Path:    input.Kubeconfig.Path,
+			Context: input.Kubeconfig.Context}, f.ConfigClient, o), nil
 	}
 }
 
@@ -47,18 +47,22 @@ func (f RepositoryFactory) ClientRepositoryFactory() client.RepositoryClientFact
 }
 
 // These two functions are basically the same, but have different with signatures
-func (f RepositoryFactory) repoFactoryClusterClient() cluster.RepositoryClientFactory {
+func (f RepositoryFactory) repoFactoryClusterClient(
+	input client.ClusterClientFactoryInput) cluster.RepositoryClientFactory {
 	return func(provider config.Provider,
 		configClient config.Client,
 		options ...repository.Option,
 	) (repository.Client, error) {
-		return f.repoFactory(provider)
+		return f.repoFactory(client.RepositoryClientFactoryInput{
+			Provider:  provider,
+			Processor: input.Processor,
+		})
 	}
 }
 
-func (f RepositoryFactory) repoFactory(provider config.Provider) (repository.Client, error) {
-	name := provider.Name()
-	repoType := provider.Type()
+func (f RepositoryFactory) repoFactory(input client.RepositoryClientFactoryInput) (repository.Client, error) {
+	name := input.Provider.Name()
+	repoType := input.Provider.Type()
 	airProv := f.Options.Provider(name, repoType)
 	if airProv == nil {
 		return nil, ErrProviderRepoNotFound{ProviderName: name, ProviderType: string(repoType)}
@@ -71,17 +75,19 @@ func (f RepositoryFactory) repoFactory(provider config.Provider) (repository.Cli
 			return nil, ErrProviderRepoNotFound{ProviderName: name, ProviderType: string(repoType)}
 		}
 		// construct a repository for this provider using root and version map
-		repo, err := implementations.NewRepository(provider.URL(), versions)
+		repo, err := implementations.NewRepository(input.Provider.URL(), versions)
 		if err != nil {
 			return nil, err
 		}
 		// inject repository into repository client
 		o := repository.InjectRepository(repo)
+		// inject yaml processor into repository
+		oProcessor := repository.InjectYamlProcessor(input.Processor)
 		log.Printf("Creating airshipctl repository implementation interface for provider %s of type %s\n",
 			name,
 			repoType)
 
-		repoClient, err := repository.New(provider, f.ConfigClient, o)
+		repoClient, err := repository.New(input.Provider, f.ConfigClient, o, oProcessor)
 		if err != nil {
 			return nil, err
 		}
@@ -95,5 +101,5 @@ func (f RepositoryFactory) repoFactory(provider config.Provider) (repository.Cli
 		name,
 		repoType)
 	// if repository is clusterctl pass, simply use default clusterctl repository interface
-	return repository.New(provider, f.ConfigClient)
+	return repository.New(input.Provider, f.ConfigClient)
 }
