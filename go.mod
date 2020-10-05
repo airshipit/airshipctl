@@ -3,10 +3,16 @@ module opendev.org/airship/airshipctl
 go 1.13
 
 require (
+	github.com/Azure/go-autorest/autorest v0.11.7 // indirect
+	github.com/Masterminds/goutils v1.1.0 // indirect
+	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/sprig v2.22.0+incompatible
+	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1 // indirect
 	github.com/cheggaaa/pb/v3 v3.0.4
+	github.com/containerd/containerd v1.4.1 // indirect
 	github.com/docker/docker v1.4.2-0.20200203170920-46ec8731fbce
+	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
 	github.com/elazarl/goproxy v0.0.0-20190421051319-9d40249d3c2f // indirect
 	github.com/elazarl/goproxy/ext v0.0.0-20190421051319-9d40249d3c2f // indirect
@@ -16,12 +22,12 @@ require (
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc // indirect
 	github.com/huandu/xstrings v1.3.1 // indirect
-	github.com/metal3-io/baremetal-operator v0.0.0-20200501205115-2c0dc9997bfa
-	github.com/onsi/gomega v1.9.0
+	github.com/mitchellh/copystructure v1.0.0 // indirect
+	github.com/morikuni/aec v1.0.0 // indirect
+	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.4.0
-	golang.org/x/tools v0.0.0-20200619210111-0f592d2728bb // indirect
 	k8s.io/api v0.17.4
 	k8s.io/apiextensions-apiserver v0.17.4
 	k8s.io/apimachinery v0.17.4
@@ -37,10 +43,7 @@ require (
 	sigs.k8s.io/yaml v1.2.0
 )
 
-// Required by baremetal-operator:
 replace (
-	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible // Required by OLM
-	github.com/russross/blackfriday => github.com/russross/blackfriday v1.5.2
 	k8s.io/client-go => k8s.io/client-go v0.0.0-20191114101535-6c5935290e33
 	k8s.io/kubectl => k8s.io/kubectl v0.0.0-20191219154910-1528d4eea6dd
 	sigs.k8s.io/kustomize/kyaml => sigs.k8s.io/kustomize/kyaml v0.4.1
