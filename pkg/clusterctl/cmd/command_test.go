@@ -45,9 +45,9 @@ func TestNewCommand(t *testing.T) {
 			currentContext: validContext,
 			manifests: map[string]*config.Manifest{
 				manifestName: {
-					TargetPath:            "testdata",
-					SubPath:               "valid",
-					PrimaryRepositoryName: "primary",
+					TargetPath:          "testdata",
+					SubPath:             "valid",
+					PhaseRepositoryName: "primary",
 					Repositories: map[string]*config.Repository{
 						"primary": {},
 					},
@@ -60,9 +60,9 @@ func TestNewCommand(t *testing.T) {
 			expectErr:      true,
 			manifests: map[string]*config.Manifest{
 				manifestName: {
-					TargetPath:            "testdata",
-					SubPath:               "invalid-path",
-					PrimaryRepositoryName: "primary",
+					TargetPath:          "testdata",
+					SubPath:             "invalid-path",
+					PhaseRepositoryName: "primary",
 					Repositories: map[string]*config.Repository{
 						"primary": {},
 					},
@@ -75,9 +75,9 @@ func TestNewCommand(t *testing.T) {
 			expectErr:      true,
 			manifests: map[string]*config.Manifest{
 				manifestName: {
-					TargetPath:            "testdata",
-					SubPath:               "no-clusterctl",
-					PrimaryRepositoryName: "primary",
+					TargetPath:          "testdata",
+					SubPath:             "no-clusterctl",
+					PhaseRepositoryName: "primary",
 					Repositories: map[string]*config.Repository{
 						"primary": {},
 					},
@@ -85,7 +85,7 @@ func TestNewCommand(t *testing.T) {
 			},
 		},
 		{
-			name:      "no primary repo",
+			name:      "no phase repo",
 			expectErr: true,
 			manifests: map[string]*config.Manifest{
 				manifestName: {
@@ -99,9 +99,9 @@ func TestNewCommand(t *testing.T) {
 			expectErr:      true,
 			manifests: map[string]*config.Manifest{
 				manifestName: {
-					TargetPath:            "testdata",
-					SubPath:               "can't build bundle",
-					PrimaryRepositoryName: "primary",
+					TargetPath:          "testdata",
+					SubPath:             "can't build bundle",
+					PhaseRepositoryName: "primary",
 					Repositories: map[string]*config.Repository{
 						"primary": {},
 					},

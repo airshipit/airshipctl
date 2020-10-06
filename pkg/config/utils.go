@@ -42,16 +42,16 @@ func NewConfig() *Config {
 		Manifests: map[string]*Manifest{
 			AirshipDefaultManifest: {
 				Repositories: map[string]*Repository{
-					DefaultTestPrimaryRepo: {
+					DefaultTestPhaseRepo: {
 						URLString: AirshipDefaultManifestRepoLocation,
 						CheckoutOptions: &RepoCheckout{
 							Branch: "master",
 						},
 					},
 				},
-				TargetPath:            "/tmp/" + AirshipDefaultManifest,
-				PrimaryRepositoryName: DefaultTestPrimaryRepo,
-				SubPath:               AirshipDefaultManifestRepo + "/manifests/site",
+				TargetPath:          "/tmp/" + AirshipDefaultManifest,
+				PhaseRepositoryName: DefaultTestPhaseRepo,
+				SubPath:             AirshipDefaultManifestRepo + "/manifests/site",
 			},
 		},
 	}
@@ -88,11 +88,11 @@ func NewContext() *Context {
 // object with non-nil maps
 func NewManifest() *Manifest {
 	return &Manifest{
-		PrimaryRepositoryName: DefaultTestPrimaryRepo,
-		TargetPath:            DefaultTargetPath,
-		SubPath:               DefaultSubPath,
-		Repositories:          map[string]*Repository{DefaultTestPrimaryRepo: NewRepository()},
-		MetadataPath:          DefaultManifestMetadataFile,
+		PhaseRepositoryName: DefaultTestPhaseRepo,
+		TargetPath:          DefaultTargetPath,
+		SubPath:             DefaultSubPath,
+		Repositories:        map[string]*Repository{DefaultTestPhaseRepo: NewRepository()},
+		MetadataPath:        DefaultManifestMetadataFile,
 	}
 }
 

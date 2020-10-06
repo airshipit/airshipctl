@@ -19,16 +19,16 @@ import "sigs.k8s.io/yaml"
 // Manifest is a tuple of references to a Manifest (how do Identify, collect ,
 // find the yaml manifests that airship uses to perform its operations)
 type Manifest struct {
-	// PrimaryRepositoryName is a name of the repo, that contains site/<site-name> directory
+	// PhaseRepositoryName is a name of the repo, that contains site/<site-name> directory
 	// and is a starting point for building document bundle
-	PrimaryRepositoryName string `json:"primaryRepositoryName"`
+	PhaseRepositoryName string `json:"phaseRepositoryName"`
 	// ExtraRepositories is the map of extra repositories addressable by a name
 	Repositories map[string]*Repository `json:"repositories,omitempty"`
 	// TargetPath Local Target path for working or home directory for all Manifest Cloned/Returned/Generated
 	TargetPath string `json:"targetPath"`
-	// SubPath is a path relative to TargetPath + Path where PrimaryRepository is cloned and contains
+	// SubPath is a path relative to TargetPath + Path where PhaseRepository is cloned and contains
 	// directories with ClusterType and Phase bundles, example:
-	// Repositories[PrimaryRepositoryName].Url = 'https://github.com/airshipit/treasuremap'
+	// Repositories[PhaseRepositoryName].Url = 'https://github.com/airshipit/treasuremap'
 	// SubPath = "manifests"
 	// you would expect that at treasuremap/manifests you would have ephemeral/initinfra and
 	// ephemera/target directories, containing kustomize.yaml.

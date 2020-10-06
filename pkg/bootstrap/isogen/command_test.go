@@ -264,7 +264,7 @@ func TestGenerateBootstrapIso(t *testing.T) {
 		settings := func() (*config.Config, error) {
 			return cfg, nil
 		}
-		expectedErr := config.ErrMissingPrimaryRepo{}
+		expectedErr := config.ErrMissingPhaseRepo{}
 		actualErr := GenerateBootstrapIso(settings, false)
 		assert.Equal(t, expectedErr, actualErr)
 	})

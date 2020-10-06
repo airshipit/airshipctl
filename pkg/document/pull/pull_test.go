@@ -38,7 +38,7 @@ func mockConfigFactory(t *testing.T, testGitDir string, chkOutOpts *config.RepoC
 		currentManifest, err := cfg.CurrentContextManifest()
 		require.NoError(t, err)
 		currentManifest.Repositories = map[string]*config.Repository{
-			currentManifest.PrimaryRepositoryName: {
+			currentManifest.PhaseRepositoryName: {
 				URLString:       testGitDir,
 				CheckoutOptions: chkOutOpts,
 				Auth: &config.RepoAuth{
@@ -51,7 +51,7 @@ func mockConfigFactory(t *testing.T, testGitDir string, chkOutOpts *config.RepoC
 
 		_, err = repo.NewRepository(
 			".",
-			currentManifest.Repositories[currentManifest.PrimaryRepositoryName],
+			currentManifest.Repositories[currentManifest.PhaseRepositoryName],
 		)
 		require.NoError(t, err)
 

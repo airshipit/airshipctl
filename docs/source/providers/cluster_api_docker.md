@@ -111,7 +111,7 @@ Run the below command to configure docker manifest, and add it to airship config
 ```
 $ airshipctl config set-manifest docker_manifest --repo primary \
 --url https://opendev.org/airship/airshipctl --branch master \
---primary --sub-path manifests/site/docker-test-site --target-path /tmp/airship
+--phase --sub-path manifests/site/docker-test-site --target-path /tmp/airship
 ```
 
 $ airshipctl config set-context kind-capi-docker --manifest docker_manifest

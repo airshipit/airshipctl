@@ -58,7 +58,7 @@
             state: absent
           when: remote_work_dir is defined
         - name: clone document model
-          command: git clone -q {{ airship_config_primary_repo_url }} {{ remote_work_dir }}
+          command: git clone -q {{ airship_config_phase_repo_url }} {{ remote_work_dir }}
           when: remote_work_dir is defined
 
     - name: get VM config(MACs and bootMode) from BareMetalHost objects

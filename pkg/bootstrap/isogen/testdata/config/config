@@ -19,7 +19,7 @@ managementConfiguration:
     type: redfish
 manifests:
   default:
-    primaryRepositoryName: primary
+    phaseRepositoryName: primary
     repositories:
       primary:
         checkout:

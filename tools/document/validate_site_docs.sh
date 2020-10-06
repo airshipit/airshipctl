@@ -68,7 +68,7 @@ managementConfiguration:
     type: redfish
 manifests:
   ${CONTEXT}_${cluster}:
-    primaryRepositoryName: primary
+    phaseRepositoryName: primary
     repositories:
       primary:
         checkout:

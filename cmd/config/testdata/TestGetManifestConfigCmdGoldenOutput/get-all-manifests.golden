@@ -1,15 +1,15 @@
 metadataPath: ""
-primaryRepositoryName: bar_primary_repo
+phaseRepositoryName: bar_phase_repo
 subPath: ""
 targetPath: bar_target_path
 
 metadataPath: ""
-primaryRepositoryName: baz_primary_repo
+phaseRepositoryName: baz_phase_repo
 subPath: ""
 targetPath: baz_target_path
 
 metadataPath: ""
-primaryRepositoryName: foo_primary_repo
+phaseRepositoryName: foo_phase_repo
 subPath: ""
 targetPath: foo_target_path
 

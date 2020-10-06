@@ -41,7 +41,7 @@ type ManifestOptions struct {
 	Tag          string
 	RemoteRef    string
 	Force        bool
-	IsPrimary    bool
+	IsPhase      bool
 	SubPath      string
 	TargetPath   string
 	MetadataPath string
@@ -90,7 +90,7 @@ func (o *ManifestOptions) Validate() error {
 	if o.RemoteRef != "" {
 		return errors.ErrNotImplemented{What: "repository checkout by RemoteRef"}
 	}
-	if o.IsPrimary && o.RepoName == "" {
+	if o.IsPhase && o.RepoName == "" {
 		return ErrMissingRepositoryName{}
 	}
 	possibleValues := [3]string{o.CommitHash, o.Branch, o.Tag}

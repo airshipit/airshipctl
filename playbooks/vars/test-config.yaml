@@ -12,7 +12,7 @@
 
 airship_config_action: generate
 airship_config_iso_gen_target_path: "{{ serve_dir }}"
-airship_config_primary_repo_url: "https://review.opendev.org/airship/airshipctl"
+airship_config_phase_repo_url: "https://review.opendev.org/airship/airshipctl"
 airship_config_manifest_directory: "{{ remote_work_dir | default(zuul.project.src_dir) | default(local_src_dir) }}"
 airship_config_ephemeral_ip: "{{ airship_gate_ipam.nat_network.ephemeral_ip }}"
 airship_config_iso_builder_docker_image: "quay.io/airshipit/isogen:latest-ubuntu_focal"

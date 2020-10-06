@@ -507,7 +507,7 @@ func TestGetManifests(t *testing.T) {
 	manifests := conf.GetManifests()
 	require.NotNil(t, manifests)
 
-	assert.EqualValues(t, manifests[0].PrimaryRepositoryName, "primary")
+	assert.EqualValues(t, manifests[0].PhaseRepositoryName, "primary")
 }
 
 func TestModifyManifests(t *testing.T) {

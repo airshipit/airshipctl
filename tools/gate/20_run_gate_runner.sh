@@ -23,7 +23,7 @@ TMP_DIR=${TMP_DIR:-"$(dirname $(mktemp -u))"}
 ANSIBLE_HOSTS=${ANSIBLE_HOSTS:-"${TMP_DIR}/ansible_hosts"}
 PLAYBOOK_CONFIG=${PLAYBOOK_CONFIG:-"${TMP_DIR}/config.yaml"}
 export AIRSHIPCTL_WS=${AIRSHIPCTL_WS:-$PWD}
-export AIRSHIP_CONFIG_PRIMARY_REPO_URL=${AIRSHIP_CONFIG_PRIMARY_REPO_URL:-$PWD}
+export AIRSHIP_CONFIG_PHASE_REPO_URL=${AIRSHIP_CONFIG_PHASE_REPO_URL:-$PWD}
 
 sudo --preserve-env=AIRSHIPCTL_WS ansible-playbook -i "$ANSIBLE_HOSTS" \
 	playbooks/airshipctl-gate-runner.yaml \
