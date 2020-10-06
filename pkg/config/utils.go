@@ -52,6 +52,7 @@ func NewConfig() *Config {
 				TargetPath:          "/tmp/" + AirshipDefaultManifest,
 				PhaseRepositoryName: DefaultTestPhaseRepo,
 				SubPath:             AirshipDefaultManifestRepo + "/manifests/site",
+				MetadataPath:        DefaultManifestMetadataFile,
 			},
 		},
 	}

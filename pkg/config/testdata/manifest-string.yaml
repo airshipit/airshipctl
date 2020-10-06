@@ -1,4 +1,4 @@
-metadataPath: manifests/site/test-site/metadata.yaml
+metadataPath: metadata.yaml
 phaseRepositoryName: primary
 repositories:
   primary:

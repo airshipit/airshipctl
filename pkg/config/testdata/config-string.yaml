@@ -17,7 +17,7 @@ managementConfiguration:
     type: redfish
 manifests:
   dummy_manifest:
-    metadataPath: manifests/site/test-site/metadata.yaml
+    metadataPath: metadata.yaml
     phaseRepositoryName: primary
     repositories:
       primary:

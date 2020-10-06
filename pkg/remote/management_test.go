@@ -56,8 +56,11 @@ func withTestDataPath(path string) Configuration {
 		if err != nil {
 			panic(fmt.Sprintf("Unable to initialize management tests. Current Context error %q", err))
 		}
-		manifest.TargetPath = fmt.Sprintf("testdata/%s", path)
+		manifest.TargetPath = "testdata"
 		manifest.MetadataPath = "metadata.yaml"
+		dummyRepo := testutil.DummyRepository()
+		dummyRepo.URLString = fmt.Sprintf("http://dummy.url.com/%s.git", path)
+		manifest.Repositories = map[string]*config.Repository{manifest.PhaseRepositoryName: dummyRepo}
 	}
 }
 
