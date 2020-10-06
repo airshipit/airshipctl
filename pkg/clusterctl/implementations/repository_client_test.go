@@ -110,41 +110,28 @@ func TestEnvVariableSubstitutionRepoClient(t *testing.T) {
 	}
 }
 
-// This test covers a case, where we want some variables to be substituted and some
-// are not. Clusterctl behavior doesn't allow to skip variable substitution completely
-// instead if SkipVariables is set to True, it will not throw errors if these variables
-// are not set in config reader.
 func TestAdditionalVariableSubstitutionRepoClient(t *testing.T) {
 	vars := map[string]string{
 		"AZURE_SUBSCRIPTION_ID_B64": "c29tZS1iYXNlNjQtSUQtdGV4dAo=",
 		"AZURE_TENANT_ID_B64":       "c29tZS1iYXNlNjQtVEVOQU5ULUlELXRleHQK",
 		"AZURE_CLIENT_ID_B64":       "c29tZS1iYXNlNjQtQ0xJRU5ULUlELXRleHQK",
+		"AZURE_CLIENT_SECRET_B64":   "c29tZS1iYXNlNjQtc2VjcmV0Cg==",
 	}
-	notSubstitutedVars := map[string]string{
-		"AZURE_CLIENT_SECRET_B64": "${AZURE_CLIENT_SECRET_B64}",
-	}
+
 	airRepoClient := testRepoClient(testRepoOpts{
-		kustRoot:       "functions/5",
-		envVars:        false,
-		additionalVars: vars,
-		// set to false so errors are not thrown when AZURE_CLIENT_SECRET_B64 is not found
-		varSubstitution: false,
+		kustRoot:        "functions/5",
+		envVars:         false,
+		additionalVars:  vars,
+		varSubstitution: true,
 	}, t)
+
 	c, err := airRepoClient.Components().Get(repository.ComponentsOptions{})
 	require.NoError(t, err)
 	assert.NotNil(t, c)
 	assert.Len(t, c.Variables(), len(dataKeyMapping()))
-	// find secret containing env variables
+
 	for _, obj := range c.InstanceObjs() {
 		if obj.GetKind() == "Secret" {
-			// merge two maps
-			mergedVars := map[string]string{}
-			for k, v := range vars {
-				mergedVars[k] = v
-			}
-			for k, v := range notSubstitutedVars {
-				mergedVars[k] = v
-			}
 			cm := &v1.ConfigMap{}
 			err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.UnstructuredContent(), cm)
 			require.NoError(t, err)
@@ -167,6 +154,7 @@ type testRepoOpts struct {
 }
 
 func testRepoClient(opts testRepoOpts, t *testing.T) repository.Client {
+	t.Helper()
 	providerName := "metal3"
 	providerType := "InfrastructureProvider"
 	// this version contains a variable that is suppose to be substituted by clusterctl
