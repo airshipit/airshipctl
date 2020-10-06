@@ -28,5 +28,5 @@ manifests:
           remoteRef: ""
           tag: ""
         url: ${AIRSHIP_CONFIG_PRIMARY_REPO_URL}
-    metadataPath: airshipctl/manifests/metadata.yaml
+    metadataPath: ${AIRSHIP_CONFIG_METADATA_PATH}
     targetPath: ${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}
