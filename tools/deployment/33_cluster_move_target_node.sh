@@ -26,9 +26,8 @@ kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT get clu
 echo "Annotate BMH for target node"
 kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT annotate bmh node01 baremetalhost.metal3.io/paused=true
 
-# Switch to airshipctl phase clusterctl-move when it is working
 echo "Move Cluster Object to Target Cluster"
-clusterctl --v 20 move --kubeconfig $KUBECONFIG --kubeconfig-context $KUBECONFIG_EPHEMERAL_CONTEXT --to-kubeconfig $KUBECONFIG --to-kubeconfig-context $KUBECONFIG_TARGET_CONTEXT
+airshipctl phase run clusterctl-move
 
 echo "Waiting for pods to be ready"
 kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT wait --all-namespaces --for=condition=Ready pods --all --timeout=3000s
