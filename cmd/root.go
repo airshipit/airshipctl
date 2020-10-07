@@ -19,8 +19,6 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/tools/clientcmd"
-
 	// Import to initialize client auth plugins.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
@@ -40,14 +38,13 @@ import (
 type RootOptions struct {
 	Debug             bool
 	AirshipConfigPath string
-	KubeConfigPath    string
 }
 
 // NewAirshipCTLCommand creates a root `airshipctl` command with the default commands attached
 func NewAirshipCTLCommand(out io.Writer) *cobra.Command {
 	rootCmd, settings := NewRootCommand(out)
 	return AddDefaultAirshipCTLCommands(rootCmd,
-		cfg.CreateFactory(&settings.AirshipConfigPath, &settings.KubeConfigPath))
+		cfg.CreateFactory(&settings.AirshipConfigPath))
 }
 
 // NewRootCommand creates the root `airshipctl` command. All other commands are
@@ -97,11 +94,4 @@ func initFlags(options *RootOptions, cmd *cobra.Command) {
 		"airshipconf",
 		"",
 		`Path to file for airshipctl configuration. (default "`+defaultAirshipConfigPath+`")`)
-
-	defaultKubeConfigPath := filepath.Join(defaultAirshipConfigDir, cfg.AirshipKubeConfig)
-	flags.StringVar(
-		&options.KubeConfigPath,
-		clientcmd.RecommendedConfigPathFlag,
-		"",
-		`Path to kubeconfig associated with airshipctl configuration. (default "`+defaultKubeConfigPath+`")`)
 }

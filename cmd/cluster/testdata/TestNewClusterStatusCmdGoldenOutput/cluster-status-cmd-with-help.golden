@@ -4,4 +4,5 @@ Usage:
   status [flags]
 
 Flags:
-  -h, --help   help for status
+  -h, --help                help for status
+      --kubeconfig string   Path to kubeconfig associated with cluster being managed

@@ -92,11 +92,7 @@ func NewSetManagementConfigCommand(cfgFactory config.Factory) *cobra.Command {
 				return nil
 			}
 
-			if err = cfg.PersistConfig(true); err != nil {
-				return err
-			}
-
-			return nil
+			return cfg.PersistConfig()
 		},
 	}
 

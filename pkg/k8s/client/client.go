@@ -22,7 +22,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubectl"
 	k8sutils "opendev.org/airship/airshipctl/pkg/k8s/utils"
 )
@@ -55,20 +54,20 @@ type Client struct {
 var _ Interface = &Client{}
 
 // Factory is a function which creates Interfaces
-type Factory func(*config.Config) (Interface, error)
+type Factory func(airshipConfigPath string, kubeconfig string) (Interface, error)
 
 // DefaultClient is a factory which generates a default client
 var DefaultClient Factory = NewClient
 
 // NewClient creates a Client initialized from the passed in settings
-func NewClient(cfg *config.Config) (Interface, error) {
+func NewClient(airshipConfigPath string, kubeconfig string) (Interface, error) {
 	client := new(Client)
 	var err error
 
 	// TODO add support for kubeconfig context, for now use current context
-	f := k8sutils.FactoryFromKubeConfig(cfg.KubeConfigPath(), "")
+	f := k8sutils.FactoryFromKubeConfig(kubeconfig, "")
 
-	pathToBufferDir := filepath.Dir(cfg.LoadedConfigPath())
+	pathToBufferDir := filepath.Dir(airshipConfigPath)
 	client.kubectl = kubectl.NewKubectl(f).WithBufferDir(pathToBufferDir)
 
 	client.clientSet, err = f.KubernetesClientSet()
@@ -82,7 +81,7 @@ func NewClient(cfg *config.Config) (Interface, error) {
 	}
 
 	// kubectl factories can't create CRD clients...
-	kubeConfig, err := clientcmd.BuildConfigFromFlags("", cfg.KubeConfigPath())
+	kubeConfig, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
 		return nil, err
 	}

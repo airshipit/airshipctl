@@ -12,7 +12,6 @@ A unified entrypoint to various airship components
       --airshipconf string   Path to file for airshipctl configuration. (default "$HOME/.airship/config")
       --debug                enable verbose output
   -h, --help                 help for airshipctl
-      --kubeconfig string    Path to kubeconfig associated with airshipctl configuration. (default "$HOME/.airship/kubeconfig")
 ```
 
 ### SEE ALSO

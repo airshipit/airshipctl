@@ -15,7 +15,6 @@ limitations under the License.
 package config
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -23,8 +22,6 @@ import (
 	"path/filepath"
 	"sort"
 
-	"k8s.io/client-go/tools/clientcmd"
-	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/yaml"
 
 	"opendev.org/airship/airshipctl/pkg/log"
@@ -36,8 +33,7 @@ import (
 // Any truly optional piece of config is allowed to be omitted.
 
 // Config holds the information required by airshipctl commands
-// It is somewhat a superset of what a kubeconfig looks like, we allow for this overlaps by providing
-// a mechanism to consume or produce a kubeconfig into / from the airship config.
+// It is somewhat a superset of what a kubeconfig looks like
 type Config struct {
 	// +optional
 	Kind string `json:"kind,omitempty"`
@@ -67,14 +63,6 @@ type Config struct {
 	// file from which this config was loaded
 	// +not persisted in file
 	loadedConfigPath string
-
-	// kubeConfigPath is the full path to the the location of the
-	// kubeconfig file associated with this airship config instance
-	// +not persisted in file
-	kubeConfigPath string
-
-	// Private instance of Kube Config content as an object
-	kubeConfig *clientcmdapi.Config
 }
 
 // Permissions has the permissions for file and directory
@@ -87,21 +75,17 @@ type Permissions struct {
 type Factory func() (*Config, error)
 
 // CreateFactory returns function which creates ready to use Config object
-func CreateFactory(airshipConfigPath *string, kubeConfigPath *string) Factory {
+func CreateFactory(airshipConfigPath *string) Factory {
 	return func() (*Config, error) {
 		cfg := NewConfig()
-		cfg.kubeConfig = NewKubeConfig()
 
-		var acp, kcp string
+		var acp string
 		if airshipConfigPath != nil {
 			acp = *airshipConfigPath
 		}
-		if kubeConfigPath != nil {
-			kcp = *kubeConfigPath
-		}
 
-		cfg.initConfigPath(acp, kcp)
-		err := cfg.LoadConfig(cfg.loadedConfigPath, cfg.kubeConfigPath, false)
+		cfg.initConfigPath(acp)
+		err := cfg.LoadConfig()
 		if err != nil {
 			// Should stop airshipctl
 			log.Fatal("Failed to load or initialize config: ", err)
@@ -112,15 +96,14 @@ func CreateFactory(airshipConfigPath *string, kubeConfigPath *string) Factory {
 }
 
 // CreateConfig saves default config to specified paths
-func CreateConfig(airshipConfigPath string, kubeConfigPath string) error {
+func CreateConfig(airshipConfigPath string) error {
 	cfg := NewConfig()
-	cfg.kubeConfig = NewKubeConfig()
-	cfg.initConfigPath(airshipConfigPath, kubeConfigPath)
-	return cfg.PersistConfig(true)
+	cfg.initConfigPath(airshipConfigPath)
+	return cfg.PersistConfig()
 }
 
-// initConfigPath - Initializes loadedConfigPath and kubeConfigPath variable for Config object
-func (c *Config) initConfigPath(airshipConfigPath string, kubeConfigPath string) {
+// initConfigPath - Initializes loadedConfigPath variable for Config object
+func (c *Config) initConfigPath(airshipConfigPath string) {
 	switch {
 	case airshipConfigPath != "":
 		// The loadedConfigPath may already have been received as a command line argument
@@ -132,77 +115,22 @@ func (c *Config) initConfigPath(airshipConfigPath string, kubeConfigPath string)
 		// Otherwise, we'll try putting it in the home directory
 		c.loadedConfigPath = filepath.Join(util.UserHomeDir(), AirshipConfigDir, AirshipConfig)
 	}
-
-	switch {
-	case kubeConfigPath != "":
-		// The kubeConfigPath may already have been received as a command line argument
-		c.kubeConfigPath = kubeConfigPath
-	case os.Getenv(AirshipKubeConfigEnv) != "":
-		// Otherwise, we can check if we got the path via ENVIRONMENT variable
-		c.kubeConfigPath = os.Getenv(AirshipKubeConfigEnv)
-	default:
-		// Otherwise, we'll try putting it in the home directory
-		c.kubeConfigPath = filepath.Join(util.UserHomeDir(), AirshipConfigDir, AirshipKubeConfig)
-	}
 }
 
-// LoadConfig populates the Config object using the files found at
-// airshipConfigPath and kubeConfigPath
-func (c *Config) LoadConfig(airshipConfigPath, kubeConfigPath string, create bool) error {
-	err := c.loadFromAirConfig(airshipConfigPath, create)
-	if err != nil {
-		return err
-	}
-
-	err = c.loadKubeConfig(kubeConfigPath, create)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// loadFromAirConfig populates the Config from the file found at airshipConfigPath.
+// LoadConfig populates the Config from the file found at airshipConfigPath.
 // If there is no file at airshipConfigPath, this function does nothing.
 // An error is returned if:
 // * airshipConfigPath is the empty string
 // * the file at airshipConfigPath is inaccessible
 // * the file at airshipConfigPath cannot be marshaled into Config
-func (c *Config) loadFromAirConfig(airshipConfigPath string, create bool) error {
-	if airshipConfigPath == "" {
-		return errors.New("configuration file location was not provided")
-	}
-
-	// Remember where I loaded the Config from
-	c.loadedConfigPath = airshipConfigPath
-
+func (c *Config) LoadConfig() error {
 	// If I can read from the file, load from it
 	// throw an error otherwise
-	if _, err := os.Stat(airshipConfigPath); os.IsNotExist(err) && create {
-		return nil
-	} else if err != nil {
+	if _, err := os.Stat(c.loadedConfigPath); err != nil {
 		return err
 	}
 
-	return util.ReadYAMLFile(airshipConfigPath, c)
-}
-
-func (c *Config) loadKubeConfig(kubeConfigPath string, create bool) error {
-	// Will need this for persisting the changes
-	c.kubeConfigPath = kubeConfigPath
-
-	// If I can read from the file, load from it
-	var err error
-	if _, err = os.Stat(kubeConfigPath); os.IsNotExist(err) && create {
-		// Default kubeconfig matching Airship target cluster
-		c.kubeConfig = NewKubeConfig()
-		return nil
-	} else if err != nil {
-		return err
-	}
-
-	c.kubeConfig, err = clientcmd.LoadFromFile(kubeConfigPath)
-	return err
+	return util.ReadYAMLFile(c.loadedConfigPath, c)
 }
 
 // EnsureComplete verifies that a Config object is ready to use.
@@ -247,11 +175,11 @@ func (c *Config) EnsureComplete() error {
 	return nil
 }
 
-// PersistConfig updates the airshipctl config and kubeconfig files to match
-// the current Config and KubeConfig objects.
-// If either file did not previously exist, the file will be created.
+// PersistConfig updates the airshipctl config file to match
+// the current Config object.
+// If file did not previously exist, the file will be created.
 // Otherwise, the file will be overwritten
-func (c *Config) PersistConfig(persistKubeConfig bool) error {
+func (c *Config) PersistConfig() error {
 	airshipConfigYaml, err := c.ToYaml()
 	if err != nil {
 		return err
@@ -282,13 +210,6 @@ func (c *Config) PersistConfig(persistKubeConfig bool) error {
 		return err
 	}
 
-	if persistKubeConfig {
-		// Persist the kubeconfig file referenced
-		if err := clientcmd.WriteToFile(*c.kubeConfig, c.kubeConfigPath); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -317,29 +238,6 @@ func (c *Config) LoadedConfigPath() string {
 // in the Config object
 func (c *Config) SetLoadedConfigPath(lcp string) {
 	c.loadedConfigPath = lcp
-}
-
-// KubeConfigPath returns the file path of the kube config
-// from Config object
-func (c *Config) KubeConfigPath() string {
-	return c.kubeConfigPath
-}
-
-// SetKubeConfigPath updates the file path of the kubeconfig
-// in Config object
-func (c *Config) SetKubeConfigPath(kubeConfigPath string) {
-	c.kubeConfigPath = kubeConfigPath
-}
-
-// KubeConfig returns kube config object from the
-// context of current Config object
-func (c *Config) KubeConfig() *clientcmdapi.Config {
-	return c.kubeConfig
-}
-
-// SetKubeConfig updates kube config in Config object
-func (c *Config) SetKubeConfig(kubeConfig *clientcmdapi.Config) {
-	c.kubeConfig = kubeConfig
 }
 
 // GetContext returns a context instance

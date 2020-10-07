@@ -23,18 +23,25 @@ import (
 )
 
 // NewStatusCommand creates a command which reports the statuses of a cluster's deployed components.
-func NewStatusCommand(cfgFactory config.Factory, factory client.Factory) *cobra.Command {
-	o := cluster.NewStatusOptions(cfgFactory, factory)
-	cmd := &cobra.Command{
+func NewStatusCommand(cfgFactory config.Factory) *cobra.Command {
+	var kubeconfig string
+	statusCmd := &cobra.Command{
 		Use:   "status",
 		Short: "Retrieve statuses of deployed cluster components",
-		RunE:  clusterStatusRunE(o),
+		RunE:  clusterStatusRunE(cfgFactory, kubeconfig),
 	}
-	return cmd
+
+	statusCmd.Flags().StringVar(
+		&kubeconfig,
+		"kubeconfig",
+		"",
+		"Path to kubeconfig associated with cluster being managed")
+
+	return statusCmd
 }
 
-func clusterStatusRunE(o cluster.StatusOptions) func(cmd *cobra.Command, args []string) error {
+func clusterStatusRunE(cfgFactory config.Factory, kubeconfig string) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		return cluster.StatusRunner(o, cmd.OutOrStdout())
+		return cluster.StatusRunner(cluster.NewStatusOptions(cfgFactory, client.DefaultClient, kubeconfig), cmd.OutOrStdout())
 	}
 }

@@ -47,11 +47,7 @@ func NewInitCommand() *cobra.Command {
 				airshipConfigPath = ""
 			}
 
-			kubeConfigPath, err := cmd.Flags().GetString("kubeconfig")
-			if err != nil {
-				kubeConfigPath = ""
-			}
-			return config.CreateConfig(airshipConfigPath, kubeConfigPath)
+			return config.CreateConfig(airshipConfigPath)
 		},
 	}
 

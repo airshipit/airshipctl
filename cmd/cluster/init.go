@@ -70,18 +70,26 @@ airshipctl cluster init
 
 // NewInitCommand creates a command to deploy cluster-api
 func NewInitCommand(cfgFactory config.Factory) *cobra.Command {
+	var kubeconfig string
 	initCmd := &cobra.Command{
 		Use:     "init",
 		Short:   "Deploy cluster-api provider components",
 		Long:    initLong,
 		Example: initExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			command, err := clusterctlcmd.NewCommand(cfgFactory)
+			command, err := clusterctlcmd.NewCommand(cfgFactory, kubeconfig)
 			if err != nil {
 				return err
 			}
 			return command.Init()
 		},
 	}
+
+	initCmd.Flags().StringVar(
+		&kubeconfig,
+		"kubeconfig",
+		"",
+		"Path to kubeconfig associated with cluster being managed")
+
 	return initCmd
 }

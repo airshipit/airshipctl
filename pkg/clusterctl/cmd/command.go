@@ -32,7 +32,7 @@ type Command struct {
 }
 
 // NewCommand returns instance of Command
-func NewCommand(cfgFactory config.Factory) (*Command, error) {
+func NewCommand(cfgFactory config.Factory, kubeconfig string) (*Command, error) {
 	cfg, err := cfgFactory()
 	if err != nil {
 		return nil, err
@@ -53,10 +53,9 @@ func NewCommand(cfgFactory config.Factory) (*Command, error) {
 	if err != nil {
 		return nil, err
 	}
-	kubeConfigPath := cfg.KubeConfigPath()
 
 	return &Command{
-		kubeconfigPath:    kubeConfigPath,
+		kubeconfigPath:    kubeconfig,
 		documentRoot:      root,
 		client:            client,
 		options:           options,
