@@ -5,3 +5,7 @@ resources:
   - kubeadmconfigtemplate.yaml
   - metal3machinetemplate.yaml
   - machinedeployment.yaml
+  - ../../../../function/airshipctl-base-catalogues
+
+transformers:
+  - replacements
