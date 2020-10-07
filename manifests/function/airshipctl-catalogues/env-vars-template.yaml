@@ -1,0 +1,21 @@
+apiVersion: airshipit.org/v1alpha1
+kind: Templater
+metadata:
+  name: env-vars-template
+  labels:
+    airshipit.org/deploy-k8s: "false"
+template: |
+  ---
+  apiVersion: airshipit.org/v1alpha1
+  kind: VariableCatalogue
+  metadata:
+    labels:
+      airshipit.org/deploy-k8s: "false"
+    name: env-vars-catalogue
+  env:
+    HTTP_PROXY: '{{ env "HTTP_PROXY" }}'
+    HTTPS_PROXY: '{{ env "HTTPS_PROXY" }}'
+    http_proxy: '{{ env "http_proxy" }}'
+    https_proxy: '{{ env "https_proxy" }}'
+    NO_PROXY: '{{ env "NO_PROXY" }}'
+    no_proxy: '{{ env "no_proxy" }}'

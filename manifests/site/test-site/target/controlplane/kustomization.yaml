@@ -5,7 +5,12 @@ resources:
   # otherwise nodes will hang in 'registering' state for quite a long time
   - nodes
   - ../../../../function/k8scontrol
+
 patchesStrategicMerge:
   - control-machine-template-patch.yaml
+
 commonLabels:
   airshipit.org/stage: initinfra
+
+generators:
+  - ../../../../function/airshipctl-catalogues
