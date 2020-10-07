@@ -26,7 +26,7 @@ Manage the airshipctl config file
 * [airshipctl config get-encryption-config](airshipctl_config_get-encryption-config.md)	 - Get an encryption config information from the airshipctl config
 * [airshipctl config get-management-config](airshipctl_config_get-management-config.md)	 - View a management config or all management configs defined in the airshipctl config
 * [airshipctl config get-manifest](airshipctl_config_get-manifest.md)	 - Get a manifest information from the airshipctl config
-* [airshipctl config init](airshipctl_config_init.md)	 - Generate initial configuration files for airshipctl
+* [airshipctl config init](airshipctl_config_init.md)	 - Generate initial configuration file for airshipctl
 * [airshipctl config set-context](airshipctl_config_set-context.md)	 - Manage contexts
 * [airshipctl config set-encryption-config](airshipctl_config_set-encryption-config.md)	 - Manage encryption configs in airship config
 * [airshipctl config set-management-config](airshipctl_config_set-management-config.md)	 - Modify an out-of-band management configuration

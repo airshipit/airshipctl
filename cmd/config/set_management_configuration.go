@@ -92,7 +92,7 @@ func NewSetManagementConfigCommand(cfgFactory config.Factory) *cobra.Command {
 				return nil
 			}
 
-			return cfg.PersistConfig()
+			return cfg.PersistConfig(true)
 		},
 	}
 

@@ -101,11 +101,14 @@ func TestPersistConfig(t *testing.T) {
 
 	conf.SetLoadedConfigPath(conf.LoadedConfigPath() + ".new")
 
-	err := conf.PersistConfig()
+	err := conf.PersistConfig(true)
 	require.NoError(t, err)
 
 	// Check that the files were created
 	assert.FileExists(t, conf.LoadedConfigPath())
+
+	err = conf.PersistConfig(false)
+	require.Error(t, err, config.ErrConfigFileExists{Path: conf.LoadedConfigPath()})
 }
 
 func TestEnsureComplete(t *testing.T) {
@@ -206,7 +209,7 @@ func TestPurge(t *testing.T) {
 	defer cleanup(t)
 
 	// Store it
-	err := conf.PersistConfig()
+	err := conf.PersistConfig(true)
 	assert.NoErrorf(t, err, "Unable to persist configuration expected at %v", conf.LoadedConfigPath())
 
 	// Verify that the file is there

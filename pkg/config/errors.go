@@ -305,3 +305,12 @@ type ErrCheckFile struct {
 func (e ErrCheckFile) Error() string {
 	return fmt.Sprintf("could not read %s data from '%s': %v", e.FlagName, e.Path, e.InternalErr)
 }
+
+// ErrConfigFileExists is returned when there is an existing file at specified location
+type ErrConfigFileExists struct {
+	Path string
+}
+
+func (e ErrConfigFileExists) Error() string {
+	return fmt.Sprintf("could not create default config at %s, file already exists", e.Path)
+}

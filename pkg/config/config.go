@@ -94,11 +94,11 @@ func CreateFactory(airshipConfigPath *string) Factory {
 	}
 }
 
-// CreateConfig saves default config to specified paths
-func CreateConfig(airshipConfigPath string) error {
+// CreateConfig saves default config to the specified path
+func CreateConfig(airshipConfigPath string, overwrite bool) error {
 	cfg := NewConfig()
 	cfg.initConfigPath(airshipConfigPath)
-	return cfg.PersistConfig()
+	return cfg.PersistConfig(overwrite)
 }
 
 // initConfigPath - Initializes loadedConfigPath variable for Config object
@@ -177,8 +177,12 @@ func (c *Config) EnsureComplete() error {
 // PersistConfig updates the airshipctl config file to match
 // the current Config object.
 // If file did not previously exist, the file will be created.
-// Otherwise, the file will be overwritten
-func (c *Config) PersistConfig() error {
+// The file will be overwritten if overwrite argument set to true
+func (c *Config) PersistConfig(overwrite bool) error {
+	if _, err := os.Stat(c.loadedConfigPath); err == nil && !overwrite {
+		return ErrConfigFileExists{Path: c.loadedConfigPath}
+	}
+
 	airshipConfigYaml, err := c.ToYaml()
 	if err != nil {
 		return err
