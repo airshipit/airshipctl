@@ -19,33 +19,17 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/remote"
 )
 
 // NewRemoteDirectCommand provides a command with the capability to perform remote direct operations.
-func NewRemoteDirectCommand(cfgFactory config.Factory) *cobra.Command {
+func NewRemoteDirectCommand(cfgFactory config.Factory, options *CommonOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "remotedirect",
 		Short: "Bootstrap the ephemeral host",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := cfgFactory()
-			if err != nil {
-				return err
-			}
-
-			manager, err := remote.NewManager(cfg,
-				config.BootstrapPhase,
-				remote.ByLabel(document.EphemeralHostSelector))
-			if err != nil {
-				return err
-			}
-
-			if len(manager.Hosts) != 1 {
-				return remote.NewRemoteDirectErrorf("more than one node defined as the ephemeral node")
-			}
-
-			ephemeralHost := manager.Hosts[0]
-			return ephemeralHost.DoRemoteDirect(cfg)
+			options.phase = config.BootstrapPhase
+			options.labels = document.EphemeralHostSelector
+			return performAction(cfgFactory, options, remoteDirectAction, cmd.OutOrStdout())
 		},
 	}
 

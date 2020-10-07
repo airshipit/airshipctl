@@ -15,52 +15,23 @@
 package baremetal
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/remote"
 )
 
 // NewPowerOffCommand provides a command to shutdown a remote host.
-func NewPowerOffCommand(cfgFactory config.Factory) *cobra.Command {
-	var labels string
-	var name string
-	var phase string
-
+func NewPowerOffCommand(cfgFactory config.Factory, options *CommonOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "poweroff",
 		Short: "Shutdown a baremetal host",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := cfgFactory()
-			if err != nil {
-				return err
-			}
-
-			selectors := GetHostSelections(name, labels)
-			m, err := remote.NewManager(cfg, phase, selectors...)
-			if err != nil {
-				return err
-			}
-
-			for _, host := range m.Hosts {
-				if err := host.SystemPowerOff(host.Context); err != nil {
-					return err
-				}
-
-				fmt.Fprintf(cmd.OutOrStdout(), "Powered off host '%s'.\n", host.HostName)
-			}
-
-			return nil
+			return performAction(cfgFactory, options, powerOffAction, cmd.OutOrStdout())
 		},
 	}
 
-	flags := cmd.Flags()
-	flags.StringVarP(&labels, flagLabel, flagLabelShort, "", flagLabelDescription)
-	flags.StringVarP(&name, flagName, flagNameShort, "", flagNameDescription)
-	flags.StringVar(&phase, flagPhase, config.BootstrapPhase, flagPhaseDescription)
+	initFlags(options, cmd)
 
 	return cmd
 }
