@@ -26,6 +26,7 @@ Welcome to airshipctl's Documentation!
    :maxdepth: 2
 
    architecture
+   phases
    developers
    plugins
    testing-guidelines
