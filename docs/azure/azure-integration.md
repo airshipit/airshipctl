@@ -137,36 +137,6 @@ az-target-cluster-md-0-z5lff            Ready    <none>   17h   v1.18.2
 
 ```yaml
 apiVersion: airshipit.org/v1alpha1
-bootstrapInfo:
-  azure_bootstrap_config:
-    builder:
-      networkConfigFileName: network-config
-      outputMetadataFileName: output-metadata.yaml
-      userDataFileName: user-data
-    container:
-      containerRuntime: docker
-      image: quay.io/airshipit/isogen:latest-debian_stable
-      volume: /srv/iso:/config
-    remoteDirect:
-      isoUrl: http://localhost:8099/debian-custom.iso
-  default:
-    builder:
-      networkConfigFileName: network-config
-      outputMetadataFileName: output-metadata.yaml
-      userDataFileName: user-data
-    container:
-      containerRuntime: docker
-      image: quay.io/airshipit/isogen:latest-debian_stable
-      volume: /srv/iso:/config
-    remoteDirect:
-      isoUrl: http://localhost:8099/debian-custom.iso
-clusters:
-  az-target-cluster:
-    clusterType:
-      target:
-        bootstrapInfo: default
-        clusterKubeconf: az-target-cluster_target
-        managementConfiguration: default
 contexts:
   az-target-cluster-admin@az-target-cluster:
     contextKubeconf: az-target-cluster_target
@@ -208,6 +178,4 @@ manifests:
         url: https://opendev.org/airship/treasuremap
     subPath: treasuremap/manifests/site
     targetPath: /tmp/default
-users:
-  az-target-cluster-admin: {}
 ```

@@ -1,0 +1,4 @@
+resources:
+  - phases.yaml
+  - executors.yaml
+  - cluster-map.yaml

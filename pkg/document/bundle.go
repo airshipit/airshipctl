@@ -70,8 +70,8 @@ var pluginPathLock = &sync.Mutex{}
 // instead of inplace, useful, when you don't know if bundle will be needed or not, see phase for detail
 type BundleFactoryFunc func() (Bundle, error)
 
-// NewBundleByPath helper function that returns new document.Bundle interface based on clusterType and
-// phase, example: helpers.NewBunde(airConfig, "ephemeral", "initinfra")
+// NewBundleByPath is a function which builds new document.Bundle from kustomize rootPath using default FS object
+// example: document.NewBundleByPath("path/to/phase-root")
 func NewBundleByPath(rootPath string) (Bundle, error) {
 	return NewBundle(NewDocumentFs(), rootPath)
 }

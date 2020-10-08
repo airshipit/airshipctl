@@ -337,50 +337,6 @@ func TestCurrentPhaseRepositoryDir(t *testing.T) {
 	assert.Equal(t, "", phaseRepoDir)
 }
 
-func TestCurrentContextEntryPoint(t *testing.T) {
-	conf, cleanup := testutil.InitConfig(t)
-	defer cleanup(t)
-
-	entryPoint, err := conf.CurrentContextEntryPoint(defaultString)
-	require.Error(t, err)
-	assert.Equal(t, "", entryPoint)
-
-	conf.CurrentContext = currentContextName
-	conf.Contexts[currentContextName].Manifest = defaultString
-
-	entryPoint, err = conf.CurrentContextEntryPoint(defaultString)
-	assert.Equal(t, config.ErrMissingPhaseDocument{PhaseName: defaultString}, err)
-	assert.Nil(t, nil, entryPoint)
-}
-
-func TestCurrentContextClusterType(t *testing.T) {
-	conf, cleanup := testutil.InitConfig(t)
-	defer cleanup(t)
-
-	expectedClusterType := "ephemeral"
-
-	conf.CurrentContext = currentContextName
-	conf.Contexts[currentContextName].Manifest = defaultString
-
-	actualClusterType, err := conf.CurrentContextClusterType()
-	require.NoError(t, err)
-	assert.Equal(t, expectedClusterType, actualClusterType)
-}
-
-func TestCurrentContextClusterName(t *testing.T) {
-	conf, cleanup := testutil.InitConfig(t)
-	defer cleanup(t)
-
-	expectedClusterName := "def"
-
-	conf.CurrentContext = currentContextName
-	conf.Contexts[currentContextName].Manifest = defaultString
-
-	actualClusterName, err := conf.CurrentContextClusterName()
-	require.NoError(t, err)
-	assert.Equal(t, expectedClusterName, actualClusterName)
-}
-
 func TestCurrentContextManifestMetadata(t *testing.T) {
 	expectedMeta := &config.Metadata{
 		Inventory: &config.InventoryMeta{
@@ -465,49 +421,6 @@ func TestCurrentContextManifestMetadata(t *testing.T) {
 				require.NotNil(t, meta)
 				assert.Equal(t, expectedMeta, meta)
 			}
-		})
-	}
-}
-
-func TestNewClusterComplexNameFromKubeClusterName(t *testing.T) {
-	tests := []struct {
-		name         string
-		inputName    string
-		expectedName string
-		expectedType string
-	}{
-		{
-			name:         "single-word",
-			inputName:    "myCluster",
-			expectedName: "myCluster",
-			expectedType: config.AirshipDefaultClusterType,
-		},
-		{
-			name:         "multi-word",
-			inputName:    "myCluster_two",
-			expectedName: "myCluster_two",
-			expectedType: config.AirshipDefaultClusterType,
-		},
-		{
-			name:         "cluster-appended",
-			inputName:    "myCluster_ephemeral",
-			expectedName: "myCluster",
-			expectedType: config.Ephemeral,
-		},
-		{
-			name:         "multi-word-cluster-appended",
-			inputName:    "myCluster_two_ephemeral",
-			expectedName: "myCluster_two",
-			expectedType: config.Ephemeral,
-		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			complexName := config.NewClusterComplexNameFromKubeClusterName(tt.inputName)
-			assert.Equal(t, tt.expectedName, complexName.Name)
-			assert.Equal(t, tt.expectedType, complexName.Type)
 		})
 	}
 }

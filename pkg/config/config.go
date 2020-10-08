@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"sort"
 
@@ -285,7 +284,6 @@ func (c *Config) AddContext(theContext *ContextOptions) *Context {
 	// Ok , I have initialized structs for the Context information
 	// We can use Modify to populate the correct information
 	c.ModifyContext(nContext, theContext)
-	nContext.ClusterType()
 	return nContext
 }
 
@@ -304,9 +302,6 @@ func (c *Config) ModifyContext(context *Context, theContext *ContextOptions) {
 
 // GetCurrentContext methods Returns the appropriate information for the current context
 // Current Context holds labels for the appropriate config objects
-//      ClusterType is the name of the clustertype for this context, it should be a flag we pass to it??
-//      Manifest is the default manifest to be use with this context
-// Purpose for this method is simplifying the current context information
 func (c *Config) GetCurrentContext() (*Context, error) {
 	currentContext, err := c.GetContext(c.CurrentContext)
 	if err != nil {
@@ -324,29 +319,6 @@ func (c *Config) CurrentContextManifest() (*Manifest, error) {
 	}
 
 	return c.Manifests[currentContext.Manifest], nil
-}
-
-// CurrentContextEntryPoint returns path to build bundle based on clusterType and phase
-// example CurrentContextEntryPoint("ephemeral", "initinfra")
-func (c *Config) CurrentContextEntryPoint(phase string) (string, error) {
-	clusterType, err := c.CurrentContextClusterType()
-	if err != nil {
-		return "", err
-	}
-
-	ccm, err := c.CurrentContextManifest()
-	if err != nil {
-		return "", err
-	}
-	_, exists := ccm.Repositories[ccm.PhaseRepositoryName]
-	if !exists {
-		return "", ErrMissingPhaseRepo{}
-	}
-	epp := path.Join(ccm.TargetPath, ccm.SubPath, clusterType, phase)
-	if _, err := os.Stat(epp); err != nil {
-		return "", ErrMissingPhaseDocument{PhaseName: phase}
-	}
-	return epp, nil
 }
 
 // CurrentContextTargetPath returns target path from current context's manifest
@@ -370,24 +342,6 @@ func (c *Config) CurrentContextPhaseRepositoryDir() (string, error) {
 		return "", ErrMissingRepositoryName{}
 	}
 	return util.GitDirNameFromURL(repo.URL()), nil
-}
-
-// CurrentContextClusterType returns cluster type of current context
-func (c *Config) CurrentContextClusterType() (string, error) {
-	context, err := c.GetCurrentContext()
-	if err != nil {
-		return "", err
-	}
-	return context.ClusterType(), nil
-}
-
-// CurrentContextClusterName returns cluster name of current context
-func (c *Config) CurrentContextClusterName() (string, error) {
-	context, err := c.GetCurrentContext()
-	if err != nil {
-		return "", err
-	}
-	return context.ClusterName(), nil
 }
 
 // GetManifests returns all of the Manifests associated with the Config sorted by name

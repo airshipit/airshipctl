@@ -63,7 +63,7 @@ func NewGetContextCommand(cfgFactory config.Factory) *cobra.Command {
 					fmt.Fprintln(cmd.OutOrStdout(), "No Contexts found in the configuration.")
 				}
 				for _, context := range contexts {
-					fmt.Fprintln(cmd.OutOrStdout(), context.PrettyString())
+					fmt.Fprintln(cmd.OutOrStdout(), context.String())
 				}
 				return nil
 			}
@@ -76,7 +76,7 @@ func NewGetContextCommand(cfgFactory config.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			fmt.Fprintln(cmd.OutOrStdout(), context.PrettyString())
+			fmt.Fprintln(cmd.OutOrStdout(), context.String())
 			return nil
 		},
 	}

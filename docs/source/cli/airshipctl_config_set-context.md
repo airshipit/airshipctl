@@ -30,7 +30,6 @@ airshipctl config set-context \
 ### Options
 
 ```
-      --cluster-type string        set the cluster-type for the specified context
       --current                    update the current context
       --encryption-config string   set the encryption config for the specified context
   -h, --help                       help for set-context

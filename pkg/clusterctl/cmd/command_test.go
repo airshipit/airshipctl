@@ -48,6 +48,7 @@ func TestNewCommand(t *testing.T) {
 					TargetPath:          "testdata",
 					SubPath:             "valid",
 					PhaseRepositoryName: "primary",
+					MetadataPath:        "metadata.yaml",
 					Repositories: map[string]*config.Repository{
 						"primary": {},
 					},

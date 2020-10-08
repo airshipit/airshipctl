@@ -23,7 +23,6 @@ import (
 // ContextOptions holds all configurable options for context
 type ContextOptions struct {
 	Name                    string
-	ClusterType             string
 	CurrentContext          bool
 	Manifest                string
 	Current                 bool

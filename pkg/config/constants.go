@@ -16,23 +16,13 @@ package config
 
 import "opendev.org/airship/airshipctl/pkg/remote/redfish"
 
-// Constants related to the ClusterType type
-const (
-	Ephemeral                   = "ephemeral"
-	Target                      = "target"
-	AirshipClusterNameSeparator = "_"
-	AirshipDefaultClusterType   = Target
-)
-
 // Constants related to Phases
 const (
+	Ephemeral       = "ephemeral"
 	InitinfraPhase  = "initinfra"
 	ClusterctlPhase = InitinfraPhase
 	BootstrapPhase  = "bootstrap"
 )
-
-// AllClusterTypes holds cluster types
-var AllClusterTypes = [2]string{Ephemeral, Target}
 
 // Constants defining default values
 const (
@@ -50,8 +40,6 @@ const (
 	AirshipDefaultManifest                = "default"
 	AirshipDefaultManifestRepo            = "treasuremap"
 	AirshipDefaultManifestRepoLocation    = "https://opendev.org/airship/" + AirshipDefaultManifestRepo
-	AirshipKubeConfig                     = "kubeconfig"
-	AirshipKubeConfigEnv                  = "AIRSHIP_KUBECONFIG"
 	AirshipPluginPath                     = "kustomize-plugins"
 	AirshipPluginPathEnv                  = "AIRSHIP_KUSTOMIZE_PLUGINS"
 

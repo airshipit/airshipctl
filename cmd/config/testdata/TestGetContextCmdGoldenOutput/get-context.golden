@@ -1,6 +1,4 @@
-Context: ContextFoo
 contextKubeconf: ContextFoo_ephemeral
 managementConfiguration: ""
 manifest: Manifest_ContextFoo
-
 

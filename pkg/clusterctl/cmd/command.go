@@ -20,6 +20,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/log"
+	"opendev.org/airship/airshipctl/pkg/phase"
 )
 
 // Command adds a layer to clusterctl interface with airshipctl context
@@ -89,11 +90,11 @@ func clusterctlOptions(bundle document.Bundle) (*airshipv1.Clusterctl, error) {
 }
 
 func getBundle(conf *config.Config) (document.Bundle, error) {
-	path, err := conf.CurrentContextEntryPoint(config.ClusterctlPhase)
+	helper, err := phase.NewHelper(conf)
 	if err != nil {
 		return nil, err
 	}
-	return document.NewBundleByPath(path)
+	return document.NewBundleByPath(helper.PhaseRoot())
 }
 
 // Move runs clusterctl move

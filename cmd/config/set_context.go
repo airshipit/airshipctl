@@ -98,12 +98,6 @@ func addSetContextFlags(o *config.ContextOptions, cmd *cobra.Command) {
 		"",
 		"set the encryption config for the specified context")
 
-	flags.StringVar(
-		&o.ClusterType,
-		"cluster-type",
-		"",
-		"set the cluster-type for the specified context")
-
 	flags.BoolVar(
 		&o.Current,
 		"current",

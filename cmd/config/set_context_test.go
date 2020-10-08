@@ -81,7 +81,6 @@ func TestSetContext(t *testing.T) {
 			testName:    "set-context",
 			contextName: "dummycontext",
 			flags: []string{
-				"--cluster-type=target",
 				"--manifest=" + defaultManifest,
 				"--encryption-config=" + testEncryptionConfig,
 			},

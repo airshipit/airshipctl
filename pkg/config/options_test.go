@@ -50,14 +50,6 @@ func TestContextOptionsValidate(t *testing.T) {
 			},
 			expectError: false,
 		},
-		{
-			name: "ValidClusterType",
-			testOptions: config.ContextOptions{
-				Name:        "testContext",
-				ClusterType: "target",
-			},
-			expectError: false,
-		},
 	}
 
 	for _, tt := range tests {

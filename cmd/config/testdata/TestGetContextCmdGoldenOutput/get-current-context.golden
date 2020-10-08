@@ -1,6 +1,4 @@
-Context: ContextBaz
 contextKubeconf: ContextBaz_ephemeral
 managementConfiguration: ""
 manifest: Manifest_ContextBaz
-
 

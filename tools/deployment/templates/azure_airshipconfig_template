@@ -1,11 +1,4 @@
 apiVersion: airshipit.org/v1alpha1
-clusters:
-  kind-capi-azure:
-    clusterType:
-      target:
-        bootstrapInfo: default
-        clusterKubeconf: kind-capi-azure_target
-        managementConfiguration: default
 contexts:
   kind-capi-azure:
     contextKubeconf: kind-capi-azure_target
