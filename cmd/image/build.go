@@ -17,19 +17,23 @@ package image
 import (
 	"github.com/spf13/cobra"
 
-	"opendev.org/airship/airshipctl/pkg/bootstrap/isogen"
 	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/phase"
 )
 
 // NewImageBuildCommand creates a new command with the capability to build an ISO image.
 func NewImageBuildCommand(cfgFactory config.Factory) *cobra.Command {
 	var progress bool
-
 	cmd := &cobra.Command{
 		Use:   "build",
 		Short: "Build ISO image",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return isogen.GenerateBootstrapIso(cfgFactory, progress)
+			p := &phase.RunCommand{
+				Factory: cfgFactory,
+				Options: phase.RunFlags{Progress: progress},
+			}
+			p.Options.PhaseID.Name = config.BootstrapPhase
+			return p.RunE()
 		},
 	}
 

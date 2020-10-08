@@ -34,7 +34,8 @@ type Executor interface {
 
 // RunOptions holds options for run method
 type RunOptions struct {
-	DryRun bool
+	DryRun   bool
+	Progress bool
 
 	Timeout time.Duration
 }

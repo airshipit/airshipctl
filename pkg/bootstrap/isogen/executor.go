@@ -121,8 +121,8 @@ func (c *Executor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 		doc:       c.ExecutorDocument,
 		cfg:       c.imgConf,
 		debug:     log.DebugEnabled(),
-		progress:  false,
-		writer:    nil,
+		progress:  opts.Progress,
+		writer:    log.Writer(),
 	}
 
 	err := bootstrapOpts.createBootstrapIso()

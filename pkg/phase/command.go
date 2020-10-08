@@ -28,6 +28,7 @@ type RunFlags struct {
 	Timeout    time.Duration
 	PhaseID    ifc.ID
 	Kubeconfig string
+	Progress   bool
 }
 
 // RunCommand phase run command
@@ -55,7 +56,7 @@ func (c *RunCommand) RunE() error {
 	if err != nil {
 		return err
 	}
-	return phase.Run(ifc.RunOptions{DryRun: c.Options.DryRun, Timeout: c.Options.Timeout})
+	return phase.Run(ifc.RunOptions{DryRun: c.Options.DryRun, Timeout: c.Options.Timeout, Progress: c.Options.Progress})
 }
 
 // PlanCommand plan command

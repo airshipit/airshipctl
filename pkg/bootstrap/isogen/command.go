@@ -16,7 +16,6 @@ package isogen
 
 import (
 	"bufio"
-	"context"
 	"fmt"
 	"io"
 	"os"
@@ -63,69 +62,6 @@ type BootstrapIsoOptions struct {
 	debug    bool
 	progress bool
 	writer   io.Writer
-}
-
-// GenerateBootstrapIso will generate data for cloud init and start ISO builder container
-// TODO (vkuzmin): Remove this public function and move another functions
-// to the executor module when the phases will be ready
-func GenerateBootstrapIso(cfgFactory config.Factory, progress bool) error {
-	ctx := context.Background()
-
-	globalConf, err := cfgFactory()
-	if err != nil {
-		return err
-	}
-
-	root, err := globalConf.CurrentContextEntryPoint(config.BootstrapPhase)
-	if err != nil {
-		return err
-	}
-	docBundle, err := document.NewBundleByPath(root)
-	if err != nil {
-		return err
-	}
-
-	imageConfiguration := &v1alpha1.ImageConfiguration{}
-	selector, err := document.NewSelector().ByObject(imageConfiguration, v1alpha1.Scheme)
-	if err != nil {
-		return err
-	}
-	doc, err := docBundle.SelectOne(selector)
-	if err != nil {
-		return err
-	}
-
-	err = doc.ToAPIObject(imageConfiguration, v1alpha1.Scheme)
-	if err != nil {
-		return err
-	}
-	if err = verifyInputs(imageConfiguration); err != nil {
-		return err
-	}
-
-	log.Print("Creating ISO builder container")
-	builder, err := container.NewContainer(
-		&ctx, imageConfiguration.Container.ContainerRuntime,
-		imageConfiguration.Container.Image)
-	if err != nil {
-		return err
-	}
-
-	bootstrapIsoOptions := BootstrapIsoOptions{
-		docBundle: docBundle,
-		builder:   builder,
-		doc:       doc,
-		cfg:       imageConfiguration,
-		debug:     log.DebugEnabled(),
-		progress:  progress,
-		writer:    log.Writer(),
-	}
-	err = bootstrapIsoOptions.createBootstrapIso()
-	if err != nil {
-		return err
-	}
-	log.Print("Checking artifacts")
-	return verifyArtifacts(imageConfiguration)
 }
 
 func verifyInputs(cfg *v1alpha1.ImageConfiguration) error {
@@ -227,7 +163,7 @@ func (opts BootstrapIsoOptions) createBootstrapIso() error {
 			case opts.debug:
 				log.Print("start reading container logs")
 				// either container log output or progress bar will be shown
-				if _, err = io.Copy(log.Writer(), cLogs); err != nil {
+				if _, err = io.Copy(opts.writer, cLogs); err != nil {
 					log.Debugf("failed to write container logs to log output %s", err)
 				}
 				log.Print("got EOF from container logs")
