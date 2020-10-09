@@ -1,0 +1,3 @@
+[
+  { "op": "replace","path": "/spec/apiServerLoadBalancerFloatingIP","value": "172.24.4.120" }
+]

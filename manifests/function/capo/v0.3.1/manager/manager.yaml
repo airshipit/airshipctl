@@ -1,0 +1,45 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller-manager
+  namespace: system
+  labels:
+    control-plane: capo-controller-manager
+spec:
+  selector:
+    matchLabels:
+      control-plane: capo-controller-manager
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        control-plane: capo-controller-manager
+      annotations:
+        prometheus.io/scrape: 'true'
+    spec:
+      containers:
+      - args:
+        - --enable-leader-election
+        image: controller:latest
+        imagePullPolicy: IfNotPresent
+        name: manager
+        ports:
+        - containerPort: 9440
+          name: healthz
+          protocol: TCP
+        - containerPort: 8080
+          name: metrics
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: healthz
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: healthz
+      terminationGracePeriodSeconds: 10
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master

@@ -1,0 +1,3 @@
+[
+  { "op": "replace","path": "/spec/dnsNameservers/0","value": "8.8.8.8" }
+]

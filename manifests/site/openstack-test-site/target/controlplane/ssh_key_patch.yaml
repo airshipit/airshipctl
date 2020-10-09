@@ -1,0 +1,11 @@
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+kind: KubeadmControlPlane
+metadata:
+  name: ostgt-control-plane
+  namespace: default
+spec:
+  kubeadmConfigSpec:
+    users:
+    - name: capo
+      sshAuthorizedKeys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC5CeROtz81ZJ/2wCUBnK0X67dL01s5KgOQhqlvn2PG1onGoEwKuwVgnUH3CtGJj1wjq4GqWduBoLvPrSt6qGL/tX8ZiVp2XS8SkDcxo69zo4QMoBdjTwfXwASalcEjQr7nRW8eMlgeI8+bRkhDuCBQLTYHoe6jQh/sWKhj25cgeAkU8eqe+bB9C8d7C/DeWBN6AJaBGjX7F2Azm8Fg6ArtxabuEDw3DYvdm+Y4GvLDfJ3MQR/S2etk8lwWaxlDWIfTwVeCDlG098rRRKKtiaF9LFq08+wEPPEBsyX1q9aNNfdcoCZnuSoWZ5ceBMxZSobA3vBy2jHUGz+slR4ADM7P stack@devstack-magnum

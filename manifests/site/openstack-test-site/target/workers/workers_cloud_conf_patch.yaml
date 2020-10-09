@@ -1,0 +1,19 @@
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+kind: KubeadmConfigTemplate
+metadata:
+  name: ostgt-md-0
+  namespace: default
+spec:
+  template:
+    spec:
+      files:
+      - content: W0dsb2JhbF0KYXV0aC11cmw9aHR0cDovLzEwLjAuMS40L2lkZW50aXR5CnVzZXJuYW1lPSJkZW1vIgpwYXNzd29yZD0icGFzcyIKdGVuYW50LWlkPSIyMThkMWNiYzMyOWM0YWUzYWNjODhjYTU5NTAwMTUwMSIKZG9tYWluLW5hbWU9IkRlZmF1bHQiCnJlZ2lvbj0iUmVnaW9uT25lIgo=
+        encoding: base64
+        owner: root
+        path: /etc/kubernetes/cloud.conf
+        permissions: "0600"
+      - content: Cg==
+        encoding: base64
+        owner: root
+        path: /etc/certs/cacert
+        permissions: "0600"

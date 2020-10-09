@@ -1,0 +1,9 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: OpenStackMachineTemplate
+metadata:
+  name: ostgt-control-plane
+  namespace: default
+spec:
+  template:
+    spec:
+      flavor: ds4G

@@ -33,6 +33,7 @@ Welcome to airshipctl's Documentation!
    hardware_profile
    Commands <cli/airshipctl>
    providers/cluster_api_docker
+   providers/cluster_api_openstack
 
 .. toctree::
    :caption: Airship Project Documentation
