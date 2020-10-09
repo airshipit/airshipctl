@@ -40,6 +40,21 @@ PROXY               ?= http://proxy.foo.com:8000
 NO_PROXY            ?= localhost,127.0.0.1,.svc.cluster.local
 USE_PROXY           ?= false
 
+# docker build flags
+DOCKER_CMD_FLAGS    := --network=host
+DOCKER_CMD_FLAGS    += --force-rm=$(DOCKER_FORCE_CLEAN)
+
+DOCKER_PROXY_FLAGS  := --build-arg http_proxy=$(PROXY)
+DOCKER_PROXY_FLAGS  += --build-arg https_proxy=$(PROXY)
+DOCKER_PROXY_FLAGS  += --build-arg HTTP_PROXY=$(PROXY)
+DOCKER_PROXY_FLAGS  += --build-arg HTTPS_PROXY=$(PROXY)
+DOCKER_PROXY_FLAGS  += --build-arg no_proxy=$(NO_PROXY)
+DOCKER_PROXY_FLAGS  += --build-arg NO_PROXY=$(NO_PROXY)
+
+ifeq ($(USE_PROXY), true)
+DOCKER_CMD_FLAGS += $(DOCKER_PROXY_FLAGS)
+endif
+
 # Godoc server options
 GD_PORT             ?= 8080
 
@@ -51,6 +66,15 @@ UNAME               != uname
 export KIND_URL     ?= https://kind.sigs.k8s.io/dl/v0.8.1/kind-$(UNAME)-amd64
 KUBECTL_VERSION     ?= v1.18.6
 export KUBECTL_URL  ?= https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
+
+# Plugins options
+PLUGINS_DIR         := krm-functions
+PLUGINS             := $(subst $(PLUGINS_DIR)/,,$(wildcard $(PLUGINS_DIR)/*))
+PLUGINS_IMAGE_TGT   := $(foreach tgt,$(PLUGINS),docker-image-$(tgt))
+PLUGINS_BASE_IMAGE  ?= alpine:3.12.0
+
+$(PLUGINS):
+	 @CGO_ENABLED=0 go build -o $(BINDIR)/$@ $(GO_FLAGS) ./$(PLUGINS_DIR)/$@/
 
 .PHONY: depend
 depend:
@@ -106,32 +130,30 @@ golint:
 
 .PHONY: images
 images: docker-image
+images: $(PLUGINS_IMAGE_TGT)
 
 .PHONY: docker-image
 docker-image:
-ifeq ($(USE_PROXY), true)
-	@docker build . --network=host \
-		--build-arg http_proxy=$(PROXY) \
-		--build-arg https_proxy=$(PROXY) \
-		--build-arg HTTP_PROXY=$(PROXY) \
-		--build-arg HTTPS_PROXY=$(PROXY) \
-		--build-arg no_proxy=$(NO_PROXY) \
-		--build-arg NO_PROXY=$(NO_PROXY) \
-	    --build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET) \
-	    --tag $(DOCKER_IMAGE) \
-	    --target $(DOCKER_TARGET_STAGE) \
-	    --force-rm=$(DOCKER_FORCE_CLEAN)
-else
-	@docker build . --network=host \
-	    --build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET) \
-	    --tag $(DOCKER_IMAGE) \
-	    --target $(DOCKER_TARGET_STAGE) \
-	    --force-rm=$(DOCKER_FORCE_CLEAN)
-endif
+	@docker build . $(DOCKER_CMD_FLAGS) \
+		--target $(DOCKER_TARGET_STAGE) \
+		--build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET) \
+		--tag $(DOCKER_IMAGE)
 ifeq ($(PUBLISH), true)
 	@docker push $(DOCKER_IMAGE)
 endif
 
+.PHONY: $(PLUGINS_IMAGE_TGT)
+$(PLUGINS_IMAGE_TGT):
+	$(eval plugin_name=$(subst docker-image-,,$@))
+	@docker build . $(DOCKER_CMD_FLAGS) \
+		--target $(DOCKER_TARGET_STAGE) \
+		--build-arg MAKE_TARGET=$(plugin_name) \
+		--build-arg BINARY=$(plugin_name) \
+		--build-arg RELEASE_IMAGE=$(PLUGINS_BASE_IMAGE) \
+		--tag $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/$(plugin_name):$(DOCKER_IMAGE_TAG)
+ifeq ($(PUBLISH), true)
+	@docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/$(plugin_name):$(DOCKER_IMAGE_TAG)
+endif
 
 .PHONY: print-docker-image-tag
 print-docker-image-tag:

@@ -4,31 +4,35 @@ apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
   name: m3-host-replacements
+  annotations:
+    config.kubernetes.io/function: |-
+      container:
+        image: quay.io/airshipit/replacement-transformer:dev
 replacements:
 - source:
     objref:
       name: host-catalogue
-    fieldref: hosts.m3
+    fieldref: "{.hosts.m3}"
   target:
     objref:
       kind: Templater
       name: m3-host-template
-    fieldrefs: [values.hosts]
+    fieldrefs: ["{.values.hosts}"]
 - source:
     objref:
       name: host-generation-catalogue
-    fieldref: hosts.m3
+    fieldref: "{.hosts.m3}"
   target:
     objref:
       kind: Templater
       name: m3-host-template
-    fieldrefs: [values.hostsToGenerate]
+    fieldrefs: ["{.values.hostsToGenerate}"]
 - source:
     objref:
       name: common-networking-catalogue
-    fieldref: commonNetworking
+    fieldref: "{.commonNetworking}"
   target:
     objref:
       kind: Templater
       name: m3-host-template
-    fieldrefs: [values.commonNetworking]
+    fieldrefs: ["{.values.commonNetworking}"]
