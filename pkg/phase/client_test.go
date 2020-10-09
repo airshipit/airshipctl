@@ -174,6 +174,7 @@ func TestDocumentRoot(t *testing.T) {
 		expectedRoot string
 		phaseID      ifc.ID
 		expectedErr  error
+		metadataPath string
 	}{
 		{
 			name:         "Success entrypoint exists",
@@ -185,11 +186,20 @@ func TestDocumentRoot(t *testing.T) {
 			phaseID:     ifc.ID{Name: "some_phase"},
 			expectedErr: phase.ErrDocumentEntrypointNotDefined{PhaseName: "some_phase"},
 		},
+		{
+			name:         "Success entrypoint with doc prefix path",
+			expectedRoot: "testdata/valid_site_with_doc_prefix/phases/entrypoint",
+			phaseID:      ifc.ID{Name: "sample"},
+			metadataPath: "valid_site_with_doc_prefix/metadata.yaml",
+		},
 	}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			cfg := testConfig(t)
+			if tt.metadataPath != "" {
+				cfg.Manifests["dummy_manifest"].MetadataPath = tt.metadataPath
+			}
 			helper, err := phase.NewHelper(cfg)
 			require.NoError(t, err)
 			require.NotNil(t, helper)

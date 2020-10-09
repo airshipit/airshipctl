@@ -50,10 +50,23 @@ type InventoryMeta struct {
 	Path string `json:"path,omitempty"`
 }
 
-// PhaseMeta holds phase metadata, right now it is only path, but maybe extended further
-// path is a kustomize entrypoint against which we will build bundle with phase objects
+// PhaseMeta holds phase metadata
 type PhaseMeta struct {
+	// path is a kustomize entrypoint against which we will build bundle with phase objects
 	Path string `json:"path,omitempty"`
+	// docEntryPointPrefix is the path prefix for documentEntryPoint field in the phase config
+	// If it is defined in the manifest metadata then it will be prepended
+	// to the documentEntryPoint defined in the phase itself. So in this case the full path will be
+	// targetPath + phaseRepoDir + docEntryPointPrefix + documentEntryPoint
+	// E.g. let
+	// targetPath (defined in airship config file) be /tmp
+	// phaseRepoDir (this is the last part of the repo url given in the airship config file) be reponame
+	// docEntryPointPrefix (defined in metadata) be foo/bar and
+	// documentEntryPoint (defined in a phase) be baz/xyz
+	// then the full path to the document bundle will be /tmp/reponame/foo/bar/baz/xyz
+	// If docEntryPointPrefix is empty or not given at all, then the full path will be
+	// targetPath + phaseRepoDir + documentEntryPoint (in our case /tmp/reponame/baz/xyz)
+	DocEntryPointPrefix string `json:"docEntryPointPrefix,omitempty"`
 }
 
 // Manifest functions

@@ -1,2 +1,3 @@
 phase:
   path: manifests/phases
+  docEntryPointPrefix: manifests/site/test-site

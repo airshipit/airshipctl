@@ -207,6 +207,13 @@ func (helper *Helper) PhaseRepoDir() string {
 	return helper.phaseRepoDir
 }
 
+// DocEntryPointPrefix returns the prefix which if not empty is prepended to the
+// DocumentEntryPoint field in the phase struct
+// so the full entry point is DocEntryPointPrefix + DocumentEntryPoint
+func (helper *Helper) DocEntryPointPrefix() string {
+	return helper.metadata.PhaseMeta.DocEntryPointPrefix
+}
+
 // PhaseRoot returns path to document root with phase documents
 func (helper *Helper) PhaseRoot() string {
 	return helper.phaseRoot
