@@ -29,27 +29,26 @@ import (
 
 // DummyConfig used by tests, to initialize min set of data
 func DummyConfig() *config.Config {
-	conf := &config.Config{
-		Kind:       config.AirshipConfigKind,
-		APIVersion: config.AirshipConfigAPIVersion,
-		Permissions: config.Permissions{
-			DirectoryPermission: config.AirshipDefaultDirectoryPermission,
-			FilePermission:      config.AirshipDefaultFilePermission,
-		},
-		Contexts: map[string]*config.Context{
-			"dummy_context": DummyContext(),
-		},
-		Manifests: map[string]*config.Manifest{
-			"dummy_manifest": DummyManifest(),
-		},
-		ManagementConfiguration: map[string]*config.ManagementConfiguration{
-			"dummy_management_config": DummyManagementConfiguration(),
-		},
-		EncryptionConfigs: map[string]*config.EncryptionConfig{
-			"dummy_encryption_config": DummyEncryptionConfig(),
-		},
-		CurrentContext: "dummy_context",
+	conf := config.NewConfig()
+	conf.Kind = config.AirshipConfigKind
+	conf.APIVersion = config.AirshipConfigAPIVersion
+	conf.Permissions = config.Permissions{
+		DirectoryPermission: config.AirshipDefaultDirectoryPermission,
+		FilePermission:      config.AirshipDefaultFilePermission,
 	}
+	conf.Contexts = map[string]*config.Context{
+		"dummy_context": DummyContext(),
+	}
+	conf.Manifests = map[string]*config.Manifest{
+		"dummy_manifest": DummyManifest(),
+	}
+	conf.ManagementConfiguration = map[string]*config.ManagementConfiguration{
+		"dummy_management_config": DummyManagementConfiguration(),
+	}
+	conf.EncryptionConfigs = map[string]*config.EncryptionConfig{
+		"dummy_encryption_config": DummyEncryptionConfig(),
+	}
+	conf.CurrentContext = "dummy_context"
 	return conf
 }
 

@@ -16,13 +16,13 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
 
 	"sigs.k8s.io/yaml"
 
+	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/util"
 )
@@ -62,6 +62,7 @@ type Config struct {
 	// file from which this config was loaded
 	// +not persisted in file
 	loadedConfigPath string
+	fileSystem       fs.FileSystem
 }
 
 // Permissions has the permissions for file and directory
@@ -125,11 +126,12 @@ func (c *Config) initConfigPath(airshipConfigPath string) {
 func (c *Config) LoadConfig() error {
 	// If I can read from the file, load from it
 	// throw an error otherwise
-	if _, err := os.Stat(c.loadedConfigPath); err != nil {
+	data, err := c.fileSystem.ReadFile(c.loadedConfigPath)
+	if err != nil {
 		return err
 	}
 
-	return util.ReadYAMLFile(c.loadedConfigPath, c)
+	return yaml.Unmarshal(data, c)
 }
 
 // EnsureComplete verifies that a Config object is ready to use.
@@ -189,26 +191,26 @@ func (c *Config) PersistConfig(overwrite bool) error {
 	}
 
 	// WriteFile doesn't create the directory, create it if needed
-	configDir := filepath.Dir(c.loadedConfigPath)
-	err = os.MkdirAll(configDir, os.FileMode(c.Permissions.DirectoryPermission))
-	if err != nil {
-		return err
-	}
-
-	// Write the Airship Config file
-	err = ioutil.WriteFile(c.loadedConfigPath, airshipConfigYaml, os.FileMode(c.Permissions.FilePermission))
+	dir := c.fileSystem.Dir(c.loadedConfigPath)
+	err = c.fileSystem.MkdirAll(dir)
 	if err != nil {
 		return err
 	}
 
 	// Change the permission of directory
-	err = os.Chmod(configDir, os.FileMode(c.Permissions.DirectoryPermission))
+	err = c.fileSystem.Chmod(dir, os.FileMode(c.Permissions.DirectoryPermission))
+	if err != nil {
+		return err
+	}
+
+	// Write the Airship Config file
+	err = c.fileSystem.WriteFile(c.loadedConfigPath, airshipConfigYaml)
 	if err != nil {
 		return err
 	}
 
 	// Change the permission of config file
-	err = os.Chmod(c.loadedConfigPath, os.FileMode(c.Permissions.FilePermission))
+	err = c.fileSystem.Chmod(c.loadedConfigPath, os.FileMode(c.Permissions.FilePermission))
 	if err != nil {
 		return err
 	}
@@ -551,7 +553,7 @@ func (c *Config) CurrentContextManagementConfig() (*ManagementConfiguration, err
 
 // Purge removes the config file
 func (c *Config) Purge() error {
-	return os.Remove(c.loadedConfigPath)
+	return c.fileSystem.RemoveAll(c.loadedConfigPath)
 }
 
 // CurrentContextManifestMetadata gets manifest metadata
@@ -569,7 +571,13 @@ func (c *Config) CurrentContextManifestMetadata() (*Metadata, error) {
 		Inventory: &InventoryMeta{},
 		PhaseMeta: &PhaseMeta{},
 	}
-	err = util.ReadYAMLFile(filepath.Join(manifest.TargetPath, phaseRepoDir, manifest.MetadataPath), meta)
+
+	data, err := c.fileSystem.ReadFile(filepath.Join(manifest.TargetPath, phaseRepoDir, manifest.MetadataPath))
+	if err != nil {
+		return nil, err
+	}
+
+	err = yaml.Unmarshal(data, meta)
 	if err != nil {
 		return nil, err
 	}
