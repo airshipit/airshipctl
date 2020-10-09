@@ -27,6 +27,10 @@ template: |
   {{- range .hostsToGenerate }}
   {{- $hostName := . }}
   {{- $host := index $envAll.hosts $hostName }}
+  {{- /* If no hardwareProfile is defined for a host, use the default */ -}}
+  {{- if not $host.hardwareProfile }}
+  {{- $_ := set $host "hardwareProfile" "default" }}
+  {{- end }}
   {{- $hardwareProfile := index $envAll.hardwareProfiles $host.hardwareProfile }}
   ---
   apiVersion: metal3.io/v1alpha1
