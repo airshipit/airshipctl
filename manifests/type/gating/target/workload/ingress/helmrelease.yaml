@@ -19,14 +19,12 @@ spec:
         nodePorts:
           http: 30000
           https: 30001
-      kind: DaemonSet
-      hostNetwork: "false"
       nodeSelector:
         node-role.kubernetes.io/master: ""
       tolerations:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
   chart:
-    repository: https://kubernetes-charts.storage.googleapis.com
-    name: nginx-ingress
-    version: 1.40.1
+    repository: https://kubernetes.github.io/ingress-nginx
+    name: ingress-nginx
+    version: 3.5.1
