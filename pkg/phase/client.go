@@ -223,20 +223,22 @@ func (c *client) PhaseByID(id ifc.ID) (ifc.Phase, error) {
 	}
 
 	phase := &phase{
-		apiObj:    phaseObj,
-		helper:    c.Helper,
-		processor: c.processorFunc(),
-		registry:  c.registry,
+		apiObj:     phaseObj,
+		helper:     c.Helper,
+		processor:  c.processorFunc(),
+		registry:   c.registry,
+		kubeconfig: c.kubeconfig,
 	}
 	return phase, nil
 }
 
 func (c *client) PhaseByAPIObj(phaseObj *v1alpha1.Phase) (ifc.Phase, error) {
 	phase := &phase{
-		apiObj:    phaseObj,
-		helper:    c.Helper,
-		processor: c.processorFunc(),
-		registry:  c.registry,
+		apiObj:     phaseObj,
+		helper:     c.Helper,
+		processor:  c.processorFunc(),
+		registry:   c.registry,
+		kubeconfig: c.kubeconfig,
 	}
 	return phase, nil
 }
