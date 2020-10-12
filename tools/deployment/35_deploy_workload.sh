@@ -30,7 +30,7 @@ echo "Waiting $TIMEOUT for HelmReleases to become ready."
 kubectl --timeout $TIMEOUT --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT wait hr --for condition=released --all --all-namespaces
 
 echo "Ensure we can reach ingress controller default backend"
-if "404" != "$(curl --head --write-out '%{http_code}' --silent --output /dev/null $TARGET_IP:$TARGET_PORT/should-404)"; then
+if [ "404" != "$(curl --head --write-out '%{http_code}' --silent --output /dev/null $TARGET_IP:$TARGET_PORT/should-404)" ]; then
     echo -e "\nFailed to reach ingress controller default backend."
     exit 1
 fi
