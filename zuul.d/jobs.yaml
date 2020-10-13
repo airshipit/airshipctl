@@ -113,7 +113,6 @@
       site_name: test-site
       gate_scripts:
         - ./tools/deployment/01_install_kubectl.sh
-        - ./tools/deployment/02_install_clusterctl.sh
         # 21_systemwide_executable.sh is run in the build-gate pre-run above
         - ./tools/deployment/22_test_configs.sh
         - ./tools/deployment/23_pull_documents.sh
