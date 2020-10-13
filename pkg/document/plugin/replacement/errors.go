@@ -106,11 +106,12 @@ func (e ErrPatternSubstring) Error() string {
 
 // ErrIndexOutOfBound returned if JSON path points to a wrong index of a list
 type ErrIndexOutOfBound struct {
-	Index int
+	Index  int
+	Length int
 }
 
 func (e ErrIndexOutOfBound) Error() string {
-	return fmt.Sprintf("index %v is out of bound", e.Index)
+	return fmt.Sprintf("array index out of bounds: index %d, length %d", e.Index, e.Length)
 }
 
 // ErrMapNotFound returned if map specified in fieldRef option was not found in a list

@@ -852,7 +852,7 @@ spec:
   containers:
   - name: myapp-container
     image: busybox`,
-			expectedErr: "index 10 is out of bound",
+			expectedErr: "array index out of bounds: index 10, length 1",
 		},
 		{
 			cfg: `
