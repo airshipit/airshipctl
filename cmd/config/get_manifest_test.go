@@ -69,8 +69,8 @@ func TestGetManifestConfigCmd(t *testing.T) {
 
 func getTestManifest(name string) *config.Manifest {
 	manifests := &config.Manifest{
-		PrimaryRepositoryName: name + "_primary_repo",
-		TargetPath:            name + "_target_path",
+		PhaseRepositoryName: name + "_phase_repo",
+		TargetPath:          name + "_target_path",
 	}
 	return manifests
 }

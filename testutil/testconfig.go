@@ -68,7 +68,7 @@ func DummyManifest() *config.Manifest {
 	m := config.NewManifest()
 	// Repositories is the map of repository addressable by a name
 	m.Repositories = map[string]*config.Repository{"primary": DummyRepository()}
-	m.PrimaryRepositoryName = "primary"
+	m.PhaseRepositoryName = "primary"
 	m.TargetPath = "/var/tmp/"
 	m.SubPath = "manifests/site/test-site"
 	return m
@@ -175,7 +175,7 @@ func DummyManifestOptions() *config.ManifestOptions {
 		Name:       "dummy_manifest",
 		SubPath:    "manifests/dummy_site",
 		TargetPath: "/tmp/dummy_site",
-		IsPrimary:  true,
+		IsPhase:    true,
 		RepoName:   "dummy_repo",
 		URL:        "https://github.com/treasuremap/dummy_site",
 		Branch:     "master",

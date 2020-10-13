@@ -446,7 +446,7 @@ currentContext: dummy_cluster
 kind: Config
 manifests:
   dummy_manifest:
-    primaryRepositoryName: primary
+    phaseRepositoryName: primary
     targetPath: testdata
     metadataPath: valid_site/metadata.yaml
     subPath: valid_site`

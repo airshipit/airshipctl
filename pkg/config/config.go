@@ -338,9 +338,9 @@ func (c *Config) CurrentContextEntryPoint(phase string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	_, exists := ccm.Repositories[ccm.PrimaryRepositoryName]
+	_, exists := ccm.Repositories[ccm.PhaseRepositoryName]
 	if !exists {
-		return "", ErrMissingPrimaryRepo{}
+		return "", ErrMissingPhaseRepo{}
 	}
 	epp := path.Join(ccm.TargetPath, ccm.SubPath, clusterType, phase)
 	if _, err := os.Stat(epp); err != nil {
@@ -404,8 +404,8 @@ func (c *Config) AddManifest(theManifest *ManifestOptions) *Manifest {
 
 // ModifyManifest set actual values to manifests
 func (c *Config) ModifyManifest(manifest *Manifest, theManifest *ManifestOptions) error {
-	if theManifest.IsPrimary {
-		manifest.PrimaryRepositoryName = theManifest.RepoName
+	if theManifest.IsPhase {
+		manifest.PhaseRepositoryName = theManifest.RepoName
 	}
 	if theManifest.SubPath != "" {
 		manifest.SubPath = theManifest.SubPath
@@ -420,9 +420,9 @@ func (c *Config) ModifyManifest(manifest *Manifest, theManifest *ManifestOptions
 	if theManifest.RepoName == "" {
 		return nil
 	}
-	//when setting an existing repository as primary, verify whether the repository exists
+	//when setting an existing repository as phase, verify whether the repository exists
 	//and user is also not passing any repository URL
-	if theManifest.IsPrimary && theManifest.URL == "" && (manifest.Repositories[theManifest.RepoName] == nil) {
+	if theManifest.IsPhase && theManifest.URL == "" && (manifest.Repositories[theManifest.RepoName] == nil) {
 		return ErrRepositoryNotFound{theManifest.RepoName}
 	}
 	repository, exists := manifest.Repositories[theManifest.RepoName]

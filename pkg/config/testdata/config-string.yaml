@@ -18,7 +18,7 @@ managementConfiguration:
 manifests:
   dummy_manifest:
     metadataPath: manifests/site/test-site/metadata.yaml
-    primaryRepositoryName: primary
+    phaseRepositoryName: primary
     repositories:
       primary:
         auth:

@@ -93,7 +93,7 @@ func TestSetManifest(t *testing.T) {
 				"--repo " + mRepoName,
 				"--url " + mURL,
 				"--branch " + mBranch,
-				"--primary",
+				"--phase",
 				"--sub-path " + mSubPath,
 				"--target-path " + mTargetPath,
 				"--metadata-path " + mMetadataPath,

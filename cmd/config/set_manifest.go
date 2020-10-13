@@ -34,14 +34,14 @@ airshipctl config set-manifest exampleManifest \
   --repo exampleRepo \
   --url https://github.com/site \
   --branch master \
-  --primary \
+  --phase \
   --sub-path exampleSubpath \
   --target-path exampleTargetpath
 
-# Change the primary repo for manifest
+# Change the phase repo for manifest
 airshipctl config set-manifest e2e \
   --repo exampleRepo \
-  --primary
+  --phase
 
 # Change the sub-path for manifest
 airshipctl config set-manifest e2e \
@@ -130,10 +130,10 @@ func addSetManifestFlags(o *config.ManifestOptions, cmd *cobra.Command) {
 		"if set, enable force checkout in repository with this manifest")
 
 	flags.BoolVar(
-		&o.IsPrimary,
-		"primary",
+		&o.IsPhase,
+		"phase",
 		false,
-		"if set, enable this repository as primary repository to be used with this manifest")
+		"if set, enable this repository as phase repository to be used with this manifest")
 
 	flags.StringVar(
 		&o.SubPath,

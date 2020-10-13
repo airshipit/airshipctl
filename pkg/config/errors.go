@@ -90,7 +90,7 @@ func (e ErrMissingRepositoryName) Error() string {
 }
 
 // ErrMissingRepoURL is returned if repository is empty
-// when using --primary in set-manifest
+// when using --phase in set-manifest
 type ErrMissingRepoURL struct {
 }
 
@@ -171,12 +171,12 @@ func (e ErrMissingManagementConfiguration) Error() string {
 		e.context.NameInKubeconf)
 }
 
-// ErrMissingPrimaryRepo returned when Primary Repository is not set in context manifest
-type ErrMissingPrimaryRepo struct {
+// ErrMissingPhaseRepo returned when Phase Repository is not set in context manifest
+type ErrMissingPhaseRepo struct {
 }
 
-func (e ErrMissingPrimaryRepo) Error() string {
-	return "Current context manifest must have a primary repository set."
+func (e ErrMissingPhaseRepo) Error() string {
+	return "Current context manifest must have a phase repository set."
 }
 
 // ErrMissingPhaseDocument returned when appropriate Phase document was not found in the filesystem

@@ -1,5 +1,5 @@
 metadataPath: ""
-primaryRepositoryName: foo_primary_repo
+phaseRepositoryName: foo_phase_repo
 subPath: ""
 targetPath: foo_target_path
 

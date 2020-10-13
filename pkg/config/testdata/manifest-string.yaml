@@ -1,5 +1,5 @@
 metadataPath: manifests/site/test-site/metadata.yaml
-primaryRepositoryName: primary
+phaseRepositoryName: primary
 repositories:
   primary:
     auth:

@@ -70,8 +70,8 @@ const (
 
 // Default Value for manifest
 const (
-	// DefaultTestPrimaryRepo holds default repo name
-	DefaultTestPrimaryRepo = "primary"
+	// DefaultTestPhaseRepo holds default repo name
+	DefaultTestPhaseRepo = "primary"
 	// DefaultTargetPath holds default target path
 	DefaultTargetPath = "/tmp/default"
 	// DefaultSubPath holds default sub path

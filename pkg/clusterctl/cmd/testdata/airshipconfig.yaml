@@ -7,7 +7,7 @@ currentContext: dummy_cluster
 kind: Config
 manifests:
   dummy_manifest:
-    primaryRepositoryName: primary
+    phaseRepositoryName: primary
     repositories:
       primary:
         auth:

@@ -9,14 +9,14 @@ airshipctl config set-manifest exampleManifest \
   --repo exampleRepo \
   --url https://github.com/site \
   --branch master \
-  --primary \
+  --phase \
   --sub-path exampleSubpath \
   --target-path exampleTargetpath
 
-# Change the primary repo for manifest
+# Change the phase repo for manifest
 airshipctl config set-manifest e2e \
   --repo exampleRepo \
-  --primary
+  --phase
 
 # Change the sub-path for manifest
 airshipctl config set-manifest e2e \
@@ -33,7 +33,7 @@ Flags:
       --force                  if set, enable force checkout in repository with this manifest
   -h, --help                   help for set-manifest
       --metadata-path string   the metadata path to be set for this manifest
-      --primary                if set, enable this repository as primary repository to be used with this manifest
+      --phase                  if set, enable this repository as phase repository to be used with this manifest
       --repo string            the name of the repository to be associated with this manifest
       --sub-path string        the sub path to be set for this manifest
       --tag string             the tag to be associated with repository in this manifest
