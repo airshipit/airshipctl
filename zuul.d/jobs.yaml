@@ -134,7 +134,6 @@
         - airship-gather-runtime-logs
         - airship-airshipctl-gather-configs
         - airship-gather-pod-logs
-    voting: false
 
 - job:
     name: airship-airshipctl-gate-script-runner-azuretest
