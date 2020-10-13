@@ -16,7 +16,6 @@
       set_fact:
         gate_scripts_default:
           - ./tools/deployment/01_install_kubectl.sh
-          - ./tools/deployment/02_install_clusterctl.sh
           - ./tools/deployment/21_systemwide_executable.sh
           - ./tools/deployment/22_test_configs.sh
           - ./tools/deployment/23_pull_documents.sh
