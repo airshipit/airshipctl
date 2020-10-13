@@ -16,9 +16,9 @@ package replacement
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 
-	"sigs.k8s.io/kustomize/api/resource"
 	"sigs.k8s.io/kustomize/api/types"
 )
 
@@ -50,11 +50,11 @@ func (e ErrBadConfiguration) Error() string {
 
 // ErrMultipleResources returned if multiple resources were found
 type ErrMultipleResources struct {
-	ResList []*resource.Resource
+	ObjRef *types.Target
 }
 
 func (e ErrMultipleResources) Error() string {
-	return fmt.Sprintf("found more than one resources matching from %v", e.ResList)
+	return fmt.Sprintf("found more than one resources matching identified by %s", printFields(e.ObjRef))
 }
 
 // ErrSourceNotFound returned if a replacement source resource does not exist in resource map
@@ -63,16 +63,7 @@ type ErrSourceNotFound struct {
 }
 
 func (e ErrSourceNotFound) Error() string {
-	keys := [5]string{"Group:", "Version:", "Kind:", "Name:", "Namespace:"}
-	values := [5]string{e.ObjRef.Group, e.ObjRef.Version, e.ObjRef.Kind, e.ObjRef.Name, e.ObjRef.Namespace}
-
-	var resFilter string
-	for i, key := range keys {
-		if values[i] != "" {
-			resFilter += key + values[i] + " "
-		}
-	}
-	return fmt.Sprintf("failed to find any source resources identified by %s", strings.TrimSpace(resFilter))
+	return fmt.Sprintf("failed to find any source resources identified by %s", printFields(e.ObjRef))
 }
 
 // ErrTargetNotFound returned if a replacement target resource does not exist in the resource map
@@ -81,18 +72,7 @@ type ErrTargetNotFound struct {
 }
 
 func (e ErrTargetNotFound) Error() string {
-	keys := [7]string{"Group:", "Version:", "Kind:", "Name:", "Namespace:",
-		"AnnotationSelector:", "LabelSelector:"}
-	values := [7]string{e.ObjRef.Group, e.ObjRef.Version, e.ObjRef.Kind, e.ObjRef.Name,
-		e.ObjRef.Namespace, e.ObjRef.AnnotationSelector, e.ObjRef.LabelSelector}
-
-	var resFilter string
-	for i, key := range keys {
-		if values[i] != "" {
-			resFilter += key + values[i] + " "
-		}
-	}
-	return fmt.Sprintf("failed to find any target resources identified by %s", strings.TrimSpace(resFilter))
+	return fmt.Sprintf("failed to find any target resources identified by %s", printFields(e.ObjRef))
 }
 
 // ErrPatternSubstring returned in case of issues with sub-string pattern substitution
@@ -114,12 +94,24 @@ func (e ErrIndexOutOfBound) Error() string {
 	return fmt.Sprintf("array index out of bounds: index %d, length %d", e.Index, e.Length)
 }
 
-// ErrMapNotFound returned if map specified in fieldRef option was not found in a list
-type ErrMapNotFound struct {
-	Key, Value, ListKey string
+// ErrValueNotFound returned if value specified in fieldRef option was not found
+type ErrValueNotFound struct {
+	ID string
 }
 
-func (e ErrMapNotFound) Error() string {
-	return fmt.Sprintf("unable to find map key '%s' with the value '%s' in list under '%s' key",
-		e.Key, e.Value, e.ListKey)
+func (e ErrValueNotFound) Error() string {
+	return fmt.Sprintf("unable to find value identified by %s", e.ID)
+}
+
+func printFields(objRef interface{}) string {
+	val := reflect.ValueOf(objRef).Elem()
+	valType := val.Type()
+	var res []string
+	for i := 0; i < val.NumField(); i++ {
+		field := val.Field(i)
+		if field.String() != "" {
+			res = append(res, fmt.Sprintf("%s: %v", valType.Field(i).Name, field.Interface()))
+		}
+	}
+	return strings.Join(res, " ")
 }
