@@ -1,0 +1,48 @@
+apiVersion: cluster.x-k8s.io/v1alpha3
+kind: MachineDeployment
+metadata:
+  name: "gtc-md-0"
+  namespace: default
+spec:
+  clusterName: "gtc"
+  replicas: "${WORKER_MACHINE_COUNT}"
+  selector:
+    matchLabels:
+  template:
+    spec:
+      clusterName: "gtc"
+      failureDomain: "${GCP_REGION}"
+      version: "v1.16.14"
+      bootstrap:
+        configRef:
+          name: "gtc-md-0"
+          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+          kind: KubeadmConfigTemplate
+      infrastructureRef:
+        name: "gtc-md-0"
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+        kind: GCPMachineTemplate
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: GCPMachineTemplate
+metadata:
+  name: "gtc-md-0"
+  namespace: default
+spec:
+  template:
+    spec:
+      instanceType: "${GCP_NODE_MACHINE_TYPE}"
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+kind: KubeadmConfigTemplate
+metadata:
+  name: "gtc-md-0"
+  namespace: default
+spec:
+  template:
+    spec:
+      joinConfiguration:
+        nodeRegistration:
+          name: '{{ ds.meta_data.local_hostname.split(".")[0] }}'
+          kubeletExtraArgs:
+            cloud-provider: gce
