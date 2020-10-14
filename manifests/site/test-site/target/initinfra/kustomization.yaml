@@ -15,4 +15,6 @@ generators:
   - ../../../../function/airshipctl-catalogues
 
 transformers:
+  - ../../../../composite/infra/replacements
   - ../../../../function/baremetal-operator/replacements
+  - ../../../../function/helm-operator/replacements

@@ -45,5 +45,20 @@ images:
       baremetal_operator: quay.io/metal3-io/baremetal-operator:capm3-v0.4.0
       ironic_proxy: alpine/socat
       ironic_inspector_proxy: alpine/socat
+  calico_v3:
+    node: # calico-node DaemonSet
+      upgrade_ipam: calico/cni:v3.15.1
+      install_cni: calico/cni:v3.15.1
+      flexvol_driver: calico/pod2daemon-flexvol:v3.15.1
+      calico_node: calico/node:v3.15.1
+    kube_controllers: # calico-kube-controllers Deployment
+      calico_kube_controllers: calico/kube-controllers:v3.15.1
+  hwcc:
+    manager: # controller-manager Deployment
+      manager: quay.io/hwcc/airship-hcc:v1
+      kube_rbac_proxy: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
+  helm_operator:
+    helm_operator: # helm-operator Deployment
+      helm_operator: docker.io/fluxcd/helm-operator:1.2.0
 
 kubernetes: v1.18.6

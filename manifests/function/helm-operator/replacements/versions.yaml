@@ -1,0 +1,16 @@
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: helm-operator-versions-replacements
+replacements:
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: versions-airshipctl
+    fieldref: images.helm_operator.helm_operator.helm_operator
+  target:
+    objref:
+      kind: Deployment
+      name: helm-operator
+    fieldrefs: ["spec.template.spec.containers[name=helm-operator].image"]
+
