@@ -57,8 +57,6 @@ spec:
           cloud-config: /etc/kubernetes/cloud.conf
           cloud-provider: openstack
         name: '{{ local_hostname }}'
-    postKubeadmCommands:
-    - sudo kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://docs.projectcalico.org/v3.15/manifests/calico.yaml
     ntp:
       servers: []
     users:
