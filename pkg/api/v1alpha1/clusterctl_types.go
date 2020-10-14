@@ -36,7 +36,14 @@ type Clusterctl struct {
 	AdditionalComponentVariables map[string]string `json:"additional-vars,omitempty"`
 	// EnvVars if set to true, allows to source variables for cluster-api components
 	// for environment variables.
-	EnvVars bool `json:"env-vars,omitempty"`
+	EnvVars    bool                 `json:"env-vars,omitempty"`
+	ImageMetas map[string]ImageMeta `json:"images,omitempty"`
+}
+
+// ImageMeta is part of clusterctl config
+type ImageMeta struct {
+	Repository string `json:"repository,omitempty"`
+	Tag        string `json:"tag,omitempty"`
 }
 
 // Provider is part of clusterctl config
@@ -112,5 +119,6 @@ func DefaultClusterctl() *Clusterctl {
 		InitOptions: &InitOptions{},
 		MoveOptions: &MoveOptions{},
 		Providers:   make([]*Provider, 0),
+		ImageMetas:  make(map[string]ImageMeta, 0),
 	}
 }

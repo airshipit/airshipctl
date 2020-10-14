@@ -114,3 +114,13 @@ replacements:
       name: clusterctl_init
     fieldrefs: ["{.additional-vars.CONTAINER_CAPI_AUTH_PROXY}"]
 
+# Replace the cert-manager image repository in the Clusterctl
+- source:
+    objref:
+      name: versions-airshipctl
+    fieldref: "{.images.cert-manager.repository}"
+  target:
+    objref:
+      kind: Clusterctl
+      name: clusterctl_init
+    fieldrefs: ["{.images.cert-manager.repository}"]

@@ -57,6 +57,11 @@ func makeValidOptions() *airshipv1.Clusterctl {
 				},
 			},
 		},
+		ImageMetas: map[string]airshipv1.ImageMeta{
+			"all": {
+				Repository: "myorg.io/all-repo",
+			},
+		},
 	}
 }
 
@@ -113,6 +118,49 @@ func TestGet(t *testing.T) {
   type: InfrastructureProvider
 - name: kubeadm
   type: ControlPlaneProvider
+`,
+		},
+		{
+			name:        "image repo override for all clusterctl components",
+			options:     makeValidOptions(),
+			key:         "images",
+			expectedErr: nil,
+			expectedResult: `all:
+  repository: myorg.io/all-repo
+`,
+		},
+		{
+			name: "image override for cert-manager components",
+			options: &airshipv1.Clusterctl{
+				ImageMetas: map[string]airshipv1.ImageMeta{
+					"cert-manager": {
+						Repository: "myorg.io/certmanager-repo",
+						Tag:        "v0.1",
+					},
+				},
+			},
+			key:         "images",
+			expectedErr: nil,
+			expectedResult: `cert-manager:
+  repository: myorg.io/certmanager-repo
+  tag: v0.1
+`,
+		},
+		{
+			name: "image override for cainjector of cert-manager",
+			options: &airshipv1.Clusterctl{
+				ImageMetas: map[string]airshipv1.ImageMeta{
+					"cert-manager/cert-manager-cainjector": {
+						Repository: "myorg.io/certmanagercainjector-repo",
+						Tag:        "v0.1",
+					},
+				},
+			},
+			key:         "images",
+			expectedErr: nil,
+			expectedResult: `cert-manager/cert-manager-cainjector:
+  repository: myorg.io/certmanagercainjector-repo
+  tag: v0.1
 `,
 		},
 	}

@@ -33,6 +33,13 @@ providers:
     variable-substitution: true
     versions:
       v0.3.7: airshipctl/manifests/function/cacpk/v0.3.7
+
+# The default image repository and tag for a specific component
+# can be overriden here
+images:
+  cert-manager:
+    repository: "quay.io/jetstack"
+
 # These default images can be overridden via the `replacements/` entrypoint
 additional-vars:
   CONTAINER_CAPM3_MANAGER: quay.io/metal3-io/cluster-api-provider-metal3:v0.3.2

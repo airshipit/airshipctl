@@ -48,6 +48,11 @@ type configProvider struct {
 	Type clusterctlv1.ProviderType `json:"type,omitempty"`
 }
 
+type imageMeta struct {
+	Repository string `json:"repository,omitempty"`
+	Tag        string `json:"tag,omitempty"`
+}
+
 // Init implementation of clusterctl reader interface
 // This is dummy method that is must be present to implement Reader interface
 func (f *AirshipReader) Init(config string) error {
@@ -109,6 +114,7 @@ func allowAppend(key, _ string) bool {
 func NewAirshipReader(options *airshipv1.Clusterctl) (*AirshipReader, error) {
 	variables := map[string]string{}
 	providers := []configProvider{}
+	images := map[string]imageMeta{}
 	for _, prov := range options.Providers {
 		appendProvider := configProvider{
 			Name: prov.Name,
@@ -117,7 +123,7 @@ func NewAirshipReader(options *airshipv1.Clusterctl) (*AirshipReader, error) {
 		}
 		providers = append(providers, appendProvider)
 	}
-	b, err := yaml.Marshal(providers)
+	providersYaml, err := yaml.Marshal(providers)
 	if err != nil {
 		return nil, err
 	}
@@ -127,10 +133,21 @@ func NewAirshipReader(options *airshipv1.Clusterctl) (*AirshipReader, error) {
 			variables[key] = val
 		}
 	}
+
+	for key, val := range options.ImageMetas {
+		imageVal := imageMeta{
+			Repository: val.Repository,
+			Tag:        val.Tag,
+		}
+		images[key] = imageVal
+	}
+	imagesYaml, err := yaml.Marshal(images)
+	if err != nil {
+		return nil, err
+	}
 	// Add providers to config
-	variables[config.ProvidersConfigKey] = string(b)
-	// Add empty image configuration to config
-	variables[imagesConfigKey] = ""
+	variables[config.ProvidersConfigKey] = string(providersYaml)
+	variables[imagesConfigKey] = string(imagesYaml)
 	return &AirshipReader{
 		variables:   variables,
 		varsFromEnv: options.EnvVars,

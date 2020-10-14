@@ -46,7 +46,11 @@ providers:
   type: "InfrastructureProvider"
   versions:
     v0.3.1: functions/capi/infrastructure/v0.3.1
-    v0.3.2: functions/capi/infrastructure/v0.3.2`
+    v0.3.2: functions/capi/infrastructure/v0.3.2
+images:
+  cert-manager/cert-manager-cainjector:
+    repository: "myorg.io/local-repo"
+    tag: "v0.1"`
 )
 
 func TestNewConfig(t *testing.T) {
@@ -113,6 +117,41 @@ func TestNewConfig(t *testing.T) {
 			provider, err := providerClient.Get(provName, clusterctlv1.ProviderType(provType))
 			require.NoError(t, err)
 			assert.Equal(t, url, provider.URL())
+		})
+	}
+}
+
+func TestImageMeta(t *testing.T) {
+	tests := []struct {
+		name      string
+		conf      *airshipv1.Clusterctl
+		component string
+		image     string
+		want      string
+	}{
+		{
+			name:      "clusterctl image override ",
+			component: "cert-manager",
+			image:     "myorg.io/local-repo/cert-manager-cainjector:v0.1",
+			conf: &airshipv1.Clusterctl{
+				ImageMetas: map[string]airshipv1.ImageMeta{
+					"cert-manager/cert-manager-cainjector": {
+						Repository: "myorg.io/local-repo",
+						Tag:        "v0.1",
+					},
+				},
+			},
+			want: "myorg.io/local-repo/cert-manager-cainjector:v0.1",
+		},
+	}
+	for _, tt := range tests {
+		conf := tt.conf
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := newConfig(conf, testDataDir)
+			require.NoError(t, err)
+			image, err := got.ImageMeta().AlterImage(tt.component, tt.image)
+			require.NoError(t, err)
+			assert.Equal(t, image, tt.want)
 		})
 	}
 }
