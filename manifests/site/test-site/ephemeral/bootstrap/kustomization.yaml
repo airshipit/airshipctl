@@ -6,7 +6,6 @@ resources:
 
 generators:
   - hostgenerator
-  - ../../../../function/airshipctl-catalogues
 
 patchesStrategicMerge:
   - baremetalhost.yaml

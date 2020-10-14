@@ -10,8 +10,5 @@ resources:
 patchesStrategicMerge:
   - versions-catalogue-patch.yaml
 
-generators:
-  - ../../../../function/airshipctl-catalogues
-
 transformers:
   - ../../../../function/k8scontrol/replacements

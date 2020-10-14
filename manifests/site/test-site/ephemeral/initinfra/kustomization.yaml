@@ -10,9 +10,6 @@ patchesStrategicMerge:
 commonLabels:
   airshipit.org/stage: initinfra
 
-generators:
-  - ../../../../function/airshipctl-catalogues
-
 transformers:
   - ../../../../composite/infra/replacements
   - ../../../../function/baremetal-operator/replacements
