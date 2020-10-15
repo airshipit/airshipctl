@@ -1,0 +1,11 @@
+FROM golang:1.13-stretch as builder
+ENV CGO_ENABLED=0
+WORKDIR /go/src/
+COPY image/go.mod .
+RUN go mod download
+COPY main.go .
+RUN go build -v -o /usr/local/bin/config-function ./
+
+FROM alpine:latest
+COPY --from=builder /usr/local/bin/config-function /usr/local/bin/config-function
+CMD ["/usr/local/bin/config-function"]
