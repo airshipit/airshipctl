@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -122,12 +123,9 @@ func TestExecutorRun(t *testing.T) {
 			},
 			bundlePath: "testdata/executor_init",
 			expectedEvt: []events.Event{
-				{
-					Type: events.ClusterctlType,
-					ClusterctlEvent: events.ClusterctlEvent{
-						Operation: events.ClusterctlInitStart,
-					},
-				},
+				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
+					Operation: events.ClusterctlInitStart,
+				}),
 				wrapError(errTmpFile),
 			},
 		},
@@ -146,18 +144,12 @@ func TestExecutorRun(t *testing.T) {
 			},
 			bundlePath: "testdata/executor_init",
 			expectedEvt: []events.Event{
-				{
-					Type: events.ClusterctlType,
-					ClusterctlEvent: events.ClusterctlEvent{
-						Operation: events.ClusterctlInitStart,
-					},
-				},
-				{
-					Type: events.ClusterctlType,
-					ClusterctlEvent: events.ClusterctlEvent{
-						Operation: events.ClusterctlInitEnd,
-					},
-				},
+				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
+					Operation: events.ClusterctlInitStart,
+				}),
+				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
+					Operation: events.ClusterctlInitEnd,
+				}),
 			},
 		},
 		// TODO add move tests here
@@ -180,11 +172,17 @@ func TestExecutorRun(t *testing.T) {
 			go executor.Run(ch, ifc.RunOptions{DryRun: true})
 			var actualEvt []events.Event
 			for evt := range ch {
+				// Skip timmestamp for comparison
+				evt.Timestamp = time.Time{}
 				if evt.Type == events.ClusterctlType {
 					// Set message to empty string, so it's not compared
 					evt.ClusterctlEvent.Message = ""
 				}
 				actualEvt = append(actualEvt, evt)
+			}
+			for i := range tt.expectedEvt {
+				// Skip timmestamp for comparison
+				tt.expectedEvt[i].Timestamp = time.Time{}
 			}
 			assert.Equal(t, tt.expectedEvt, actualEvt)
 		})
@@ -237,10 +235,7 @@ func executorDoc(t *testing.T, action string) document.Document {
 }
 
 func wrapError(err error) events.Event {
-	return events.Event{
-		Type: events.ErrorType,
-		ErrorEvent: events.ErrorEvent{
-			Error: err,
-		},
-	}
+	return events.NewEvent().WithErrorEvent(events.ErrorEvent{
+		Error: err,
+	})
 }

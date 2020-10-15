@@ -16,6 +16,7 @@ package isogen
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -109,24 +110,15 @@ func TestExecutorRun(t *testing.T) {
 				waitUntilFinished: func() error { return nil },
 			},
 			expectedEvt: []events.Event{
-				{
-					Type: events.IsogenType,
-					IsogenEvent: events.IsogenEvent{
-						Operation: events.IsogenStart,
-					},
-				},
-				{
-					Type: events.IsogenType,
-					IsogenEvent: events.IsogenEvent{
-						Operation: events.IsogenValidation,
-					},
-				},
-				{
-					Type: events.IsogenType,
-					IsogenEvent: events.IsogenEvent{
-						Operation: events.IsogenEnd,
-					},
-				},
+				events.NewEvent().WithIsogenEvent(events.IsogenEvent{
+					Operation: events.IsogenStart,
+				}),
+				events.NewEvent().WithIsogenEvent(events.IsogenEvent{
+					Operation: events.IsogenValidation,
+				}),
+				events.NewEvent().WithIsogenEvent(events.IsogenEvent{
+					Operation: events.IsogenEnd,
+				}),
 			},
 		},
 		{
@@ -140,12 +132,9 @@ func TestExecutorRun(t *testing.T) {
 			},
 
 			expectedEvt: []events.Event{
-				{
-					Type: events.IsogenType,
-					IsogenEvent: events.IsogenEvent{
-						Operation: events.IsogenStart,
-					},
-				},
+				events.NewEvent().WithIsogenEvent(events.IsogenEvent{
+					Operation: events.IsogenStart,
+				}),
 				wrapError(container.ErrRunContainerCommand{Cmd: "super fail"}),
 			},
 		},
@@ -163,11 +152,17 @@ func TestExecutorRun(t *testing.T) {
 			go executor.Run(ch, ifc.RunOptions{})
 			var actualEvt []events.Event
 			for evt := range ch {
+				// Skip timestamp for comparison
+				evt.Timestamp = time.Time{}
 				if evt.Type == events.IsogenType {
 					// Set message to empty string, so it's not compared
 					evt.IsogenEvent.Message = ""
 				}
 				actualEvt = append(actualEvt, evt)
+			}
+			for i := range tt.expectedEvt {
+				// Skip timestamp for comparison
+				tt.expectedEvt[i].Timestamp = time.Time{}
 			}
 			assert.Equal(t, tt.expectedEvt, actualEvt)
 		})
@@ -175,12 +170,9 @@ func TestExecutorRun(t *testing.T) {
 }
 
 func wrapError(err error) events.Event {
-	return events.Event{
-		Type: events.ErrorType,
-		ErrorEvent: events.ErrorEvent{
-			Error: err,
-		},
-	}
+	return events.NewEvent().WithErrorEvent(events.ErrorEvent{
+		Error: err,
+	})
 }
 
 func testBundleFactory(path string) document.BundleFactoryFunc {

@@ -15,6 +15,8 @@
 package events
 
 import (
+	"time"
+
 	applyevent "sigs.k8s.io/cli-utils/pkg/apply/event"
 	statuspollerevent "sigs.k8s.io/cli-utils/pkg/kstatus/polling/event"
 )
@@ -40,6 +42,7 @@ const (
 // Event holds all possible events that can be produced by airship
 type Event struct {
 	Type              Type
+	Timestamp         time.Time
 	ApplierEvent      applyevent.Event
 	ErrorEvent        ErrorEvent
 	StatusPollerEvent statuspollerevent.Event
@@ -47,9 +50,23 @@ type Event struct {
 	IsogenEvent       IsogenEvent
 }
 
+// NewEvent create new event with timestamp
+func NewEvent() Event {
+	return Event{
+		Timestamp: time.Now(),
+	}
+}
+
 // ErrorEvent is produced when error is encountered
 type ErrorEvent struct {
 	Error error
+}
+
+// WithErrorEvent sets type and actual error event
+func (e Event) WithErrorEvent(event ErrorEvent) Event {
+	e.Type = ErrorType
+	e.ErrorEvent = event
+	return e
 }
 
 // ClusterctlOperation type
@@ -72,6 +89,13 @@ type ClusterctlEvent struct {
 	Message   string
 }
 
+// WithClusterctlEvent sets type and actual clusterctl event
+func (e Event) WithClusterctlEvent(concreteEvent ClusterctlEvent) Event {
+	e.Type = ClusterctlType
+	e.ClusterctlEvent = concreteEvent
+	return e
+}
+
 // IsogenOperation type
 type IsogenOperation int
 
@@ -88,4 +112,11 @@ const (
 type IsogenEvent struct {
 	Operation IsogenOperation
 	Message   string
+}
+
+// WithIsogenEvent sets type and actual isogen event
+func (e Event) WithIsogenEvent(concreteEvent IsogenEvent) Event {
+	e.Type = IsogenType
+	e.IsogenEvent = concreteEvent
+	return e
 }
