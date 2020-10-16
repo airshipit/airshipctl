@@ -229,8 +229,14 @@ func makeDefaultHelper(t *testing.T) ifc.Helper {
 		},
 		Manifests: map[string]*config.Manifest{
 			"default-manifest": {
-				MetadataPath: "metadata.yaml",
-				TargetPath:   "testdata",
+				MetadataPath:        "metadata.yaml",
+				TargetPath:          "testdata",
+				PhaseRepositoryName: config.DefaultTestPhaseRepo,
+				Repositories: map[string]*config.Repository{
+					config.DefaultTestPhaseRepo: {
+						URLString: "",
+					},
+				},
 			},
 		},
 	}

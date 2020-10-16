@@ -33,6 +33,12 @@ func TestRender(t *testing.T) {
 	rs := testutil.DummyConfig()
 	dummyManifest := rs.Manifests["dummy_manifest"]
 	dummyManifest.TargetPath = "testdata"
+	dummyManifest.PhaseRepositoryName = config.DefaultTestPhaseRepo
+	dummyManifest.Repositories = map[string]*config.Repository{
+		config.DefaultTestPhaseRepo: {
+			URLString: "",
+		},
+	}
 	dummyManifest.SubPath = ""
 	dummyManifest.MetadataPath = "metadata.yaml"
 	fixturePath := "phase"

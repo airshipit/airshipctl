@@ -23,6 +23,7 @@ import (
 // Helper is a phase helper that provides phases with additional config related information
 type Helper interface {
 	TargetPath() string
+	PhaseRepoDir() string
 	WorkDir() (string, error)
 	Phase(phaseID ID) (*v1alpha1.Phase, error)
 	Plan() (*v1alpha1.PhasePlan, error)

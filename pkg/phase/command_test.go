@@ -61,8 +61,14 @@ func TestRunCommand(t *testing.T) {
 				conf := config.NewConfig()
 				conf.Manifests = map[string]*config.Manifest{
 					"manifest": {
-						MetadataPath: "broken_metadata.yaml",
-						TargetPath:   "testdata",
+						MetadataPath:        "broken_metadata.yaml",
+						TargetPath:          "testdata",
+						PhaseRepositoryName: config.DefaultTestPhaseRepo,
+						Repositories: map[string]*config.Repository{
+							config.DefaultTestPhaseRepo: {
+								URLString: "",
+							},
+						},
 					},
 				}
 				conf.CurrentContext = "context"
@@ -125,8 +131,14 @@ func TestPlanCommand(t *testing.T) {
 				conf := config.NewConfig()
 				conf.Manifests = map[string]*config.Manifest{
 					"manifest": {
-						MetadataPath: "broken_metadata.yaml",
-						TargetPath:   "testdata",
+						MetadataPath:        "broken_metadata.yaml",
+						TargetPath:          "testdata",
+						PhaseRepositoryName: config.DefaultTestPhaseRepo,
+						Repositories: map[string]*config.Repository{
+							config.DefaultTestPhaseRepo: {
+								URLString: "",
+							},
+						},
 					},
 				}
 				conf.CurrentContext = "context"

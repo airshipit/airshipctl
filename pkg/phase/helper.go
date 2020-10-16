@@ -34,8 +34,8 @@ type Helper struct {
 	phaseRoot     string
 	inventoryRoot string
 	targetPath    string
-
-	metadata *config.Metadata
+	phaseRepoDir  string
+	metadata      *config.Metadata
 }
 
 // NewHelper constructs metadata interface based on config
@@ -47,12 +47,16 @@ func NewHelper(cfg *config.Config) (ifc.Helper, error) {
 	if err != nil {
 		return nil, err
 	}
+	helper.phaseRepoDir, err = cfg.CurrentContextPhaseRepositoryDir()
+	if err != nil {
+		return nil, err
+	}
 	helper.metadata, err = cfg.CurrentContextManifestMetadata()
 	if err != nil {
 		return nil, err
 	}
-	helper.phaseRoot = filepath.Join(helper.targetPath, helper.metadata.PhaseMeta.Path)
-	helper.inventoryRoot = filepath.Join(helper.targetPath, helper.metadata.Inventory.Path)
+	helper.phaseRoot = filepath.Join(helper.targetPath, helper.phaseRepoDir, helper.metadata.PhaseMeta.Path)
+	helper.inventoryRoot = filepath.Join(helper.targetPath, helper.phaseRepoDir, helper.metadata.Inventory.Path)
 	return helper, nil
 }
 
@@ -195,6 +199,12 @@ func (helper *Helper) ExecutorDoc(phaseID ifc.ID) (document.Document, error) {
 // TargetPath returns manifest root
 func (helper *Helper) TargetPath() string {
 	return helper.targetPath
+}
+
+// PhaseRepoDir returns the last part of the repo url
+// E.g. http://dummy.org/reponame.git -> reponame
+func (helper *Helper) PhaseRepoDir() string {
+	return helper.phaseRepoDir
 }
 
 // PhaseRoot returns path to document root with phase documents

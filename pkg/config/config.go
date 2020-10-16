@@ -358,6 +358,20 @@ func (c *Config) CurrentContextTargetPath() (string, error) {
 	return ccm.TargetPath, nil
 }
 
+// CurrentContextPhaseRepositoryDir returns phase repository directory from current context's manifest
+// E.g. let repository url be "http://dummy.org/phaserepo.git" then repo directory under targetPath is "phaserepo"
+func (c *Config) CurrentContextPhaseRepositoryDir() (string, error) {
+	ccm, err := c.CurrentContextManifest()
+	if err != nil {
+		return "", err
+	}
+	repo, exist := ccm.Repositories[ccm.PhaseRepositoryName]
+	if !exist {
+		return "", ErrMissingRepositoryName{}
+	}
+	return util.GitDirNameFromURL(repo.URL()), nil
+}
+
 // CurrentContextClusterType returns cluster type of current context
 func (c *Config) CurrentContextClusterType() (string, error) {
 	context, err := c.GetCurrentContext()
@@ -568,12 +582,16 @@ func (c *Config) CurrentContextManifestMetadata() (*Metadata, error) {
 	if err != nil {
 		return nil, err
 	}
+	phaseRepoDir, err := c.CurrentContextPhaseRepositoryDir()
+	if err != nil {
+		return nil, err
+	}
 	meta := &Metadata{
 		// Populate with empty values to avoid nil pointers
 		Inventory: &InventoryMeta{},
 		PhaseMeta: &PhaseMeta{},
 	}
-	err = util.ReadYAMLFile(filepath.Join(manifest.TargetPath, manifest.MetadataPath), meta)
+	err = util.ReadYAMLFile(filepath.Join(manifest.TargetPath, phaseRepoDir, manifest.MetadataPath), meta)
 	if err != nil {
 		return nil, err
 	}

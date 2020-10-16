@@ -449,8 +449,11 @@ manifests:
     phaseRepositoryName: primary
     targetPath: testdata
     metadataPath: valid_site/metadata.yaml
-    subPath: valid_site`
-
+    subPath: valid_site
+    repositories:
+      primary:
+        url: "empty/filename/"
+`
 	conf := &config.Config{}
 	err := yaml.Unmarshal([]byte(confString), conf)
 	require.NoError(t, err)

@@ -1,2 +1,2 @@
 phase:
-  path: airshipctl/manifests/phases
+  path: manifests/phases

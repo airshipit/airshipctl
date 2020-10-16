@@ -222,6 +222,7 @@ func makeDefaultHelper(t *testing.T) ifc.Helper {
 	cfg := config.NewConfig()
 	cfg.Manifests[config.AirshipDefaultManifest].TargetPath = "./testdata"
 	cfg.Manifests[config.AirshipDefaultManifest].MetadataPath = "metadata.yaml"
+	cfg.Manifests[config.AirshipDefaultManifest].Repositories[config.DefaultTestPhaseRepo].URLString = ""
 	cfg.SetLoadedConfigPath(".")
 	helper, err := phase.NewHelper(cfg)
 	require.NoError(t, err)

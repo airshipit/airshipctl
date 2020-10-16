@@ -20,6 +20,8 @@ import (
 	"strings"
 	"testing"
 
+	"opendev.org/airship/airshipctl/pkg/util"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -315,6 +317,26 @@ func TestCurrentTargetPath(t *testing.T) {
 	assert.Equal(t, conf.Manifests[defaultString].TargetPath, targetPath)
 }
 
+func TestCurrentPhaseRepositoryDir(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	conf.CurrentContext = currentContextName
+	conf.Contexts[currentContextName].Manifest = defaultString
+
+	phaseRepoDir, err := conf.CurrentContextPhaseRepositoryDir()
+	require.NoError(t, err)
+	assert.Equal(t, util.GitDirNameFromURL(
+		conf.Manifests[defaultString].Repositories[conf.Manifests[defaultString].PhaseRepositoryName].URL()),
+		phaseRepoDir)
+
+	conf.Manifests[defaultString].PhaseRepositoryName = "nonexisting"
+	phaseRepoDir, err = conf.CurrentContextPhaseRepositoryDir()
+	require.Error(t, err)
+	assert.Equal(t, config.ErrMissingRepositoryName{}, err)
+	assert.Equal(t, "", phaseRepoDir)
+}
+
 func TestCurrentContextEntryPoint(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
@@ -414,9 +436,16 @@ func TestCurrentContextManifestMetadata(t *testing.T) {
 			context := &config.Context{
 				Manifest: "testManifest",
 			}
+			repos := map[string]*config.Repository{
+				config.DefaultTestPhaseRepo: {
+					URLString: "",
+				},
+			}
 			manifest := &config.Manifest{
-				MetadataPath: tt.metaPath,
-				TargetPath:   "testdata",
+				MetadataPath:        tt.metaPath,
+				TargetPath:          "testdata",
+				PhaseRepositoryName: config.DefaultTestPhaseRepo,
+				Repositories:        repos,
 			}
 			conf.Manifests = map[string]*config.Manifest{
 				"testManifest": manifest,
