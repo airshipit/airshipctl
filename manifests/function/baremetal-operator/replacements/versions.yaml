@@ -4,79 +4,83 @@ apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
   name: baremetal-operator-versions-replacements
+  annotations:
+    config.kubernetes.io/function: |-
+      container:
+        image: quay.io/airshipit/replacement-transformer:dev
 replacements:
 # Container versions for the ironic Deployment
 - source:
     objref:
       name: versions-airshipctl
-    fieldref: images.baremetal_operator.ironic.init_bootstrap
+    fieldref: "{.images.baremetal_operator.ironic.init_bootstrap}"
   target:
     objref:
       kind: Deployment
       name: ironic
-    fieldrefs: ["spec.template.spec.initContainers[name=init-bootstrap].image"]
+    fieldrefs: ["{.spec.template.spec.initContainers[?(.name == 'init-bootstrap')].image}"]
 - source:
     objref:
       name: versions-airshipctl
-    fieldref: images.baremetal_operator.ironic.dnsmasq
+    fieldref: "{.images.baremetal_operator.ironic.dnsmasq}"
   target:
     objref:
       kind: Deployment
       name: ironic
-    fieldrefs: ["spec.template.spec.containers[name=dnsmasq].image"]
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'dnsmasq')].image}"]
 - source:
     objref:
       name: versions-airshipctl
-    fieldref: images.baremetal_operator.ironic.httpd
+    fieldref: "{.images.baremetal_operator.ironic.httpd}"
   target:
     objref:
       kind: Deployment
       name: ironic
-    fieldrefs: ["spec.template.spec.containers[name=httpd].image"]
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'httpd')].image}"]
 - source:
     objref:
       name: versions-airshipctl
-    fieldref: images.baremetal_operator.ironic.ironic
+    fieldref: "{.images.baremetal_operator.ironic.ironic}"
   target:
     objref:
       kind: Deployment
       name: ironic
-    fieldrefs: ["spec.template.spec.containers[name=ironic].image"]
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'ironic')].image}"]
 - source:
     objref:
       name: versions-airshipctl
-    fieldref: images.baremetal_operator.ironic.ironic_inspector
+    fieldref: "{.images.baremetal_operator.ironic.ironic_inspector}"
   target:
     objref:
       kind: Deployment
       name: ironic
-    fieldrefs: ["spec.template.spec.containers[name=ironic-inspector].image"]
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'ironic-inspector')].image}"]
 # Container versions for the metal3-baremetal-operator Deployment
 - source:
     objref:
       name: versions-airshipctl
-    fieldref: images.baremetal_operator.metal3_baremetal_operator.baremetal_operator
+    fieldref: "{.images.baremetal_operator.metal3_baremetal_operator.baremetal_operator}"
   target:
     objref:
       kind: Deployment
       name: metal3-baremetal-operator
-    fieldrefs: ["spec.template.spec.containers[name=baremetal-operator].image"]
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'baremetal-operator')].image}"]
 - source:
     objref:
       name: versions-airshipctl
-    fieldref: images.baremetal_operator.metal3_baremetal_operator.ironic_proxy
+    fieldref: "{.images.baremetal_operator.metal3_baremetal_operator.ironic_proxy}"
   target:
     objref:
       kind: Deployment
       name: metal3-baremetal-operator
-    fieldrefs: ["spec.template.spec.containers[name=ironic-proxy].image"]
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'ironic-proxy')].image}"]
 - source:
     objref:
       name: versions-airshipctl
-    fieldref: images.baremetal_operator.metal3_baremetal_operator.ironic_inspector_proxy
+    fieldref: "{.images.baremetal_operator.metal3_baremetal_operator.ironic_inspector_proxy}"
   target:
     objref:
       kind: Deployment
       name: metal3-baremetal-operator
-    fieldrefs: ["spec.template.spec.containers[name=ironic-inspector-proxy].image"]
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'ironic-inspector-proxy')].image}"]
 

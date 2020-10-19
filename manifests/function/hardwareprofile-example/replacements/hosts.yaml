@@ -5,15 +5,19 @@ kind: ReplacementTransformer
 metadata:
   # NOTE: change this when copying this example
   name: hardwareprofile-example-replacements
+  annotations:
+    config.kubernetes.io/function: |-
+      container:
+        image: quay.io/airshipit/replacement-transformer:dev
 replacements:
 - source:
     objref:
       # NOTE: change this to match your hardwareProfile's metadata.name
       name: hardwareprofile-example
-    fieldref: hardwareProfile
+    fieldref: "{.hardwareProfile}"
   target:
     objref:
       kind: Templater
       name: m3-host-template
     # NOTE: change "example" below when copying this example
-    fieldrefs: [values.hardwareProfiles.example]
+    fieldrefs: ["{.values.hardwareProfiles.example}"]

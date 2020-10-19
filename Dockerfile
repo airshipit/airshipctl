@@ -28,6 +28,8 @@ ARG MAKE_TARGET=build
 RUN for target in $MAKE_TARGET; do make $target; done
 
 FROM ${RELEASE_IMAGE} as release
-COPY --from=builder /usr/src/airshipctl/bin/airshipctl /usr/local/bin/airshipctl
+ARG BINARY=airshipctl
+ENV BINARY=${BINARY}
+COPY --from=builder /usr/src/airshipctl/bin/${BINARY} /usr/local/bin/${BINARY}
 USER 65534
-ENTRYPOINT [ "/usr/local/bin/airshipctl" ]
+ENTRYPOINT /usr/local/bin/${BINARY}

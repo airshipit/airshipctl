@@ -26,7 +26,7 @@ import (
 var (
 	pattern = regexp.MustCompile(`(\S+)\[(\S+)=(\S+)\]`)
 	// substring substitutions are appended to paths as: ...%VARNAME%
-	substringPatternRegex = regexp.MustCompile(`(\S+)%(\S+)%$`)
+	substringPatternRegex = regexp.MustCompile(`(.+)%(\S+)%$`)
 )
 
 const (

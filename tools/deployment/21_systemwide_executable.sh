@@ -19,8 +19,8 @@ export HTTPS_PROXY=${HTTPS_PROXY:-${https_proxy}}
 export HTTP_PROXY=${HTTP_PROXY:-${http_proxy}}
 export NO_PROXY=${NO_PROXY:-${no_proxy}}
 
-echo "Build airshipctl in docker image"
-make docker-image
+echo "Build airshipctl docker images"
+make images
 
 echo "Copy airshipctl from docker image"
 DOCKER_IMAGE_TAG=$(make print-docker-image-tag)
