@@ -134,6 +134,7 @@
         - airship-gather-libvirt-logs
         - airship-gather-runtime-logs
         - airship-airshipctl-gather-configs
+        - describe-kubernetes-objects
         - airship-gather-pod-logs
 
 - job:

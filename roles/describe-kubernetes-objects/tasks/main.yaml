@@ -1,0 +1,76 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+## This task will populate kctl_context_list variable with list of contexts if they exist
+---
+- name: "Set cluster scoped collectibles"
+  set_fact:
+    collect_clustered_objects:
+      - node
+      - clusterrole
+      - clusterrolebinding
+      - storageclass
+      - namespace
+      - persistentvolume
+      - customresourcedefinition
+
+- name: "Set namespace scoped collectibles"
+  set_fact:
+    collect_namespaced_objects:
+      - baremetalhosts
+      - clusters
+      - configmaps
+      - cronjobs
+      - daemonsets
+      - deployments
+      - endpoints
+      - ingresses
+      - jobs
+      - kubeadmconfigs
+      - kubeadmconfigtemplates
+      - kubeadmcontrolplanes
+      - machinedeployments
+      - machines
+      - machinesets
+      - metal3clusters
+      - metal3machines
+      - metal3machinetemplates
+      - networkpolicies
+      - pods
+      - podsecuritypolicies
+      - persistentvolumeclaims
+      - replicasets
+      - rolebindings
+      - roles
+      - secrets
+      - serviceaccounts
+      - services
+      - statefulsets
+
+
+- name: "Get context list"
+  include_tasks: get-contexts.yaml
+
+- name: "Save logs for each context"
+  include_tasks: save-context-objects.yaml
+  when: kctl_context_list | length > 0
+  with_items: "{{ kctl_context_list }}"
+  loop_control:
+    loop_var: kctl_context
+
+- name: "Downloads logs to executor"
+  synchronize:
+    src: "{{ logs_dir }}/objects"
+    dest: "{{ zuul.executor.log_root }}/{{ inventory_hostname }}"
+    mode: pull
+  ignore_errors: True
+...
