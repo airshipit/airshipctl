@@ -83,22 +83,16 @@ func (c *Executor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 		return
 	}
 
-	evtCh <- events.Event{
-		Type: events.IsogenType,
-		IsogenEvent: events.IsogenEvent{
-			Operation: events.IsogenStart,
-			Message:   "starting ISO generation",
-		},
-	}
+	evtCh <- events.NewEvent().WithIsogenEvent(events.IsogenEvent{
+		Operation: events.IsogenStart,
+		Message:   "starting ISO generation",
+	})
 
 	if opts.DryRun {
 		log.Print("command isogen will be executed")
-		evtCh <- events.Event{
-			Type: events.IsogenType,
-			IsogenEvent: events.IsogenEvent{
-				Operation: events.IsogenEnd,
-			},
-		}
+		evtCh <- events.NewEvent().WithIsogenEvent(events.IsogenEvent{
+			Operation: events.IsogenEnd,
+		})
 		return
 	}
 
@@ -131,26 +125,20 @@ func (c *Executor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 		return
 	}
 
-	evtCh <- events.Event{
-		Type: events.IsogenType,
-		IsogenEvent: events.IsogenEvent{
-			Operation: events.IsogenValidation,
-			Message:   "image is generated successfully, verifying artifacts",
-		},
-	}
+	evtCh <- events.NewEvent().WithIsogenEvent(events.IsogenEvent{
+		Operation: events.IsogenValidation,
+		Message:   "image is generated successfully, verifying artifacts",
+	})
 	err = verifyArtifacts(c.imgConf)
 	if err != nil {
 		handleError(evtCh, err)
 		return
 	}
 
-	evtCh <- events.Event{
-		Type: events.IsogenType,
-		IsogenEvent: events.IsogenEvent{
-			Operation: events.IsogenEnd,
-			Message:   "iso generation is complete and artifacts verified",
-		},
-	}
+	evtCh <- events.NewEvent().WithIsogenEvent(events.IsogenEvent{
+		Operation: events.IsogenEnd,
+		Message:   "iso generation is complete and artifacts verified",
+	})
 }
 
 // Validate executor configuration and documents
@@ -166,10 +154,7 @@ func (c *Executor) Render(w io.Writer, _ ifc.RenderOptions) error {
 }
 
 func handleError(ch chan<- events.Event, err error) {
-	ch <- events.Event{
-		Type: events.ErrorType,
-		ErrorEvent: events.ErrorEvent{
-			Error: err,
-		},
-	}
+	ch <- events.NewEvent().WithErrorEvent(events.ErrorEvent{
+		Error: err,
+	})
 }
