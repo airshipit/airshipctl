@@ -16,14 +16,12 @@ package applier_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"sigs.k8s.io/cli-utils/pkg/apply/event"
 	"sigs.k8s.io/cli-utils/pkg/apply/poller"
 	"sigs.k8s.io/cli-utils/pkg/common"
@@ -38,11 +36,7 @@ import (
 func TestFakeApplier(t *testing.T) {
 	ch := make(chan events.Event)
 	a := applier.NewFakeApplier(ch,
-		genericclioptions.IOStreams{
-			In:     os.Stdin,
-			Out:    os.Stdout,
-			ErrOut: os.Stderr,
-		}, k8stest.SuccessEvents(), k8stest.FakeFactory(t, []k8stest.ClientHandler{}))
+		k8stest.SuccessEvents(), k8stest.FakeFactory(t, []k8stest.ClientHandler{}))
 	assert.NotNil(t, a)
 }
 
@@ -65,11 +59,6 @@ func TestApplierRun(t *testing.T) {
 			},
 		})
 	defer f.Cleanup()
-	s := genericclioptions.IOStreams{
-		In:     os.Stdin,
-		Out:    os.Stdout,
-		ErrOut: os.Stderr,
-	}
 	tests := []struct {
 		name           string
 		driver         applier.Driver
@@ -123,7 +112,7 @@ func TestApplierRun(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// create default applier
 			eventChan := make(chan events.Event)
-			a := applier.NewApplier(eventChan, f, s)
+			a := applier.NewApplier(eventChan, f)
 			opts := applier.ApplyOptions{
 				WaitTimeout:    time.Second * 5,
 				BundleName:     "test-bundle",
