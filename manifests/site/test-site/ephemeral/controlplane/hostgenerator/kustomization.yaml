@@ -4,7 +4,7 @@ resources:
   # TODO: these two should move up to type level in the future
   - ../../../../../function/hostgenerator-m3
   - ../../../../../function/hardwareprofile-example
-  - ../../../shared/catalogues/
+  - ../../catalogues
   - host-generation.yaml
 
 transformers:

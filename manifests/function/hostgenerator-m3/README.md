@@ -15,7 +15,7 @@ BMHs in a data-driven fashion.
 
 To use this function, do the following:
 
-* Supply a `common-networking-catalogue`, which outlines things that are
+* Supply a `networking` catalogue, which outlines things that are
   typically common across hosts in a site, such as networking interfaces,
   DNS servers, and other networking info.
   Example: `manifests/type/gating/shared/catalogues/common-networking.yaml`

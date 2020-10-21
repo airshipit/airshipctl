@@ -4,11 +4,11 @@ resources:
   # TODO (dukov) It's recocommended to upload BareMetalHost objects separately
   # otherwise nodes will hang in 'registering' state for quite a long time
   - nodes
-  - ../../../../function/airshipctl-catalogues
   - ../../../../function/k8scontrol
-
-patchesStrategicMerge:
-  - control-machine-template-patch.yaml
+  - ../catalogues
 
 commonLabels:
   airshipit.org/stage: initinfra
+
+transformers:
+  - ../../../../function/k8scontrol/replacements

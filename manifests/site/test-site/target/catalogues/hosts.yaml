@@ -4,6 +4,9 @@ apiVersion: airshipit.org/v1alpha1
 kind: VariableCatalogue
 metadata:
   name: host-catalogue
+  labels:
+    airshipit.org/deploy-k8s: "false"
+
 hosts:
   m3:
     node01:

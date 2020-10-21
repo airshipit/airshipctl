@@ -3,6 +3,9 @@ kind: VariableCatalogue
 metadata:
   # NOTE: change this when copying this example
   name: hardwareprofile-example
+  labels:
+    airshipit.org/deploy-k8s: "false"
+
 hardwareProfile:
   firmware:
     sriovEnabled: false

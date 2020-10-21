@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - versions.yaml
   - ironic-env-vars.yaml
+  - networking.yaml

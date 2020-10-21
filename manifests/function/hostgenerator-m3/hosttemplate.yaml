@@ -9,7 +9,7 @@ values:
   # hostsToGenerate:
   #    (filled in with phase-specific host-generation-catalogue)
   # commonNetworking:
-  #    (filled in with the type-specific common-networking-catalogue)
+  #    (filled in with the type-specific common-networking)
 
   # Additional hardwareProfiles can be defined within their own functions,
   # and then substituted into the stanza below.

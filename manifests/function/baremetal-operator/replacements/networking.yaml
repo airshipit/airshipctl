@@ -1,0 +1,37 @@
+# These rules inject networking info into the baremetal-operator  function.
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: baremetal-operator-networking-replacements
+replacements:
+# Replace the pod & service networks
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: networking
+    fieldref: ironic.provisioningInterface
+  target:
+    objref:
+      kind: ConfigMap
+      name: ironic-vars
+    fieldrefs: ["data.PROVISIONING_INTERFACE"]
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: networking
+    fieldref: ironic.provisioningIp
+  target:
+    objref:
+      kind: ConfigMap
+      name: ironic-vars
+    fieldrefs: ["data.PROVISIONING_IP"]
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: networking
+    fieldref: ironic.dhcpRange
+  target:
+    objref:
+      kind: ConfigMap
+      name: ironic-vars
+    fieldrefs: ["data.DHCP_RANGE"]

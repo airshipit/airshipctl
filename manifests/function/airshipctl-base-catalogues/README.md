@@ -1,5 +1,5 @@
-Function: airshipctl-catalogues
-===============================
+Function: airshipctl-base-catalogues
+====================================
 
 This function defines some default VariableCatalogue resources,
 which can be consumed and used (via ReplacementTransformer) to change the

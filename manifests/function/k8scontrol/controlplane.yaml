@@ -20,6 +20,7 @@ spec:
           Environment="HTTP_PROXY=REPLACEMENT_HTTP_PROXY"
           Environment="HTTPS_PROXY=REPLACEMENT_HTTPS_PROXY"
           Environment="NO_PROXY=REPLACEMENT_NO_PROXY"
+    # TODO: add download sources to the versions catalogue
     preKubeadmCommands:
       - echo 'root:r00tme' | chpasswd
       - echo 'ubuntu:r00tme' | chpasswd

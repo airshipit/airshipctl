@@ -15,8 +15,10 @@ metadata:
 spec:
   clusterNetwork:
     services:
+      # Overrideable via the `replacements` entrypoint and networking catalogue
       cidrBlocks: ["10.96.0.0/12"]
     pods:
+      # Overrideable via the `replacements` entrypoint and networking catalogue
       cidrBlocks: ["192.168.0.0/18"]
     serviceDomain: "cluster.local"
   infrastructureRef:
@@ -33,6 +35,7 @@ kind: Metal3Cluster
 metadata:
   name: target-cluster
 spec:
+  # Overrideable via the `replacements` entrypoint and networking catalogue
   controlPlaneEndpoint:
     host: 10.23.25.102
     port: 6443

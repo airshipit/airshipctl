@@ -5,14 +5,18 @@ metadata:
   labels:
   name: ironic-vars
 data:
+  # Overrideable via the `replacements` entrypoint and environment variables
   HTTP_PROXY: ""
   HTTPS_PROXY: ""
   http_proxy: ""
   https_proxy: ""
   NO_PROXY: ""
   no_proxy: ""
+  # Overrideable via the `replacements` entrypoint and networking catalogue
   PROVISIONING_IP: "192.168.10.100"
+  # Overrideable via the `replacements` entrypoint and networking catalogue
   DHCP_RANGE: "192.168.10.200,192.168.10.250"
+  # Overrideable via the `replacements` entrypoint and networking catalogue
   PROVISIONING_INTERFACE: "pxe"
   HTTP: "80"
   DEPLOY_KERNEL_PATH: "/images/tinyipa-stable-ussuri.vmlinuz"

@@ -13,4 +13,4 @@ supplies defaults, and these can (optionally) be overridden either by
 simple Kustomize patching, or by applying the ``replacements``
 kustomization as a Kustomize transformer.  In the latter case,
 an airshipctl versions catalogue must be supplied; please see the
-``airshipctl-catalogues`` function for a base/example.
+``airshipctl-base-catalogues`` function for a base/example.
