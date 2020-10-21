@@ -18,7 +18,6 @@ import (
 	"context"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/cli-runtime/pkg/resource"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 	cliapply "sigs.k8s.io/cli-utils/pkg/apply"
@@ -78,7 +77,6 @@ func (fa FakeAdaptor) WithInitError(err error) FakeAdaptor {
 // NewFakeApplier returns applier with events you want
 func NewFakeApplier(
 	eventCh chan events.Event,
-	streams genericclioptions.IOStreams,
 	events []applyevent.Event, f cmdutil.Factory) *Applier {
 	return &Applier{
 		Driver:                NewFakeAdaptor().WithEvents(events),

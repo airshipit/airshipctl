@@ -32,7 +32,7 @@ require (
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.0.0
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.6.1
 	k8s.io/api v0.17.9
 	k8s.io/apiextensions-apiserver v0.17.9
 	k8s.io/apimachinery v0.17.9
@@ -41,11 +41,11 @@ require (
 	k8s.io/kubectl v0.17.4
 	opendev.org/airship/go-redfish v0.0.0-20200318103738-db034d1d753a
 	opendev.org/airship/go-redfish/client v0.0.0-20200318103738-db034d1d753a
-	sigs.k8s.io/cli-utils v0.18.1
+	sigs.k8s.io/cli-utils v0.20.6
 	sigs.k8s.io/cluster-api v0.3.10
 	sigs.k8s.io/controller-runtime v0.5.11
 	sigs.k8s.io/kustomize/api v0.5.1
-	sigs.k8s.io/kustomize/kyaml v0.6.0
+	sigs.k8s.io/kustomize/kyaml v0.9.2
 	sigs.k8s.io/yaml v1.2.0
 )
 

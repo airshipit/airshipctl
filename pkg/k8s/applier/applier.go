@@ -20,18 +20,18 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/spf13/cobra"
 	v1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/cli-runtime/pkg/resource"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 	cliapply "sigs.k8s.io/cli-utils/pkg/apply"
 	applyevent "sigs.k8s.io/cli-utils/pkg/apply/event"
 	"sigs.k8s.io/cli-utils/pkg/apply/poller"
 	clicommon "sigs.k8s.io/cli-utils/pkg/common"
+	"sigs.k8s.io/cli-utils/pkg/inventory"
 	"sigs.k8s.io/cli-utils/pkg/manifestreader"
+	"sigs.k8s.io/cli-utils/pkg/provider"
 	"sigs.k8s.io/yaml"
 
 	"opendev.org/airship/airshipctl/pkg/document"
@@ -49,7 +49,6 @@ const (
 type Applier struct {
 	Driver                Driver
 	Factory               cmdutil.Factory
-	Streams               genericclioptions.IOStreams
 	Poller                poller.Poller
 	ManifestReaderFactory utils.ManifestReaderFactory
 	eventChannel          chan events.Event
@@ -59,13 +58,13 @@ type Applier struct {
 type ReaderFactory func(validate bool, bundle document.Bundle, factory cmdutil.Factory) manifestreader.ManifestReader
 
 // NewApplier returns instance of Applier
-func NewApplier(eventCh chan events.Event, f cmdutil.Factory, streams genericclioptions.IOStreams) *Applier {
+func NewApplier(eventCh chan events.Event, f cmdutil.Factory) *Applier {
+	cf := provider.NewProvider(f, inventory.WrapInventoryObj)
 	return &Applier{
 		Factory:               f,
-		Streams:               streams,
 		ManifestReaderFactory: utils.DefaultManifestReaderFactory,
 		Driver: &Adaptor{
-			CliUtilsApplier: cliapply.NewApplier(f, streams),
+			CliUtilsApplier: cliapply.NewApplier(cf),
 		},
 		eventChannel: eventCh,
 	}
@@ -182,24 +181,7 @@ type Adaptor struct {
 
 // Initialize sets fake required command line flags for underlying cli-utils package
 func (a *Adaptor) Initialize(p poller.Poller) error {
-	cmd := &cobra.Command{}
-	// Code below is copied from cli-utils package and used the same way as in upstream:
-	// https://github.com/kubernetes-sigs/cli-utils/blob/v0.14.0/cmd/apply/cmdapply.go#L35-L46
-	// Skip error checking is done in a same way as in upstream usage of this package
-	err := a.CliUtilsApplier.SetFlags(cmd)
-	if err != nil {
-		return err
-	}
-	var unusedBool bool
-	cmd.Flags().BoolVar(&unusedBool, "dry-run", unusedBool, "NOT USED")
-	cmd.Flags().MarkHidden("dry-run") //nolint:errcheck
-	cmdutil.AddValidateFlags(cmd)
-	cmd.Flags().MarkHidden("validate") //nolint:errcheck
-	cmdutil.AddServerSideApplyFlags(cmd)
-	cmd.Flags().MarkHidden("server-side")     //nolint:errcheck
-	cmd.Flags().MarkHidden("force-conflicts") //nolint:errcheck
-	cmd.Flags().MarkHidden("field-manager")   //nolint:errcheck
-	err = a.CliUtilsApplier.Initialize(cmd)
+	err := a.CliUtilsApplier.Initialize()
 	if err != nil {
 		return err
 	}

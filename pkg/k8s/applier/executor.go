@@ -138,8 +138,7 @@ func (e *Executor) prepareApplier(ch chan events.Event) (*Applier, document.Bund
 	e.cleanup = cleanup
 	// Use cluster name as context in kubeconfig file
 	factory := utils.FactoryFromKubeConfig(path, e.Options.ClusterName)
-	streams := utils.Streams()
-	return NewApplier(ch, factory, streams), bundle, nil
+	return NewApplier(ch, factory), bundle, nil
 }
 
 // Validate document set
