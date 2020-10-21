@@ -19,6 +19,17 @@ import (
 	"io"
 )
 
+// Status type provides container status
+type Status string
+
+// State provides information about the Container
+type State struct {
+	// ExitCode: returns the container's exit code. Zero means exited normally, otherwise errored
+	ExitCode int
+	// Status: String representation of the container state.
+	Status Status
+}
+
 // Container interface abstraction for container.
 // Particular implementation depends on container runtime environment (CRE). Interface
 // defines methods that must be implemented for CRE (e.g. docker, containerd or CRI-O)
@@ -26,9 +37,10 @@ type Container interface {
 	ImagePull() error
 	RunCommand([]string, io.Reader, []string, []string) error
 	GetContainerLogs() (io.ReadCloser, error)
+	InspectContainer() (State, error)
+	WaitUntilFinished() error
 	RmContainer() error
 	GetID() string
-	WaitUntilFinished() error
 }
 
 // NewContainer returns instance of Container interface implemented by particular driver

@@ -56,6 +56,7 @@ type mockDockerClient struct {
 	containerStart      func() error
 	containerWait       func() (<-chan container.ContainerWaitOKBody, <-chan error)
 	containerLogs       func() (io.ReadCloser, error)
+	containerInspect    func() (types.ContainerJSON, error)
 }
 
 func (mdc *mockDockerClient) ImageInspectWithRaw(context.Context, string) (types.ImageInspect, []byte, error) {
@@ -117,6 +118,13 @@ func (mdc *mockDockerClient) ContainerLogs(context.Context, string, types.Contai
 
 func (mdc *mockDockerClient) ContainerRemove(context.Context, string, types.ContainerRemoveOptions) error {
 	return nil
+}
+
+func (mdc *mockDockerClient) ContainerInspect(context.Context, string) (types.ContainerJSON, error) {
+	if mdc.containerInspect != nil {
+		return mdc.containerInspect()
+	}
+	return types.ContainerJSON{}, nil
 }
 
 func getDockerContainerMock(mdc mockDockerClient) *DockerContainer {
@@ -552,6 +560,98 @@ func TestRmContainer(t *testing.T) {
 	for _, tt := range tests {
 		cnt := getDockerContainerMock(tt.mockDockerClient)
 		actualErr := cnt.RmContainer()
+		assert.Equal(t, tt.expectedErr, actualErr)
+	}
+}
+
+func TestInspectContainer(t *testing.T) {
+	tests := []struct {
+		cli           mockDockerClient
+		expectedState State
+		expectedErr   error
+	}{
+		{
+			// Status: String representation of the container state.
+			// Testing Status == CreatedContainerStatus and ExitCode == 0
+			cli: mockDockerClient{
+				containerInspect: func() (types.ContainerJSON, error) {
+					json := types.ContainerJSON{}
+					json.ContainerJSONBase = &types.ContainerJSONBase{}
+					json.ContainerJSONBase.State = &types.ContainerState{}
+					json.ContainerJSONBase.State.ExitCode = 0
+					json.ContainerJSONBase.State.Status = CreatedContainerStatus
+					return json, nil
+				},
+			},
+			expectedState: State{
+				ExitCode: 0,
+				Status:   CreatedContainerStatus,
+			},
+			expectedErr: nil,
+		},
+		{
+			// Status: String representation of the container state.
+			// Testing Status == RunningContainerStatus and ExitCode == 0
+			cli: mockDockerClient{
+				containerInspect: func() (types.ContainerJSON, error) {
+					json := types.ContainerJSON{}
+					json.ContainerJSONBase = &types.ContainerJSONBase{}
+					json.ContainerJSONBase.State = &types.ContainerState{}
+					json.ContainerJSONBase.State.ExitCode = 0
+					json.ContainerJSONBase.State.Status = RunningContainerStatus
+					return json, nil
+				},
+			},
+			expectedState: State{
+				ExitCode: 0,
+				Status:   RunningContainerStatus,
+			},
+			expectedErr: nil,
+		},
+		{
+			// Status: String representation of the container state.
+			// Testing Status == ExitedContainerStatus and ExitCode == 0
+			cli: mockDockerClient{
+				containerInspect: func() (types.ContainerJSON, error) {
+					json := types.ContainerJSON{}
+					json.ContainerJSONBase = &types.ContainerJSONBase{}
+					json.ContainerJSONBase.State = &types.ContainerState{}
+					json.ContainerJSONBase.State.ExitCode = 0
+					json.ContainerJSONBase.State.Status = ExitedContainerStatus
+					return json, nil
+				},
+			},
+			expectedState: State{
+				ExitCode: 0,
+				Status:   ExitedContainerStatus,
+			},
+			expectedErr: nil,
+		},
+		{
+			// Status: String representation of the container state.
+			// Testing Status == ExitedContainerStatus and ExitCode == 1
+			cli: mockDockerClient{
+				containerInspect: func() (types.ContainerJSON, error) {
+					json := types.ContainerJSON{}
+					json.ContainerJSONBase = &types.ContainerJSONBase{}
+					json.ContainerJSONBase.State = &types.ContainerState{}
+					json.ContainerJSONBase.State.ExitCode = 1
+					json.ContainerJSONBase.State.Status = ExitedContainerStatus
+					return json, nil
+				},
+			},
+			expectedState: State{
+				ExitCode: 1,
+				Status:   ExitedContainerStatus,
+			},
+			expectedErr: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		cnt := getDockerContainerMock(tt.cli)
+		actualState, actualErr := cnt.InspectContainer()
+		assert.Equal(t, tt.expectedState, actualState)
 		assert.Equal(t, tt.expectedErr, actualErr)
 	}
 }

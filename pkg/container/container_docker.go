@@ -87,6 +87,11 @@ type DockerClient interface {
 		string,
 		types.ContainerRemoveOptions,
 	) error
+	// ContainerInspect returns the container state
+	ContainerInspect(
+		ctx context.Context,
+		containerID string,
+	) (types.ContainerJSON, error)
 }
 
 // DockerContainer docker container object wrapper
@@ -296,6 +301,21 @@ func (c *DockerContainer) RmContainer() error {
 			Force: true,
 		},
 	)
+}
+
+// InspectContainer inspect the running container
+func (c *DockerContainer) InspectContainer() (State, error) {
+	json, err := c.dockerClient.ContainerInspect(context.Background(), c.id)
+	if err != nil {
+		log.Debug("Failed to inspect container status")
+		return State{}, err
+	}
+
+	state := State{
+		ExitCode: json.ContainerJSONBase.State.ExitCode,
+		Status:   Status(json.ContainerJSONBase.State.Status),
+	}
+	return state, err
 }
 
 // WaitUntilFinished waits unit container command is finished, return an error if failed

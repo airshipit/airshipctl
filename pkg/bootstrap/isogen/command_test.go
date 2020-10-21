@@ -27,6 +27,7 @@ import (
 
 	api "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/testutil"
@@ -39,6 +40,7 @@ type mockContainer struct {
 	rmContainer       func() error
 	getID             func() string
 	waitUntilFinished func() error
+	inspectContainer  func() (container.State, error)
 }
 
 func (mc *mockContainer) ImagePull() error {
@@ -63,6 +65,10 @@ func (mc *mockContainer) GetID() string {
 
 func (mc *mockContainer) WaitUntilFinished() error {
 	return mc.waitUntilFinished()
+}
+
+func (mc *mockContainer) InspectContainer() (container.State, error) {
+	return mc.inspectContainer()
 }
 
 const testID = "TESTID"
