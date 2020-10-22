@@ -30,6 +30,7 @@ var _ Interface = &Client{}
 type Interface interface {
 	Init(kubeconfigPath, kubeconfigContext string) error
 	Move(fromKubeconfigPath, fromKubeconfigContext, toKubeconfigPath, toKubeconfigContext, namespace string) error
+	GetKubeconfig(options GetKubeconfigOptions) (string, error)
 }
 
 // Client Implements interface to Clusterctl
@@ -37,6 +38,19 @@ type Client struct {
 	clusterctlClient clusterctlclient.Client
 	initOptions      clusterctlclient.InitOptions
 	moveOptions      clusterctlclient.MoveOptions
+}
+
+// GetKubeconfigOptions carries all the options to retrieve kubeconfig from parent cluster
+type GetKubeconfigOptions struct {
+	// Path to parent kubeconfig file
+	ParentKubeconfigPath string
+	// Specify context within the kubeconfig file. If empty, cluster client
+	// will use the current context.
+	ParentKubeconfigContext string
+	// Namespace is the namespace in which secret is placed.
+	ManagedClusterNamespace string
+	// ManagedClusterName is the name of the managed cluster.
+	ManagedClusterName string
 }
 
 // NewClient returns instance of clusterctl client
@@ -107,4 +121,16 @@ func newClusterctlClient(root string, options *airshipv1.Clusterctl) (clusterctl
 	// options cluster client factory
 	occf := clusterctlclient.InjectClusterClientFactory(rf.ClusterClientFactory())
 	return clusterctlclient.New("", ocf, orf, occf)
+}
+
+// GetKubeconfig is a wrapper for related cluster-api function
+func (c *Client) GetKubeconfig(options GetKubeconfigOptions) (string, error) {
+	return c.clusterctlClient.GetKubeconfig(clusterctlclient.GetKubeconfigOptions{
+		Kubeconfig: clusterctlclient.Kubeconfig{
+			Path:    options.ParentKubeconfigPath,
+			Context: options.ParentKubeconfigContext,
+		},
+		Namespace:           options.ManagedClusterNamespace,
+		WorkloadClusterName: options.ManagedClusterName,
+	})
 }
