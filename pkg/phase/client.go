@@ -155,7 +155,8 @@ func (p *phase) DocumentRoot() (string, error) {
 
 	targetPath := p.helper.TargetPath()
 	phaseRepoDir := p.helper.PhaseRepoDir()
-	return filepath.Join(targetPath, phaseRepoDir, relativePath), nil
+	docEntryPointPrefix := p.helper.DocEntryPointPrefix()
+	return filepath.Join(targetPath, phaseRepoDir, docEntryPointPrefix, relativePath), nil
 }
 
 // Details returns description of the phase

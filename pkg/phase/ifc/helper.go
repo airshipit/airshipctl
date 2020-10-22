@@ -24,6 +24,7 @@ import (
 type Helper interface {
 	TargetPath() string
 	PhaseRepoDir() string
+	DocEntryPointPrefix() string
 	WorkDir() (string, error)
 	Phase(phaseID ID) (*v1alpha1.Phase, error)
 	Plan() (*v1alpha1.PhasePlan, error)

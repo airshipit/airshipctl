@@ -426,6 +426,33 @@ func TestHelperPhaseRoot(t *testing.T) {
 	assert.Equal(t, expectedPhaseRoot, helper.PhaseRoot())
 }
 
+func TestHelperPhaseRepoDir(t *testing.T) {
+	cfg := testConfig(t)
+	cfg.Manifests["dummy_manifest"].Repositories["primary"].URLString = "http://dummy.org/reponame.git"
+	cfg.Manifests["dummy_manifest"].MetadataPath = "../valid_site/metadata.yaml"
+	helper, err := phase.NewHelper(cfg)
+	require.NoError(t, err)
+	require.NotNil(t, helper)
+	assert.Equal(t, "reponame", helper.PhaseRepoDir())
+}
+
+func TestHelperDocEntryPointPrefix(t *testing.T) {
+	cfg := testConfig(t)
+	cfg.Manifests["dummy_manifest"].MetadataPath = "valid_site_with_doc_prefix/metadata.yaml"
+	helper, err := phase.NewHelper(cfg)
+	require.NoError(t, err)
+	require.NotNil(t, helper)
+	assert.Equal(t, "valid_site_with_doc_prefix/phases", helper.DocEntryPointPrefix())
+}
+
+func TestHelperEmptyDocEntryPointPrefix(t *testing.T) {
+	cfg := testConfig(t)
+	helper, err := phase.NewHelper(cfg)
+	require.NoError(t, err)
+	require.NotNil(t, helper)
+	assert.Equal(t, "", helper.DocEntryPointPrefix())
+}
+
 func TestHelperWorkdir(t *testing.T) {
 	helper, err := phase.NewHelper(testConfig(t))
 	require.NoError(t, err)
