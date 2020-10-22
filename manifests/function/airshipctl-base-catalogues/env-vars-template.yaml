@@ -4,6 +4,10 @@ metadata:
   name: env-vars-template
   labels:
     airshipit.org/deploy-k8s: "false"
+  annotations:
+    config.kubernetes.io/function: |-
+      container:
+        image: quay.io/airshipit/templater:dev
 template: |
   ---
   apiVersion: airshipit.org/v1alpha1
