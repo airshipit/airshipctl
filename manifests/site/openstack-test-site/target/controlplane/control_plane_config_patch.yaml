@@ -20,5 +20,3 @@ spec:
       encoding: base64
       owner: root
       permissions: "0600"
-  postKubeadmCommands:
-  - sudo kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://docs.projectcalico.org/v3.15/manifests/calico.yaml
