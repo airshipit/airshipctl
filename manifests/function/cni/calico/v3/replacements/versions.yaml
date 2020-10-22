@@ -2,6 +2,10 @@ apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
   name: calico-v3-versions-replacements
+  annotations:
+    config.kubernetes.io/function: |-
+      container:
+        image: quay.io/airshipit/replacement-transformer:dev
 replacements:
 - source:
     objref:
