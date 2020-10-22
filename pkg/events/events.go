@@ -15,6 +15,7 @@
 package events
 
 import (
+	"fmt"
 	"time"
 
 	applyevent "sigs.k8s.io/cli-utils/pkg/apply/event"
@@ -54,6 +55,87 @@ type Event struct {
 	IsogenEvent           IsogenEvent
 	BootstrapEvent        BootstrapEvent
 	GenericContainerEvent GenericContainerEvent
+}
+
+//GenericEvent generalized type for custom events
+type GenericEvent struct {
+	Type      string
+	Operation string
+	Message   string
+	Timestamp time.Time
+}
+
+var mapTypeToEvent = map[Type]string{
+	ClusterctlType:       "ClusterctlEvent",
+	IsogenType:           "IsogenEvent",
+	BootstrapType:        "BootstrapEvent",
+	GenericContainerType: "GenericContainerEvent",
+}
+
+var unknownEventType = map[Type]string{
+	ApplierType:      "ApplierType",
+	ErrorType:        "ErrorType",
+	StatusPollerType: "StatusPollerType",
+	WaitType:         "WaitType",
+}
+
+var isogenOperationToString = map[IsogenOperation]string{
+	IsogenStart:      "IsogenStart",
+	IsogenValidation: "IsogenValidation",
+	IsogenEnd:        "IsogenEnd",
+}
+
+var clusterctlOperationToString = map[ClusterctlOperation]string{
+	ClusterctlInitStart: "ClusterctlInitStart",
+	ClusterctlInitEnd:   "ClusterctlInitEnd",
+	ClusterctlMoveStart: "ClusterctlMoveStart",
+	ClusterctlMoveEnd:   "ClusterctlMoveEnd",
+}
+
+var bootstrapOperationToString = map[BootstrapOperation]string{
+	BootstrapStart:      "BootstrapStart",
+	BootstrapDryRun:     "BootstrapDryRun",
+	BootstrapValidation: "BootstrapValidation",
+	BootstrapRun:        "BootstrapRun",
+	BootstrapEnd:        "BootstrapEnd",
+}
+
+var genericContainerOperationToString = map[GenericContainerOperation]string{
+	GenericContainerStart: "GenericContainerStart",
+	GenericContainerStop:  "GenericContainerStop",
+}
+
+//Normalize cast Event to GenericEvent type
+func Normalize(e Event) GenericEvent {
+	var eventType string
+	if t, exists := mapTypeToEvent[e.Type]; exists {
+		eventType = t
+	} else {
+		eventType = fmt.Sprintf("Unknown event type: %v", unknownEventType[e.Type])
+	}
+
+	var operation, message string
+	switch e.Type {
+	case ClusterctlType:
+		operation = clusterctlOperationToString[e.ClusterctlEvent.Operation]
+		message = e.ClusterctlEvent.Message
+	case IsogenType:
+		operation = isogenOperationToString[e.IsogenEvent.Operation]
+		message = e.IsogenEvent.Message
+	case BootstrapType:
+		operation = bootstrapOperationToString[e.BootstrapEvent.Operation]
+		message = e.BootstrapEvent.Message
+	case GenericContainerType:
+		operation = genericContainerOperationToString[e.GenericContainerEvent.Operation]
+		message = e.GenericContainerEvent.Message
+	}
+
+	return GenericEvent{
+		Type:      eventType,
+		Operation: operation,
+		Message:   message,
+		Timestamp: e.Timestamp,
+	}
 }
 
 // NewEvent create new event with timestamp
