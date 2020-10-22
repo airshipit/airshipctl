@@ -16,14 +16,11 @@ package document_test
 
 import (
 	"bytes"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/testutil"
 )
@@ -268,25 +265,5 @@ func TestSelectBundle(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Len(t, docs, tt.expectedDocs)
-	}
-}
-
-func TestPluginPath(t *testing.T) {
-	testDir, cleanup := testutil.TempDir(t, "test-home")
-	defer cleanup(t)
-	defer setHome(testDir)()
-
-	expectedPluginPath := filepath.Join(testDir, config.AirshipConfigDir, config.AirshipPluginPath)
-	document.InitPluginPath()
-	assert.Equal(t, expectedPluginPath, document.PluginPath())
-}
-
-// setHome sets the HOME environment variable to `path`, and returns a function
-// that can be used to reset HOME to its original value
-func setHome(path string) (resetHome func()) {
-	oldHome := os.Getenv("HOME")
-	os.Setenv("HOME", path)
-	return func() {
-		os.Setenv("HOME", oldHome)
 	}
 }

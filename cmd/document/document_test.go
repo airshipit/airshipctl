@@ -28,11 +28,6 @@ func TestDocument(t *testing.T) {
 			CmdLine: "-h",
 			Cmd:     document.NewDocumentCommand(nil),
 		},
-		{
-			Name:    "document-plugin-with-help",
-			CmdLine: "-h",
-			Cmd:     document.NewPluginCommand(),
-		},
 	}
 	for _, tt := range tests {
 		testutil.RunTest(t, tt)

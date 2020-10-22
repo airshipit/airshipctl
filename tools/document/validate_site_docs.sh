@@ -26,7 +26,6 @@ set -xe
 : ${KUBECONFIG:="${HOME}/.airship/kubeconfig"}
 
 : ${KUBECTL:="/usr/local/bin/kubectl"}
-: ${KUSTOMIZE_PLUGIN_HOME:="${HOME}/.airship/kustomize-plugins"}
 TMP=$(mktemp -d)
 
 # Use the local project airshipctl binary as the default if it exists,
@@ -42,7 +41,6 @@ fi
 : ${AIRSHIPCTL:="${AIRSHIPCTL_DEFAULT}"}
 ACTL="${AIRSHIPCTL} --airshipconf ${AIRSHIPCONFIG} --kubeconfig ${AIRSHIPKUBECONFIG}"
 
-export KUSTOMIZE_PLUGIN_HOME
 export KUBECONFIG
 
 # TODO: use `airshipctl config` to do this once all the needed knobs are exposed

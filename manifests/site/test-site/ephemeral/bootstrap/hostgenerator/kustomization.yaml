@@ -11,3 +11,7 @@ transformers:
   # TODO: these two should move up to type level in the future
   - ../../../../../function/hostgenerator-m3/replacements
   - ../../../../../function/hardwareprofile-example/replacements
+  # NOTE We can not use patchesStrategicMerge directive since Strategic Merge
+  # plugin has to be executed once all replacements has been done. Therefore
+  # we need to load Strategic Merge plugin as an external plugin
+  - patchesstrategicmerge.yaml

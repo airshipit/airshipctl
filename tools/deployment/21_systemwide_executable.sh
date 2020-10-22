@@ -34,6 +34,3 @@ else
   echo "Airshipctl version"
   airshipctl version
 fi
-
-echo "Install airshipctl as kustomize plugins"
-AIRSHIPCTL="/usr/local/bin/airshipctl" ./tools/document/build_kustomize_plugin.sh

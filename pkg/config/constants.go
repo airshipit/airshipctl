@@ -40,8 +40,6 @@ const (
 	AirshipDefaultManifest                = "default"
 	AirshipDefaultManifestRepo            = "treasuremap"
 	AirshipDefaultManifestRepoLocation    = "https://opendev.org/airship/" + AirshipDefaultManifestRepo
-	AirshipPluginPath                     = "kustomize-plugins"
-	AirshipPluginPathEnv                  = "AIRSHIP_KUSTOMIZE_PLUGINS"
 
 	// Modules
 	AirshipDefaultManagementType = redfish.ClientType

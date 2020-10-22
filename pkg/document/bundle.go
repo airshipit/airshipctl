@@ -16,10 +16,7 @@ package document
 
 import (
 	"io"
-	"os"
-	"path/filepath"
 	"strings"
-	"sync"
 
 	"sigs.k8s.io/kustomize/api/k8sdeps/kunstruct"
 	"sigs.k8s.io/kustomize/api/krusty"
@@ -27,8 +24,6 @@ import (
 	"sigs.k8s.io/kustomize/api/resource"
 	"sigs.k8s.io/kustomize/api/types"
 
-	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/util"
 	utilyaml "opendev.org/airship/airshipctl/pkg/util/yaml"
 )
 
@@ -61,10 +56,6 @@ type Bundle interface {
 	GetAllDocuments() ([]Document, error)
 	Append(Document) error
 }
-
-// A singleton for the kustomize plugin path configuration
-var pluginPath string
-var pluginPathLock = &sync.Mutex{}
 
 // BundleFactoryFunc is a function that returns bundle, can be used to build bundle on demand
 // instead of inplace, useful, when you don't know if bundle will be needed or not, see phase for detail
@@ -101,8 +92,8 @@ func NewBundle(fSys FileSystem, kustomizePath string) (Bundle, error) {
 		LoadRestrictions:     options.LoadRestrictions,
 		DoPrune:              false, // Default
 		PluginConfig: &types.PluginConfig{
-			AbsPluginHome:      PluginPath(),
 			PluginRestrictions: types.PluginRestrictionsNone,
+			BpLoadingOptions:   types.BploUseStaticallyLinked,
 		},
 	}
 
@@ -113,33 +104,6 @@ func NewBundle(fSys FileSystem, kustomizePath string) (Bundle, error) {
 	}
 	err = bundle.SetKustomizeResourceMap(m)
 	return bundle, err
-}
-
-// PluginPath returns the kustomize plugin path
-func PluginPath() string {
-	if pluginPath == "" {
-		InitPluginPath()
-	}
-
-	pluginPathLock.Lock()
-	defer pluginPathLock.Unlock()
-	return pluginPath
-}
-
-// InitPluginPath sets the location to look for kustomize plugins (including airshipctl itself).
-func InitPluginPath() {
-	pluginPathLock.Lock()
-	defer pluginPathLock.Unlock()
-
-	// Check if we got the path via ENVIRONMENT variable
-	pluginPath = os.Getenv(config.AirshipPluginPathEnv)
-	if pluginPath != "" {
-		return
-	}
-
-	// Otherwise, we'll try putting it in the home directory
-	homeDir := util.UserHomeDir()
-	pluginPath = filepath.Join(homeDir, config.AirshipConfigDir, config.AirshipPluginPath)
 }
 
 // GetKustomizeResourceMap returns a Kustomize Resource Map for this bundle

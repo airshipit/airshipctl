@@ -17,18 +17,16 @@ package replacement
 import (
 	"encoding/base64"
 	"fmt"
-	"io"
 	"regexp"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/kustomize/api/types"
+	"sigs.k8s.io/kustomize/kyaml/kio"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/document/plugin/kyamlutils"
-	plugtypes "opendev.org/airship/airshipctl/pkg/document/plugin/types"
-	"opendev.org/airship/airshipctl/pkg/errors"
 )
 
 var (
@@ -41,14 +39,14 @@ const (
 	secretData = "data"
 )
 
-var _ plugtypes.Plugin = &plugin{}
+var _ kio.Filter = &plugin{}
 
 type plugin struct {
 	*airshipv1.ReplacementTransformer
 }
 
 // New creates new instance of the plugin
-func New(obj map[string]interface{}) (plugtypes.Plugin, error) {
+func New(obj map[string]interface{}) (kio.Filter, error) {
 	cfg := &airshipv1.ReplacementTransformer{}
 	err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj, cfg)
 	if err != nil {
@@ -67,10 +65,6 @@ func New(obj map[string]interface{}) (plugtypes.Plugin, error) {
 		}
 	}
 	return p, nil
-}
-
-func (p *plugin) Run(in io.Reader, out io.Writer) error {
-	return errors.ErrNotImplemented{What: "ReplacementTransformer method Run is deprecated and will be removed"}
 }
 
 func (p *plugin) Filter(items []*yaml.RNode) ([]*yaml.RNode, error) {
