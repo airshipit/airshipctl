@@ -37,6 +37,14 @@ type Cluster struct {
 	DynamicKubeConfig bool `json:"dynamicKubeConf,omitempty"`
 	// KubeconfigContext is the context in kubeconfig, default is equals to clusterMap key
 	KubeconfigContext string `json:"kubeconfigContext,omitempty"`
+	// ClusterAPIRef references to Cluster API cluster resources
+	ClusterAPIRef ClusterAPIRef `json:"clusterAPIRef,omitempty"`
+}
+
+// ClusterAPIRef will be used to find cluster object in kubernetes parent cluster
+type ClusterAPIRef struct {
+	Name      string
+	Namespace string
 }
 
 // DefaultClusterMap can be used to safely unmarshal ClusterMap object without nil pointers
