@@ -56,7 +56,6 @@ type Manager struct {
 // actions an out-of-band client can perform. Once instantiated, actions can be performed on a baremetal host.
 type baremetalHost struct {
 	Client
-	Context    context.Context
 	BMCAddress string
 	HostName   string
 	username   string
@@ -218,7 +217,7 @@ func newBaremetalHost(mgmtCfg config.ManagementConfiguration,
 	switch mgmtCfg.Type {
 	case redfish.ClientType:
 		log.Debug("Remote type: Redfish")
-		ctx, client, err := redfish.NewClient(
+		client, err := redfish.NewClient(
 			address,
 			mgmtCfg.Insecure,
 			mgmtCfg.UseProxy,
@@ -231,10 +230,10 @@ func newBaremetalHost(mgmtCfg config.ManagementConfiguration,
 			return host, err
 		}
 
-		host = baremetalHost{client, ctx, address, hostDoc.GetName(), username, password}
+		host = baremetalHost{client, address, hostDoc.GetName(), username, password}
 	case redfishdell.ClientType:
 		log.Debug("Remote type: Redfish for Integrated Dell Remote Access Controller (iDrac) systems")
-		ctx, client, err := redfishdell.NewClient(
+		client, err := redfishdell.NewClient(
 			address,
 			mgmtCfg.Insecure,
 			mgmtCfg.UseProxy,
@@ -247,7 +246,7 @@ func newBaremetalHost(mgmtCfg config.ManagementConfiguration,
 			return host, err
 		}
 
-		host = baremetalHost{client, ctx, address, hostDoc.GetName(), username, password}
+		host = baremetalHost{client, address, hostDoc.GetName(), username, password}
 	default:
 		return host, ErrUnknownManagementType{Type: mgmtCfg.Type}
 	}

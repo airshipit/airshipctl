@@ -40,14 +40,15 @@ const (
 )
 
 func TestNewClient(t *testing.T) {
-	_, _, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	c, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
+	assert.NotNil(t, c)
 }
 
 func TestNewClientDefaultValues(t *testing.T) {
 	sysActRetr := 111
 	sysRebDel := 999
-	_, c, err := NewClient(redfishURL, false, false, "", "", sysActRetr, sysRebDel)
+	c, err := NewClient(redfishURL, false, false, "", "", sysActRetr, sysRebDel)
 	assert.Equal(t, c.systemActionRetries, sysActRetr)
 	assert.Equal(t, c.systemRebootDelay, sysRebDel)
 	assert.NoError(t, err)
@@ -56,7 +57,7 @@ func TestNewClientDefaultValues(t *testing.T) {
 func TestNewClientMissingSystemID(t *testing.T) {
 	badURL := "redfish+https://localhost:2224"
 
-	_, _, err := NewClient(badURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	_, err := NewClient(badURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	_, ok := err.(ErrRedfishMissingConfig)
 	assert.True(t, ok)
 }
@@ -64,34 +65,24 @@ func TestNewClientMissingSystemID(t *testing.T) {
 func TestNewClientNoRedfishMarking(t *testing.T) {
 	url := "https://localhost:2224/Systems/System.Embedded.1"
 
-	_, _, err := NewClient(url, false, false, "", "", systemActionRetries, systemRebootDelay)
+	_, err := NewClient(url, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
-}
-
-func TestNewClientAuth(t *testing.T) {
-	ctx, _, err := NewClient(redfishURL, false, false, "username", "password", systemActionRetries, systemRebootDelay)
-	assert.NoError(t, err)
-
-	cAuth := ctx.Value(redfishClient.ContextBasicAuth)
-	auth := redfishClient.BasicAuth{UserName: "username", Password: "password"}
-	assert.Equal(t, cAuth, auth)
 }
 
 func TestNewClientEmptyRedfishURL(t *testing.T) {
 	// Redfish URL cannot be empty when creating a client.
-	_, _, err := NewClient("", false, false, "", "", systemActionRetries, systemRebootDelay)
+	_, err := NewClient("", false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.Error(t, err)
 }
 func TestEjectVirtualMedia(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	_, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries+1, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries+1, systemRebootDelay)
 	assert.NoError(t, err)
 
 	client.nodeID = nodeID
-
-	ctx := context.Background()
+	ctx := client.setAuth(context.Background())
 
 	// Mark CD and DVD test media as inserted
 	inserted := true
@@ -102,7 +93,7 @@ func TestEjectVirtualMedia(t *testing.T) {
 	testMediaDVD.Inserted = &inserted
 
 	httpResp := &http.Response{StatusCode: 200}
-	m.On("GetSystem", ctx, client.nodeID).Return(testutil.GetTestSystem(), httpResp, nil)
+	m.On("GetSystem", ctx, client.nodeID).Return(testutil.GetTestSystem(), httpResp, nil).Times(1)
 	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
 		Return(testutil.GetMediaCollection([]string{"Cd", "DVD", "Floppy"}), httpResp, nil)
 
@@ -141,12 +132,12 @@ func TestEjectVirtualMediaRetriesExceeded(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	_, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
 	client.nodeID = nodeID
 
-	ctx := context.Background()
+	ctx := client.setAuth(context.Background())
 
 	// Mark test media as inserted
 	inserted := true
@@ -155,17 +146,17 @@ func TestEjectVirtualMediaRetriesExceeded(t *testing.T) {
 
 	httpResp := &http.Response{StatusCode: 200}
 	m.On("GetSystem", ctx, client.nodeID).Return(testutil.GetTestSystem(), httpResp, nil)
-	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
+	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).
 		Return(testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil)
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
+	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").
 		Return(testMedia, httpResp, nil)
 
 	// Verify retry logic
-	m.On("EjectVirtualMedia", ctx, testutil.ManagerID, "Cd", mock.Anything).Times(1).
+	m.On("EjectVirtualMedia", ctx, testutil.ManagerID, "Cd", mock.Anything).
 		Return(redfishClient.RedfishError{}, httpResp, nil)
 
 	// Media still inserted on retry. Since retries are 1, this causes failure.
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
+	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").
 		Return(testMedia, httpResp, nil)
 
 	// Replace normal API client with mocked API client
@@ -181,10 +172,11 @@ func TestRebootSystem(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
 	client.nodeID = nodeID
+	ctx := client.setAuth(context.Background())
 
 	// Mock redfish shutdown and status requests
 	resetReq := redfishClient.ResetRequestBody{}
@@ -215,10 +207,11 @@ func TestRebootSystemShutdownError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
 	client.nodeID = nodeID
+	ctx := client.setAuth(context.Background())
 
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
@@ -241,10 +234,11 @@ func TestRebootSystemStartupError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
 	client.nodeID = nodeID
+	ctx := client.setAuth(context.Background())
 
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
@@ -278,12 +272,12 @@ func TestRebootSystemTimeout(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	_, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
 	client.nodeID = nodeID
+	ctx := client.setAuth(context.Background())
 
-	ctx := context.Background()
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 
@@ -307,10 +301,11 @@ func TestSetBootSourceByTypeGetSystemError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
 	client.nodeID = nodeID
+	ctx := client.setAuth(context.Background())
 
 	// Mock redfish get system request
 	m.On("GetSystem", ctx, client.NodeID()).Times(1).Return(redfishClient.ComputerSystem{},
@@ -329,10 +324,11 @@ func TestSetBootSourceByTypeSetSystemError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
 	client.nodeID = nodeID
+	ctx := client.setAuth(context.Background())
 
 	httpResp := &http.Response{StatusCode: 200}
 	m.On("GetSystem", ctx, client.nodeID).Return(testutil.GetTestSystem(), httpResp, nil)
@@ -356,9 +352,10 @@ func TestSetBootSourceByTypeBootSourceUnavailable(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
+	ctx := client.setAuth(context.Background())
 	client.nodeID = nodeID
 
 	invalidSystem := testutil.GetTestSystem()
@@ -388,12 +385,12 @@ func TestSetVirtualMediaEjectExistingMedia(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	_, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
 	client.nodeID = nodeID
 
-	ctx := context.Background()
+	ctx := client.setAuth(context.Background())
 
 	// Mark test media as inserted
 	inserted := true
@@ -434,12 +431,12 @@ func TestSetVirtualMediaEjectExistingMediaFailure(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	_, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
 	client.nodeID = nodeID
 
-	ctx := context.Background()
+	ctx := client.setAuth(context.Background())
 
 	// Mark test media as inserted
 	inserted := true
@@ -471,9 +468,10 @@ func TestSetVirtualMediaGetSystemError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
+	ctx := client.setAuth(context.Background())
 	client.nodeID = nodeID
 
 	// Mock redfish get system request
@@ -493,9 +491,10 @@ func TestSetVirtualMediaInsertVirtualMediaError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
+	ctx := client.setAuth(context.Background())
 	client.nodeID = nodeID
 
 	httpResp := &http.Response{StatusCode: 200}
@@ -510,7 +509,7 @@ func TestSetVirtualMediaInsertVirtualMediaError(t *testing.T) {
 		Return(testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil)
 	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
 		Return(testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
-	m.On("InsertVirtualMedia", context.Background(), testutil.ManagerID, "Cd", mock.Anything).Return(
+	m.On("InsertVirtualMedia", ctx, testutil.ManagerID, "Cd", mock.Anything).Return(
 		redfishClient.RedfishError{}, &http.Response{StatusCode: 500}, redfishClient.GenericOpenAPIError{})
 
 	// Replace normal API client with mocked API client
@@ -527,12 +526,11 @@ func TestSystemPowerOff(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	_, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	require.NoError(t, err)
 
 	client.nodeID = nodeID
-
-	ctx := context.Background()
+	ctx := client.setAuth(context.Background())
 
 	m.On("ResetSystem", ctx, client.nodeID, mock.Anything).Return(
 		redfishClient.RedfishError{},
@@ -560,12 +558,11 @@ func TestSystemPowerOffResetSystemError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	_, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	require.NoError(t, err)
 
 	client.nodeID = nodeID
-
-	ctx := context.Background()
+	ctx := client.setAuth(context.Background())
 
 	m.On("ResetSystem", ctx, client.nodeID, mock.Anything).Return(
 		redfishClient.RedfishError{},
@@ -585,12 +582,11 @@ func TestSystemPowerOn(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	_, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	require.NoError(t, err)
 
 	client.nodeID = nodeID
-
-	ctx := context.Background()
+	ctx := client.setAuth(context.Background())
 
 	m.On("ResetSystem", ctx, client.nodeID, mock.Anything).Return(
 		redfishClient.RedfishError{},
@@ -618,12 +614,11 @@ func TestSystemPowerOnResetSystemError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	_, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	require.NoError(t, err)
 
 	client.nodeID = nodeID
-
-	ctx := context.Background()
+	ctx := client.setAuth(context.Background())
 
 	m.On("ResetSystem", ctx, client.nodeID, mock.Anything).Return(
 		redfishClient.RedfishError{},
@@ -643,10 +638,11 @@ func TestSystemPowerStatusUnknown(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	require.NoError(t, err)
 
 	client.nodeID = nodeID
+	ctx := client.setAuth(context.Background())
 
 	var unknownState redfishClient.PowerState = "unknown"
 	m.On("GetSystem", ctx, client.nodeID).Return(
@@ -666,9 +662,10 @@ func TestSystemPowerStatusOn(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	require.NoError(t, err)
 
+	ctx := client.setAuth(context.Background())
 	client.nodeID = nodeID
 
 	m.On("GetSystem", ctx, client.nodeID).Return(
@@ -688,10 +685,11 @@ func TestSystemPowerStatusOff(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	require.NoError(t, err)
 
 	client.nodeID = nodeID
+	ctx := client.setAuth(context.Background())
 
 	m.On("GetSystem", ctx, client.nodeID).Return(
 		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_OFF},
@@ -710,10 +708,11 @@ func TestSystemPowerStatusPoweringOn(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	require.NoError(t, err)
 
 	client.nodeID = nodeID
+	ctx := client.setAuth(context.Background())
 
 	m.On("GetSystem", ctx, client.nodeID).Return(
 		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_POWERING_ON},
@@ -732,10 +731,11 @@ func TestSystemPowerStatusPoweringOff(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	require.NoError(t, err)
 
 	client.nodeID = nodeID
+	ctx := client.setAuth(context.Background())
 
 	m.On("GetSystem", ctx, client.nodeID).Return(
 		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_POWERING_OFF},
@@ -754,10 +754,11 @@ func TestSystemPowerStatusGetSystemError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	require.NoError(t, err)
 
 	client.nodeID = nodeID
+	ctx := client.setAuth(context.Background())
 
 	m.On("GetSystem", ctx, client.nodeID).Return(
 		redfishClient.ComputerSystem{},
@@ -774,10 +775,10 @@ func TestWaitForPowerStateGetSystemFailed(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	_, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
-	ctx := context.Background()
+	ctx := client.setAuth(context.Background())
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 
@@ -798,10 +799,10 @@ func TestWaitForPowerStateNoRetries(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	_, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
-	ctx := context.Background()
+	ctx := client.setAuth(context.Background())
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 
@@ -824,10 +825,10 @@ func TestWaitForPowerStateWithRetries(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	_, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
-	ctx := context.Background()
+	ctx := client.setAuth(context.Background())
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 
@@ -855,10 +856,10 @@ func TestWaitForPowerStateRetriesExceeded(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	_, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
-	ctx := context.Background()
+	ctx := client.setAuth(context.Background())
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 
@@ -886,10 +887,10 @@ func TestWaitForPowerStateDifferentPowerState(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	_, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
-	ctx := context.Background()
+	ctx := client.setAuth(context.Background())
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_ON
 

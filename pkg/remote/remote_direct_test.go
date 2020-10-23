@@ -15,6 +15,7 @@
 package remote
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -34,12 +35,11 @@ const (
 )
 
 func TestDoRemoteDirectMissingConfigOpts(t *testing.T) {
-	ctx, rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
+	rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
 	assert.NoError(t, err)
 
 	ephemeralHost := baremetalHost{
 		rMock,
-		ctx,
 		redfishURL,
 		"doc-name",
 		username,
@@ -56,15 +56,16 @@ func TestDoRemoteDirectMissingConfigOpts(t *testing.T) {
 }
 
 func TestDoRemoteDirectMissingISOURL(t *testing.T) {
-	ctx, rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
+	rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
 	assert.NoError(t, err)
+
+	ctx := context.Background()
 
 	rMock.On("NodeID").Times(1).Return(systemID)
 	rMock.On("SystemPowerStatus", ctx).Times(1).Return(power.StatusOn, nil)
 
 	ephemeralHost := baremetalHost{
 		rMock,
-		ctx,
 		redfishURL,
 		"doc-name",
 		username,
@@ -79,8 +80,10 @@ func TestDoRemoteDirectMissingISOURL(t *testing.T) {
 }
 
 func TestDoRemoteDirectRedfish(t *testing.T) {
-	ctx, rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
+	rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
 	assert.NoError(t, err)
+
+	ctx := context.Background()
 
 	rMock.On("NodeID").Times(1).Return(systemID)
 	rMock.On("SystemPowerStatus", ctx).Times(1).Return(power.StatusOn, nil)
@@ -91,7 +94,6 @@ func TestDoRemoteDirectRedfish(t *testing.T) {
 
 	ephemeralHost := baremetalHost{
 		rMock,
-		ctx,
 		redfishURL,
 		"doc-name",
 		username,
@@ -104,8 +106,10 @@ func TestDoRemoteDirectRedfish(t *testing.T) {
 }
 
 func TestDoRemoteDirectRedfishNodePoweredOff(t *testing.T) {
-	ctx, rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
+	rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
 	assert.NoError(t, err)
+
+	ctx := context.Background()
 
 	rMock.On("NodeID").Times(1).Return(systemID)
 	rMock.On("SystemPowerStatus", ctx).Times(1).Return(power.StatusOff, nil)
@@ -117,7 +121,6 @@ func TestDoRemoteDirectRedfishNodePoweredOff(t *testing.T) {
 
 	ephemeralHost := baremetalHost{
 		rMock,
-		ctx,
 		redfishURL,
 		"doc-name",
 		username,
@@ -130,8 +133,10 @@ func TestDoRemoteDirectRedfishNodePoweredOff(t *testing.T) {
 }
 
 func TestDoRemoteDirectRedfishVirtualMediaError(t *testing.T) {
-	ctx, rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
+	rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
 	assert.NoError(t, err)
+
+	ctx := context.Background()
 
 	expectedErr := redfish.ErrRedfishClient{Message: "Unable to set virtual media."}
 
@@ -144,7 +149,6 @@ func TestDoRemoteDirectRedfishVirtualMediaError(t *testing.T) {
 
 	ephemeralHost := baremetalHost{
 		rMock,
-		ctx,
 		redfishURL,
 		"doc-name",
 		username,
@@ -159,8 +163,10 @@ func TestDoRemoteDirectRedfishVirtualMediaError(t *testing.T) {
 }
 
 func TestDoRemoteDirectRedfishBootSourceError(t *testing.T) {
-	ctx, rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
+	rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
 	assert.NoError(t, err)
+
+	ctx := context.Background()
 
 	rMock.On("NodeID").Times(1).Return(systemID)
 	rMock.On("SystemPowerStatus", ctx).Times(1).Return(power.StatusOn, nil)
@@ -173,7 +179,6 @@ func TestDoRemoteDirectRedfishBootSourceError(t *testing.T) {
 
 	ephemeralHost := baremetalHost{
 		rMock,
-		ctx,
 		redfishURL,
 		"doc-name",
 		username,
@@ -188,8 +193,10 @@ func TestDoRemoteDirectRedfishBootSourceError(t *testing.T) {
 }
 
 func TestDoRemoteDirectRedfishRebootError(t *testing.T) {
-	ctx, rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
+	rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
 	assert.NoError(t, err)
+
+	ctx := context.Background()
 
 	rMock.On("NodeID").Times(1).Return(systemID)
 	rMock.On("SystemPowerStatus", ctx).Times(1).Return(power.StatusOn, nil)
@@ -203,7 +210,6 @@ func TestDoRemoteDirectRedfishRebootError(t *testing.T) {
 
 	ephemeralHost := baremetalHost{
 		rMock,
-		ctx,
 		redfishURL,
 		"doc-name",
 		username,

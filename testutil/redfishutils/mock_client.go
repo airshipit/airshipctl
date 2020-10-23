@@ -16,7 +16,6 @@ import (
 	"context"
 
 	"github.com/stretchr/testify/mock"
-	redfishClient "opendev.org/airship/go-redfish/client"
 
 	"opendev.org/airship/airshipctl/pkg/remote/power"
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
@@ -141,29 +140,17 @@ func (m *MockClient) SystemPowerStatus(ctx context.Context) (power.Status, error
 // NewClient returns a mocked Redfish client in order to test functions that use the Redfish client without making any
 // Redfish API calls.
 func NewClient(redfishURL string, insecure bool, useProxy bool, username string,
-	password string) (context.Context, *MockClient, error) {
-	var ctx context.Context
-	if username != "" && password != "" {
-		ctx = context.WithValue(
-			context.Background(),
-			redfishClient.ContextBasicAuth,
-			redfishClient.BasicAuth{UserName: username, Password: password},
-		)
-	} else {
-		ctx = context.Background()
-	}
-
+	password string) (*MockClient, error) {
 	if redfishURL == "" {
-		return ctx, nil, redfish.ErrRedfishMissingConfig{What: "Redfish URL"}
+		return nil, redfish.ErrRedfishMissingConfig{What: "Redfish URL"}
 	}
 
 	// Retrieve system ID from end of Redfish URL
 	systemID := redfish.GetResourceIDFromURL(redfishURL)
 	if len(systemID) == 0 {
-		return ctx, nil, redfish.ErrRedfishMissingConfig{What: "management URL system ID"}
+		return nil, redfish.ErrRedfishMissingConfig{What: "management URL system ID"}
 	}
 
 	m := &MockClient{nodeID: systemID}
-
-	return ctx, m, nil
+	return m, nil
 }

@@ -15,6 +15,7 @@
 package baremetal
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -104,28 +105,29 @@ func selectAction(m *remote.Manager, cfg *config.Config, action Action, writer i
 		return ephemeralHost.DoRemoteDirect(cfg)
 	}
 
+	ctx := context.Background()
 	for _, host := range m.Hosts {
 		switch action {
 		case ejectAction:
-			if err := host.EjectVirtualMedia(host.Context); err != nil {
+			if err := host.EjectVirtualMedia(ctx); err != nil {
 				return err
 			}
 
 			fmt.Fprintf(writer, "All media ejected from host '%s'.\n", host.HostName)
 		case powerOffAction:
-			if err := host.SystemPowerOff(host.Context); err != nil {
+			if err := host.SystemPowerOff(ctx); err != nil {
 				return err
 			}
 
 			fmt.Fprintf(writer, "Powered off host '%s'.\n", host.HostName)
 		case powerOnAction:
-			if err := host.SystemPowerOn(host.Context); err != nil {
+			if err := host.SystemPowerOn(ctx); err != nil {
 				return err
 			}
 
 			fmt.Fprintf(writer, "Powered on host '%s'.\n", host.HostName)
 		case powerStatusAction:
-			powerStatus, err := host.SystemPowerStatus(host.Context)
+			powerStatus, err := host.SystemPowerStatus(ctx)
 			if err != nil {
 				return err
 			}
@@ -133,7 +135,7 @@ func selectAction(m *remote.Manager, cfg *config.Config, action Action, writer i
 			fmt.Fprintf(writer, "Host '%s' has power status: '%s'\n",
 				host.HostName, powerStatus)
 		case rebootAction:
-			if err := host.RebootSystem(host.Context); err != nil {
+			if err := host.RebootSystem(ctx); err != nil {
 				return err
 			}
 
