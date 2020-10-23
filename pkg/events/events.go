@@ -37,6 +37,8 @@ const (
 	ClusterctlType
 	// IsogenType event emitted by Isogen executor
 	IsogenType
+	// BootstrapType event emitted by Bootstrap executor
+	BootstrapType
 )
 
 // Event holds all possible events that can be produced by airship
@@ -48,6 +50,7 @@ type Event struct {
 	StatusPollerEvent statuspollerevent.Event
 	ClusterctlEvent   ClusterctlEvent
 	IsogenEvent       IsogenEvent
+	BootstrapEvent    BootstrapEvent
 }
 
 // NewEvent create new event with timestamp
@@ -118,5 +121,34 @@ type IsogenEvent struct {
 func (e Event) WithIsogenEvent(concreteEvent IsogenEvent) Event {
 	e.Type = IsogenType
 	e.IsogenEvent = concreteEvent
+	return e
+}
+
+// BootstrapOperation type
+type BootstrapOperation int
+
+const (
+	// BootstrapStart operation
+	BootstrapStart BootstrapOperation = iota
+	// BootstrapDryRun operation
+	BootstrapDryRun
+	// BootstrapValidation operation
+	BootstrapValidation
+	// BootstrapRun operation
+	BootstrapRun
+	// BootstrapEnd operation
+	BootstrapEnd
+)
+
+// BootstrapEvent needs to to track events in bootstrap executor
+type BootstrapEvent struct {
+	Operation BootstrapOperation
+	Message   string
+}
+
+// WithBootstrapEvent sets type and actual bootstrap event
+func (e Event) WithBootstrapEvent(concreteEvent BootstrapEvent) Event {
+	e.Type = BootstrapType
+	e.BootstrapEvent = concreteEvent
 	return e
 }

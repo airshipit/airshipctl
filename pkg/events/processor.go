@@ -59,6 +59,8 @@ func (p *DefaultProcessor) Process(ch <-chan Event) error {
 			// Stringer interface or AsYAML for further processing.
 			// For now we print the event object as is
 			log.Printf("Received event: %v", e)
+		case BootstrapType:
+			log.Printf("%s", e.BootstrapEvent.Message)
 		case StatusPollerType:
 			log.Fatalf("Processing for status poller events are not yet implemented")
 		case WaitType:
