@@ -67,9 +67,9 @@
           export CONTEXT={{ kctl_context | default("dummy_cluster") }}
           kubectl config use-context ${CONTEXT}
           export OBJECT_TYPE="{{ collect_namespaced_objects | join(',') }}"
-          export ALL_OBJECTS_YAML_FILE=$(tempfile)
-          kubectl get all -A -oyaml > ${ALL_OBJECTS_YAML_FILE}
+          export TMP_DIR=$(mktemp -d)
           export PARALLELISM_FACTOR=2
+          printf ${OBJECT_TYPE} | xargs -d ',' -I {} -P ${PARALLELISM_FACTOR} -n1 bash -c 'kubectl get -A -oyaml "$@" > ${TMP_DIR}/"$@".yaml' _ {}
 
           function get_namespaces () {
             kubectl get namespaces -o name | awk -F '/' '{ print $NF }'
@@ -97,7 +97,7 @@
             echo "${NAMESPACE}/${OBJECT}/${NAME}"
             DIR="{{ logs_dir }}/objects/${CONTEXT}/namespaced/${NAMESPACE}/${OBJECT}"
             mkdir -p ${DIR}
-            cat "${ALL_OBJECTS_YAML_FILE}" | kustomize cfg grep "metadata.namespace=${NAMESPACE}" | kustomize cfg grep "metadata.name=${OBJECT}" > "${DIR}/${NAME}.yaml"
+            cat "${TMP_DIR}/${OBJECT}.yaml" | kustomize cfg grep "metadata.namespace=${NAMESPACE}" | kustomize cfg grep "metadata.name=${NAME}" > "${DIR}/${NAME}.yaml"
             kubectl describe -n ${NAMESPACE} ${OBJECT} ${NAME} > "${DIR}/${NAME}.txt"
           }
           export -f get_objects
