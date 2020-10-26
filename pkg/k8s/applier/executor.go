@@ -22,6 +22,7 @@ import (
 	"sigs.k8s.io/cli-utils/pkg/common"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
@@ -40,6 +41,7 @@ type ExecutorOptions struct {
 	BundleFactory    document.BundleFactoryFunc
 	Kubeconfig       kubeconfig.Interface
 	Helper           ifc.Helper
+	ClusterMap       clustermap.ClusterMap
 }
 
 var _ ifc.Executor = &Executor{}
@@ -64,6 +66,7 @@ func registerExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 		ExecutorDocument: cfg.ExecutorDocument,
 		BundleFactory:    cfg.BundleFactory,
 		Kubeconfig:       cfg.KubeConfig,
+		ClusterMap:       cfg.ClusterMap,
 	})
 }
 
@@ -123,6 +126,11 @@ func (e *Executor) Run(ch chan events.Event, runOpts ifc.RunOptions) {
 }
 
 func (e *Executor) prepareApplier(ch chan events.Event) (*Applier, document.Bundle, error) {
+	log.Debug("Getting kubeconfig context name from cluster map")
+	context, err := e.Options.ClusterMap.ClusterKubeconfigContext(e.Options.ClusterName)
+	if err != nil {
+		return nil, nil, err
+	}
 	log.Debug("Getting kubeconfig file information from kubeconfig provider")
 	path, cleanup, err := e.Options.Kubeconfig.GetFile()
 	if err != nil {
@@ -136,8 +144,8 @@ func (e *Executor) prepareApplier(ch chan events.Event) (*Applier, document.Bund
 	}
 	// set up cleanup only if all calls up to here were successful
 	e.cleanup = cleanup
-	// Use cluster name as context in kubeconfig file
-	factory := utils.FactoryFromKubeConfig(path, e.Options.ClusterName)
+	log.Debugf("Using kubeconfig at '%s' and context '%s'", path, context)
+	factory := utils.FactoryFromKubeConfig(path, context)
 	return NewApplier(ch, factory), bundle, nil
 }
 

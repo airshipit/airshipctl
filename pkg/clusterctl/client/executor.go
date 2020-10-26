@@ -95,7 +95,17 @@ func (c *ClusterctlExecutor) move(opts ifc.RunOptions, evtCh chan events.Event) 
 		return
 	}
 	defer cleanup()
-	fromContext, err := c.clusterMap.ParentCluster(c.clusterName)
+	fromCluster, err := c.clusterMap.ParentCluster(c.clusterName)
+	if err != nil {
+		c.handleErr(err, evtCh)
+		return
+	}
+	fromContext, err := c.clusterMap.ClusterKubeconfigContext(fromCluster)
+	if err != nil {
+		c.handleErr(err, evtCh)
+		return
+	}
+	toContext, err := c.clusterMap.ClusterKubeconfigContext(c.clusterName)
 	if err != nil {
 		c.handleErr(err, evtCh)
 		return
@@ -104,7 +114,7 @@ func (c *ClusterctlExecutor) move(opts ifc.RunOptions, evtCh chan events.Event) 
 	log.Print("command 'clusterctl move' is going to be executed")
 	// TODO (kkalynovskyi) add more details to dry-run, for now if dry run is set we skip move command
 	if !opts.DryRun {
-		err = c.Move(kubeConfigFile, fromContext, kubeConfigFile, c.clusterName, ns)
+		err = c.Move(kubeConfigFile, fromContext, kubeConfigFile, toContext, ns)
 		if err != nil {
 			c.handleErr(err, evtCh)
 		}
@@ -138,8 +148,15 @@ func (c *ClusterctlExecutor) init(opts ifc.RunOptions, evtCh chan events.Event) 
 		})
 		return
 	}
+
+	context, err := c.clusterMap.ClusterKubeconfigContext(c.clusterName)
+	if err != nil {
+		c.handleErr(err, evtCh)
+		return
+	}
+
 	// Use cluster name as context in kubeconfig file
-	err = c.Init(kubeConfigFile, c.clusterName)
+	err = c.Init(kubeConfigFile, context)
 	if err != nil {
 		c.handleErr(err, evtCh)
 	}

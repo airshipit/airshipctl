@@ -35,6 +35,8 @@ type Cluster struct {
 	// DynamicKubeConfig kubeconfig allows to get kubeconfig from parent cluster, instead
 	// expecting it to be in document bundle. Parent kubeconfig will be used to get kubeconfig
 	DynamicKubeConfig bool `json:"dynamicKubeConf,omitempty"`
+	// KubeconfigContext is the context in kubeconfig, default is equals to clusterMap key
+	KubeconfigContext string `json:"kubeconfigContext,omitempty"`
 }
 
 // DefaultClusterMap can be used to safely unmarshal ClusterMap object without nil pointers

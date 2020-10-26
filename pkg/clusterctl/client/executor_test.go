@@ -26,6 +26,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	cctlclient "opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
@@ -104,6 +106,7 @@ func TestExecutorRun(t *testing.T) {
 		fs          document.FileSystem
 		bundlePath  string
 		expectedEvt []events.Event
+		clusterMap  clustermap.ClusterMap
 	}{
 		{
 			name:       "Error unknown action",
@@ -112,6 +115,7 @@ func TestExecutorRun(t *testing.T) {
 			expectedEvt: []events.Event{
 				wrapError(cctlclient.ErrUnknownExecutorAction{Action: "someAction"}),
 			},
+			clusterMap: clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
 		},
 		{
 			name:   "Error temporary file",
@@ -128,6 +132,7 @@ func TestExecutorRun(t *testing.T) {
 				}),
 				wrapError(errTmpFile),
 			},
+			clusterMap: clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
 		},
 		{
 			name:   "Regular Run init",
@@ -143,6 +148,7 @@ func TestExecutorRun(t *testing.T) {
 				MockRemoveAll: func() error { return nil },
 			},
 			bundlePath: "testdata/executor_init",
+			clusterMap: clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
 			expectedEvt: []events.Event{
 				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
 					Operation: events.ClusterctlInitStart,
@@ -166,6 +172,7 @@ func TestExecutorRun(t *testing.T) {
 					ExecutorDocument: tt.cfgDoc,
 					Helper:           makeDefaultHelper(t),
 					KubeConfig:       kubeCfg,
+					ClusterMap:       tt.clusterMap,
 				})
 			require.NoError(t, err)
 			ch := make(chan events.Event)
