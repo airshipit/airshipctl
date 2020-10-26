@@ -201,6 +201,23 @@ func TestCurrentContextManagementConfig(t *testing.T) {
 	assert.Equal(t, conf.ManagementConfiguration[defaultString], managementConfig)
 }
 
+func TestCurrentContextEncryptionConfig(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	defaultEncryptionConfig, err := conf.CurrentContextEncryptionConfig()
+	require.Error(t, err)
+	assert.Nil(t, defaultEncryptionConfig)
+
+	conf.CurrentContext = currentContextName
+	conf.Contexts[currentContextName].EncryptionConfig = defaultString
+	conf.EncryptionConfigs[defaultString] = defaultEncryptionConfig
+
+	currentContextEncryptionConfig, err := conf.CurrentContextEncryptionConfig()
+	require.NoError(t, err)
+	assert.Equal(t, conf.EncryptionConfigs[defaultString], currentContextEncryptionConfig)
+}
+
 func TestPurge(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
@@ -484,6 +501,31 @@ func TestGetDefaultEncryptionConfigs(t *testing.T) {
 	require.NotNil(t, encryptionConfigs)
 	// by default, we dont expect any encryption configs
 	assert.Equal(t, 0, len(encryptionConfigs))
+}
+
+func TestGetNonExistingEncryptionConfig(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	encryptionConfig, err := conf.GetEncryptionConfig("test")
+	require.Nil(t, encryptionConfig)
+	assert.Error(t, err)
+}
+
+func TestGetEncryptionConfig(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	eco := testutil.DummyEncryptionConfigOptions()
+	encryptionConfig := conf.AddEncryptionConfig(eco)
+	require.NotNil(t, encryptionConfig)
+
+	encryptionConfig, err := conf.GetEncryptionConfig(eco.Name)
+	assert.NoError(t, err)
+	assert.Equal(t, eco.DecryptionKeyPath, encryptionConfig.DecryptionKeyPath)
+	assert.Equal(t, eco.EncryptionKeyPath, encryptionConfig.EncryptionKeyPath)
+	assert.Equal(t, eco.KeySecretNamespace, encryptionConfig.KeySecretNamespace)
+	assert.Equal(t, eco.KeySecretName, encryptionConfig.KeySecretName)
 }
 
 func TestModifyEncryptionConfigs(t *testing.T) {

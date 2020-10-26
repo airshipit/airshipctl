@@ -468,6 +468,18 @@ func (c *Config) GetEncryptionConfigs() []*EncryptionConfig {
 	return encryptionConfigs
 }
 
+// GetEncryptionConfig returns encryption configs associated with name
+// Returns error if no encryption config with name is found
+func (c *Config) GetEncryptionConfig(name string) (*EncryptionConfig, error) {
+	encryptionConfig, exists := c.EncryptionConfigs[name]
+	if !exists {
+		return nil, ErrEncryptionConfigurationNotFound{
+			Name: fmt.Sprintf("Encryption Config with name '%s'", name),
+		}
+	}
+	return encryptionConfig, nil
+}
+
 // AddEncryptionConfig creates a new encryption config
 func (c *Config) AddEncryptionConfig(options *EncryptionConfigOptions) *EncryptionConfig {
 	encryptionConfig := &EncryptionConfig{
@@ -523,6 +535,16 @@ func (c *Config) CurrentContextManagementConfig() (*ManagementConfiguration, err
 	}
 
 	return managementCfg, nil
+}
+
+// CurrentContextEncryptionConfig returns the encryption config for the current context
+func (c *Config) CurrentContextEncryptionConfig() (*EncryptionConfig, error) {
+	currentContext, err := c.GetCurrentContext()
+	if err != nil {
+		return nil, err
+	}
+
+	return c.GetEncryptionConfig(currentContext.EncryptionConfig)
 }
 
 // Purge removes the config file
