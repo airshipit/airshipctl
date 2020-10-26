@@ -3,6 +3,10 @@ apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
   name: ephemeral-networking-replacements
+  annotations:
+    config.kubernetes.io/function: |-
+      container:
+        image: quay.io/airshipit/replacement-transformer:dev
 replacements:
 # Substring-replace the ephemeral control plane's info
 - source:

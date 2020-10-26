@@ -1,12 +1,22 @@
-// Copyright 2019 The Kubernetes Authors.
-// SPDX-License-Identifier: Apache-2.0
+/*
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     https://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+*/
 
 package replacement_test
 
 import (
 	"bytes"
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,61 +26,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"opendev.org/airship/airshipctl/pkg/document/plugin/replacement"
-	plugtypes "opendev.org/airship/airshipctl/pkg/document/plugin/types"
 )
-
-func samplePlugin(t *testing.T) plugtypes.Plugin {
-	cfg := make(map[string]interface{})
-	conf := `
-apiVersion: airshipit.org/v1alpha1
-kind: ReplacementTransformer
-metadata:
-  name: notImportantHere
-replacements:
-- source:
-    value: nginx:newtag
-  target:
-    objref:
-      kind: Deployment
-    fieldrefs:
-    - spec.template.spec.containers[name=nginx-latest].image`
-
-	err := yaml.Unmarshal([]byte(conf), &cfg)
-	require.NoError(t, err)
-	plugin, err := replacement.New(cfg)
-	require.NoError(t, err)
-	return plugin
-}
-
-func TestMalformedInput(t *testing.T) {
-	plugin := samplePlugin(t)
-	err := plugin.Run(strings.NewReader("--"), &bytes.Buffer{})
-	assert.Error(t, err)
-}
-
-func TestDuplicatedResources(t *testing.T) {
-	plugin := samplePlugin(t)
-	err := plugin.Run(strings.NewReader(`
-apiVersion: v1
-kind: Pod
-metadata:
-  name: pod
-spec:
-  containers:
-  - name: myapp-container
-    image: busybox
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: pod
-spec:
-  containers:
-  - name: myapp-container
-    image: busybox
- `), &bytes.Buffer{})
-	assert.Error(t, err)
-}
 
 var testCases = []struct {
 	cfg         string
@@ -804,7 +760,8 @@ spec:
   containers:
   - name: myapp-container
     image: busybox`,
-		expectedErr: `"some string value" is not expected be a primitive type`,
+		expectedErr: "wrong Node Kind for labels.somelabel expected: " +
+			"MappingNode was ScalarNode: value: {'some string value'}",
 	},
 	{
 		cfg: `
@@ -843,7 +800,8 @@ spec:
   containers:
   - name: myapp-container
     image: busybox`,
-		expectedErr: `"some string value" is not expected be a primitive type`,
+		expectedErr: "wrong Node Kind for labels.somelabel expected: " +
+			"SequenceNode was ScalarNode: value: {'some string value'}",
 	},
 	{
 		cfg: `
@@ -882,9 +840,8 @@ spec:
   containers:
   - name: myapp-container
     image: busybox`,
-		expectedErr: "map[string]interface {}{\"containers\":[]interface " +
-			"{}{map[string]interface {}{\"image\":\"busybox\", \"name\":\"myapp-container\"}}} " +
-			"is not expected be a primitive type",
+		expectedErr: "wrong Node Kind for spec expected: " +
+			"SequenceNode was MappingNode: value: {containers:\n- name: myapp-container\n  image: busybox}",
 	},
 	{
 		cfg: `
@@ -962,7 +919,8 @@ spec:
   containers:
   - name: myapp-container
     image: busybox`,
-		expectedErr: `strconv.Atoi: parsing "notInteger": invalid syntax`,
+		expectedErr: "wrong Node Kind for spec.containers expected: " +
+			"MappingNode was SequenceNode: value: {- name: myapp-container\n  image: busybox}",
 	},
 	{
 		cfg: `
@@ -1001,7 +959,8 @@ spec:
       containers:
       - image: nginx:TAG
         name: nginx-latest`,
-		expectedErr: "pattern-based substitution can only be applied to string or array of strings target fields",
+		expectedErr: "wrong Node Kind for  expected: " +
+			"ScalarNode was MappingNode: value: {image: nginx:TAG\nname: nginx-latest}",
 	},
 	{
 		cfg: `
@@ -1058,39 +1017,7 @@ spec:
 	},
 }
 
-func TestReplacementTransformer(t *testing.T) {
-	for _, tc := range testCases {
-		cfg := make(map[string]interface{})
-		err := yaml.Unmarshal([]byte(tc.cfg), &cfg)
-		require.NoError(t, err)
-		plugin, err := replacement.New(cfg)
-		require.NoError(t, err)
-
-		buf := &bytes.Buffer{}
-		err = plugin.Run(strings.NewReader(tc.in), buf)
-		errString := ""
-		if err != nil {
-			errString = err.Error()
-		}
-		assert.Equal(t, tc.expectedErr, errString)
-		assert.Equal(t, tc.expectedOut, buf.String())
-	}
-}
-
 func TestExec(t *testing.T) {
-	// TODO (dukov) Remove this once we migrate to new kustomize plugin approach
-	// NOTE (dukov) we need this since error format is different for new kustomize plugins
-	testCases[13].expectedErr = "wrong Node Kind for labels.somelabel expected: " +
-		"MappingNode was ScalarNode: value: {'some string value'}"
-	testCases[14].expectedErr = "wrong Node Kind for labels.somelabel expected: " +
-		"SequenceNode was ScalarNode: value: {'some string value'}"
-	testCases[15].expectedErr = "wrong Node Kind for spec expected: " +
-		"SequenceNode was MappingNode: value: {containers:\n- name: myapp-container\n  image: busybox}"
-	testCases[17].expectedErr = "wrong Node Kind for spec.containers expected: " +
-		"MappingNode was SequenceNode: value: {- name: myapp-container\n  image: busybox}"
-	testCases[18].expectedErr = "wrong Node Kind for  expected: " +
-		"ScalarNode was MappingNode: value: {image: nginx:TAG\nname: nginx-latest}"
-
 	for i, tc := range testCases {
 		tc := tc
 		t.Run(fmt.Sprintf("Test Case %d", i), func(t *testing.T) {

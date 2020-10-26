@@ -22,23 +22,6 @@ import (
 	"sigs.k8s.io/kustomize/api/types"
 )
 
-// ErrTypeMismatch is returned for type conversion errors. This error
-// is raised if JSON path element points to a wrong data structure e.g.
-// JSON path 'a.b[x=y]c' considers that there is a list of maps under key 'b'
-// therefore ErrTypeMismatch will be returned for following structure
-//
-// a:
-//   b:
-//     - 'some string'
-type ErrTypeMismatch struct {
-	Actual      interface{}
-	Expectation string
-}
-
-func (e ErrTypeMismatch) Error() string {
-	return fmt.Sprintf("%#v %s", e.Actual, e.Expectation)
-}
-
 // ErrBadConfiguration returned in case of plugin misconfiguration
 type ErrBadConfiguration struct {
 	Msg string
@@ -92,15 +75,6 @@ type ErrIndexOutOfBound struct {
 
 func (e ErrIndexOutOfBound) Error() string {
 	return fmt.Sprintf("array index out of bounds: index %d, length %d", e.Index, e.Length)
-}
-
-// ErrValueNotFound returned if value specified in fieldRef option was not found
-type ErrValueNotFound struct {
-	ID string
-}
-
-func (e ErrValueNotFound) Error() string {
-	return fmt.Sprintf("unable to find value identified by %s", e.ID)
 }
 
 func printFields(objRef interface{}) string {
