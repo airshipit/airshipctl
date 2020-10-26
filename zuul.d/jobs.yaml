@@ -44,7 +44,7 @@
     nodeset: airship-airshipctl-single-node
     secrets:
       - name: github_credentials
-        secret: airship_airshipctl_airshipit_github_username_password
+        secret: airship_airshipctl_airshipit_github_token
 
 - job:
     name: airship-airshipctl-build-image
