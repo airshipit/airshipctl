@@ -3,6 +3,10 @@ apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
   name: k8scontrol-env-vars-replacements
+  annotations:
+    config.kubernetes.io/function: |-
+      container:
+        image: quay.io/airshipit/replacement-transformer:dev
 replacements:
 # Replace the proxy vars
 - source:
