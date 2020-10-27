@@ -38,8 +38,6 @@ type PhaseConfig struct {
 // DefaultPhase can be used to safely unmarshal phase object without nil pointers
 func DefaultPhase() *Phase {
 	return &Phase{
-		Config: PhaseConfig{
-			ExecutorRef: &corev1.ObjectReference{},
-		},
+		Config: PhaseConfig{},
 	}
 }

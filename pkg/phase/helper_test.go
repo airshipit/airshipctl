@@ -194,7 +194,7 @@ func TestHelperListPhases(t *testing.T) {
 	}{
 		{
 			name:     "Success phase list",
-			phaseLen: 3,
+			phaseLen: 4,
 			config:   testConfig,
 		},
 		{
@@ -371,6 +371,14 @@ func TestHelperExecutorDoc(t *testing.T) {
 				return conf
 			},
 			errContains: "no such file or directory",
+		},
+		{
+			name:    "Error get phase without executor",
+			config:  testConfig,
+			phaseID: ifc.ID{Name: "no_executor_phase"},
+			errContains: phase.ErrExecutorRefNotDefined{
+				PhaseName: "no_executor_phase",
+			}.Error(),
 		},
 	}
 

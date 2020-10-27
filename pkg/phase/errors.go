@@ -51,3 +51,15 @@ func (e ErrDocumentEntrypointNotDefined) Error() string {
 		e.PhaseName,
 		e.PhaseNamespace)
 }
+
+// ErrExecutorRefNotDefined returned when phase has no entrypoint defined and phase needs it
+type ErrExecutorRefNotDefined struct {
+	PhaseName      string
+	PhaseNamespace string
+}
+
+func (e ErrExecutorRefNotDefined) Error() string {
+	return fmt.Sprintf("Phase name '%s', namespace '%s' must have executorRef field defined in config",
+		e.PhaseName,
+		e.PhaseNamespace)
+}

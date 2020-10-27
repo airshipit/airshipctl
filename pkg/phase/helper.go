@@ -186,6 +186,10 @@ func (helper *Helper) ExecutorDoc(phaseID ifc.ID) (document.Document, error) {
 	}
 	phaseConfig := phaseObj.Config
 
+	if phaseConfig.ExecutorRef == nil {
+		return nil, ErrExecutorRefNotDefined{PhaseName: phaseID.Name, PhaseNamespace: phaseID.Namespace}
+	}
+
 	// Searching executor configuration document referenced in
 	// phase configuration
 	refGVK := phaseConfig.ExecutorRef.GroupVersionKind()
