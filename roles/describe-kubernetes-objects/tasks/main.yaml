@@ -33,6 +33,7 @@
       - daemonsets
       - deployments
       - endpoints
+      - helmrelease
       - ingresses
       - jobs
       - kubeadmconfigs
