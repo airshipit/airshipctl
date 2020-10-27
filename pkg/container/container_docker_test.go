@@ -123,7 +123,7 @@ func getDockerContainerMock(mdc mockDockerClient) *DockerContainer {
 	ctx := context.Background()
 	cnt := &DockerContainer{
 		dockerClient: &mdc,
-		ctx:          &ctx,
+		ctx:          ctx,
 	}
 	return cnt
 }
@@ -520,7 +520,7 @@ func TestNewDockerContainer(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		actualRes, actualErr := NewDockerContainer(&(tt.ctx), tt.url, &(tt.cli))
+		actualRes, actualErr := NewDockerContainer((tt.ctx), tt.url, &(tt.cli))
 
 		assert.Equal(t, tt.expectedErr, actualErr)
 

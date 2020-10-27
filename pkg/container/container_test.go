@@ -27,13 +27,13 @@ func TestNewContainer(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("not-supported-container", func(t *testing.T) {
-		cnt, err := NewContainer(&ctx, "test_drv", "")
+		cnt, err := NewContainer(ctx, "test_drv", "")
 		assert.Equal(nil, cnt)
 		assert.Equal(ErrContainerDrvNotSupported{Driver: "test_drv"}, err)
 	})
 
 	t.Run("empty-container", func(t *testing.T) {
-		cnt, err := NewContainer(&ctx, "", "")
+		cnt, err := NewContainer(ctx, "", "")
 		assert.Equal(nil, cnt)
 		assert.Equal(ErrNoContainerDriver{}, err)
 	})
