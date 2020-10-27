@@ -23,6 +23,6 @@ TMP_DIR=${TMP_DIR:-"$(dirname $(mktemp -u))"}
 ANSIBLE_HOSTS=${ANSIBLE_HOSTS:-"${TMP_DIR}/ansible_hosts"}
 PLAYBOOK_CONFIG=${PLAYBOOK_CONFIG:-"${TMP_DIR}/config.yaml"}
 
-sudo ansible-playbook -i "$ANSIBLE_HOSTS" \
+sudo -E ansible-playbook -i "$ANSIBLE_HOSTS" \
 	playbooks/airship-airshipctl-build-gate.yaml \
 	-e @"$PLAYBOOK_CONFIG"
