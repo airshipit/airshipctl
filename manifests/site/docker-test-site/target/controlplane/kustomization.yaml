@@ -8,5 +8,5 @@ patchesJson6902:
       group: controlplane.cluster.x-k8s.io
       version: v1alpha3
       kind: KubeadmControlPlane
-      name: "dtc-control-plane"
+      name: "target-cluster-control-plane"
     path: machine_count.json

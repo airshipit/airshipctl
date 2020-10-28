@@ -2,7 +2,7 @@
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
 kind: DockerMachineTemplate
 metadata:
-  name: "dtc-md-0"
+  name: "target-cluster-md-0"
 spec:
   template:
     spec:
@@ -13,7 +13,7 @@ spec:
 apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
 kind: KubeadmConfigTemplate
 metadata:
-  name: "dtc-md-0"
+  name: "target-cluster-md-0"
 spec:
   template:
     spec:
@@ -25,9 +25,9 @@ spec:
 apiVersion: cluster.x-k8s.io/v1alpha3
 kind: MachineDeployment
 metadata:
-  name: "dtc-md-0"
+  name: "target-cluster-md-0"
 spec:
-  clusterName: "dtc"
+  clusterName: "target-cluster"
   replicas: ${ WORKER_MACHINE_COUNT }
   selector:
     matchLabels:
@@ -36,14 +36,14 @@ spec:
       labels:
         "nodepool": "pool1"
     spec:
-      clusterName: "dtc"
+      clusterName: "target-cluster"
       version: "v1.18.6"
       bootstrap:
         configRef:
-          name: "dtc-md-0"
+          name: "target-cluster-md-0"
           apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
           kind: KubeadmConfigTemplate
       infrastructureRef:
-        name: "dtc-md-0"
+        name: "target-cluster-md-0"
         apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
         kind: DockerMachineTemplate
