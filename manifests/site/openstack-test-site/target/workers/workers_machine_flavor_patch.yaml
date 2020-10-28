@@ -1,7 +1,7 @@
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
 kind: OpenStackMachineTemplate
 metadata:
-  name: ostgt-md-0
+  name: target-cluster-md-0
   namespace: default
 spec:
   template:

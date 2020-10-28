@@ -1,7 +1,7 @@
 apiVersion: cluster.x-k8s.io/v1alpha3
 kind: Cluster
 metadata:
-  name: ostgt
+  name: target-cluster
   namespace: default
 spec:
   clusterNetwork:
@@ -12,23 +12,23 @@ spec:
   controlPlaneRef:
     apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
     kind: KubeadmControlPlane
-    name: ostgt-control-plane
+    name: target-cluster-control-plane
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
     kind: OpenStackCluster
-    name: ostgt
+    name: target-cluster
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
 kind: OpenStackCluster
 metadata:
-  name: ostgt
+  name: target-cluster
   namespace: default
 spec:
   apiServerLoadBalancerFloatingIP: ${OPENSTACK_CONTROLPLANE_IP}
   apiServerLoadBalancerPort: 6443
   cloudName: devstack
   cloudsSecret:
-    name: ostgt-cloud-config
+    name: target-cluster-cloud-config
     namespace: default
   disablePortSecurity: false
   disableServerTags: true
@@ -43,7 +43,7 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: ostgt-cloud-config
+  name: target-cluster-cloud-config
   namespace: default
 data:
   cacert: ${CLOUD_CERT_B64}
