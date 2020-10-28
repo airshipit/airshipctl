@@ -45,6 +45,13 @@ spec:
           requests:
             cpu: 50m
             memory: 64Mi
+        env:
+        - name: http_proxy
+          value: REPLACEMENT_HTTP_PROXY
+        - name: https_proxy
+          value: REPLACEMENT_HTTPS_PROXY
+        - name: no_proxy
+          value: REPLACEMENT_NO_PROXY
       serviceAccountName: helm-operator
       # See https://github.com/fluxcd/flux/pull/2116
       dnsPolicy: None
