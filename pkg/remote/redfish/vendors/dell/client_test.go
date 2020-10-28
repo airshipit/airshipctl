@@ -15,6 +15,7 @@
 package dell
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -31,14 +32,14 @@ const (
 )
 
 func TestNewClient(t *testing.T) {
-	_, _, err := NewClient(redfishURL, false, false, "username", "password", systemActionRetries, systemRebootDelay)
+	_, err := NewClient(redfishURL, false, false, "username", "password", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 }
 
 func TestNewClientDefaultValues(t *testing.T) {
 	sysActRetr := 222
 	sysRebDel := 555
-	_, c, err := NewClient(redfishURL, false, false, "", "", sysActRetr, sysRebDel)
+	c, err := NewClient(redfishURL, false, false, "", "", sysActRetr, sysRebDel)
 	assert.Equal(t, c.SystemActionRetries(), sysActRetr)
 	assert.Equal(t, c.SystemRebootDelay(), sysRebDel)
 	assert.NoError(t, err)
@@ -47,8 +48,9 @@ func TestSetBootSourceByTypeGetSystemError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	ctx, client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
+	ctx := context.Background()
 
 	// Mock redfish get system request
 	m.On("GetSystem", ctx, client.NodeID()).Times(1).Return(redfishClient.ComputerSystem{},

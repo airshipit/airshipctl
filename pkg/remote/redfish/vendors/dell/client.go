@@ -130,14 +130,14 @@ func NewClient(redfishURL string,
 	username string,
 	password string,
 	systemActionRetries int,
-	systemRebootDelay int) (context.Context, *Client, error) {
-	ctx, genericClient, err := redfish.NewClient(redfishURL, insecure, useProxy, username, password,
+	systemRebootDelay int) (*Client, error) {
+	genericClient, err := redfish.NewClient(redfishURL, insecure, useProxy, username, password,
 		systemActionRetries, systemRebootDelay)
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
 	c := &Client{*genericClient, genericClient.RedfishAPI, genericClient.RedfishCFG}
 
-	return ctx, c, nil
+	return c, nil
 }

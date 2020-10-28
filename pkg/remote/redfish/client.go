@@ -35,6 +35,8 @@ const (
 // Client holds details about a Redfish out-of-band system required for out-of-band management.
 type Client struct {
 	nodeID              string
+	username            string
+	password            string
 	RedfishAPI          redfishAPI.RedfishAPI
 	RedfishCFG          *redfishClient.Configuration
 	systemActionRetries int
@@ -61,6 +63,7 @@ func (c *Client) SystemRebootDelay() int {
 
 // EjectVirtualMedia ejects a virtual media device attached to a host.
 func (c *Client) EjectVirtualMedia(ctx context.Context) error {
+	ctx = c.setAuth(ctx)
 	waitForEjectMedia := func(managerID string, mediaID string) error {
 		for retry := 0; retry < c.systemActionRetries; retry++ {
 			vMediaMgr, httpResp, err := c.RedfishAPI.GetManagerVirtualMedia(ctx, managerID, mediaID)
@@ -117,6 +120,7 @@ func (c *Client) EjectVirtualMedia(ctx context.Context) error {
 // RebootSystem power cycles a host by sending a shutdown signal followed by a power on signal.
 func (c *Client) RebootSystem(ctx context.Context) error {
 	log.Debugf("Rebooting node '%s': powering off.", c.nodeID)
+	ctx = c.setAuth(ctx)
 	resetReq := redfishClient.ResetRequestBody{}
 
 	// Send PowerOff request
@@ -149,6 +153,7 @@ func (c *Client) RebootSystem(ctx context.Context) error {
 // SetBootSourceByType sets the boot source of the ephemeral node to one that's compatible with the boot
 // source type.
 func (c *Client) SetBootSourceByType(ctx context.Context) error {
+	ctx = c.setAuth(ctx)
 	_, vMediaType, err := GetVirtualMediaID(ctx, c.RedfishAPI, c.nodeID)
 	if err != nil {
 		return err
@@ -184,6 +189,7 @@ func (c *Client) SetBootSourceByType(ctx context.Context) error {
 // SetVirtualMedia injects a virtual media device to an established virtual media ID. This assumes that isoPath is
 // accessible to the redfish server and virtualMedia device is either of type CD or DVD.
 func (c *Client) SetVirtualMedia(ctx context.Context, isoPath string) error {
+	ctx = c.setAuth(ctx)
 	log.Debugf("Inserting virtual media '%s'.", isoPath)
 	// Eject all previously-inserted media
 	if err := c.EjectVirtualMedia(ctx); err != nil {
@@ -217,6 +223,7 @@ func (c *Client) SetVirtualMedia(ctx context.Context, isoPath string) error {
 
 // SystemPowerOff shuts down a host.
 func (c *Client) SystemPowerOff(ctx context.Context) error {
+	ctx = c.setAuth(ctx)
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 
@@ -230,6 +237,7 @@ func (c *Client) SystemPowerOff(ctx context.Context) error {
 
 // SystemPowerOn powers on a host.
 func (c *Client) SystemPowerOn(ctx context.Context) error {
+	ctx = c.setAuth(ctx)
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_ON
 
@@ -243,6 +251,7 @@ func (c *Client) SystemPowerOn(ctx context.Context) error {
 
 // SystemPowerStatus retrieves the power status of a host as a human-readable string.
 func (c *Client) SystemPowerStatus(ctx context.Context) (power.Status, error) {
+	ctx = c.setAuth(ctx)
 	computerSystem, httpResp, err := c.RedfishAPI.GetSystem(ctx, c.nodeID)
 	if err = ScreenRedfishError(httpResp, err); err != nil {
 		return power.StatusUnknown, err
@@ -262,6 +271,18 @@ func (c *Client) SystemPowerStatus(ctx context.Context) (power.Status, error) {
 	}
 }
 
+func (c *Client) setAuth(ctx context.Context) context.Context {
+	authValue := redfishClient.BasicAuth{UserName: c.username, Password: c.password}
+	if ctx.Value(redfishClient.ContextBasicAuth) == authValue {
+		return ctx
+	}
+	return context.WithValue(
+		ctx,
+		redfishClient.ContextBasicAuth,
+		redfishClient.BasicAuth{UserName: c.username, Password: c.password},
+	)
+}
+
 // NewClient returns a client with the capability to make Redfish requests.
 func NewClient(redfishURL string,
 	insecure bool,
@@ -269,25 +290,14 @@ func NewClient(redfishURL string,
 	username string,
 	password string,
 	systemActionRetries int,
-	systemRebootDelay int) (context.Context, *Client, error) {
-	var ctx context.Context
-	if username != "" && password != "" {
-		ctx = context.WithValue(
-			context.Background(),
-			redfishClient.ContextBasicAuth,
-			redfishClient.BasicAuth{UserName: username, Password: password},
-		)
-	} else {
-		ctx = context.Background()
-	}
-
+	systemRebootDelay int) (*Client, error) {
 	if redfishURL == "" {
-		return ctx, nil, ErrRedfishMissingConfig{What: "Redfish URL"}
+		return nil, ErrRedfishMissingConfig{What: "Redfish URL"}
 	}
 
 	basePath, err := getBasePath(redfishURL)
 	if err != nil {
-		return ctx, nil, err
+		return nil, err
 	}
 
 	cfg := &redfishClient.Configuration{
@@ -320,7 +330,7 @@ func NewClient(redfishURL string,
 	// Retrieve system ID from end of Redfish URL
 	systemID := GetResourceIDFromURL(redfishURL)
 	if len(systemID) == 0 {
-		return ctx, nil, ErrRedfishMissingConfig{What: "management URL system ID"}
+		return nil, ErrRedfishMissingConfig{What: "management URL system ID"}
 	}
 
 	c := &Client{
@@ -329,11 +339,13 @@ func NewClient(redfishURL string,
 		RedfishCFG:          cfg,
 		systemActionRetries: systemActionRetries,
 		systemRebootDelay:   systemRebootDelay,
+		password:            password,
+		username:            username,
 
 		Sleep: func(d time.Duration) {
 			time.Sleep(d)
 		},
 	}
 
-	return ctx, c, nil
+	return c, nil
 }
