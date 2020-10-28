@@ -95,17 +95,17 @@ type DockerContainer struct {
 	imageURL     string
 	id           string
 	dockerClient DockerClient
-	ctx          *context.Context
+	ctx          context.Context
 }
 
 // NewDockerClient returns instance of DockerClient.
 // Function essentially returns new Docker API client with default values
-func NewDockerClient(ctx *context.Context) (DockerClient, error) {
+func NewDockerClient(ctx context.Context) (DockerClient, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		return nil, err
 	}
-	cli.NegotiateAPIVersion(*ctx)
+	cli.NegotiateAPIVersion(ctx)
 	return cli, nil
 }
 
@@ -115,7 +115,7 @@ func NewDockerClient(ctx *context.Context) (DockerClient, error) {
 //
 // url format: <image_path>:<tag>. If tag is not specified "latest" is used
 // as default value
-func NewDockerContainer(ctx *context.Context, url string, cli DockerClient) (*DockerContainer, error) {
+func NewDockerContainer(ctx context.Context, url string, cli DockerClient) (*DockerContainer, error) {
 	t := "latest"
 	nameTag := strings.Split(url, ":")
 	if len(nameTag) == 2 {
@@ -155,7 +155,7 @@ func (c *DockerContainer) getCmd(cmd []string) ([]string, error) {
 		return nil, err
 	}
 
-	insp, _, err := c.dockerClient.ImageInspectWithRaw(*c.ctx, id)
+	insp, _, err := c.dockerClient.ImageInspectWithRaw(c.ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +195,7 @@ func (c *DockerContainer) getImageID(url string) (string, error) {
 		All:     false,
 		Filters: filter,
 	}
-	img, err := c.dockerClient.ImageList(*c.ctx, opts)
+	img, err := c.dockerClient.ImageList(c.ctx, opts)
 	if err != nil {
 		return "", err
 	}
@@ -217,12 +217,12 @@ func (c *DockerContainer) ImagePull() error {
 	// skip image download if already downloaded
 	// ImageInspectWithRaw returns err when image not found local and
 	//     in this case it will proceed for ImagePull.
-	_, _, err := c.dockerClient.ImageInspectWithRaw(*c.ctx, c.imageURL)
+	_, _, err := c.dockerClient.ImageInspectWithRaw(c.ctx, c.imageURL)
 	if err == nil {
 		log.Debug("Image Already exists, skip download")
 		return nil
 	}
-	resp, err := c.dockerClient.ImagePull(*c.ctx, c.imageURL, types.ImagePullOptions{})
+	resp, err := c.dockerClient.ImagePull(c.ctx, c.imageURL, types.ImagePullOptions{})
 	if err != nil {
 		return err
 	}
@@ -249,7 +249,7 @@ func (c *DockerContainer) RunCommand(
 
 	containerConfig, hostConfig := c.getConfig(realCmd, volumeMounts, envVars)
 	resp, err := c.dockerClient.ContainerCreate(
-		*c.ctx,
+		c.ctx,
 		&containerConfig,
 		&hostConfig,
 		nil,
@@ -262,7 +262,7 @@ func (c *DockerContainer) RunCommand(
 	c.id = resp.ID
 
 	if containerInput != nil {
-		conn, attachErr := c.dockerClient.ContainerAttach(*c.ctx, c.id, types.ContainerAttachOptions{
+		conn, attachErr := c.dockerClient.ContainerAttach(c.ctx, c.id, types.ContainerAttachOptions{
 			Stream: true,
 			Stdin:  true,
 		})
@@ -274,7 +274,7 @@ func (c *DockerContainer) RunCommand(
 		}
 	}
 
-	if err = c.dockerClient.ContainerStart(*c.ctx, c.id, types.ContainerStartOptions{}); err != nil {
+	if err = c.dockerClient.ContainerStart(c.ctx, c.id, types.ContainerStartOptions{}); err != nil {
 		return err
 	}
 
@@ -284,13 +284,13 @@ func (c *DockerContainer) RunCommand(
 
 // GetContainerLogs returns logs from the container as io.ReadCloser
 func (c *DockerContainer) GetContainerLogs() (io.ReadCloser, error) {
-	return c.dockerClient.ContainerLogs(*c.ctx, c.id, types.ContainerLogsOptions{ShowStdout: true, Follow: true})
+	return c.dockerClient.ContainerLogs(c.ctx, c.id, types.ContainerLogsOptions{ShowStdout: true, Follow: true})
 }
 
 // RmContainer kills and removes a container from the docker host.
 func (c *DockerContainer) RmContainer() error {
 	return c.dockerClient.ContainerRemove(
-		*c.ctx,
+		c.ctx,
 		c.id,
 		types.ContainerRemoveOptions{
 			Force: true,
@@ -300,7 +300,7 @@ func (c *DockerContainer) RmContainer() error {
 
 // WaitUntilFinished waits unit container command is finished, return an error if failed
 func (c *DockerContainer) WaitUntilFinished() error {
-	statusCh, errCh := c.dockerClient.ContainerWait(*c.ctx, c.id, container.WaitConditionNotRunning)
+	statusCh, errCh := c.dockerClient.ContainerWait(c.ctx, c.id, container.WaitConditionNotRunning)
 	log.Debugf("waiting until command is finished...")
 	select {
 	case err := <-errCh:

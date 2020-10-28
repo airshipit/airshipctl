@@ -36,7 +36,7 @@ type Container interface {
 // arguments (e.g. "docker").
 // Supported drivers:
 //   * docker
-func NewContainer(ctx *context.Context, driver string, url string) (Container, error) {
+func NewContainer(ctx context.Context, driver string, url string) (Container, error) {
 	switch driver {
 	case "":
 		return nil, ErrNoContainerDriver{}

@@ -99,7 +99,7 @@ func (c *Executor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 	if c.builder == nil {
 		ctx := context.Background()
 		builder, err := container.NewContainer(
-			&ctx,
+			ctx,
 			c.imgConf.Container.ContainerRuntime,
 			c.imgConf.Container.Image)
 		c.builder = builder
