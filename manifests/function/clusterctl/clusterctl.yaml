@@ -40,8 +40,10 @@ additional-vars:
   CONTAINER_CABPK_MANAGER: us.gcr.io/k8s-artifacts-prod/cluster-api/kubeadm-bootstrap-controller:v0.3.7
   CONTAINER_CAPI_MANAGER:  us.gcr.io/k8s-artifacts-prod/cluster-api/cluster-api-controller:v0.3.7
   CONTAINER_CAPD_MANAGER: gcr.io/k8s-staging-cluster-api/capd-manager:v20201019-v0.3.10-86-gc1647481f
+  CONTAINER_CAPO_MANAGER: gcr.io/k8s-staging-capi-openstack/capi-openstack-controller-amd64:v20200707-v0.3.1
   CONTAINER_CAPM3_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.0
   CONTAINER_CACPK_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
   CONTAINER_CABPK_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
   CONTAINER_CAPI_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
   CONTAINER_CAPD_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.0
+  CONTAINER_CAPO_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1

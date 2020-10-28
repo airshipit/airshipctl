@@ -92,6 +92,27 @@ replacements:
       kind: Clusterctl
       name: clusterctl_init
     fieldrefs: ["{.additional-vars.CONTAINER_CAPD_AUTH_PROXY}"]
+# Replace capo versions
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: versions-airshipctl
+    fieldref: "{.images.capo.manager}"
+  target:
+    objref:
+      kind: Clusterctl
+      name: clusterctl_init
+    fieldrefs: ["{.additional-vars.CONTAINER_CAPO_MANAGER}"]
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: versions-airshipctl
+    fieldref: "{.images.capo.auth_proxy}"
+  target:
+    objref:
+      kind: Clusterctl
+      name: clusterctl_init
+    fieldrefs: ["{.additional-vars.CONTAINER_CAPO_AUTH_PROXY}"]
 # Replace capi versions
 - source:
     objref:
