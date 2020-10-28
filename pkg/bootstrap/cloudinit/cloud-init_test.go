@@ -2,9 +2,7 @@
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
-
      https://www.apache.org/licenses/LICENSE-2.0
-
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,6 +19,9 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/document"
+
+	"sigs.k8s.io/kustomize/api/resid"
+	"sigs.k8s.io/kustomize/api/types"
 )
 
 func TestGetCloudData(t *testing.T) {
@@ -28,19 +29,35 @@ func TestGetCloudData(t *testing.T) {
 	require.NoError(t, err, "Building Bundle Failed")
 
 	tests := []struct {
-		labelFilter      string
-		expectedUserData []byte
-		expectedNetData  []byte
-		expectedErr      error
+		labelFilter           string
+		userDataSelector      types.Selector
+		userDataKey           string
+		networkConfigSelector types.Selector
+		networkConfigKey      string
+		expectedUserData      []byte
+		expectedNetData       []byte
+		expectedErr           error
 	}{
 		{
-			labelFilter:      "test=validdocset",
-			expectedUserData: []byte("cloud-init"),
-			expectedNetData:  []byte("net-config"),
-			expectedErr:      nil,
+			labelFilter:           "test=validdocset",
+			userDataSelector:      types.Selector{},
+			networkConfigSelector: types.Selector{},
+			expectedUserData:      []byte("cloud-init"),
+			expectedNetData:       []byte("net-config"),
+			expectedErr:           nil,
 		},
 		{
-			labelFilter:      "test=ephemeralmissing",
+			labelFilter: "test=ephemeralmissing",
+			userDataSelector: types.Selector{
+				Gvk:           resid.Gvk{Kind: "Secret"},
+				LabelSelector: "airshipit.org/ephemeral-user-data in (True, true)",
+			},
+			userDataKey: "userData",
+			networkConfigSelector: types.Selector{
+				Gvk:           resid.Gvk{Kind: "BareMetalHost"},
+				LabelSelector: "airshipit.org/ephemeral-node in (True, true)",
+			},
+			networkConfigKey: "networkData",
 			expectedUserData: nil,
 			expectedNetData:  nil,
 			expectedErr: document.ErrDocNotFound{
@@ -50,7 +67,17 @@ func TestGetCloudData(t *testing.T) {
 			},
 		},
 		{
-			labelFilter:      "test=ephemeralduplicate",
+			labelFilter: "test=ephemeralduplicate",
+			userDataSelector: types.Selector{
+				Gvk:           resid.Gvk{Kind: "Secret"},
+				LabelSelector: "airshipit.org/ephemeral-user-data in (True, true)",
+			},
+			userDataKey: "userData",
+			networkConfigSelector: types.Selector{
+				Gvk:           resid.Gvk{Kind: "BareMetalHost"},
+				LabelSelector: "airshipit.org/ephemeral-node in (True, true)",
+			},
+			networkConfigKey: "networkData",
 			expectedUserData: nil,
 			expectedNetData:  nil,
 			expectedErr: document.ErrMultiDocsFound{
@@ -60,7 +87,17 @@ func TestGetCloudData(t *testing.T) {
 			},
 		},
 		{
-			labelFilter:      "test=networkdatabadpointer",
+			labelFilter: "test=networkdatabadpointer",
+			userDataSelector: types.Selector{
+				Gvk:           resid.Gvk{Kind: "Secret"},
+				LabelSelector: "airshipit.org/ephemeral-user-data in (True, true)",
+			},
+			userDataKey: "userData",
+			networkConfigSelector: types.Selector{
+				Gvk:           resid.Gvk{Kind: "BareMetalHost"},
+				LabelSelector: "airshipit.org/ephemeral-node in (True, true)",
+			},
+			networkConfigKey: "networkData",
 			expectedUserData: nil,
 			expectedNetData:  nil,
 			expectedErr: document.ErrDocNotFound{
@@ -71,19 +108,55 @@ func TestGetCloudData(t *testing.T) {
 			},
 		},
 		{
-			labelFilter:      "test=networkdatamalformed",
+			labelFilter: "test=networkdatamalformed",
+			userDataSelector: types.Selector{
+				Gvk:           resid.Gvk{Kind: "Secret"},
+				LabelSelector: "airshipit.org/ephemeral-user-data in (True, true)",
+			},
+			userDataKey: "userData",
+			networkConfigSelector: types.Selector{
+				Gvk:           resid.Gvk{Kind: "BareMetalHost"},
+				LabelSelector: "airshipit.org/ephemeral-node in (True, true)",
+			},
+			networkConfigKey: "networkData",
 			expectedUserData: nil,
 			expectedNetData:  nil,
-			expectedErr:      ErrDataNotSupplied{DocName: "networkdatamalformed-malformed", Key: networkDataKey},
+			expectedErr: document.ErrDataNotSupplied{
+				DocName: "networkdatamalformed-malformed",
+				Key:     networkConfigKeyDefault,
+			},
 		},
 		{
-			labelFilter:      "test=userdatamalformed",
+			labelFilter: "test=userdatamalformed",
+			userDataSelector: types.Selector{
+				Gvk:           resid.Gvk{Kind: "Secret"},
+				LabelSelector: "airshipit.org/ephemeral-user-data in (True, true)",
+			},
+			userDataKey: "userData",
+			networkConfigSelector: types.Selector{
+				Gvk:           resid.Gvk{Kind: "BareMetalHost"},
+				LabelSelector: "airshipit.org/ephemeral-node in (True, true)",
+			},
+			networkConfigKey: "networkData",
 			expectedUserData: nil,
 			expectedNetData:  nil,
-			expectedErr:      ErrDataNotSupplied{DocName: "userdatamalformed-somesecret", Key: userDataKey},
+			expectedErr: document.ErrDataNotSupplied{
+				DocName: "userdatamalformed-somesecret",
+				Key:     userDataKeyDefault,
+			},
 		},
 		{
-			labelFilter:      "test=userdatamissing",
+			labelFilter: "test=userdatamissing",
+			userDataSelector: types.Selector{
+				Gvk:           resid.Gvk{Kind: "Secret"},
+				LabelSelector: "airshipit.org/ephemeral-user-data in (True, true)",
+			},
+			userDataKey: "userData",
+			networkConfigSelector: types.Selector{
+				Gvk:           resid.Gvk{Kind: "BareMetalHost"},
+				LabelSelector: "airshipit.org/ephemeral-node in (True, true)",
+			},
+			networkConfigKey: "networkData",
 			expectedUserData: nil,
 			expectedNetData:  nil,
 			expectedErr: document.ErrDocNotFound{
@@ -105,7 +178,13 @@ func TestGetCloudData(t *testing.T) {
 		require.NoError(t, err, "GetAllDocuments failed")
 		require.NotZero(t, docs)
 
-		actualUserData, actualNetData, actualErr := GetCloudData(filteredBundle)
+		actualUserData, actualNetData, actualErr := GetCloudData(
+			filteredBundle,
+			tt.userDataSelector,
+			tt.userDataKey,
+			tt.networkConfigSelector,
+			tt.networkConfigKey,
+		)
 
 		assert.Equal(t, tt.expectedUserData, actualUserData)
 		assert.Equal(t, tt.expectedNetData, actualNetData)

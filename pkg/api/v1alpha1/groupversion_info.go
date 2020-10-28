@@ -46,7 +46,7 @@ func init() {
 		&PhasePlan{},
 		&KubeConfig{},
 		&KubernetesApply{},
-		&ImageConfiguration{},
+		&IsoConfiguration{},
 		&RemoteDirectConfiguration{},
 		&ClusterMap{},
 		&ReplacementTransformer{},

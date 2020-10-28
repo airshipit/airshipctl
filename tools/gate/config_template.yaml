@@ -11,7 +11,7 @@
 # limitations under the License.
 
 ---
-serve_dir: /srv/iso
+serve_dir: /srv/images
 serve_port: 8099
 local_src_dir: "$AIRSHIPCTL_WS"
 ansible_user: root

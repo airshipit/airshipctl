@@ -46,20 +46,19 @@ func TestBootstrapIso(t *testing.T) {
 
 	volBind := tempVol + ":/dst"
 	testErr := fmt.Errorf("TestErr")
-	testCfg := &api.ImageConfiguration{
-		Container: &api.Container{
+	testCfg := &api.IsoConfiguration{
+		IsoContainer: &api.IsoContainer{
 			Volume:           volBind,
 			ContainerRuntime: "docker",
 		},
-		Builder: &api.Builder{
-			UserDataFileName:      "user-data",
-			NetworkConfigFileName: "net-conf",
+		Isogen: &api.Isogen{
+			OutputFileName: "ephemeral.iso",
 		},
 	}
 	testDoc := &testdoc.MockDocument{
 		MockAsYAML: func() ([]byte, error) { return []byte("TESTDOC"), nil },
 	}
-	testBuilder := &testcontainer.MockContainer{
+	testIsogen := &testcontainer.MockContainer{
 		MockRunCommand:  func() error { return nil },
 		MockGetID:       func() string { return testID },
 		MockRmContainer: func() error { return nil },
@@ -75,7 +74,7 @@ func TestBootstrapIso(t *testing.T) {
 
 	tests := []struct {
 		builder     *testcontainer.MockContainer
-		cfg         *api.ImageConfiguration
+		cfg         *api.IsoConfiguration
 		doc         *testdoc.MockDocument
 		debug       bool
 		expectedOut []string
@@ -121,7 +120,7 @@ func TestBootstrapIso(t *testing.T) {
 			expectedErr: testErr,
 		},
 		{
-			builder: testBuilder,
+			builder: testIsogen,
 			cfg:     testCfg,
 			doc: &testdoc.MockDocument{
 				MockAsYAML: func() ([]byte, error) { return nil, testErr },
@@ -140,7 +139,6 @@ func TestBootstrapIso(t *testing.T) {
 			Builder:   tt.builder,
 			Doc:       tt.doc,
 			Cfg:       tt.cfg,
-			Debug:     tt.debug,
 		}
 		actualErr := bootstrapOpts.CreateBootstrapIso()
 		actualOut := outBuf.String()
@@ -159,40 +157,27 @@ func TestVerifyInputs(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		cfg         *api.ImageConfiguration
+		cfg         *api.IsoConfiguration
 		args        []string
 		expectedErr error
 	}{
 		{
 			name: "missing-container-field",
-			cfg: &api.ImageConfiguration{
-				Container: &api.Container{},
+			cfg: &api.IsoConfiguration{
+				IsoContainer: &api.IsoContainer{},
 			},
 			expectedErr: config.ErrMissingConfig{
 				What: "Must specify volume bind for ISO builder container",
 			},
 		},
 		{
-			name: "missing-filenames",
-			cfg: &api.ImageConfiguration{
-				Container: &api.Container{
-					Volume: tempVol + ":/dst",
-				},
-				Builder: &api.Builder{},
-			},
-			expectedErr: config.ErrMissingConfig{
-				What: "UserDataFileName or NetworkConfigFileName are not specified in ISO builder config",
-			},
-		},
-		{
 			name: "invalid-host-path",
-			cfg: &api.ImageConfiguration{
-				Container: &api.Container{
+			cfg: &api.IsoConfiguration{
+				IsoContainer: &api.IsoContainer{
 					Volume: tempVol + ":/dst:/dst1",
 				},
-				Builder: &api.Builder{
-					UserDataFileName:      "user-data",
-					NetworkConfigFileName: "net-conf",
+				Isogen: &api.Isogen{
+					OutputFileName: "ephemeral.iso",
 				},
 			},
 			expectedErr: config.ErrInvalidConfig{
@@ -201,14 +186,23 @@ func TestVerifyInputs(t *testing.T) {
 		},
 		{
 			name: "success",
-			cfg: &api.ImageConfiguration{
-				Container: &api.Container{
+			cfg: &api.IsoConfiguration{
+				IsoContainer: &api.IsoContainer{
 					Volume: tempVol,
 				},
-				Builder: &api.Builder{
-					UserDataFileName:      "user-data",
-					NetworkConfigFileName: "net-conf",
+				Isogen: &api.Isogen{
+					OutputFileName: "ephemeral.iso",
 				},
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "success-using-output-file-default-",
+			cfg: &api.IsoConfiguration{
+				IsoContainer: &api.IsoContainer{
+					Volume: tempVol,
+				},
+				Isogen: &api.Isogen{},
 			},
 			expectedErr: nil,
 		},
@@ -220,31 +214,5 @@ func TestVerifyInputs(t *testing.T) {
 			actualErr := isogen.VerifyInputs(tt.cfg)
 			assert.Equal(subTest, tt.expectedErr, actualErr)
 		})
-	}
-}
-
-func TestShowProgress(t *testing.T) {
-	tests := []struct {
-		name   string
-		input  string
-		output string
-	}{
-		{
-			name:   "Process-debian-based-logs",
-			input:  "testdata/debian-container-logs",
-			output: "testdata/pb-output-debian",
-		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-
-		testInput, err := ioutil.ReadFile(tt.input)
-		require.NoError(t, err)
-		reader := ioutil.NopCloser(bytes.NewReader(testInput))
-		writer := bytes.NewBuffer(nil)
-		err = isogen.ShowProgress(reader, writer)
-		require.NoError(t, err)
-		assert.Contains(t, writer.String(), "Completed")
 	}
 }

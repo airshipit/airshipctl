@@ -15,6 +15,7 @@
 package document
 
 import (
+	b64 "encoding/base64"
 	"fmt"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -289,4 +290,32 @@ func NewDocumentFromBytes(b []byte) (Document, error) {
 	doc := &Factory{}
 	err = doc.SetKustomizeResource(res)
 	return doc, err
+}
+
+// DecodeSecretData returns base64-decoded secret data
+func DecodeSecretData(cfg Document, key string) ([]byte, error) {
+	var needsBase64Decode = false
+
+	// TODO(alanmeadows): distinguish between missing key
+	// and missing data/stringData keys in the Secret
+	data, err := cfg.GetStringMap("data")
+	if err == nil {
+		needsBase64Decode = true
+	} else {
+		// we'll catch any error below
+		data, err = cfg.GetStringMap("stringData")
+		if err != nil {
+			return nil, ErrDataNotSupplied{DocName: cfg.GetName(), Key: "data or stringData"}
+		}
+	}
+
+	res, ok := data[key]
+	if !ok {
+		return nil, ErrDataNotSupplied{DocName: cfg.GetName(), Key: key}
+	}
+
+	if needsBase64Decode {
+		return b64.StdEncoding.DecodeString(res)
+	}
+	return []byte(res), nil
 }

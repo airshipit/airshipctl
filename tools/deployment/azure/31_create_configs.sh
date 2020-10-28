@@ -14,7 +14,7 @@
 
 set -xe
 
-export ISO_DIR=${ISO_DIR:-"/srv/iso"}
+export IMAGE_DIR=${IMAGE_DIR:-"/srv/images"}
 export SERVE_PORT=${SERVE_PORT:-"8099"}
 export AIRSHIPCTL_WS=${AIRSHIPCTL_WS:-$PWD}
 export USER_NAME=${USER:-"ubuntu"}
@@ -23,8 +23,8 @@ export HTTPS_PROXY=${HTTPS_PROXY:-${https_proxy}}
 export HTTPS_PROXY=${HTTP_PROXY:-${http_proxy}}
 export NO_PROXY=${NO_PROXY:-${no_proxy}}
 export REMOTE_WORK_DIR=${remote_work_dir:-"/tmp/airship"}
-export AIRSHIP_CONFIG_ISO_GEN_TARGET_PATH=${ISO_DIR}
-export AIRSHIP_CONFIG_ISO_BUILDER_DOCKER_IMAGE=${BUILDER_IMAGE:-"quay.io/airshipit/isogen:latest-debian_stable"}
+export AIRSHIP_CONFIG_ISO_GEN_TARGET_PATH=${IMAGE_DIR}
+export AIRSHIP_CONFIG_ISO_BUILDER_DOCKER_IMAGE=${BUILDER_IMAGE:-"quay.io/airshipit/image-builder:latest-ubuntu_focal"}
 export REMOTE_TYPE=redfish
 export REMOTE_INSECURE=true
 export REMOTE_PROXY=false

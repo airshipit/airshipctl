@@ -16,27 +16,32 @@ set -xe
 
 export USER_NAME=${USER:-"ubuntu"}
 
-ISO_DIR=${ISO_DIR:-"/srv/iso"}
+IMAGE_DIR=${IMAGE_DIR:-"/srv/images"}
 CLEANUP_SERVE_DIR=${CLEANUP_SERVE_DIR:-"false"}
 SITE_NAME=${SITE_NAME:-test-site}
+# List of phases to run to build images.
+IMAGE_PHASES=${IMAGE_PHASES:-"bootstrap-iso"}
 
 #Create serving directories and assign permission and ownership
-sudo rm -rf ${ISO_DIR}
-sudo mkdir -p ${ISO_DIR}
-sudo chmod -R 755 ${ISO_DIR}
-sudo chown -R ${USER_NAME} ${ISO_DIR}
+sudo rm -rf ${IMAGE_DIR}
+sudo mkdir -p ${IMAGE_DIR}
+sudo chmod -R 755 ${IMAGE_DIR}
+sudo chown -R ${USER_NAME} ${IMAGE_DIR}
 
-echo "Build ephemeral iso"
-airshipctl phase run bootstrap --debug
+unset IFS
+for phase in $IMAGE_PHASES; do
+  echo "Build phase: $phase"
+  airshipctl phase run $phase --debug
+done
 
-echo "List generated iso"
-ls -lth ${ISO_DIR}
+echo "List generated images"
+ls -lth ${IMAGE_DIR}
 
-echo "Remove the container used for iso generation"
+echo "Remove the container used for image generation"
 sudo docker rm $(docker ps -a -f status=exited -q)
 
 #cleanup the directories
 if [ "${CLEANUP_SERVE_DIR}" == "true" ] || [ "${CLEANUP_SERVE_DIR}" == "True" ]; then
-  echo "Clean directories used by ephemeral iso build"
-  sudo rm -rf ${ISO_DIR}
+  echo "Clean directories used by image-builder"
+  sudo rm -rf ${IMAGE_DIR}
 fi

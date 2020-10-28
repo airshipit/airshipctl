@@ -2,7 +2,7 @@
 apiVersion: airshipit.org/v1alpha1
 kind: Phase
 metadata:
-  name: bootstrap
+  name: bootstrap-iso
   clusterName: ephemeral-cluster
 config:
   executorRef:
