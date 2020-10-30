@@ -14,6 +14,10 @@
   make:
     chdir: "{{ zuul.project.src_dir }}"
     target: images
+    params:
+      PROXY: "{{ proxy.http }}"
+      NO_PROXY: "{{ proxy.noproxy }}"
+      USE_PROXY: "{{ proxy.enabled | lower }}"
 
 - name: Verify Image Exists
   shell: docker image inspect "$(make print-docker-image-tag)"
