@@ -44,6 +44,7 @@ type CheckCommand struct {
 type ExpirationStore struct {
 	TLSSecrets []TLSSecret  `json:"tlsSecrets,omitempty" yaml:"tlsSecrets,omitempty"`
 	Kubeconfs  []Kubeconfig `json:"kubeconfs,omitempty" yaml:"kubeconfs,omitempty"`
+	NodeCerts  []NodeCert   `json:"nodeCerts,omitempty" yaml:"nodeCerts,omitempty"`
 }
 
 // TLSSecret captures expiration information of certificates embedded in TLS secrets
@@ -66,6 +67,13 @@ type kubeconfData struct {
 	Name            string `json:"name,omitempty" yaml:"name,omitempty"`
 	CertificateName string `json:"certificateName,omitempty" yaml:"certificateName,omitempty"`
 	ExpirationDate  string `json:"expirationDate,omitempty" yaml:"expirationDate,omitempty"`
+}
+
+// NodeCert captures certificate expiry information for certificates on each node
+type NodeCert struct {
+	Name                 string            `json:"name,omitempty" yaml:"name,omitempty"`
+	Namespace            string            `json:"namespace,omitempty" yaml:"namespace,omitempty"`
+	ExpiringCertificates map[string]string `json:"certificate,omitempty" yaml:"certificate,omitempty"`
 }
 
 // RunE is the implementation of check command
@@ -112,8 +120,14 @@ func (store CertificateExpirationStore) GetExpiringCertificates() ExpirationStor
 		log.Printf(err.Error())
 	}
 
+	expiringNodeCertificates, err := store.GetExpiringNodeCertificates()
+	if err != nil {
+		log.Printf(err.Error())
+	}
+
 	return ExpirationStore{
 		TLSSecrets: expiringTLSCertificates,
 		Kubeconfs:  expiringKubeConfCertificates,
+		NodeCerts:  expiringNodeCertificates,
 	}
 }

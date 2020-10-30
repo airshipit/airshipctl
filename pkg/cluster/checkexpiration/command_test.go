@@ -66,7 +66,27 @@ const (
 					}
 				]
 			}
-		]
+		],
+		"nodeCerts": [
+					{
+						"name": "test-node",
+						"certificate": {
+							"admin.conf": "2021-08-06 12:36:00 +0000 UTC",
+							"apiserver": "2021-08-06 12:36:00 +0000 UTC",
+							"apiserver-etcd-client": "2021-08-06 12:36:00 +0000 UTC",
+							"apiserver-kubelet-client": "2021-08-06 12:36:00 +0000 UTC",
+							"ca": "2021-08-04 12:36:00 +0000 UTC",
+							"controller-manager.conf": "2021-08-06 12:36:00 +0000 UTC",
+							"etcd-ca": "2021-08-04 12:36:00 +0000 UTC",
+							"etcd-healthcheck-client": "2021-08-06 12:36:00 +0000 UTC",
+							"etcd-peer": "2021-08-06 12:36:00 +0000 UTC",
+							"etcd-server": "2021-08-06 12:36:00 +0000 UTC",
+							"front-proxy-ca": "2021-08-04 12:36:00 +0000 UTC",
+							"front-proxy-client": "2021-08-06 12:36:00 +0000 UTC",
+							"scheduler.conf": "2021-08-06 12:36:00 +0000 UTC"
+					}
+				}
+			]
 	}`
 
 	expectedYAMLOutput = `
@@ -88,6 +108,22 @@ tlsSecrets:
     tls.crt: 2030-08-31 10:12:49 +0000 UTC
   name: test-cluster-etcd
   namespace: default
+nodeCerts:
+- name: test-node
+  certificate:
+    admin.conf: 2021-08-06 12:36:00 +0000 UTC
+    apiserver: 2021-08-06 12:36:00 +0000 UTC
+    apiserver-etcd-client: 2021-08-06 12:36:00 +0000 UTC
+    apiserver-kubelet-client: 2021-08-06 12:36:00 +0000 UTC
+    ca: 2021-08-04 12:36:00 +0000 UTC
+    controller-manager.conf: 2021-08-06 12:36:00 +0000 UTC
+    etcd-ca: 2021-08-04 12:36:00 +0000 UTC
+    etcd-healthcheck-client: 2021-08-06 12:36:00 +0000 UTC
+    etcd-peer: 2021-08-06 12:36:00 +0000 UTC
+    etcd-server: 2021-08-06 12:36:00 +0000 UTC
+    front-proxy-ca: 2021-08-04 12:36:00 +0000 UTC
+    front-proxy-client: 2021-08-06 12:36:00 +0000 UTC
+    scheduler.conf: 2021-08-06 12:36:00 +0000 UTC
 ...
 `
 )
@@ -143,8 +179,9 @@ func TestRunE(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testCaseName, func(t *testing.T) {
 			objects := []runtime.Object{
-				getObject(t, "testdata/tls-secret.yaml"),
-				getObject(t, "testdata/kubeconfig.yaml"),
+				getSecretObject(t, "testdata/tls-secret.yaml"),
+				getSecretObject(t, "testdata/kubeconfig.yaml"),
+				getNodeObject(t, "testdata/node.yaml"),
 			}
 			ra := fake.WithTypedObjects(objects...)
 
@@ -176,7 +213,7 @@ func TestRunE(t *testing.T) {
 	}
 }
 
-func getObject(t *testing.T, fileName string) *v1.Secret {
+func getSecretObject(t *testing.T, fileName string) *v1.Secret {
 	t.Helper()
 
 	object := readObjectFromFile(t, fileName)
@@ -184,6 +221,16 @@ func getObject(t *testing.T, fileName string) *v1.Secret {
 	require.True(t, ok)
 
 	return secret
+}
+
+func getNodeObject(t *testing.T, fileName string) *v1.Node {
+	t.Helper()
+
+	object := readObjectFromFile(t, fileName)
+	node, ok := object.(*v1.Node)
+	require.True(t, ok)
+
+	return node
 }
 
 func readObjectFromFile(t *testing.T, fileName string) runtime.Object {

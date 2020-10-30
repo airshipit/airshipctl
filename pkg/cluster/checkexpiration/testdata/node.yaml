@@ -1,0 +1,6 @@
+apiVersion: v1
+kind: Node
+metadata:
+  annotations:
+    cert-expiration: "{ admin.conf: Aug 06, 2021 12:36 UTC },{ apiserver: Aug 06, 2021 12:36 UTC },{ apiserver-etcd-client: Aug 06, 2021 12:36 UTC },{ apiserver-kubelet-client: Aug 06, 2021 12:36 UTC },{ controller-manager.conf: Aug 06, 2021 12:36 UTC },{ etcd-healthcheck-client: Aug 06, 2021 12:36 UTC },{ etcd-peer: Aug 06, 2021 12:36 UTC },{ etcd-server: Aug 06, 2021 12:36 UTC },{ front-proxy-client: Aug 06, 2021 12:36 UTC },{ scheduler.conf: Aug 06, 2021 12:36 UTC },{ ca: Aug 04, 2021 12:36 UTC },{ etcd-ca: Aug 04, 2021 12:36 UTC },{ front-proxy-ca: Aug 04, 2021 12:36 UTC }"
+  name: test-node
