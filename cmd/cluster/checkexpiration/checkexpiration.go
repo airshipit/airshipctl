@@ -1,0 +1,82 @@
+/*
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     https://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+*/
+
+package checkexpiration
+
+import (
+	"github.com/spf13/cobra"
+
+	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/errors"
+	"opendev.org/airship/airshipctl/pkg/log"
+)
+
+const (
+	checkLong = `
+Displays a list of certificate expirations from both the management and
+workload clusters, or in a self-managed cluster. Checks for TLS Secrets,
+kubeconf secrets (which gets created while creating the workload cluster) and
+also the node certificates present inside /etc/kubernetes/pki directory for
+each node`
+
+	checkExample = `
+# To display all the expiring entities in the cluster
+airshipctl cluster check-certificate-expiration --kubeconfig testconfig
+
+# To display the entities whose expiration is within threshold of 30 days
+airshipctl cluster check-certificate-expiration -t 30 --kubeconfig testconfig
+
+# To output the contents to json (default operation)
+airshipctl cluster check-certificate-expiration -o json --kubeconfig testconfig
+or
+airshipctl cluster check-certificate-expiration --kubeconfig testconfig
+
+# To output the contents to yaml
+airshipctl cluster check-certificate-expiration -o yaml --kubeconfig testconfig
+
+# To output the contents whose expiration is within 30 days to yaml
+airshipctl cluster check-certificate-expiration -t 30 -o yaml --kubeconfig testconfig
+`
+
+	kubeconfigFlag = "kubeconfig"
+)
+
+// NewCheckCommand creates a new command for generating secret information
+func NewCheckCommand(cfgFactory config.Factory) *cobra.Command {
+	var threshold int
+	var contentType, kubeconfig string
+	checkCmd := &cobra.Command{
+		Use:     "check-certificate-expiration",
+		Short:   "Check for expiring TLS certificates, secrets and kubeconfigs in the kubernetes cluster",
+		Long:    checkLong[1:],
+		Example: checkExample,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return errors.ErrNotImplemented{What: "check certificate expiration"}
+		},
+	}
+
+	checkCmd.Flags().IntVarP(&threshold, "threshold", "t", -1,
+		"The max expiration threshold in days before a certificate is"+
+			" expiring. Displays all the certificates by default")
+	checkCmd.Flags().StringVarP(&contentType, "output", "o", "json", "Convert "+
+		"output to yaml or json")
+	checkCmd.Flags().StringVar(&kubeconfig, kubeconfigFlag, "",
+		"Path to kubeconfig associated with cluster being managed")
+
+	err := checkCmd.MarkFlagRequired(kubeconfigFlag)
+	if err != nil {
+		log.Fatalf("marking kubeconfig flag required failed: %v", err)
+	}
+	return checkCmd
+}
