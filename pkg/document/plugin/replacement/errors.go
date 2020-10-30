@@ -67,6 +67,15 @@ func (e ErrPatternSubstring) Error() string {
 	return e.Msg
 }
 
+// ErrBase64Decoding returned incorrect base64 encoded string received for `kind: Secret`
+type ErrBase64Decoding struct {
+	Msg string
+}
+
+func (e ErrBase64Decoding) Error() string {
+	return e.Msg
+}
+
 // ErrIndexOutOfBound returned if JSON path points to a wrong index of a list
 type ErrIndexOutOfBound struct {
 	Index  int

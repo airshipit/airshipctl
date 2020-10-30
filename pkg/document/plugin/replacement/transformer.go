@@ -15,9 +15,11 @@
 package replacement
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io"
 	"regexp"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/kustomize/api/types"
@@ -32,6 +34,11 @@ import (
 var (
 	// substring substitutions are appended to paths as: ...%VARNAME%
 	substringPatternRegex = regexp.MustCompile(`(.+)%(\S+)%$`)
+)
+
+const (
+	secret     = "Secret"
+	secretData = "data"
 )
 
 var _ plugtypes.Plugin = &plugin{}
@@ -105,7 +112,17 @@ func getValue(items []*yaml.RNode, source *types.ReplSource) (*yaml.RNode, error
 	if source.FieldRef != "" {
 		path = source.FieldRef
 	}
-	return sources[0].Pipe(kyamlutils.JSONPathFilter{Path: path})
+	sourceNode, err := sources[0].Pipe(kyamlutils.JSONPathFilter{Path: path})
+	if err != nil {
+		return nil, err
+	}
+
+	// Decoding value if source is `kind: Secret` and
+	// has fieldRef `data`
+	if source.ObjRef.Gvk.Kind == secret && strings.Split(source.FieldRef, ".")[0] == secretData {
+		return decodeValue(sourceNode)
+	}
+	return sourceNode, nil
 }
 
 func mutateField(rnSource *yaml.RNode) func([]*yaml.RNode) error {
@@ -131,18 +148,24 @@ func replace(items []*yaml.RNode, target *types.ReplTarget, value *yaml.RNode) e
 	}
 	for _, tgt := range targets {
 		for _, fieldRef := range target.FieldRefs {
+			val := value
+			// Encoding value before replacement if target is `kind: Secret`
+			// and has fieldRef `data`
+			if target.ObjRef.Gvk.Kind == secret && strings.Split(fieldRef, ".")[0] == secretData {
+				val = encodeValue(val)
+			}
 			// fieldref can contain substring pattern for regexp - we need to get it
 			groups := substringPatternRegex.FindStringSubmatch(fieldRef)
 			// if there is no substring pattern
 			if len(groups) != 3 {
-				filter := kyamlutils.JSONPathFilter{Path: fieldRef, Mutator: mutateField(value), Create: true}
+				filter := kyamlutils.JSONPathFilter{Path: fieldRef, Mutator: mutateField(val), Create: true}
 				if _, err := tgt.Pipe(filter); err != nil {
 					return err
 				}
 				continue
 			}
 
-			if err := substituteSubstring(tgt, groups[1], groups[2], value); err != nil {
+			if err := substituteSubstring(tgt, groups[1], groups[2], val); err != nil {
 				return err
 			}
 		}
@@ -179,4 +202,33 @@ func substituteSubstring(tgt *yaml.RNode, fieldRef, substringPattern string, val
 		return ErrPatternSubstring{Msg: fmt.Sprintf("value identified by %s expected to be string", fieldRef)}
 	}
 	return nil
+}
+
+func decodeValue(source *yaml.RNode) (*yaml.RNode, error) {
+	//decoding replacement source if source reference has data field
+	decodeValue, err := decodeString(yaml.GetValue(source))
+	if err != nil {
+		return nil, ErrBase64Decoding{Msg: fmt.Sprintf("Error while decoding base64"+
+			" encoded string: %s", yaml.GetValue(source))}
+	}
+	node := yaml.NewScalarRNode(decodeValue)
+	return node, nil
+}
+
+func encodeValue(value *yaml.RNode) *yaml.RNode {
+	encodeValue := encodeString(yaml.GetValue(value))
+	node := yaml.NewScalarRNode(encodeValue)
+	return node
+}
+
+func decodeString(value interface{}) (string, error) {
+	decodedValue, err := base64.StdEncoding.DecodeString(value.(string))
+	if err != nil {
+		return "", err
+	}
+	return string(decodedValue), nil
+}
+
+func encodeString(value string) string {
+	return base64.StdEncoding.EncodeToString([]byte(value))
 }

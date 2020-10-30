@@ -646,6 +646,188 @@ metadata:
 replacements:
 - source:
     objref:
+      kind: Secret
+      name: secret
+    fieldref: data.imagename
+  target:
+    objref:
+      kind: Deployment
+    fieldrefs:
+    - spec.template.spec.containers[name=myapp-container].image`,
+		in: `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: secret
+data:
+  imagename: c2VjcmV0ZGVjb2Rpbmc=
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy2
+spec:
+  template:
+    spec:
+      containers:
+      - image: busybox:TAG
+        name: myapp-container
+`,
+		expectedOut: `apiVersion: v1
+kind: Secret
+metadata:
+  name: secret
+data:
+  imagename: c2VjcmV0ZGVjb2Rpbmc=
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy2
+spec:
+  template:
+    spec:
+      containers:
+      - image: secretdecoding
+        name: myapp-container
+`,
+	},
+	{
+		cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: Test_Case_11
+replacements:
+- source:
+    objref:
+      kind: Secret
+      name: secret1
+    fieldref: stringData.username
+  target:
+    objref:
+      kind: Secret
+      name: secret2
+    fieldrefs:
+    - data.username`,
+		in: `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: secret1
+stringData:
+  username: secretencoding
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: secret2
+`,
+		expectedOut: `apiVersion: v1
+kind: Secret
+metadata:
+  name: secret1
+stringData:
+  username: secretencoding
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: secret2
+data:
+  username: c2VjcmV0ZW5jb2Rpbmc=
+`,
+	},
+	{
+		cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: Test_Case_12
+replacements:
+- source:
+    value: testing
+  target:
+    objref:
+      kind: Secret
+      name: secret1
+    fieldrefs:
+    - data.username
+    - stringData.username`,
+		in: `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: secret1
+`,
+		expectedOut: `apiVersion: v1
+kind: Secret
+metadata:
+  name: secret1
+data:
+  username: dGVzdGluZw==
+stringData:
+  username: testing
+`,
+	},
+	{
+		cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: Test_Case_13
+replacements:
+- source:
+    objref:
+      kind: Secret
+      name: secret1
+    fieldref: data.username
+  target:
+    objref:
+      kind: Secret
+      name: secret2
+    fieldrefs:
+    - data.password
+    - stringData.password`,
+		in: `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: secret1
+data:
+  username: dGVzdGluZw==
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: secret2
+`,
+		expectedOut: `apiVersion: v1
+kind: Secret
+metadata:
+  name: secret1
+data:
+  username: dGVzdGluZw==
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: secret2
+data:
+  password: dGVzdGluZw==
+stringData:
+  password: testing
+`,
+	},
+	{
+		cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: Test_Case_14
+replacements:
+- source:
+    objref:
       kind: Pod
   target:
     objref:
@@ -677,7 +859,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: Test_Case_11
+  name: Test_Case_15
 replacements:
 - source:
     objref:
@@ -701,7 +883,7 @@ metadata:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: Test_Case_12
+  name: Test_Case_16
 replacements:
 - source:
     objref:
@@ -728,7 +910,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: Test_Case_13
+  name: Test_Case_17
 replacements:
 - source:
     objref:
@@ -768,7 +950,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: Test_Case_14
+  name: Test_Case_18
 replacements:
 - source:
     objref:
@@ -808,7 +990,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: Test_Case_15
+  name: Test_Case_19
 replacements:
 - source:
     objref:
@@ -848,7 +1030,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: Test_Case_16
+  name: Test_Case_20
 replacements:
 - source:
     objref:
@@ -887,7 +1069,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: Test_Case_17
+  name: Test_Case_21
 replacements:
 - source:
     objref:
@@ -927,7 +1109,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: Test_Case_18
+  name: Test_Case_22
 replacements:
 - source:
     objref:
@@ -967,7 +1149,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: Test_Case_19
+  name: Test_Case_23
 replacements:
 - source:
     value: "12345678"
@@ -1014,6 +1196,34 @@ spec:
       path: konfigadm_bug_
       permissions: "0640"
 `,
+	},
+	{
+		cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: Test_Case_24
+replacements:
+- source:
+    objref:
+      kind: Secret
+      name: secret1
+    fieldref: data.username
+  target:
+    objref:
+      kind: Secret
+      name: secret1
+    fieldrefs:
+    - data.password`,
+		in: `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: secret1
+data:
+  username: abc
+`,
+		expectedErr: "Error while decoding base64 encoded string: abc",
 	},
 }
 
