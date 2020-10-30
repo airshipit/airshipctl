@@ -39,21 +39,30 @@ type CheckCommand struct {
 	ClientFactory client.Factory
 }
 
+// TLSSecret captures expiration information of certificates embedded in TLS secrets
+type TLSSecret struct {
+	Name                 string            `json:"name,omitempty" yaml:"name,omitempty"`
+	Namespace            string            `json:"namespace,omitempty" yaml:"namespace,omitempty"`
+	ExpiringCertificates map[string]string `json:"certificate,omitempty" yaml:"certificate,omitempty"`
+}
+
 // RunE is the implementation of check command
 func (c *CheckCommand) RunE(w io.Writer) error {
 	if !strings.EqualFold(c.Options.FormatType, "json") && !strings.EqualFold(c.Options.FormatType, "yaml") {
 		return ErrInvalidFormat{RequestedFormat: c.Options.FormatType}
 	}
 
-	secretStore, err := NewStore(c.CfgFactory, c.ClientFactory, c.Options.Kubeconfig, c.Options.KubeContext)
+	secretStore, err := NewStore(c.CfgFactory, c.ClientFactory, c.Options.Kubeconfig,
+		c.Options.KubeContext, c.Options.Threshold)
 	if err != nil {
 		return err
 	}
 
-	expirationInfo, err := secretStore.GetExpiringCertificates(c.Options.Threshold)
+	expirationInfo, err := secretStore.GetExpiringTLSCertificates()
 	if err != nil {
 		return err
 	}
+
 	if c.Options.FormatType == "yaml" {
 		err = yaml.WriteOut(w, expirationInfo)
 		if err != nil {
