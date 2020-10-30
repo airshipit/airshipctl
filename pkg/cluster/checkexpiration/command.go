@@ -21,6 +21,7 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/k8s/client"
+	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/util/yaml"
 )
 
@@ -39,11 +40,32 @@ type CheckCommand struct {
 	ClientFactory client.Factory
 }
 
+// ExpirationStore captures expiration information of all expirable entities in the cluster
+type ExpirationStore struct {
+	TLSSecrets []TLSSecret  `json:"tlsSecrets,omitempty" yaml:"tlsSecrets,omitempty"`
+	Kubeconfs  []Kubeconfig `json:"kubeconfs,omitempty" yaml:"kubeconfs,omitempty"`
+}
+
 // TLSSecret captures expiration information of certificates embedded in TLS secrets
 type TLSSecret struct {
 	Name                 string            `json:"name,omitempty" yaml:"name,omitempty"`
 	Namespace            string            `json:"namespace,omitempty" yaml:"namespace,omitempty"`
 	ExpiringCertificates map[string]string `json:"certificate,omitempty" yaml:"certificate,omitempty"`
+}
+
+// Kubeconfig captures expiration information of all kubeconfigs
+type Kubeconfig struct {
+	SecretName      string         `json:"secretName,omitempty" yaml:"secretName,omitempty"`
+	SecretNamespace string         `json:"secretNamespace,omitempty" yaml:"secretNamespace,omitempty"`
+	Cluster         []kubeconfData `json:"cluster,omitempty" yaml:"cluster,omitempty"`
+	User            []kubeconfData `json:"user,omitempty" yaml:"user,omitempty"`
+}
+
+// kubeconfData captures cluster ca certificate expiration information and kubeconfig's user's certificate
+type kubeconfData struct {
+	Name            string `json:"name,omitempty" yaml:"name,omitempty"`
+	CertificateName string `json:"certificateName,omitempty" yaml:"certificateName,omitempty"`
+	ExpirationDate  string `json:"expirationDate,omitempty" yaml:"expirationDate,omitempty"`
 }
 
 // RunE is the implementation of check command
@@ -58,10 +80,7 @@ func (c *CheckCommand) RunE(w io.Writer) error {
 		return err
 	}
 
-	expirationInfo, err := secretStore.GetExpiringTLSCertificates()
-	if err != nil {
-		return err
-	}
+	expirationInfo := secretStore.GetExpiringCertificates()
 
 	if c.Options.FormatType == "yaml" {
 		err = yaml.WriteOut(w, expirationInfo)
@@ -79,4 +98,22 @@ func (c *CheckCommand) RunE(w io.Writer) error {
 		}
 	}
 	return nil
+}
+
+// GetExpiringCertificates encapsulates all the different expirable entities in the cluster
+func (store CertificateExpirationStore) GetExpiringCertificates() ExpirationStore {
+	expiringTLSCertificates, err := store.GetExpiringTLSCertificates()
+	if err != nil {
+		log.Printf(err.Error())
+	}
+
+	expiringKubeConfCertificates, err := store.GetExpiringKubeConfigs()
+	if err != nil {
+		log.Printf(err.Error())
+	}
+
+	return ExpirationStore{
+		TLSSecrets: expiringTLSCertificates,
+		Kubeconfs:  expiringKubeConfCertificates,
+	}
 }
