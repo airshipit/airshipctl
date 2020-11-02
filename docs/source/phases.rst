@@ -65,7 +65,7 @@ containing:
 
 - `object meta <https://godoc.org/k8s.io/apimachinery/pkg/apis/meta/v1#ObjectMeta>`__
 
-    **Note** that the clusterName that the phase belongs to comes from objects 
+    **Note** that the clusterName that the phase belongs to comes from objects
     metadata and not from phase config. ClusterName is used to identify kubeconfig
     context and if needed cluster name of a parent cluster to be used during
     phase execution, also this clusterName must be present in the `cluster
