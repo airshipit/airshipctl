@@ -5,6 +5,12 @@ GIT_MODULE          ?= opendev.org/airship/airshipctl/pkg/version
 
 GO_FLAGS            := -ldflags '-extldflags "-static"' -tags=netgo -trimpath
 GO_FLAGS            += -ldflags "-X ${GIT_MODULE}.gitVersion=${GIT_VERSION}"
+# Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
+ifeq (,$(shell go env GOBIN))
+GOBIN = $(shell go env GOPATH)/bin
+else
+GOBIN = $(shell go env GOBIN)
+endif
 
 BINDIR              := bin
 EXECUTABLE_CLI      := airshipctl
@@ -241,3 +247,24 @@ check-copyright:
 .PHONY: validate-docs
 validate-docs:
 	@./tools/validate_docs
+
+# Generate code
+generate: controller-gen
+	$(CONTROLLER_GEN) object:headerFile="tools/license_go.txt" paths="./..."
+
+# find or download controller-gen
+# download controller-gen if necessary
+controller-gen:
+ifeq (, $(shell which controller-gen))
+	@{ \
+	set -e ;\
+	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
+	cd $$CONTROLLER_GEN_TMP_DIR ;\
+	go mod init tmp ;\
+	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.5 ;\
+	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
+	}
+CONTROLLER_GEN=$(GOBIN)/controller-gen
+else
+CONTROLLER_GEN=$(shell which controller-gen)
+endif

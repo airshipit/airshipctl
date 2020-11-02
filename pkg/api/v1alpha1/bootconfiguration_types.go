@@ -18,6 +18,18 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// +kubebuilder:object:root=true
+
+// BootConfiguration structure is inherited from apimachinery TypeMeta and ObjectMeta and is a top level
+// configuration structure for the bootstrap container
+type BootConfiguration struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	BootstrapContainer BootstrapContainer `json:"bootstrapContainer"`
+	EphemeralCluster   EphemeralCluster   `json:"ephemeralCluster"`
+}
+
 // EphemeralCluster structure contains the data for the ephemeral cluster
 type EphemeralCluster struct {
 	BootstrapCommand string `json:"bootstrapCommand,omitempty"`
@@ -30,16 +42,6 @@ type BootstrapContainer struct {
 	Image            string `json:"image,omitempty"`
 	Volume           string `json:"volume,omitempty"`
 	Kubeconfig       string `json:"kubeconfig,omitempty"`
-}
-
-// BootConfiguration structure is inherited from apimachinery TypeMeta and ObjectMeta and is a top level
-// configuration structure for the bootstrap container
-type BootConfiguration struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	BootstrapContainer BootstrapContainer `json:"bootstrapContainer"`
-	EphemeralCluster   EphemeralCluster   `json:"ephemeralCluster"`
 }
 
 // DefaultBootConfiguration can be used to safely unmarshal BootConfiguration object without nil pointers
