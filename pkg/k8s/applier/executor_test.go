@@ -21,6 +21,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
@@ -153,11 +155,13 @@ func TestExecutorRun(t *testing.T) {
 	tests := []struct {
 		name        string
 		containsErr string
+		clusterName string
 
 		kubeconf      kubeconfig.Interface
 		execDoc       document.Document
 		bundleFactory document.BundleFactoryFunc
 		helper        ifc.Helper
+		clusterMap    clustermap.ClusterMap
 	}{
 		{
 			name:          "cant read kubeconfig error",
@@ -166,6 +170,21 @@ func TestExecutorRun(t *testing.T) {
 			bundleFactory: testBundleFactory("testdata/source_bundle"),
 			kubeconf:      testKubeconfig(`invalid kubeconfig`),
 			execDoc:       toKubernetesApply(t, ValidExecutorDocNamespaced),
+			clusterName:   "ephemeral-cluster",
+			clusterMap: clustermap.NewClusterMap(&v1alpha1.ClusterMap{
+				Map: map[string]*v1alpha1.Cluster{
+					"ephemeral-cluster": {},
+				},
+			}),
+		},
+		{
+			name:          "error cluster not defined",
+			containsErr:   "cluster  is not defined in in cluster map",
+			helper:        makeDefaultHelper(t),
+			bundleFactory: testBundleFactory("testdata/source_bundle"),
+			kubeconf:      testKubeconfig(testValidKubeconfig),
+			execDoc:       toKubernetesApply(t, ValidExecutorDocNamespaced),
+			clusterMap:    clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
 		},
 	}
 	for _, tt := range tests {
@@ -177,6 +196,8 @@ func TestExecutorRun(t *testing.T) {
 					Helper:           tt.helper,
 					BundleFactory:    tt.bundleFactory,
 					Kubeconfig:       tt.kubeconf,
+					ClusterMap:       tt.clusterMap,
+					ClusterName:      tt.clusterName,
 				})
 			if tt.name == "Nil bundle provided" {
 				require.Error(t, err)

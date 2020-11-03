@@ -28,6 +28,7 @@ func TestClusterMap(t *testing.T) {
 	targetCluster := "target"
 	ephemeraCluster := "ephemeral"
 	workloadCluster := "workload"
+	workloadClusterKubeconfigContext := "different-workload-context"
 	workloadClusterNoParent := "workload without parent"
 	apiMap := &v1alpha1.ClusterMap{
 		Map: map[string]*v1alpha1.Cluster{
@@ -39,6 +40,7 @@ func TestClusterMap(t *testing.T) {
 			workloadCluster: {
 				Parent:            targetCluster,
 				DynamicKubeConfig: true,
+				KubeconfigContext: workloadClusterKubeconfigContext,
 			},
 			workloadClusterNoParent: {
 				DynamicKubeConfig: true,
@@ -86,5 +88,22 @@ func TestClusterMap(t *testing.T) {
 	t.Run("all clusters", func(t *testing.T) {
 		clusters := cMap.AllClusters()
 		assert.Len(t, clusters, 4)
+	})
+
+	t.Run("kubeconfig context", func(t *testing.T) {
+		kubeContext, err := cMap.ClusterKubeconfigContext(workloadCluster)
+		assert.NoError(t, err)
+		assert.Equal(t, workloadClusterKubeconfigContext, kubeContext)
+	})
+
+	t.Run("kubeconfig default context", func(t *testing.T) {
+		kubeContext, err := cMap.ClusterKubeconfigContext(targetCluster)
+		assert.NoError(t, err)
+		assert.Equal(t, targetCluster, kubeContext)
+	})
+
+	t.Run("kubeconfig context error", func(t *testing.T) {
+		_, err := cMap.ClusterKubeconfigContext("does not exist")
+		assert.Error(t, err)
 	})
 }

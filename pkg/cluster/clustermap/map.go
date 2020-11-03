@@ -27,6 +27,7 @@ type ClusterMap interface {
 	AllClusters() []string
 	DynamicKubeConfig(string) bool
 	ClusterNamespace(string) (string, error)
+	ClusterKubeconfigContext(string) (string, error)
 }
 
 // clusterMap allows to view clusters and relationship between them
@@ -76,4 +77,22 @@ func (cm clusterMap) AllClusters() []string {
 // TODO implement how to get namespace for cluster
 func (cm clusterMap) ClusterNamespace(clusterName string) (string, error) {
 	return "default", nil
+}
+
+// ClusterNamespace a namespace for given cluster
+// TODO implement how to get namespace for cluster
+func (cm clusterMap) ClusterKubeconfigContext(clusterName string) (string, error) {
+	cluster, exists := cm.apiMap.Map[clusterName]
+
+	if !exists {
+		return "", ErrClusterNotInMap{Map: cm.apiMap, Child: clusterName}
+	}
+
+	kubeContext := cluster.KubeconfigContext
+	// if kubeContext is still empty, set it to clusterName
+	if kubeContext == "" {
+		kubeContext = clusterName
+	}
+
+	return kubeContext, nil
 }
