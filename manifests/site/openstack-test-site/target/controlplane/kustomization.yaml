@@ -9,21 +9,21 @@ patchesJson6902:
       group: infrastructure.cluster.x-k8s.io
       version: v1alpha3
       kind: OpenStackCluster
-      name: "ostgt"
+      name: "target-cluster"
     path: control_plane_ip.json
 
   - target:
       group: infrastructure.cluster.x-k8s.io
       version: v1alpha3
       kind: OpenStackCluster
-      name: "ostgt"
+      name: "target-cluster"
     path: dns_servers.json
 
   - target:
       group: infrastructure.cluster.x-k8s.io
       version: v1alpha3
       kind: OpenStackCluster
-      name: "ostgt"
+      name: "target-cluster"
     path: external_network_id.json
 
 patchesStrategicMerge:

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: ostgt-cloud-config
+  name: target-cluster-cloud-config
   namespace: default
 data:
   cacert: Cg==

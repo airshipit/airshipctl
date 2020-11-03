@@ -1,7 +1,7 @@
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
 kind: OpenStackMachineTemplate
 metadata:
-  name: ostgt-control-plane
+  name: target-cluster-control-plane
   namespace: default
 spec:
   template:

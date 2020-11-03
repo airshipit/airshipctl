@@ -1,13 +1,13 @@
 apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
 kind: KubeadmControlPlane
 metadata:
-  name: ostgt-control-plane
+  name: target-cluster-control-plane
   namespace: default
 spec:
   infrastructureTemplate:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
     kind: OpenStackMachineTemplate
-    name: ostgt-control-plane
+    name: target-cluster-control-plane
   kubeadmConfigSpec:
     clusterConfiguration:
       apiServer:
@@ -70,14 +70,14 @@ spec:
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
 kind: OpenStackMachineTemplate
 metadata:
-  name: ostgt-control-plane
+  name: target-cluster-control-plane
   namespace: default
 spec:
   template:
     spec:
       cloudName: devstack
       cloudsSecret:
-        name: ostgt-cloud-config
+        name: target-cluster-cloud-config
         namespace: default
       flavor: ${CONTROLPLANE_MACHINE_FLAVOR}
       image: ubuntu-1910-kube-v1.17.3
