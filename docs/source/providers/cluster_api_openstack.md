@@ -17,16 +17,13 @@ A simple workflow that can be tested involves the following operations:
 Initialize a management cluster with cluster api and openstack provider
 components:
 
-*`$ airshipctl cluster init`*  or *`$ airshipctl cluster init --debug`*
+*`$ airshipctl phase run clusterctl-init-ephemeral`*  or *`$ airshipctl phase run clusterctl-init-ephemeral --debug`*
 
 Create a target workload cluster with control plane and worker nodes:
 
-*`$ airshipctl phase apply controlplane`*
+*`$ airshipctl phase run controlplane-target`*
 
-*`$ airshipctl phase apply workers`*
-
-Note: `airshipctl phase apply initinfra` is not used because all the provider
-components are initialized  using `airshipctl cluster init`.
+*`$ airshipctl phase run workers-target`*
 
 ## Common Prerequisite
 
@@ -173,7 +170,7 @@ initialized with cluster API and Cluster API openstack(CAPO) provider components
 
 $ export KIND_EXPERIMENTAL_DOCKER_NETWORK=bridge
 
-$ kind create cluster --name capi-openstack
+$ kind create cluster --name capi-openstack --config ~/kind-cluster-config.yaml
 
 ```bash
 Creating cluster "capi-openstack" ...
@@ -258,16 +255,22 @@ $ airshipctl config set-manifest openstack_manifest --target-path /tmp/airship/a
 
 Execute the following command to initialize the Management cluster with CAPI and CAPO components.
 
-$ airshipctl cluster init --debug
+$ airshipctl phase run clusterctl-init-ephemeral --debug
 
 ```bash
-[airshipctl] 2020/09/10 23:36:23 Starting cluster-api initiation
-Fetching providers
-[airshipctl] 2020/09/10 23:36:23 Creating arishipctl repository implementation interface for provider cluster-api of type CoreProvider
-[airshipctl] 2020/09/10 23:36:23 Setting up airshipctl provider Components client
-Provider type: CoreProvider, name: cluster-api
-[airshipctl] 2020/09/10 23:36:23 Getting airshipctl provider components, skipping variable substitution: true.
-Provider type: CoreProvider, name: cluster-api
+[airshipctl] 2020/10/11 06:03:40 opendev.org/airship/airshipctl@/pkg/clusterctl/implementations/reader.go:104: Verifying that variable CONTAINER_CAPD_AUTH_PROXY is allowed to be appended
+[airshipctl] 2020/10/11 06:03:40 opendev.org/airship/airshipctl@/pkg/clusterctl/implementations/reader.go:104: Verifying that variable CONTAINER_CAPM3_MANAGER is allowed to be appended
+[airshipctl] 2020/10/11 06:03:40 opendev.org/airship/airshipctl@/pkg/clusterctl/implementations/reader.go:104: Verifying that variable CONTAINER_CABPK_AUTH_PROXY is allowed to be appended
+[airshipctl] 2020/10/11 06:03:40 opendev.org/airship/airshipctl@/pkg/clusterctl/implementations/reader.go:104: Verifying that variable CONTAINER_CABPK_MANAGER is allowed to be appended
+[airshipctl] 2020/10/11 06:03:40 opendev.org/airship/airshipctl@/pkg/clusterctl/implementations/reader.go:104: Verifying that variable CONTAINER_CACPK_AUTH_PROXY is allowed to be appended
+[airshipctl] 2020/10/11 06:03:40 opendev.org/airship/airshipctl@/pkg/clusterctl/implementations/reader.go:104: Verifying that variable CONTAINER_CAPI_MANAGER is allowed to be appended
+[airshipctl] 2020/10/11 06:03:40 opendev.org/airship/airshipctl@/pkg/clusterctl/implementations/reader.go:104: Verifying that variable CONTAINER_CAPM3_AUTH_PROXY is allowed to be appended
+[airshipctl] 2020/10/11 06:03:40 opendev.org/airship/airshipctl@/pkg/clusterctl/implementations/reader.go:104: Verifying that variable CONTAINER_CACPK_MANAGER is allowed to be appended
+[airshipctl] 2020/10/11 06:03:40 opendev.org/airship/airshipctl@/pkg/clusterctl/implementations/reader.go:104: Verifying that variable CONTAINER_CAPD_MANAGER is allowed to be appended
+[airshipctl] 2020/10/11 06:03:40 opendev.org/airship/airshipctl@/pkg/clusterctl/implementations/reader.go:104: Verifying that variable CONTAINER_CAPI_AUTH_PROXY is allowed to be appended
+[airshipctl] 2020/10/11 06:03:40 opendev.org/airship/airshipctl@/pkg/events/processor.go:61: Received event: {4 {InitType {[]} {<nil>} {ApplyEventResourceUpdate ServersideApplied <nil>} {ResourceUpdateEvent <nil> <nil>} {PruneEventResourceUpdate Pruned <nil>} {DeleteEventResourceUpdate Deleted <nil>}} {<nil>} {ResourceUpdateEvent <nil> <nil>} {0 starting clusterctl init executor} {0 }}
+[airshipctl] 2020/10/11 06:03:40 opendev.org/airship/airshipctl@/pkg/clusterctl/client/client.go:67: Starting cluster-api initiation
+Installing the clusterctl inventory CRD
 ...
 ```
 
@@ -303,41 +306,53 @@ At this point, the management cluster is initialized with cluster api and cluste
 
 ## Create control plane and worker nodes
 
-$ airshipctl phase apply controlplane --debug
+$ airshipctl phase run controlplane-target --debug
 
 ```bash
-[airshipctl] 2020/09/11 00:11:44 building bundle from kustomize path /tmp/airship/airshipctl/manifests/site/openstack-test-site/target/controlplane
-[airshipctl] 2020/09/11 00:11:44 Getting infos for bundle, inventory id is kind-capi-openstack-target-controlplane
-[airshipctl] 2020/09/11 00:11:44 Inventory Object config Map not found, auto generating Invetory object
-[airshipctl] 2020/09/11 00:11:44 Injecting Invetory Object: {"apiVersion":"v1","kind":"ConfigMap","metadata":{"creationTimestamp":null,"labels":{"cli-utils.sigs.k8s.io/inventory-id":"kind-capi-openstack-target-controlplane"},"name":"airshipit-kind-capi-openstack-target-controlplane","namespace":"airshipit"}}{nsfx:false,beh:unspecified} into bundle
-[airshipctl] 2020/09/11 00:11:44 Making sure that inventory object namespace airshipit exists
+[airshipctl] 2020/10/11 06:05:31 opendev.org/airship/airshipctl@/pkg/k8s/applier/executor.go:126: Getting kubeconfig file information from kubeconfig provider
+[airshipctl] 2020/10/11 06:05:31 opendev.org/airship/airshipctl@/pkg/k8s/applier/executor.go:131: Filtering out documents that shouldnt be applied to kubernetes from document bundle
+[airshipctl] 2020/10/11 06:05:31 opendev.org/airship/airshipctl@/pkg/k8s/applier/executor.go:115: WaitTimeout: 33m20s
+[airshipctl] 2020/10/11 06:05:31 opendev.org/airship/airshipctl@/pkg/k8s/applier/applier.go:77: Getting infos for bundle, inventory id is controlplane-target
+[airshipctl] 2020/10/11 06:05:31 opendev.org/airship/airshipctl@/pkg/k8s/applier/applier.go:107: Inventory Object config Map not found, auto generating Inventory object
+[airshipctl] 2020/10/11 06:05:31 opendev.org/airship/airshipctl@/pkg/k8s/applier/applier.go:114: Injecting Inventory Object: {"apiVersion":"v1","kind":"ConfigMap","metadata":{"creationTimestamp":null,"labels":{"cli-utils.sigs.k8s.io/inventory-id":"controlplane-target"},"name":"airshipit-controlplane-target","namespace":"airshipit"}}{nsfx:false,beh:unspecified} into bundle
+[airshipctl] 2020/10/11 06:05:31 opendev.org/airship/airshipctl@/pkg/k8s/applier/applier.go:120: Making sure that inventory object namespace airshipit exists
 secret/ostgt-cloud-config created
 cluster.cluster.x-k8s.io/ostgt created
 kubeadmcontrolplane.controlplane.cluster.x-k8s.io/ostgt-control-plane created
 openstackcluster.infrastructure.cluster.x-k8s.io/ostgt created
 openstackmachinetemplate.infrastructure.cluster.x-k8s.io/ostgt-control-plane created
 5 resource(s) applied. 5 created, 0 unchanged, 0 configured
-secret/ostgt-cloud-config is NotFound: Resource not found
 cluster.cluster.x-k8s.io/ostgt is NotFound: Resource not found
 kubeadmcontrolplane.controlplane.cluster.x-k8s.io/ostgt-control-plane is NotFound: Resource not found
 openstackcluster.infrastructure.cluster.x-k8s.io/ostgt is NotFound: Resource not found
 openstackmachinetemplate.infrastructure.cluster.x-k8s.io/ostgt-control-plane is NotFound: Resource not found
+secret/ostgt-cloud-config is NotFound: Resource not found
 secret/ostgt-cloud-config is Current: Resource is always ready
-cluster.cluster.x-k8s.io/ostgt is Current: Resource is current
+cluster.cluster.x-k8s.io/ostgt is InProgress:
 kubeadmcontrolplane.controlplane.cluster.x-k8s.io/ostgt-control-plane is Current: Resource is current
 openstackcluster.infrastructure.cluster.x-k8s.io/ostgt is Current: Resource is current
 openstackmachinetemplate.infrastructure.cluster.x-k8s.io/ostgt-control-plane is Current: Resource is current
+cluster.cluster.x-k8s.io/ostgt is InProgress:
+openstackcluster.infrastructure.cluster.x-k8s.io/ostgt is Current: Resource is current
+cluster.cluster.x-k8s.io/ostgt is InProgress: Scaling up to 1 replicas (actual 0)
+kubeadmcontrolplane.controlplane.cluster.x-k8s.io/ostgt-control-plane is InProgress: Scaling up to 1 replicas (actual 0)
+cluster.cluster.x-k8s.io/ostgt is InProgress:
+kubeadmcontrolplane.controlplane.cluster.x-k8s.io/ostgt-control-plane is InProgress:
+cluster.cluster.x-k8s.io/ostgt is Current: Resource is Ready
+kubeadmcontrolplane.controlplane.cluster.x-k8s.io/ostgt-control-plane is Current: Resource is Ready
 all resources has reached the Current status
 ```
 
-$ airshipctl phase apply workers --debug
+$ airshipctl phase run workers-target --debug
 
 ```bash
-[airshipctl] 2020/09/11 00:12:19 building bundle from kustomize path /tmp/airship/airshipctl/manifests/site/openstack-test-site/target/workers
-[airshipctl] 2020/09/11 00:12:19 Getting infos for bundle, inventory id is kind-capi-openstack-target-workers
-[airshipctl] 2020/09/11 00:12:19 Inventory Object config Map not found, auto generating Invetory object
-[airshipctl] 2020/09/11 00:12:19 Injecting Invetory Object: {"apiVersion":"v1","kind":"ConfigMap","metadata":{"creationTimestamp":null,"labels":{"cli-utils.sigs.k8s.io/inventory-id":"kind-capi-openstack-target-workers"},"name":"airshipit-kind-capi-openstack-target-workers","namespace":"airshipit"}}{nsfx:false,beh:unspecified} into bundle
-[airshipctl] 2020/09/11 00:12:19 Making sure that inventory object namespace airshipit exists
+[airshipctl] 2020/10/11 06:05:48 opendev.org/airship/airshipctl@/pkg/k8s/applier/executor.go:126: Getting kubeconfig file information from kubeconfig provider
+[airshipctl] 2020/10/11 06:05:48 opendev.org/airship/airshipctl@/pkg/k8s/applier/executor.go:131: Filtering out documents that shouldnt be applied to kubernetes from document bundle
+[airshipctl] 2020/10/11 06:05:48 opendev.org/airship/airshipctl@/pkg/k8s/applier/executor.go:115: WaitTimeout: 33m20s
+[airshipctl] 2020/10/11 06:05:48 opendev.org/airship/airshipctl@/pkg/k8s/applier/applier.go:77: Getting infos for bundle, inventory id is workers-target
+[airshipctl] 2020/10/11 06:05:48 opendev.org/airship/airshipctl@/pkg/k8s/applier/applier.go:107: Inventory Object config Map not found, auto generating Inventory object
+[airshipctl] 2020/10/11 06:05:48 opendev.org/airship/airshipctl@/pkg/k8s/applier/applier.go:114: Injecting Inventory Object: {"apiVersion":"v1","kind":"ConfigMap","metadata":{"creationTimestamp":null,"labels":{"cli-utils.sigs.k8s.io/inventory-id":"workers-target"},"name":"airshipit-workers-target","namespace":"airshipit"}}{nsfx:false,beh:unspecified} into bundle
+[airshipctl] 2020/10/11 06:05:48 opendev.org/airship/airshipctl@/pkg/k8s/applier/applier.go:120: Making sure that inventory object namespace airshipit exists
 kubeadmconfigtemplate.bootstrap.cluster.x-k8s.io/ostgt-md-0 created
 machinedeployment.cluster.x-k8s.io/ostgt-md-0 created
 openstackmachinetemplate.infrastructure.cluster.x-k8s.io/ostgt-md-0 created
@@ -471,7 +486,7 @@ the control plane, workers and all other resources
 associated with the cluster on openstack.
 
 ```bash
-$ airshipctl phase render controlplane -k Cluster | kubectl delete -f -
+$ kubectl delete cluster ostgt
 cluster.cluster.x-k8s.io "ostgt" deleted
 ```
 
@@ -645,6 +660,81 @@ $ tree airshipctl/manifests/function/capo
         └── webhookcainjection_patch.yaml
 ```
 
+### Kind Configuration
+
+```bash
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+     apiServerAddress: "127.0.0.1"
+     apiServerPort: 37533
+nodes:
+  - role: control-plane
+    extraMounts:
+      - hostPath: /var/run/docker.sock
+        containerPath: /var/run/docker.sock
+      - hostPath: /tmp/airship/airshipctl/tools/deployment/certificates
+        containerPath: /etc/kubernetes/pki
+    kubeadmConfigPatches:
+    - |
+      kind: ClusterConfiguration
+      certificatesDir: /etc/kubernetes/pki
+```
+
+### Capo Phases
+
+```bash
+/airshipctl/manifests/capo-phases$ tree
+.
+├── cluster-map.yaml
+├── executors.yaml
+├── kubeconfig.yaml
+├── kustomization.yaml
+├── phases.yaml
+└── plan.yaml
+```
+
+$ cat phases.yaml
+
+```bash
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: clusterctl-init-ephemeral
+  clusterName: kind-capi-openstack
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: Clusterctl
+    name: clusterctl_init
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: controlplane-target
+  clusterName: kind-capi-openstack
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: KubernetesApply
+    name: kubernetes-apply
+  documentEntryPoint: manifests/site/openstack-test-site/target/controlplane
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: workers-target
+  clusterName: kind-capi-openstack
+config:
+  cluster: kind-capi-openstack
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: KubernetesApply
+    name: kubernetes-apply
+  documentEntryPoint: manifests/site/openstack-test-site/target/workers
+```
+
 ### Cluster Templates
 
 airshipctl/manifests/function/k8scontrol-capo contains cluster.yaml, controlplane.yaml templates.
@@ -680,43 +770,26 @@ airshipctl/manifests/function/workers-capo
 
 ### Test Site Manifests
 
-#### openstack-test-site/shared
-
-airshipctl cluster init uses
-airshipctl/manifests/site/openstack-test-site/shared/clusterctl to initialize
-management cluster with defined provider components and version.
-
-$ tree airshipctl/manifests/site/openstack-test-site/shared
-
-```bash
-└── clusterctl
-    ├── clusterctl.yaml
-    └── kustomization.yaml
-```
-
 #### openstack-test-site/target
 
-There are 3 phases currently available in openstack-test-site/target
+Following phase entrypoints reside in the openstack-test-site.
 
 ```bash
 controlplane - Patches templates in manifests/function/k8scontrol-capo
 workers - Patches template in manifests/function/workers-capo
-initinfra - Simply calls `openstack-test-site/shared/clusterctl
 ```
 
-Note: `airshipctl cluster init` initializes all the provider components
-including the openstack infrastructure provider component. As a result, `airshipctl
-phase apply initinfra` is not used.
+Note: `airshipctl phase run clusterctl-init-ephemeral` initializes all the provider components including the openstack infrastructure provider component.
 
 #### Patch Merge Strategy
 
 Json and strategic merge patches are applied on templates in `manifests/function/k8scontrol-capo`
 from `airshipctl/manifests/site/openstack-test-site/target/controlplane` when
-`airshipctl phase apply controlplane` command is executed
+`airshipctl phase run controlplane-target` command is executed
 
 Json and strategic merge patches are applied on templates in `manifests/function/workers-capo`
 from `airshipctl/manifests/site/openstack-test-site/target/workers` when
-`airshipctl phase apply workers` command is executed
+`airshipctl phase run workers-target` command is executed
 
 ```bash
 controlplane/control_plane_ip.json: patches control plane ip in template function/k8scontrol-capo/cluster.yaml
