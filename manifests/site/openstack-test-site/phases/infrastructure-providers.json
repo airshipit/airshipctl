@@ -1,0 +1,18 @@
+[{
+    "op": "replace",
+    "path": "/init-options/infrastructure-providers",
+    "value": ["openstack:v0.3.1"]
+ },
+ {
+    "op": "replace",
+    "path": "/providers/0",
+    "value": {
+        "name": "openstack",
+        "type": "InfrastructureProvider",
+        "variable-substitution": true,
+        "versions": {
+            "v0.3.1": "airshipctl/manifests/function/capo/v0.3.1"
+        }
+    }
+ }
+]
