@@ -2,7 +2,7 @@
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
 kind: DockerMachineTemplate
 metadata:
-  name: "dtc-control-plane"
+  name: "target-cluster-control-plane"
 spec:
   template:
     spec:
@@ -13,13 +13,13 @@ spec:
 kind: KubeadmControlPlane
 apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
 metadata:
-  name: "dtc-control-plane"
+  name: "target-cluster-control-plane"
 spec:
   replicas: ${ CONTROL_PLANE_MACHINE_COUNT }
   infrastructureTemplate:
     kind: DockerMachineTemplate
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
-    name: "dtc-control-plane"
+    name: "target-cluster-control-plane"
   kubeadmConfigSpec:
     clusterConfiguration:
       apiServer:
@@ -53,9 +53,9 @@ spec:
 apiVersion: cluster.x-k8s.io/v1alpha3
 kind: MachineHealthCheck
 metadata:
-  name: "dtc-mhc-0"
+  name: "target-cluster-mhc-0"
 spec:
-  clusterName: "dtc"
+  clusterName: "target-cluster"
   maxUnhealthy: 100%
   selector:
     matchLabels:

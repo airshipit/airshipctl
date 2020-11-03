@@ -8,5 +8,5 @@ patchesJson6902:
       group: cluster.x-k8s.io
       version: v1alpha3
       kind: MachineDeployment
-      name: "dtc-md-0"
+      name: "target-cluster-md-0"
     path: machine_count.json
