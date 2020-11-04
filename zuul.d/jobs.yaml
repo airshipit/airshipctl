@@ -27,13 +27,19 @@
       - ^Makefile$
       - ^\.golangci\.yaml$
       - ^(go\.(mod|sum)|.*\.go)$
-      - ^playbooks/airship-airshipctl-(golint|lint-unit)\.yaml$
+      - ^playbooks/airship-airshipctl-(golint|lint|unit)\.yaml$
       - ^tools/(coverage_check|golint|gomod_check|install_linter)$
 
 - job:
-    name: airship-airshipctl-lint-unit
+    name: airship-airshipctl-lint
     pre-run: playbooks/airship-airshipctl-deploy-docker.yaml
-    run: playbooks/airship-airshipctl-lint-unit.yaml
+    run: playbooks/airship-airshipctl-lint.yaml
+    nodeset: airship-airshipctl-single-node
+
+- job:
+    name: airship-airshipctl-unit
+    pre-run: playbooks/airship-airshipctl-deploy-docker.yaml
+    run: playbooks/airship-airshipctl-unit.yaml
     nodeset: airship-airshipctl-single-node
     files: *gofiles
 
@@ -102,9 +108,11 @@
     dependencies:
       - name: openstack-tox-docs
         soft: true
-      - name: airship-airshipctl-lint-unit
+      - name: airship-airshipctl-lint
         soft: true
       - name: airship-airshipctl-golint
+        soft: true
+      - name: airship-airshipctl-unit
         soft: true
       - name: airship-airshipctl-build-image
         soft: true

@@ -19,7 +19,8 @@
             files:
               - ^docs/.*$
         - airship-airshipctl-golint
-        - airship-airshipctl-lint-unit
+        - airship-airshipctl-lint
+        - airship-airshipctl-unit
         - airship-airshipctl-roles-test
         - airship-airshipctl-build-image
         - airship-airshipctl-validate-site-docs
@@ -29,7 +30,8 @@
     gate:
       jobs:
         - openstack-tox-docs: *docs
-        - airship-airshipctl-lint-unit
+        - airship-airshipctl-lint
+        - airship-airshipctl-unit
         - airship-airshipctl-build-image
         - airship-airshipctl-validate-site-docs
         - airship-airshipctl-gate-script-runner
