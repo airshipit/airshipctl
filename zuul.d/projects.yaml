@@ -22,6 +22,7 @@
         - airship-airshipctl-lint
         - airship-airshipctl-unit
         - airship-airshipctl-roles-test
+        - airship-airshipctl-check-github-issues
         - airship-airshipctl-build-image
         - airship-airshipctl-validate-site-docs
 #        - airship-airshipctl-functional-existing-k8s TODO: Enable this when functional tests exist, and a cluster is up
