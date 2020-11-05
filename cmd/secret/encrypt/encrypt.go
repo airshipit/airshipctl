@@ -18,8 +18,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/log"
-	"opendev.org/airship/airshipctl/pkg/secret"
 )
 
 const (
@@ -38,29 +38,22 @@ airshipctl secret encrypt \
 )
 
 // NewEncryptCommand creates a new command for encrypting plain text secrets using sops
-func NewEncryptCommand(cfgFactory config.Factory) *cobra.Command {
-	var srcPath, dstPath, kubeconfig string
+func NewEncryptCommand(_ config.Factory) *cobra.Command {
+	var srcPath, dstPath string
 
 	encryptCmd := &cobra.Command{
 		Use:     "encrypt",
 		Short:   encryptShort[1:],
 		Example: encryptExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			airshipConfig, err := cfgFactory()
-			if err != nil {
-				return err
-			}
-			return secret.Encrypt(airshipConfig, kubeconfig, srcPath, dstPath)
+			return errors.ErrNotImplemented{What: "secret encryption/decryption"}
 		},
 	}
-
 	encryptCmd.Flags().StringVar(&srcPath, "src", "",
 		`Path to the file or directory that has secrets in plaintext that need to be encrypted. `+
 			`Defaults to the manifest location in airship config`)
 	encryptCmd.Flags().StringVar(&dstPath, "dst", "",
 		"Path to the file or directory that has encrypted secrets for decryption. Defaults to src if empty.")
-	encryptCmd.Flags().StringVar(&kubeconfig, "kubeconfig", "",
-		"Path to kubeconfig associated with cluster being managed")
 
 	err := encryptCmd.MarkFlagRequired("dst")
 	if err != nil {
