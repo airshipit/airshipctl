@@ -23,6 +23,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/bootstrap/isogen"
 	clusterctl "opendev.org/airship/airshipctl/pkg/clusterctl/client"
+	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/applier"
@@ -47,6 +48,9 @@ func DefaultExecutorRegistry() map[schema.GroupVersionKind]ifc.ExecutorFactory {
 	}
 	if err := isogen.RegisterExecutor(execMap); err != nil {
 		log.Fatal(ErrExecutorRegistration{ExecutorName: "isogen", Err: err})
+	}
+	if err := container.RegisterExecutor(execMap); err != nil {
+		log.Fatal(ErrExecutorRegistration{ExecutorName: "generic-container", Err: err})
 	}
 	return execMap
 }

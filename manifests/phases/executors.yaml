@@ -32,3 +32,16 @@ container:
   containerRuntime: docker
   image: quay.io/airshipit/isogen:latest-ubuntu_focal
   volume: /srv/iso:/config
+---
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: generic-container
+  labels:
+    airshipit.org/deploy-k8s: "false"
+outputToStdout: true
+spec:
+  container:
+      image: quay.io/sample/image:v0.0.1
+config: |
+  foo: bar

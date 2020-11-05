@@ -39,18 +39,21 @@ const (
 	IsogenType
 	// BootstrapType event emitted by Bootstrap executor
 	BootstrapType
+	//GenericContainerType event emitted by GenericContainer
+	GenericContainerType
 )
 
 // Event holds all possible events that can be produced by airship
 type Event struct {
-	Type              Type
-	Timestamp         time.Time
-	ApplierEvent      applyevent.Event
-	ErrorEvent        ErrorEvent
-	StatusPollerEvent statuspollerevent.Event
-	ClusterctlEvent   ClusterctlEvent
-	IsogenEvent       IsogenEvent
-	BootstrapEvent    BootstrapEvent
+	Type                  Type
+	Timestamp             time.Time
+	ApplierEvent          applyevent.Event
+	ErrorEvent            ErrorEvent
+	StatusPollerEvent     statuspollerevent.Event
+	ClusterctlEvent       ClusterctlEvent
+	IsogenEvent           IsogenEvent
+	BootstrapEvent        BootstrapEvent
+	GenericContainerEvent GenericContainerEvent
 }
 
 // NewEvent create new event with timestamp
@@ -150,5 +153,28 @@ type BootstrapEvent struct {
 func (e Event) WithBootstrapEvent(concreteEvent BootstrapEvent) Event {
 	e.Type = BootstrapType
 	e.BootstrapEvent = concreteEvent
+	return e
+}
+
+// GenericContainerOperation type
+type GenericContainerOperation int
+
+const (
+	// GenericContainerStart operation
+	GenericContainerStart GenericContainerOperation = iota
+	// GenericContainerStop operation
+	GenericContainerStop
+)
+
+// GenericContainerEvent needs to to track events in GenericContainer executor
+type GenericContainerEvent struct {
+	Operation GenericContainerOperation
+	Message   string
+}
+
+// WithGenericContainerEvent sets type and actual GenericContainer event
+func (e Event) WithGenericContainerEvent(concreteEvent GenericContainerEvent) Event {
+	e.Type = GenericContainerType
+	e.GenericContainerEvent = concreteEvent
 	return e
 }
