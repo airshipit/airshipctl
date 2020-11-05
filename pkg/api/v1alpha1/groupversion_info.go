@@ -51,6 +51,7 @@ func init() {
 		&ClusterMap{},
 		&ReplacementTransformer{},
 		&Templater{},
+		&BootConfiguration{},
 	)
 	_ = AddToScheme(Scheme) //nolint:errcheck
 }
