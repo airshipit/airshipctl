@@ -138,6 +138,27 @@ func DummyContextOptions() *config.ContextOptions {
 	return co
 }
 
+// DummyEncryptionConfig creates EncryptionConfigOptions object
+// for unit testing
+func DummyEncryptionConfig() *config.EncryptionConfig {
+	return &config.EncryptionConfig{
+		EncryptionKeyFileSource: config.EncryptionKeyFileSource{
+			EncryptionKeyPath: "/tmp/encryption.key",
+			DecryptionKeyPath: "/tmp/decryption.pub",
+		},
+	}
+}
+
+// DummyEncryptionConfigOptions creates ManifestOptions config object
+// for unit testing
+func DummyEncryptionConfigOptions() *config.EncryptionConfigOptions {
+	return &config.EncryptionConfigOptions{
+		Name:              "dummy_encryption_config",
+		EncryptionKeyPath: "/tmp/encryption.key",
+		DecryptionKeyPath: "/tmp/decryption.pub",
+	}
+}
+
 // DummyManagementConfiguration creates a management configuration for unit testing
 func DummyManagementConfiguration() *config.ManagementConfiguration {
 	return &config.ManagementConfiguration{
@@ -158,27 +179,6 @@ func DummyManifestOptions() *config.ManifestOptions {
 		URL:        "https://github.com/treasuremap/dummy_site",
 		Branch:     "master",
 		Force:      true,
-	}
-}
-
-// DummyEncryptionConfig creates EncryptionConfigOptions object
-// for unit testing
-func DummyEncryptionConfig() *config.EncryptionConfig {
-	return &config.EncryptionConfig{
-		EncryptionKeyFileSource: config.EncryptionKeyFileSource{
-			EncryptionKeyPath: "/tmp/encryption.key",
-			DecryptionKeyPath: "/tmp/decryption.pub",
-		},
-	}
-}
-
-// DummyEncryptionConfigOptions creates ManifestOptions config object
-// for unit testing
-func DummyEncryptionConfigOptions() *config.EncryptionConfigOptions {
-	return &config.EncryptionConfigOptions{
-		Name:              "dummy_encryption_config",
-		EncryptionKeyPath: "/tmp/encryption.key",
-		DecryptionKeyPath: "/tmp/decryption.pub",
 	}
 }
 

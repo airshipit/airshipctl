@@ -16,9 +16,3 @@ manifests:
         tag: ""
       url: https://opendev.org/airship/treasuremap
     targetPath: /tmp/default
-encryptionConfigs:
-  dummy_encryption_config:
-    decryptionKeyPath:  /tmp/decryption.pub
-    encryptionKeyPath: /tmp/encryption.key
-    keySecretName: dummySecret
-    keySecretNamespace: dummyNamespace

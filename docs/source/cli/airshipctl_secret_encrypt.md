@@ -27,10 +27,9 @@ airshipctl secret encrypt \
 ### Options
 
 ```
-      --dst string          Path to the file or directory that has encrypted secrets for decryption. Defaults to src if empty.
-  -h, --help                help for encrypt
-      --kubeconfig string   Path to kubeconfig associated with cluster being managed
-      --src string          Path to the file or directory that has secrets in plaintext that need to be encrypted. Defaults to the manifest location in airship config
+      --dst string   Path to the file or directory that has encrypted secrets for decryption. Defaults to src if empty.
+  -h, --help         help for encrypt
+      --src string   Path to the file or directory that has secrets in plaintext that need to be encrypted. Defaults to the manifest location in airship config
 ```
 
 ### Options inherited from parent commands
