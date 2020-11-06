@@ -1,0 +1,20 @@
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: helm-controller-versions-replacements
+  annotations:
+    config.kubernetes.io/function: |-
+      container:
+        image: quay.io/airshipit/replacement-transformer:dev
+replacements:
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: versions-airshipctl
+    fieldref: images.flux.helm_controller.manager
+  target:
+    objref:
+      kind: Deployment
+      name: helm-controller
+    fieldrefs: ["spec.template.spec.containers[name=manager].image"]
+

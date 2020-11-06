@@ -1,0 +1,20 @@
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: source-controller-versions-replacements
+  annotations:
+    config.kubernetes.io/function: |-
+      container:
+        image: quay.io/airshipit/replacement-transformer:dev
+replacements:
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: versions-airshipctl
+    fieldref: images.flux.source_controller.manager
+  target:
+    objref:
+      kind: Deployment
+      name: source-controller
+    fieldrefs: ["spec.template.spec.containers[name=manager].image"]
+

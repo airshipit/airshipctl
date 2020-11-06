@@ -1,0 +1,38 @@
+# These rules inject env vars into the source-controller function.
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: source-controller-env-vars-replacements
+  annotations:
+    config.kubernetes.io/function: |-
+      container:
+        image: quay.io/airshipit/replacement-transformer:dev
+replacements:
+# Replace the proxy vars
+- source:
+    objref:
+      name: env-vars-catalogue
+    fieldref: env.HTTP_PROXY
+  target:
+    objref:
+      kind: Deployment
+      name: source-controller
+    fieldrefs: ["spec.template.spec.containers[name=manager].env[name=http_proxy].value%REPLACEMENT_HTTP_PROXY%"]
+- source:
+    objref:
+      name: env-vars-catalogue
+    fieldref: env.HTTPS_PROXY
+  target:
+    objref:
+      kind: Deployment
+      name: source-controller
+    fieldrefs: ["spec.template.spec.containers[name=manager].env[name=https_proxy].value%REPLACEMENT_HTTPS_PROXY%"]
+- source:
+    objref:
+      name: env-vars-catalogue
+    fieldref: env.NO_PROXY
+  target:
+    objref:
+      kind: Deployment
+      name: source-controller
+    fieldrefs: ["spec.template.spec.containers[name=manager].env[name=no_proxy].value%REPLACEMENT_NO_PROXY%"]

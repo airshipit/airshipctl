@@ -22,12 +22,7 @@ export TARGET_IP=${TARGET_IP:-"10.23.25.102"}
 export TARGET_PORT=${TARGET_PORT:-"30000"}
 
 echo "Deploy workload"
-airshipctl phase run  workload-target --debug
-
-# TODO: Remove this after migrating to HelmRelease v2 (helm-controller) which
-#      supports a Ready status condition, which `airshipctl phase run` above will consume.
-echo "Waiting $TIMEOUT for HelmReleases to become ready."
-kubectl --timeout $TIMEOUT --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT wait hr --for condition=released --all --all-namespaces
+airshipctl phase run workload-target --debug
 
 echo "Ensure we can reach ingress controller default backend"
 if [ "404" != "$(curl --head --write-out '%{http_code}' --silent --output /dev/null $TARGET_IP:$TARGET_PORT/should-404)" ]; then

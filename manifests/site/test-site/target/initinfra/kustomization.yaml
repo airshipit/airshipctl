@@ -1,7 +1,7 @@
 resources:
   - ../../../../function/baremetal-operator
   - ../../../../function/clusterctl
-  - ../../../../function/helm-operator
+  - ../../../../composite/flux-helm
   - ../../../../composite/infra
   - ../catalogues
 
@@ -11,4 +11,5 @@ commonLabels:
 transformers:
   - ../../../../composite/infra/replacements
   - ../../../../function/baremetal-operator/replacements
-  - ../../../../function/helm-operator/replacements
+  - ../../../../function/flux/source-controller/replacements
+  - ../../../../function/flux/helm-controller/replacements
