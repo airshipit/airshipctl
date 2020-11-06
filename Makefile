@@ -160,7 +160,7 @@ print-docker-image-tag:
 	@echo "$(DOCKER_IMAGE)"
 
 .PHONY: docker-image-test-suite
-docker-image-test-suite: DOCKER_MAKE_TARGET = "lint cover update-golden check-git-diff check-copyright"
+docker-image-test-suite: DOCKER_MAKE_TARGET = "cover update-golden check-git-diff"
 docker-image-test-suite: DOCKER_TARGET_STAGE = builder
 docker-image-test-suite: docker-image
 
@@ -170,7 +170,7 @@ docker-image-unit-tests: DOCKER_TARGET_STAGE = builder
 docker-image-unit-tests: docker-image
 
 .PHONY: docker-image-lint
-docker-image-lint: DOCKER_MAKE_TARGET = lint
+docker-image-lint: DOCKER_MAKE_TARGET = "lint check-copyright"
 docker-image-lint: DOCKER_TARGET_STAGE = builder
 docker-image-lint: docker-image
 

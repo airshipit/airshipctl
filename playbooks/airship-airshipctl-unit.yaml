@@ -12,7 +12,7 @@
 
 - hosts: primary
   tasks:
-    - name: Run Linter, Unit Tests, Verify Golden Testdata
+    - name: Run Unit Tests, Verify Golden Testdata
       block:
         - name: "make docker-image-test-suite"
           make:
