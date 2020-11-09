@@ -17,6 +17,7 @@ package cluster
 import (
 	"github.com/spf13/cobra"
 
+	"opendev.org/airship/airshipctl/cmd/cluster/checkexpiration"
 	"opendev.org/airship/airshipctl/cmd/cluster/resetsatoken"
 	"opendev.org/airship/airshipctl/pkg/config"
 )
@@ -41,6 +42,7 @@ func NewClusterCommand(cfgFactory config.Factory) *cobra.Command {
 	clusterRootCmd.AddCommand(NewMoveCommand(cfgFactory))
 	clusterRootCmd.AddCommand(NewStatusCommand(cfgFactory))
 	clusterRootCmd.AddCommand(resetsatoken.NewResetCommand(cfgFactory))
+	clusterRootCmd.AddCommand(checkexpiration.NewCheckCommand(cfgFactory))
 
 	return clusterRootCmd
 }
