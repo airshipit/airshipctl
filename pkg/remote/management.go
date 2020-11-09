@@ -16,33 +16,15 @@
 package remote
 
 import (
-	"context"
-
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
-	"opendev.org/airship/airshipctl/pkg/remote/power"
+	remoteifc "opendev.org/airship/airshipctl/pkg/remote/ifc"
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 	redfishdell "opendev.org/airship/airshipctl/pkg/remote/redfish/vendors/dell"
 )
-
-// Client is a set of functions that clients created for out-of-band power management and control should implement. The
-// functions within client are used by power management commands and remote direct functionality.
-type Client interface {
-	EjectVirtualMedia(context.Context) error
-	NodeID() string
-	RebootSystem(context.Context) error
-	SetBootSourceByType(context.Context) error
-	SystemPowerOff(context.Context) error
-	SystemPowerOn(context.Context) error
-	SystemPowerStatus(context.Context) (power.Status, error)
-
-	// TODO(drewwalters96): This function is tightly coupled to Redfish. It should be combined with the
-	// SetBootSource operation and removed from the client interface.
-	SetVirtualMedia(context.Context, string) error
-}
 
 // Manager orchestrates a grouping of baremetal hosts. When a manager is created using its convenience function, the
 // manager contains a list of hosts ready for out-of-band management. Iterate over the Hosts property to invoke actions
@@ -55,7 +37,7 @@ type Manager struct {
 // baremetalHost is an airshipctl representation of a baremetal host, defined by a baremetal host document, that embeds
 // actions an out-of-band client can perform. Once instantiated, actions can be performed on a baremetal host.
 type baremetalHost struct {
-	Client
+	remoteifc.Client
 	BMCAddress string
 	HostName   string
 	username   string
@@ -213,43 +195,30 @@ func newBaremetalHost(mgmtCfg config.ManagementConfiguration,
 		return host, err
 	}
 
+	var clientFactory remoteifc.ClientFactory
 	// Select the client that corresponds to the management type specified in the airshipctl config.
 	switch mgmtCfg.Type {
 	case redfish.ClientType:
 		log.Debug("Remote type: Redfish")
-		client, err := redfish.NewClient(
-			address,
-			mgmtCfg.Insecure,
-			mgmtCfg.UseProxy,
-			username,
-			password,
-			mgmtCfg.SystemActionRetries,
-			mgmtCfg.SystemRebootDelay)
-
-		if err != nil {
-			return host, err
-		}
-
-		host = baremetalHost{client, address, hostDoc.GetName(), username, password}
+		clientFactory = redfish.ClientFactory
 	case redfishdell.ClientType:
-		log.Debug("Remote type: Redfish for Integrated Dell Remote Access Controller (iDrac) systems")
-		client, err := redfishdell.NewClient(
-			address,
-			mgmtCfg.Insecure,
-			mgmtCfg.UseProxy,
-			username,
-			password,
-			mgmtCfg.SystemActionRetries,
-			mgmtCfg.SystemRebootDelay)
-
-		if err != nil {
-			return host, err
-		}
-
-		host = baremetalHost{client, address, hostDoc.GetName(), username, password}
+		clientFactory = redfish.ClientFactory
 	default:
 		return host, ErrUnknownManagementType{Type: mgmtCfg.Type}
 	}
+
+	client, err := clientFactory(
+		address,
+		mgmtCfg.Insecure,
+		mgmtCfg.UseProxy,
+		username,
+		password, mgmtCfg.SystemActionRetries,
+		mgmtCfg.SystemRebootDelay)
+
+	if err != nil {
+		return host, err
+	}
+	host = baremetalHost{client, address, hostDoc.GetName(), username, password}
 
 	return host, nil
 }

@@ -24,6 +24,7 @@ import (
 	redfishClient "opendev.org/airship/go-redfish/client"
 
 	"opendev.org/airship/airshipctl/pkg/log"
+	"opendev.org/airship/airshipctl/pkg/remote/ifc"
 	"opendev.org/airship/airshipctl/pkg/remote/power"
 )
 
@@ -348,4 +349,16 @@ func NewClient(redfishURL string,
 	}
 
 	return c, nil
+}
+
+// ClientFactory is a constructor for redfish ifc.Client implementation
+var ClientFactory ifc.ClientFactory = func(redfishURL string,
+	insecure bool,
+	useProxy bool,
+	username string,
+	password string,
+	systemActionRetries int,
+	systemRebootDelay int) (ifc.Client, error) {
+	return NewClient(redfishURL, insecure, useProxy,
+		username, password, systemActionRetries, systemRebootDelay)
 }
