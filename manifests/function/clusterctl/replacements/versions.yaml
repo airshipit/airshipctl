@@ -1,4 +1,4 @@
-# These rules inject versioned artifacts into the k8scontrol function.
+# These rules inject versioned artifacts into the clusterctl function.
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
@@ -8,24 +8,109 @@ metadata:
       container:
         image: quay.io/airshipit/replacement-transformer:dev
 replacements:
-# Replace the Kubernetes version in the KubeadmControlPlane
+# Replace capm3 versions
 - source:
     objref:
+      kind: VariableCatalogue
       name: versions-airshipctl
-    fieldref: "{.kubernetes}"
+    fieldref: "{.images.capm3.manager}"
   target:
     objref:
-      kind: KubeadmControlPlane
-      name: cluster-controlplane
-    fieldrefs: ["{.spec.version}"]
-# Replace the controlplane disk image in the Metal3MachineTemplate
+      kind: Clusterctl
+      name: clusterctl_init
+    fieldrefs: ["{.additional-vars.CONTAINER_CAPM3_MANAGER}"]
 - source:
     objref:
+      kind: VariableCatalogue
       name: versions-airshipctl
-    fieldref: "{.files.k8scontrol.cluster_controlplane_image}"
+    fieldref: "{.images.capm3.auth_proxy}"
   target:
     objref:
-      kind: Metal3MachineTemplate
-      name: cluster-controlplane
-    fieldrefs: ["{.spec.template.spec.image}"]
+      kind: Clusterctl
+      name: clusterctl_init
+    fieldrefs: ["{.additional-vars.CONTAINER_CAPM3_AUTH_PROXY}"]
+# Replace cacpk versions
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: versions-airshipctl
+    fieldref: "{.images.cacpk.manager}"
+  target:
+    objref:
+      kind: Clusterctl
+      name: clusterctl_init
+    fieldrefs: ["{.additional-vars.CONTAINER_CACPK_MANAGER}"]
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: versions-airshipctl
+    fieldref: "{.images.cacpk.auth_proxy}"
+  target:
+    objref:
+      kind: Clusterctl
+      name: clusterctl_init
+    fieldrefs: ["{.additional-vars.CONTAINER_CACPK_AUTH_PROXY}"]
+# Replace cabpk versions
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: versions-airshipctl
+    fieldref: "{.images.cabpk.manager}"
+  target:
+    objref:
+      kind: Clusterctl
+      name: clusterctl_init
+    fieldrefs: ["{.additional-vars.CONTAINER_CABPK_MANAGER}"]
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: versions-airshipctl
+    fieldref: "{.images.cabpk.auth_proxy}"
+  target:
+    objref:
+      kind: Clusterctl
+      name: clusterctl_init
+    fieldrefs: ["{.additional-vars.CONTAINER_CABPK_AUTH_PROXY}"]
+# Replace capd versions
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: versions-airshipctl
+    fieldref: "{.images.capd.manager}"
+  target:
+    objref:
+      kind: Clusterctl
+      name: clusterctl_init
+    fieldrefs: ["{.additional-vars.CONTAINER_CAPD_MANAGER}"]
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: versions-airshipctl
+    fieldref: "{.images.capd.auth_proxy}"
+  target:
+    objref:
+      kind: Clusterctl
+      name: clusterctl_init
+    fieldrefs: ["{.additional-vars.CONTAINER_CAPD_AUTH_PROXY}"]
+# Replace capi versions
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: versions-airshipctl
+    fieldref: "{.images.capi.manager}"
+  target:
+    objref:
+      kind: Clusterctl
+      name: clusterctl_init
+    fieldrefs: ["{.additional-vars.CONTAINER_CAPI_MANAGER}"]
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: versions-airshipctl
+    fieldref: "{.images.capi.auth_proxy}"
+  target:
+    objref:
+      kind: Clusterctl
+      name: clusterctl_init
+    fieldrefs: ["{.additional-vars.CONTAINER_CAPI_AUTH_PROXY}"]
 

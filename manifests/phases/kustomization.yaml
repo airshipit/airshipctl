@@ -4,5 +4,8 @@ resources:
   - executors.yaml
   - cluster-map.yaml
   - ../function/clusterctl
+  - ../function/airshipctl-base-catalogues
 patchesStrategicMerge:
   - clusterctl_init_options.yaml
+transformers:
+  - ../function/clusterctl/replacements
