@@ -7,7 +7,7 @@ metadata:
   annotations:
     config.kubernetes.io/function: |-
       container:
-        image: quay.io/airshipit/templater:dev
+        image: quay.io/airshipit/templater:latest
 template: |
   ---
   apiVersion: airshipit.org/v1alpha1
