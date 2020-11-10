@@ -1,0 +1,26 @@
+apiVersion: metal3.io/v1alpha1
+kind: HardwareClassification
+metadata:
+  name: hardwareclassification-profile2
+  namespace: default
+  labels:
+    hardwareclassification-profile2: matches
+    hardwareclassification-error: All
+spec:
+  hardwareCharacteristics:
+      cpu:
+         minimumCount: 80
+         maximumCount: 100
+         minimumSpeedMHz: 2000
+         maximumSpeedMHz: 4000
+      disk:
+         minimumCount: 20
+         maximumCount: 80
+         minimumIndividualSizeGB: 2000
+         maximumIndividualSizeGB: 3000
+      ram:
+         minimumSizeGB: 400
+         maximumSizeGB: 800
+      nic:
+         minimumCount: 50
+         maximumCount: 70

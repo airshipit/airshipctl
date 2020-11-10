@@ -74,6 +74,19 @@ config:
 apiVersion: airshipit.org/v1alpha1
 kind: Phase
 metadata:
+  name: workers-classification
+  clusterName: target-cluster
+config:
+  cluster: target-cluster
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: KubernetesApply
+    name: kubernetes-apply
+  documentEntryPoint: target/workers/provision
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
   name: clusterctl-init-ephemeral
   clusterName: ephemeral-cluster
 config:

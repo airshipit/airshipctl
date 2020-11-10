@@ -1,5 +1,6 @@
 resources:
   - ../../../../function/baremetal-operator
+  - ../../../../function/hwcc
   - ../../../../function/clusterctl
   - ../../../../composite/flux-helm
   - ../../../../composite/infra

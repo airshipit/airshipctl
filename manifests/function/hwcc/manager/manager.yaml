@@ -20,7 +20,7 @@ spec:
         - /manager
         args:
         - --enable-leader-election
-        image: quay.io/hwcc/airship-hcc:v1
+        image: quay.io/dell_sp/hwcc:v1.3
         name: manager
         resources:
           limits:
