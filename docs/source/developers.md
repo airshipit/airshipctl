@@ -34,41 +34,21 @@ information:
 ```sh
 HTTP_PROXY=http://username:password@host:port
 HTTPS_PROXY=http://username:password@host:port
-NO_PROXY="localhost,127.0.0.1"
+NO_PROXY="localhost,127.0.0.1,10.23.0.0/16,10.96.0.0/12"
+PROXY=http://username:password@host:port
 USE_PROXY=true
 ```
 
-When running the gate scripts in `tools/gate` locally, if you have not set proxy
-information in user's environment or profile then you will need to add your
-proxy information to
-`playbooks/vars/local-dev.yaml`.
+`10.23.0.0/16` encapsulates the range of addresses used by airshipctl
+development environment virtual machines, and `10.96.0.0/12` is the Kubernetes
+service CIDR.
 
-Apart from adding proxy information to playbook, we have to add proxy information
-to site definations documents. For ephemeral iso to pull docker images behind
-proxy, user-data section for ephemeral iso has to be updated in the below file
-`manifests/function/ephemeral/secret.yaml`.
+### DNS Configuration
 
-Add the following contents to the file in runcmd section
-
-```sh
-    - export http_proxy=http://username:password@host:port
-    - export https_proxy=$http_proxy
-    - export HTTP_PROXY=$http_proxy
-    - export HTTPS_PROXY=$http_proxy
-```
-
-Add the following contents to the file in write_files section
-
-```sh
-    - path: /etc/systemd/system/docker.service.d/http-proxy.conf
-      permissions: '0644'
-      owner: root:root
-      content: |
-        [Service]
-        Environment="HTTP_PROXY=http://username:password@host:port"
-        Environment="HTTPS_PROXY=http://username:password@host:port"
-        Environment="NO_PROXY=127.0.0.1,localhost,10.23.25.0/24"
-```
+If you cannot reach the Google DNS servers from your local environment, add your
+DNS servers to
+`manifests/type/airship-core/shared/catalogues/common-networking.yaml` in place
+of the Google ones.
 
 ## Clone airshipctl code
 
