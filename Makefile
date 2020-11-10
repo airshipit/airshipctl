@@ -32,6 +32,9 @@ DOCKER_IMAGE_TAG    ?= latest
 DOCKER_IMAGE        ?= $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
 DOCKER_TARGET_STAGE ?= release
 PUBLISH             ?= false
+# use this variable for image labels added in internal build process
+LABEL               ?= org.airshipit.build=community
+COMMIT              ?= $(shell git rev-parse HEAD)
 
 # go options
 PKG                 ?= ./...
@@ -141,6 +144,10 @@ images: $(PLUGINS_IMAGE_TGT)
 .PHONY: docker-image
 docker-image:
 	@docker build . $(DOCKER_CMD_FLAGS) \
+		--label $(LABEL) \
+		--label "org.opencontainers.image.revision=$(COMMIT)" \
+		--label "org.opencontainers.image.created=$(shell date --rfc-3339=seconds --utc)" \
+		--label "org.opencontainers.image.title=$(DOCKER_IMAGE_NAME)" \
 		--target $(DOCKER_TARGET_STAGE) \
 		--build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET) \
 		--tag $(DOCKER_IMAGE)
@@ -152,6 +159,10 @@ endif
 $(PLUGINS_IMAGE_TGT):
 	$(eval plugin_name=$(subst docker-image-,,$@))
 	@docker build . $(DOCKER_CMD_FLAGS) \
+		--label $(LABEL) \
+		--label "org.opencontainers.image.revision=$(COMMIT)" \
+		--label "org.opencontainers.image.created=$(shell date --rfc-3339=seconds --utc)" \
+		--label "org.opencontainers.image.title=$(DOCKER_IMAGE_NAME)" \
 		--target $(DOCKER_TARGET_STAGE) \
 		--build-arg MAKE_TARGET=$(plugin_name) \
 		--build-arg BINARY=$(plugin_name) \
