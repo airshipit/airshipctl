@@ -19,6 +19,9 @@ import (
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
+// DefaultClusterAPIObjNamespace is a default namespace used for cluster-api cluster object
+const DefaultClusterAPIObjNamespace = "default"
+
 // ClusterMap interface that allows to list all clusters, find its parent, namespace,
 // check if dynamic kubeconfig is enabled.
 // TODO use typed cluster names
@@ -28,6 +31,7 @@ type ClusterMap interface {
 	DynamicKubeConfig(string) bool
 	ClusterNamespace(string) (string, error)
 	ClusterKubeconfigContext(string) (string, error)
+	ClusterAPIRef(string) (ClusterAPIRef, error)
 }
 
 // clusterMap allows to view clusters and relationship between them
@@ -71,6 +75,36 @@ func (cm clusterMap) AllClusters() []string {
 		clusters = append(clusters, k)
 	}
 	return clusters
+}
+
+// ClusterAPIRef helps to find corresponding cluster-api Cluster object in kubernetes cluster
+type ClusterAPIRef struct {
+	Name      string
+	Namespace string
+}
+
+// ClusterAPIRef maps a clusterapi name and namespace for a given cluster
+func (cm clusterMap) ClusterAPIRef(clusterName string) (ClusterAPIRef, error) {
+	clstr, ok := cm.apiMap.Map[clusterName]
+	if !ok {
+		return ClusterAPIRef{}, ErrClusterNotInMap{Child: clusterName, Map: cm.apiMap}
+	}
+
+	name := clstr.ClusterAPIRef.Name
+	namespace := clstr.ClusterAPIRef.Namespace
+
+	if name == "" {
+		name = clusterName
+	}
+
+	if namespace == "" {
+		namespace = DefaultClusterAPIObjNamespace
+	}
+
+	return ClusterAPIRef{
+		Name:      name,
+		Namespace: namespace,
+	}, nil
 }
 
 // ClusterNamespace a namespace for given cluster

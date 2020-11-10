@@ -30,6 +30,8 @@ func TestClusterMap(t *testing.T) {
 	workloadCluster := "workload"
 	workloadClusterKubeconfigContext := "different-workload-context"
 	workloadClusterNoParent := "workload without parent"
+	workloadClusterAPIRefName := "workload-cluster-api"
+	workloadClusterAPIRefNamespace := "some-namespace"
 	apiMap := &v1alpha1.ClusterMap{
 		Map: map[string]*v1alpha1.Cluster{
 			targetCluster: {
@@ -41,6 +43,10 @@ func TestClusterMap(t *testing.T) {
 				Parent:            targetCluster,
 				DynamicKubeConfig: true,
 				KubeconfigContext: workloadClusterKubeconfigContext,
+				ClusterAPIRef: v1alpha1.ClusterAPIRef{
+					Name:      workloadClusterAPIRefName,
+					Namespace: workloadClusterAPIRefNamespace,
+				},
 			},
 			workloadClusterNoParent: {
 				DynamicKubeConfig: true,
@@ -104,6 +110,25 @@ func TestClusterMap(t *testing.T) {
 
 	t.Run("kubeconfig context error", func(t *testing.T) {
 		_, err := cMap.ClusterKubeconfigContext("does not exist")
+		assert.Error(t, err)
+	})
+
+	t.Run("ClusterAPI ref name and namespace defaults", func(t *testing.T) {
+		ref, err := cMap.ClusterAPIRef(workloadClusterNoParent)
+		assert.NoError(t, err)
+		assert.Equal(t, clustermap.DefaultClusterAPIObjNamespace, ref.Namespace)
+		assert.Equal(t, workloadClusterNoParent, ref.Name)
+	})
+
+	t.Run("ClusterAPI ref name and namespace", func(t *testing.T) {
+		ref, err := cMap.ClusterAPIRef(workloadCluster)
+		assert.NoError(t, err)
+		assert.Equal(t, workloadClusterAPIRefNamespace, ref.Namespace)
+		assert.Equal(t, workloadClusterAPIRefName, ref.Name)
+	})
+
+	t.Run("ClusterAPI ref error", func(t *testing.T) {
+		_, err := cMap.ClusterAPIRef("doesn't exist")
 		assert.Error(t, err)
 	})
 }
