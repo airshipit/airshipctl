@@ -50,6 +50,8 @@ const (
 // Client is a wrapper around the standard airshipctl Redfish client. This allows vendor specific Redfish clients to
 // override methods without duplicating the entire client.
 type Client struct {
+	username string
+	password string
 	redfish.Client
 	RedfishAPI redfishAPI.RedfishAPI
 	RedfishCFG *redfishClient.Configuration
@@ -73,7 +75,9 @@ type iDRACAPIExtendedInfo struct {
 // SetBootSourceByType sets the boot source of the ephemeral node to a virtual CD, "VCD-DVD".
 func (c *Client) SetBootSourceByType(ctx context.Context) error {
 	log.Debug("Setting boot device to 'VCD-DVD'.")
-	managerID, err := redfish.GetManagerID(ctx, c.RedfishAPI, c.NodeID())
+	managerID, err := redfish.GetManagerID(
+		redfish.SetAuth(ctx, c.username, c.password),
+		c.RedfishAPI, c.NodeID())
 	if err != nil {
 		log.Debugf("Failed to retrieve manager ID for node '%s'.", c.NodeID())
 		return err
@@ -90,9 +94,8 @@ func (c *Client) SetBootSourceByType(ctx context.Context) error {
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
-
-	if auth, ok := ctx.Value(redfishClient.ContextBasicAuth).(redfishClient.BasicAuth); ok {
-		req.SetBasicAuth(auth.UserName, auth.Password)
+	if len(c.password+c.username) != 0 {
+		req.SetBasicAuth(c.username, c.password)
 	}
 
 	httpResp, err := c.RedfishCFG.HTTPClient.Do(req)
@@ -137,7 +140,7 @@ func NewClient(redfishURL string,
 		return nil, err
 	}
 
-	c := &Client{*genericClient, genericClient.RedfishAPI, genericClient.RedfishCFG}
+	c := &Client{username, password, *genericClient, genericClient.RedfishAPI, genericClient.RedfishCFG}
 
 	return c, nil
 }

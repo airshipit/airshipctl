@@ -63,7 +63,7 @@ func (c *Client) SystemRebootDelay() int {
 
 // EjectVirtualMedia ejects a virtual media device attached to a host.
 func (c *Client) EjectVirtualMedia(ctx context.Context) error {
-	ctx = c.setAuth(ctx)
+	ctx = SetAuth(ctx, c.username, c.password)
 	waitForEjectMedia := func(managerID string, mediaID string) error {
 		for retry := 0; retry < c.systemActionRetries; retry++ {
 			vMediaMgr, httpResp, err := c.RedfishAPI.GetManagerVirtualMedia(ctx, managerID, mediaID)
@@ -120,7 +120,7 @@ func (c *Client) EjectVirtualMedia(ctx context.Context) error {
 // RebootSystem power cycles a host by sending a shutdown signal followed by a power on signal.
 func (c *Client) RebootSystem(ctx context.Context) error {
 	log.Debugf("Rebooting node '%s': powering off.", c.nodeID)
-	ctx = c.setAuth(ctx)
+	ctx = SetAuth(ctx, c.username, c.password)
 	resetReq := redfishClient.ResetRequestBody{}
 
 	// Send PowerOff request
@@ -153,7 +153,7 @@ func (c *Client) RebootSystem(ctx context.Context) error {
 // SetBootSourceByType sets the boot source of the ephemeral node to one that's compatible with the boot
 // source type.
 func (c *Client) SetBootSourceByType(ctx context.Context) error {
-	ctx = c.setAuth(ctx)
+	ctx = SetAuth(ctx, c.username, c.password)
 	_, vMediaType, err := GetVirtualMediaID(ctx, c.RedfishAPI, c.nodeID)
 	if err != nil {
 		return err
@@ -189,7 +189,7 @@ func (c *Client) SetBootSourceByType(ctx context.Context) error {
 // SetVirtualMedia injects a virtual media device to an established virtual media ID. This assumes that isoPath is
 // accessible to the redfish server and virtualMedia device is either of type CD or DVD.
 func (c *Client) SetVirtualMedia(ctx context.Context, isoPath string) error {
-	ctx = c.setAuth(ctx)
+	ctx = SetAuth(ctx, c.username, c.password)
 	log.Debugf("Inserting virtual media '%s'.", isoPath)
 	// Eject all previously-inserted media
 	if err := c.EjectVirtualMedia(ctx); err != nil {
@@ -223,7 +223,7 @@ func (c *Client) SetVirtualMedia(ctx context.Context, isoPath string) error {
 
 // SystemPowerOff shuts down a host.
 func (c *Client) SystemPowerOff(ctx context.Context) error {
-	ctx = c.setAuth(ctx)
+	ctx = SetAuth(ctx, c.username, c.password)
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 
@@ -237,7 +237,7 @@ func (c *Client) SystemPowerOff(ctx context.Context) error {
 
 // SystemPowerOn powers on a host.
 func (c *Client) SystemPowerOn(ctx context.Context) error {
-	ctx = c.setAuth(ctx)
+	ctx = SetAuth(ctx, c.username, c.password)
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_ON
 
@@ -251,7 +251,7 @@ func (c *Client) SystemPowerOn(ctx context.Context) error {
 
 // SystemPowerStatus retrieves the power status of a host as a human-readable string.
 func (c *Client) SystemPowerStatus(ctx context.Context) (power.Status, error) {
-	ctx = c.setAuth(ctx)
+	ctx = SetAuth(ctx, c.username, c.password)
 	computerSystem, httpResp, err := c.RedfishAPI.GetSystem(ctx, c.nodeID)
 	if err = ScreenRedfishError(httpResp, err); err != nil {
 		return power.StatusUnknown, err
@@ -269,18 +269,6 @@ func (c *Client) SystemPowerStatus(ctx context.Context) (power.Status, error) {
 	default:
 		return power.StatusUnknown, nil
 	}
-}
-
-func (c *Client) setAuth(ctx context.Context) context.Context {
-	authValue := redfishClient.BasicAuth{UserName: c.username, Password: c.password}
-	if ctx.Value(redfishClient.ContextBasicAuth) == authValue {
-		return ctx
-	}
-	return context.WithValue(
-		ctx,
-		redfishClient.ContextBasicAuth,
-		redfishClient.BasicAuth{UserName: c.username, Password: c.password},
-	)
 }
 
 // NewClient returns a client with the capability to make Redfish requests.

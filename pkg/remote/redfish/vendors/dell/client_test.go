@@ -23,6 +23,8 @@ import (
 
 	redfishMocks "opendev.org/airship/go-redfish/api/mocks"
 	redfishClient "opendev.org/airship/go-redfish/client"
+
+	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 )
 
 const (
@@ -50,7 +52,8 @@ func TestSetBootSourceByTypeGetSystemError(t *testing.T) {
 
 	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
-	ctx := context.Background()
+
+	ctx := redfish.SetAuth(context.Background(), "", "")
 
 	// Mock redfish get system request
 	m.On("GetSystem", ctx, client.NodeID()).Times(1).Return(redfishClient.ComputerSystem{},

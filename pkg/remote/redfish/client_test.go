@@ -82,7 +82,7 @@ func TestEjectVirtualMedia(t *testing.T) {
 	assert.NoError(t, err)
 
 	client.nodeID = nodeID
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 
 	// Mark CD and DVD test media as inserted
 	inserted := true
@@ -137,7 +137,7 @@ func TestEjectVirtualMediaRetriesExceeded(t *testing.T) {
 
 	client.nodeID = nodeID
 
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 
 	// Mark test media as inserted
 	inserted := true
@@ -176,7 +176,7 @@ func TestRebootSystem(t *testing.T) {
 	assert.NoError(t, err)
 
 	client.nodeID = nodeID
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 
 	// Mock redfish shutdown and status requests
 	resetReq := redfishClient.ResetRequestBody{}
@@ -211,7 +211,7 @@ func TestRebootSystemShutdownError(t *testing.T) {
 	assert.NoError(t, err)
 
 	client.nodeID = nodeID
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
@@ -238,7 +238,7 @@ func TestRebootSystemStartupError(t *testing.T) {
 	assert.NoError(t, err)
 
 	client.nodeID = nodeID
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
@@ -276,7 +276,7 @@ func TestRebootSystemTimeout(t *testing.T) {
 	assert.NoError(t, err)
 
 	client.nodeID = nodeID
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
@@ -305,7 +305,7 @@ func TestSetBootSourceByTypeGetSystemError(t *testing.T) {
 	assert.NoError(t, err)
 
 	client.nodeID = nodeID
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 
 	// Mock redfish get system request
 	m.On("GetSystem", ctx, client.NodeID()).Times(1).Return(redfishClient.ComputerSystem{},
@@ -328,7 +328,7 @@ func TestSetBootSourceByTypeSetSystemError(t *testing.T) {
 	assert.NoError(t, err)
 
 	client.nodeID = nodeID
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 
 	httpResp := &http.Response{StatusCode: 200}
 	m.On("GetSystem", ctx, client.nodeID).Return(testutil.GetTestSystem(), httpResp, nil)
@@ -355,7 +355,7 @@ func TestSetBootSourceByTypeBootSourceUnavailable(t *testing.T) {
 	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 	client.nodeID = nodeID
 
 	invalidSystem := testutil.GetTestSystem()
@@ -390,7 +390,7 @@ func TestSetVirtualMediaEjectExistingMedia(t *testing.T) {
 
 	client.nodeID = nodeID
 
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 
 	// Mark test media as inserted
 	inserted := true
@@ -436,7 +436,7 @@ func TestSetVirtualMediaEjectExistingMediaFailure(t *testing.T) {
 
 	client.nodeID = nodeID
 
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 
 	// Mark test media as inserted
 	inserted := true
@@ -471,7 +471,7 @@ func TestSetVirtualMediaGetSystemError(t *testing.T) {
 	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 	client.nodeID = nodeID
 
 	// Mock redfish get system request
@@ -494,7 +494,7 @@ func TestSetVirtualMediaInsertVirtualMediaError(t *testing.T) {
 	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 	client.nodeID = nodeID
 
 	httpResp := &http.Response{StatusCode: 200}
@@ -530,7 +530,7 @@ func TestSystemPowerOff(t *testing.T) {
 	require.NoError(t, err)
 
 	client.nodeID = nodeID
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 
 	m.On("ResetSystem", ctx, client.nodeID, mock.Anything).Return(
 		redfishClient.RedfishError{},
@@ -562,7 +562,7 @@ func TestSystemPowerOffResetSystemError(t *testing.T) {
 	require.NoError(t, err)
 
 	client.nodeID = nodeID
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 
 	m.On("ResetSystem", ctx, client.nodeID, mock.Anything).Return(
 		redfishClient.RedfishError{},
@@ -586,7 +586,7 @@ func TestSystemPowerOn(t *testing.T) {
 	require.NoError(t, err)
 
 	client.nodeID = nodeID
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 
 	m.On("ResetSystem", ctx, client.nodeID, mock.Anything).Return(
 		redfishClient.RedfishError{},
@@ -618,7 +618,7 @@ func TestSystemPowerOnResetSystemError(t *testing.T) {
 	require.NoError(t, err)
 
 	client.nodeID = nodeID
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 
 	m.On("ResetSystem", ctx, client.nodeID, mock.Anything).Return(
 		redfishClient.RedfishError{},
@@ -642,7 +642,7 @@ func TestSystemPowerStatusUnknown(t *testing.T) {
 	require.NoError(t, err)
 
 	client.nodeID = nodeID
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 
 	var unknownState redfishClient.PowerState = "unknown"
 	m.On("GetSystem", ctx, client.nodeID).Return(
@@ -665,7 +665,7 @@ func TestSystemPowerStatusOn(t *testing.T) {
 	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	require.NoError(t, err)
 
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 	client.nodeID = nodeID
 
 	m.On("GetSystem", ctx, client.nodeID).Return(
@@ -689,7 +689,7 @@ func TestSystemPowerStatusOff(t *testing.T) {
 	require.NoError(t, err)
 
 	client.nodeID = nodeID
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 
 	m.On("GetSystem", ctx, client.nodeID).Return(
 		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_OFF},
@@ -712,7 +712,7 @@ func TestSystemPowerStatusPoweringOn(t *testing.T) {
 	require.NoError(t, err)
 
 	client.nodeID = nodeID
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 
 	m.On("GetSystem", ctx, client.nodeID).Return(
 		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_POWERING_ON},
@@ -735,7 +735,7 @@ func TestSystemPowerStatusPoweringOff(t *testing.T) {
 	require.NoError(t, err)
 
 	client.nodeID = nodeID
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 
 	m.On("GetSystem", ctx, client.nodeID).Return(
 		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_POWERING_OFF},
@@ -758,7 +758,7 @@ func TestSystemPowerStatusGetSystemError(t *testing.T) {
 	require.NoError(t, err)
 
 	client.nodeID = nodeID
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 
 	m.On("GetSystem", ctx, client.nodeID).Return(
 		redfishClient.ComputerSystem{},
@@ -778,7 +778,7 @@ func TestWaitForPowerStateGetSystemFailed(t *testing.T) {
 	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 
@@ -802,7 +802,7 @@ func TestWaitForPowerStateNoRetries(t *testing.T) {
 	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 
@@ -828,7 +828,7 @@ func TestWaitForPowerStateWithRetries(t *testing.T) {
 	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 
@@ -859,7 +859,7 @@ func TestWaitForPowerStateRetriesExceeded(t *testing.T) {
 	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
 
@@ -890,7 +890,7 @@ func TestWaitForPowerStateDifferentPowerState(t *testing.T) {
 	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
-	ctx := client.setAuth(context.Background())
+	ctx := SetAuth(context.Background(), "", "")
 	resetReq := redfishClient.ResetRequestBody{}
 	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_ON
 

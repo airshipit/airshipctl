@@ -231,6 +231,20 @@ func ScreenRedfishError(httpResp *http.Response, clientErr error) error {
 	return finalError
 }
 
+// SetAuth allows to set username and password to given context so that redfish client can
+// authenticate against redfish server
+func SetAuth(ctx context.Context, username string, password string) context.Context {
+	authValue := redfishClient.BasicAuth{UserName: username, Password: password}
+	if ctx.Value(redfishClient.ContextBasicAuth) == authValue {
+		return ctx
+	}
+	return context.WithValue(
+		ctx,
+		redfishClient.ContextBasicAuth,
+		redfishClient.BasicAuth{UserName: username, Password: password},
+	)
+}
+
 func getManagerID(ctx context.Context, api redfishAPI.RedfishAPI, systemID string) (string, error) {
 	system, _, err := api.GetSystem(ctx, systemID)
 	if err != nil {
