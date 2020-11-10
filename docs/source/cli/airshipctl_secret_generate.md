@@ -22,5 +22,5 @@ Generate various secrets
 ### SEE ALSO
 
 * [airshipctl secret](airshipctl_secret.md)	 - Manage secrets
-* [airshipctl secret generate masterpassphrase](airshipctl_secret_generate_masterpassphrase.md)	 - Generates a secure master passphrase
+* [airshipctl secret generate encryptionkey](airshipctl_secret_generate_encryptionkey.md)	 - Generates a secure encryption key or passphrase
 

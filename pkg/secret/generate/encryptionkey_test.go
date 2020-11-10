@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package secret_test
+package generate_test
 
 import (
 	"math/rand"
@@ -21,7 +21,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"opendev.org/airship/airshipctl/pkg/secret"
+	"opendev.org/airship/airshipctl/pkg/secret/generate"
 )
 
 const (
@@ -33,13 +33,13 @@ const (
 	defaultLength = 24
 )
 
-func TestDeterministicGenerateValidPassphrase(t *testing.T) {
+func TestDeterministicGenerateValidEncryptionKey(t *testing.T) {
 	assert := assert.New(t)
 	testSource := rand.NewSource(42)
-	engine := secret.NewPassphraseEngine(testSource)
+	engine := generate.NewEncryptionKeyEngine(testSource)
 
 	// pre-calculated for rand.NewSource(42)
-	expectedPassphrases := []string{
+	expectedEncryptionKey := []string{
 		"erx&97vfqd7LN3HJ?t@oPhds",
 		"##Xeuvf5Njy@hNWSaRoleFkf",
 		"jB=kirg7acIt-=fx1Fb-tZ+7",
@@ -52,13 +52,13 @@ func TestDeterministicGenerateValidPassphrase(t *testing.T) {
 		"XC?bDaHTa3mrBYLMG@#B=Q0B",
 	}
 
-	for i, expected := range expectedPassphrases {
-		actual := engine.GeneratePassphrase()
+	for i, expected := range expectedEncryptionKey {
+		actual := engine.GenerateEncryptionKey()
 		assert.Equal(expected, actual, "Test #%d failed", i)
 	}
 }
 
-func TestNondeterministicGenerateValidPassphrase(t *testing.T) {
+func TestNondeterministicGenerateValidEncryptionKey(t *testing.T) {
 	assert := assert.New(t)
 	// Due to the nondeterminism of random number generators, this
 	// functionality is impossible to fully test. Let's just generate
@@ -72,9 +72,9 @@ func TestNondeterministicGenerateValidPassphrase(t *testing.T) {
 		asciiSymbols,
 	}
 
-	engine := secret.NewPassphraseEngine(nil)
+	engine := generate.NewEncryptionKeyEngine(nil)
 	for i := 0; i < 10000; i++ {
-		passphrase := engine.GeneratePassphrase()
+		passphrase := engine.GenerateEncryptionKey()
 		assert.Truef(len(passphrase) >= defaultLength,
 			"%s does not meet the length requirement", passphrase)
 
@@ -86,10 +86,10 @@ func TestNondeterministicGenerateValidPassphrase(t *testing.T) {
 	}
 }
 
-func TestGenerateValidPassphraseN(t *testing.T) {
+func TestGenerateValidEncryptionKeyN(t *testing.T) {
 	assert := assert.New(t)
 	testSource := rand.NewSource(42)
-	engine := secret.NewPassphraseEngine(testSource)
+	engine := generate.NewEncryptionKeyEngine(testSource)
 	tests := []struct {
 		inputLegth     int
 		expectedLength int
@@ -109,7 +109,7 @@ func TestGenerateValidPassphraseN(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		passphrase := engine.GeneratePassphraseN(tt.inputLegth)
+		passphrase := engine.GenerateEncryptionKeyN(tt.inputLegth)
 		assert.Len(passphrase, tt.expectedLength)
 	}
 }
