@@ -19,7 +19,6 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/inventory/ifc"
 	"opendev.org/airship/airshipctl/pkg/log"
 	remoteifc "opendev.org/airship/airshipctl/pkg/remote/ifc"
@@ -89,7 +88,33 @@ func (i Inventory) RunOperation(
 	op ifc.BaremetalOperation,
 	selector ifc.BaremetalHostSelector,
 	_ ifc.BaremetalBatchRunOptions) error {
-	return errors.ErrNotImplemented{What: "RunOperation of the baremetal inventory interface"}
+	log.Debugf("Running operation '%s' against hosts selected by selector '%v'", op, selector)
+
+	hostAction, err := action(ctx, op)
+	if err != nil {
+		return err
+	}
+
+	hosts, err := i.Select(selector)
+	if err != nil {
+		return err
+	}
+
+	if len(hosts) == 0 {
+		log.Printf("Filtering using selector %v' didn't return any hosts to perform operation '%s'", selector, op)
+		return ErrNoBaremetalHostsFound{Selector: selector}
+	}
+
+	// TODO add concurent action execution
+	// TODO consider adding FailFast flag to BaremetalBatchRunOptions that would allow
+	// not fail on first error, but accumulate errors and return them at the end.
+	for _, host := range hosts {
+		if hostErr := hostAction(host); hostErr != nil {
+			return hostErr
+		}
+	}
+
+	return nil
 }
 
 // Host implements baremetal host interface
@@ -136,6 +161,29 @@ func (i Inventory) newHost(doc document.Document) (Host, error) {
 		return Host{}, err
 	}
 	return Host{Client: client}, nil
+}
+
+func action(ctx context.Context, op ifc.BaremetalOperation) (func(remoteifc.Client) error, error) {
+	switch op {
+	case ifc.BaremetalOperationReboot:
+		return func(host remoteifc.Client) error {
+			return host.RebootSystem(ctx)
+		}, nil
+	case ifc.BaremetalOperationPowerOff:
+		return func(host remoteifc.Client) error {
+			return host.SystemPowerOff(ctx)
+		}, nil
+	case ifc.BaremetalOperationPowerOn:
+		return func(host remoteifc.Client) error {
+			return host.SystemPowerOn(ctx)
+		}, nil
+	case ifc.BaremetalOperationEjectVirtualMedia:
+		return func(host remoteifc.Client) error {
+			return host.EjectVirtualMedia(ctx)
+		}, nil
+	default:
+		return nil, ErrBaremetalOperationNotSupported{Operation: op}
+	}
 }
 
 func toDocumentSelector(selector ifc.BaremetalHostSelector) document.Selector {
