@@ -26,8 +26,10 @@
         - airship-airshipctl-build-image
         - airship-airshipctl-validate-site-docs
 #        - airship-airshipctl-functional-existing-k8s TODO: Enable this when functional tests exist, and a cluster is up
-        - airship-airshipctl-gate-script-runner
         - airship-airshipctl-gate-script-runner-azuretest
+    experimental:
+      jobs:
+        - airship-airshipctl-gate-script-runner
     gate:
       jobs:
         - openstack-tox-docs: *docs
