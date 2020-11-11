@@ -17,8 +17,9 @@ package checkexpiration
 import (
 	"github.com/spf13/cobra"
 
+	"opendev.org/airship/airshipctl/pkg/cluster/checkexpiration"
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/errors"
+	"opendev.org/airship/airshipctl/pkg/k8s/client"
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
@@ -54,25 +55,31 @@ airshipctl cluster check-certificate-expiration -t 30 -o yaml --kubeconfig testc
 
 // NewCheckCommand creates a new command for generating secret information
 func NewCheckCommand(cfgFactory config.Factory) *cobra.Command {
-	var threshold int
-	var contentType, kubeconfig string
+	c := &checkexpiration.CheckCommand{
+		Options:       checkexpiration.CheckFlags{},
+		CfgFactory:    cfgFactory,
+		ClientFactory: client.DefaultClient,
+	}
+
 	checkCmd := &cobra.Command{
 		Use:     "check-certificate-expiration",
 		Short:   "Check for expiring TLS certificates, secrets and kubeconfigs in the kubernetes cluster",
 		Long:    checkLong[1:],
 		Example: checkExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return errors.ErrNotImplemented{What: "check certificate expiration"}
+			return c.RunE(cmd.OutOrStdout())
 		},
 	}
 
-	checkCmd.Flags().IntVarP(&threshold, "threshold", "t", -1,
+	checkCmd.Flags().IntVarP(&c.Options.Threshold, "threshold", "t", -1,
 		"The max expiration threshold in days before a certificate is"+
 			" expiring. Displays all the certificates by default")
-	checkCmd.Flags().StringVarP(&contentType, "output", "o", "json", "Convert "+
+	checkCmd.Flags().StringVarP(&c.Options.FormatType, "output", "o", "json", "Convert "+
 		"output to yaml or json")
-	checkCmd.Flags().StringVar(&kubeconfig, kubeconfigFlag, "",
+	checkCmd.Flags().StringVar(&c.Options.Kubeconfig, kubeconfigFlag, "",
 		"Path to kubeconfig associated with cluster being managed")
+	checkCmd.Flags().StringVar(&c.Options.KubeContext, "kubecontext", "",
+		"Kubeconfig context to be used")
 
 	err := checkCmd.MarkFlagRequired(kubeconfigFlag)
 	if err != nil {

@@ -40,10 +40,11 @@ airshipctl cluster check-certificate-expiration -t 30 -o yaml --kubeconfig testc
 ### Options
 
 ```
-  -h, --help                help for check-certificate-expiration
-      --kubeconfig string   Path to kubeconfig associated with cluster being managed
-  -o, --output string       Convert output to yaml or json (default "json")
-  -t, --threshold int       The max expiration threshold in days before a certificate is expiring. Displays all the certificates by default (default -1)
+  -h, --help                 help for check-certificate-expiration
+      --kubeconfig string    Path to kubeconfig associated with cluster being managed
+      --kubecontext string   Kubeconfig context to be used
+  -o, --output string        Convert output to yaml or json (default "json")
+  -t, --threshold int        The max expiration threshold in days before a certificate is expiring. Displays all the certificates by default (default -1)
 ```
 
 ### Options inherited from parent commands
