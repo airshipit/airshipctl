@@ -22,24 +22,33 @@ export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
 echo "Stop ephemeral node"
 sudo virsh destroy air-ephemeral
 
+node_timeout () {
+    end=$(($(date +%s) + $TIMEOUT))
+    while true; do
+        if (kubectl --request-timeout 20s --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get $1 node03 | grep -qw $2) ; then
+            echo -e "\nGet $1 status"
+            kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get $1
+            break
+        else
+            now=$(date +%s)
+            if [ $now -gt $end ]; then
+                echo -e "\n$1 is not ready before TIMEOUT."
+                exit 1
+            fi
+            echo -n .
+            sleep 15
+        fi
+    done
+}
+
 echo "Deploy worker node"
 airshipctl phase run  workers-target --debug
 
-#Wait till node is created
-end=$(($(date +%s) + $TIMEOUT))
+echo "Waiting $TIMEOUT seconds for bmh to be in ready state."
+node_timeout bmh ready
+
+echo "Classify and provision worker node"
+airshipctl phase run  workers-classification --debug
+
 echo "Waiting $TIMEOUT seconds for node to be provisioned."
-while true; do
-    if (kubectl --request-timeout 20s --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get node node03 | grep -qw Ready) ; then
-        echo -e "\nGet node status"
-        kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get node
-        break
-    else
-        now=$(date +%s)
-        if [ $now -gt $end ]; then
-            echo -e "\nWorker node is not ready before TIMEOUT."
-            exit 1
-        fi
-        echo -n .
-        sleep 15
-    fi
-done
+node_timeout node Ready

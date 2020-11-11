@@ -19,9 +19,8 @@ HWCC will label matched hosts.
 
    `hardwareclassification.metal3.io/<PROFILE-NAME>=<LABEL>`
 
-HWCC also label hosts which are in error state, e.g.
-
-`hardwareclassification-error=registration-error`
+HWCC also label hosts which are in error state if
+`hardwareclassification-error=All` label is given in workload profile.
 
 HWCC status shows multiple items w.r.t applied profile :
  * Name of the profile
