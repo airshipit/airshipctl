@@ -16,9 +16,13 @@ package phase
 
 import (
 	"io"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
@@ -83,4 +87,55 @@ func (c *PlanCommand) RunE() error {
 	}
 
 	return PrintPlan(plan, c.Writer)
+}
+
+// TreeCommand plan command
+type TreeCommand struct {
+	Factory  config.Factory
+	PhaseID  ifc.ID
+	Writer   io.Writer
+	Argument string
+}
+
+// RunE runs the phase tree command
+func (c *TreeCommand) RunE() error {
+	var entrypoint string
+	cfg, err := c.Factory()
+	if err != nil {
+		return err
+	}
+
+	helper, err := NewHelper(cfg)
+	if err != nil {
+		return err
+	}
+
+	client := NewClient(helper)
+	var manifestsDir string
+	// check if its a relative path
+	if _, err = os.Stat(c.Argument); err == nil {
+		// capture manifests directory from phase relative path
+		manifestsDir = strings.SplitAfter(c.Argument, "/manifests")[0]
+		entrypoint = filepath.Join(c.Argument, document.KustomizationFile)
+	} else {
+		c.PhaseID.Name = c.Argument
+		manifestsDir = filepath.Join(helper.TargetPath(), helper.PhaseRepoDir())
+		var phase ifc.Phase
+		phase, err = client.PhaseByID(c.PhaseID)
+		if err != nil {
+			return err
+		}
+		var rootPath string
+		rootPath, err = phase.DocumentRoot()
+		if err != nil {
+			return err
+		}
+		entrypoint = filepath.Join(rootPath, document.KustomizationFile)
+	}
+	t, err := document.BuildKustomTree(entrypoint, c.Writer, manifestsDir)
+	if err != nil {
+		return err
+	}
+	t.PrintTree("")
+	return nil
 }

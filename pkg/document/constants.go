@@ -37,3 +37,6 @@ const (
 	ClusterctlMetadataVersion = "v1alpha3"
 	ClusterctlMetadataGroup   = "clusterctl.cluster.x-k8s.io"
 )
+
+// KustomizationFile is used for kustomization file
+const KustomizationFile = "kustomization.yaml"
