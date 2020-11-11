@@ -9,6 +9,7 @@ Available Commands:
   plan        List phases
   render      Render phase documents from model
   run         Run phase
+  tree        Tree view of kustomize entrypoints of phase
 
 Flags:
   -h, --help   help for phase
