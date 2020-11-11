@@ -6,6 +6,7 @@ phaseGroups:
   - name: group1
     phases:
       - name: clusterctl-init-ephemeral
-      - name: controlplane-target
-      - name: workers-target
+      - name: controlplane-ephemeral
       - name: clusterctl-init-target
+      - name: clusterctl-move
+      - name: workers-target
