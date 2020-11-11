@@ -1,0 +1,11 @@
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+kind: KubeadmControlPlane
+metadata:
+  name: target-cluster-control-plane
+  namespace: default
+spec:
+  kubeadmConfigSpec:
+    users:
+    - name: capo
+      sshAuthorizedKeys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCV+B0gfF/728wO9XOZbEpxuCP2rhZu0CIic2+O6M9d/t2weLCDl0rdOlssnVzsS5C04OQvm6IDy94xHG8ob2N2G/LGz7/jgCiysHjdQ1Yg6F16hx1rnRFeS2lLDc7PhGco8hAPbY/oN5Q0biutJRSnI5zLNhN1phXRap0ptaI8g3B3t07lxtJGPich2npyGt+ie7QwEzxoPMR81AnmCiqtRC7n2bf5p7CqMxMGHzhg30+BSOx81VlT30SKnExbXrHqV6372+kUvGw/NrUcJEQJNb/QDgAX51BBfTqYyxqZ3RDsBCRdE9IX51BgT6GJnsNjgo6h5CEIdAUNBM1MT23hpzpOTZPbSTdKsc5NHfbKKP6dlPcGYstHvtaVkvZ5x6bQr7dk9qiRs6ujuHybpE95OaH23Pg9PSbTxmZ8GZMMIzg1fToSNstaZe82crd+oY66icUgR7jvOwj7qulOklnkwLTaRUdRtbL4kYORxajLDVAuwF0qEtdGU3Pyb2NXoDs= stack@devstack

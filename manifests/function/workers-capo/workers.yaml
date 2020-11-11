@@ -70,3 +70,12 @@ spec:
         sshAuthorizedKeys:
         - ${OPENSTACK_SSH_KEY}
         sudo: ALL=(ALL) NOPASSWD:ALL
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: target-cluster-cloud-config
+  namespace: default
+data:
+  cacert: ${CLOUD_CERT_B64}
+  clouds.yaml: ${CLOUDS_YAML_B64}

@@ -1,10 +1,10 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ../../../../composite/infra
   - ../../../../function/workers-capo
 
 patchesStrategicMerge:
+  - cluster_clouds_yaml_patch.yaml
   - workers_machine_count_patch.yaml
   - workers_machine_flavor_patch.yaml
   - workers_cloud_conf_patch.yaml

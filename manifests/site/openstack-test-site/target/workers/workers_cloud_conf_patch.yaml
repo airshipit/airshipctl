@@ -7,7 +7,7 @@ spec:
   template:
     spec:
       files:
-      - content: W0dsb2JhbF0KYXV0aC11cmw9aHR0cDovLzEwLjAuMS40L2lkZW50aXR5CnVzZXJuYW1lPSJkZW1vIgpwYXNzd29yZD0icGFzcyIKdGVuYW50LWlkPSIyMThkMWNiYzMyOWM0YWUzYWNjODhjYTU5NTAwMTUwMSIKZG9tYWluLW5hbWU9IkRlZmF1bHQiCnJlZ2lvbj0iUmVnaW9uT25lIgo=
+      - content: W0dsb2JhbF0KYXV0aC11cmw9aHR0cDovLzEwLjAuMC40L2lkZW50aXR5CnVzZXJuYW1lPSJkZW1vIgpwYXNzd29yZD0icGFzcyIKdGVuYW50LW5hbWU9ImRlbW8iCmRvbWFpbi1pZD0iZGVmYXVsdCIKcmVnaW9uPSJSZWdpb25PbmUiCg==
         encoding: base64
         owner: root
         path: /etc/kubernetes/cloud.conf
