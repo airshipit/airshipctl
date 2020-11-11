@@ -15,7 +15,7 @@ metadata:
   annotations:
     config.kubernetes.io/function: |
       container:
-        image: quay.io/airshipit/templater:dev
+        image: quay.io/airshipit/templater:latest
 values:
   hosts:
   - macAddress: 00:aa:bb:cc:dd
