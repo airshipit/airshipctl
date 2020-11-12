@@ -29,8 +29,6 @@ TMP=$(KIND_URL=${KIND_URL} ./tools/document/get_kind.sh)
 export KIND=${TMP}/kind
 export KUBECTL_URL
 
-./tools/document/build_kustomize_plugin.sh
-
 for site_root in ${SITE_ROOTS}; do
   for site in $(ls ${MANIFEST_ROOT}/${site_root}); do
       echo -e "\nValidating site: ${MANIFEST_ROOT}/${site_root}/${site}\n****************"

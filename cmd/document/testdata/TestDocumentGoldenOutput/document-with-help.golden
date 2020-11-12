@@ -5,7 +5,6 @@ Usage:
 
 Available Commands:
   help        Help about any command
-  plugin      Run as a kustomize exec plugin
   pull        Pulls documents from remote git repository
 
 Flags:

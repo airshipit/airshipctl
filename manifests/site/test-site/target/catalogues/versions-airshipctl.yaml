@@ -3,7 +3,6 @@ apiVersion: airshipit.org/v1alpha1
 kind: VariableCatalogue
 metadata:
   name: versions-airshipctl
-
 files:
   k8scontrol:
     # Host the image in a locally served location for CI

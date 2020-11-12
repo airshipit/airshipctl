@@ -1,4 +1,4 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Licensed under the Apache License, Version 4.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
@@ -14,12 +14,12 @@
   shell: |
     set -e
     kustomize build --enable_alpha_plugins \
-      {{ airship_config_manifest_directory }}/{{ airship_config_site_path }}/{{ path }} |
+      {{ airship_config_manifest_directory }}/{{ airship_config_site_path }}/{{ path }} 2>/dev/null |
     kustomize cfg grep  "kind=BareMetalHost"
   register: bmh_command
   failed_when: "bmh_command.stdout == ''"
   environment:
-    KUSTOMIZE_PLUGIN_HOME: "{{ ansible_env.HOME }}/.airship/kustomize-plugins"
+    KUSTOMIZE_PLUGIN_HOME: "/tmp"
     KUSTOMIZE_ENABLE_ALPHA_COMMANDS: "true"
 
 - set_fact:
@@ -29,12 +29,12 @@
   shell: |
     set -e
     kustomize build --enable_alpha_plugins \
-      {{ airship_config_manifest_directory }}/{{ airship_config_site_path }}/{{ path }} |
+      {{ airship_config_manifest_directory }}/{{ airship_config_site_path }}/{{ path }} 2>/dev/null |
     kustomize cfg grep  "metadata.name={{ item.spec.networkData.name }}"
   register: netdata_command
   failed_when: "netdata_command.stdout == ''"
   environment:
-    KUSTOMIZE_PLUGIN_HOME: "{{ ansible_env.HOME }}/.airship/kustomize-plugins"
+    KUSTOMIZE_PLUGIN_HOME: "/tmp"
     KUSTOMIZE_ENABLE_ALPHA_COMMANDS: "true"
   with_items: "{{ bmh }}"
 

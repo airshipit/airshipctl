@@ -17,7 +17,6 @@ package templater
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"text/template"
 
 	"github.com/Masterminds/sprig"
@@ -27,17 +26,16 @@ import (
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
-	plugtypes "opendev.org/airship/airshipctl/pkg/document/plugin/types"
 )
 
-var _ plugtypes.Plugin = &plugin{}
+var _ kio.Filter = &plugin{}
 
 type plugin struct {
 	*airshipv1.Templater
 }
 
 // New creates new instance of the plugin
-func New(obj map[string]interface{}) (plugtypes.Plugin, error) {
+func New(obj map[string]interface{}) (kio.Filter, error) {
 	cfg := &airshipv1.Templater{}
 	err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj, cfg)
 	if err != nil {
@@ -48,21 +46,15 @@ func New(obj map[string]interface{}) (plugtypes.Plugin, error) {
 	}, nil
 }
 
-// Run templater plugin
-func (t *plugin) Run(_ io.Reader, out io.Writer) error {
+func (t *plugin) Filter(items []*yaml.RNode) ([]*yaml.RNode, error) {
+	out := &bytes.Buffer{}
 	funcMap := sprig.TxtFuncMap()
 	funcMap["toYaml"] = toYaml
 	tmpl, err := template.New("tmpl").Funcs(funcMap).Parse(t.Template)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return tmpl.Execute(out, t.Values)
-}
-
-func (t *plugin) Filter(items []*yaml.RNode) ([]*yaml.RNode, error) {
-	out := &bytes.Buffer{}
-	err := t.Run(nil, out)
-	if err != nil {
+	if err = tmpl.Execute(out, t.Values); err != nil {
 		return nil, err
 	}
 

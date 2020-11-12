@@ -28,7 +28,6 @@ func NewDocumentCommand(cfgFactory config.Factory) *cobra.Command {
 	}
 
 	documentRootCmd.AddCommand(NewPullCommand(cfgFactory))
-	documentRootCmd.AddCommand(NewPluginCommand())
 
 	return documentRootCmd
 }
