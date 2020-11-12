@@ -1,19 +1,19 @@
-## airshipctl secret generate masterpassphrase
+## airshipctl secret generate encryptionkey
 
-Generates a secure master passphrase
+Generates a secure encryption key or passphrase
 
 ### Synopsis
 
-Generates a secure master passphrase
+Generates a secure encryption key or passphrase
 
 ```
-airshipctl secret generate masterpassphrase [flags]
+airshipctl secret generate encryptionkey [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for masterpassphrase
+  -h, --help   help for encryptionkey
 ```
 
 ### Options inherited from parent commands

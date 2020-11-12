@@ -12,28 +12,27 @@
  limitations under the License.
 */
 
-package generate
+package encryptionkey
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
 
-	"opendev.org/airship/airshipctl/pkg/secret"
+	"opendev.org/airship/airshipctl/pkg/secret/generate"
 )
 
-// NewGenerateMasterPassphraseCommand creates a new command for generating secret information
-func NewGenerateMasterPassphraseCommand() *cobra.Command {
-	masterPassphraseCmd := &cobra.Command{
-		Use: "masterpassphrase",
-		// TODO(howell): Make this more expressive
-		Short: "Generates a secure master passphrase",
+// NewGenerateEncryptionKeyCommand creates a new command for generating secret information
+func NewGenerateEncryptionKeyCommand() *cobra.Command {
+	encryptionKeyCmd := &cobra.Command{
+		Use:   "encryptionkey",
+		Short: "Generates a secure encryption key or passphrase",
 		Run: func(cmd *cobra.Command, args []string) {
-			engine := secret.NewPassphraseEngine(nil)
-			masterPassphrase := engine.GeneratePassphrase()
-			fmt.Fprintln(cmd.OutOrStdout(), masterPassphrase)
+			engine := generate.NewEncryptionKeyEngine(nil)
+			encryptionKey := engine.GenerateEncryptionKey()
+			fmt.Fprintln(cmd.OutOrStdout(), encryptionKey)
 		},
 	}
 
-	return masterPassphraseCmd
+	return encryptionKeyCmd
 }

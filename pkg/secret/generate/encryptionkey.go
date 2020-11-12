@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package secret
+package generate
 
 import (
 	"math/rand"
@@ -41,59 +41,59 @@ func init() {
 	pool = append(pool, []byte(asciiSymbols)...)
 }
 
-// PassphraseEngine is used to generate secure random passphrases
-type PassphraseEngine struct {
+// EncryptionKeyEngine is used to generate secure random passphrases
+type EncryptionKeyEngine struct {
 	rng  *rand.Rand
 	pool []byte
 }
 
-// NewPassphraseEngine creates an PassphraseEngine using src. If src is nil,
+// NewEncryptionKeyEngine creates an PassphraseEngine using src. If src is nil,
 // the returned PassphraseEngine will use the default Source
-func NewPassphraseEngine(src rand.Source) *PassphraseEngine {
+func NewEncryptionKeyEngine(src rand.Source) *EncryptionKeyEngine {
 	if src == nil {
 		src = &Source{}
 	}
-	return &PassphraseEngine{
+	return &EncryptionKeyEngine{
 		rng:  rand.New(src),
 		pool: pool,
 	}
 }
 
-// GeneratePassphrase returns a secure random string of length 24,
+// GenerateEncryptionKey returns a secure random string of length 24,
 // containing at least one of each from the following sets:
 // [0-9]
 // [a-z]
 // [A-Z]
 // [@#&-+=?]
-func (e *PassphraseEngine) GeneratePassphrase() string {
-	return e.GeneratePassphraseN(defaultLength)
+func (e *EncryptionKeyEngine) GenerateEncryptionKey() string {
+	return e.GenerateEncryptionKeyN(defaultLength)
 }
 
-// GeneratePassphraseN returns a secure random string containing at least
+// GenerateEncryptionKeyN returns a secure random string containing at least
 // one of each from the following sets. Its length will be max(length, 24)
 // [0-9]
 // [a-z]
 // [A-Z]
 // [@#&-+=?]
-func (e *PassphraseEngine) GeneratePassphraseN(length int) string {
+func (e *EncryptionKeyEngine) GenerateEncryptionKeyN(length int) string {
 	if length < defaultLength {
 		length = defaultLength
 	}
-	var passPhrase string
-	for !e.isValidPassphrase(passPhrase) {
+	var encryptionkey string
+	for !e.isValidEncryptionKey(encryptionkey) {
 		var sb strings.Builder
 		for i := 0; i < length; i++ {
 			randIndex := e.rng.Intn(len(e.pool))
 			randChar := e.pool[randIndex]
 			sb.WriteString(string(randChar))
 		}
-		passPhrase = sb.String()
+		encryptionkey = sb.String()
 	}
-	return passPhrase
+	return encryptionkey
 }
 
-func (e *PassphraseEngine) isValidPassphrase(passPhrase string) bool {
-	if len(passPhrase) < defaultLength {
+func (e *EncryptionKeyEngine) isValidEncryptionKey(encryptionkey string) bool {
+	if len(encryptionkey) < defaultLength {
 		return false
 	}
 
@@ -104,7 +104,7 @@ func (e *PassphraseEngine) isValidPassphrase(passPhrase string) bool {
 		asciiSymbols,
 	}
 	for _, charSet := range charSets {
-		if !strings.ContainsAny(passPhrase, charSet) {
+		if !strings.ContainsAny(encryptionkey, charSet) {
 			return false
 		}
 	}

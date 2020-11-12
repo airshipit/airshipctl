@@ -12,23 +12,25 @@
  limitations under the License.
 */
 
-package generate
+package encryptionkey_test
 
 import (
-	"github.com/spf13/cobra"
+	"testing"
 
 	"opendev.org/airship/airshipctl/cmd/secret/generate/encryptionkey"
+	"opendev.org/airship/airshipctl/testutil"
 )
 
-// NewGenerateCommand creates a new command for generating secret information
-func NewGenerateCommand() *cobra.Command {
-	generateRootCmd := &cobra.Command{
-		Use: "generate",
-		// TODO(howell): Make this more expressive
-		Short: "Generate various secrets",
+func TestGenerateEncryptionKey(t *testing.T) {
+	cmdTests := []*testutil.CmdTest{
+		{
+			Name:    "generate-encryptionkey-cmd-with-help",
+			CmdLine: "--help",
+			Cmd:     encryptionkey.NewGenerateEncryptionKeyCommand(),
+		},
 	}
 
-	generateRootCmd.AddCommand(encryptionkey.NewGenerateEncryptionKeyCommand())
-
-	return generateRootCmd
+	for _, tt := range cmdTests {
+		testutil.RunTest(t, tt)
+	}
 }
