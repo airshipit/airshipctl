@@ -331,6 +331,14 @@ dynamic kubeconfig for clusters. When kubeconfig must be sourced from
 a parent cluster, cluster map will be used to find parent cluster and
 request kubeconfig from it.
 
+Also, ClusterAPIRef is a part of Cluster Map and will be used to find
+cluster object in kubernetes parent cluster. It also maps a clusterapi
+name and namespaces for a given cluster. In the below example object,
+the cluster api ref describes the reference to the cluster api object.
+The cluster `workload01` in the cluster map has an clusterAPIRef to
+corresponding cluster-api cluster object (kind: cluster) with name workload01
+and inside namespace tenant01-namespace.
+
 Cluster map is defined in `Phase bundle <#phase-bundle>`__ as a document.
 
 - `Cluster map API object source code
@@ -357,6 +365,9 @@ Example of cluster map
       workload01:
         parent: target-cluster
         dynamicKubeConf: true
+        clusterAPIRef:
+          name: workload01
+          namespace: tenant01-namespace
 
 Metadata file
 -------------
