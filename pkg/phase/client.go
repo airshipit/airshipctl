@@ -134,13 +134,30 @@ func (p *phase) Validate() error {
 }
 
 // Render executor documents
-func (p *phase) Render(w io.Writer, options ifc.RenderOptions) error {
-	executor, err := p.Executor()
+func (p *phase) Render(w io.Writer, executorRender bool, options ifc.RenderOptions) error {
+	if executorRender {
+		executor, err := p.Executor()
+		if err != nil {
+			return err
+		}
+		return executor.Render(w, options)
+	}
+
+	root, err := p.DocumentRoot()
 	if err != nil {
 		return err
 	}
 
-	return executor.Render(w, options)
+	bundle, err := document.NewBundleByPath(root)
+	if err != nil {
+		return err
+	}
+
+	rendered, err := bundle.SelectBundle(options.FilterSelector)
+	if err != nil {
+		return err
+	}
+	return rendered.Write(w)
 }
 
 // DocumentRoot root that holds all the documents associated with the phase
