@@ -38,30 +38,82 @@
   ignore_errors: true
 
 - block:
-    - name: Create docker directory
+    - name: Create docker service directory
       file:
         path: /etc/systemd/system/docker.service.d/
         state: directory
         mode: '0755'
 
-    - name: Configure proxy for docker if enabled
+    - name: Configure proxy for docker service if enabled
       template:
         src: http-proxy-conf.j2
         dest: /etc/systemd/system/docker.service.d/http-proxy.conf
   when: proxy.enabled|bool == true
   become: yes
 
-- name: Create docker directory
+- name: Create docker config directory
   file:
     path: "{{ docker_config_path }}"
     state: directory
     mode: '0755'
   become: yes
 
-- name: Save docker daemon configuration
+- name: Debug zuul site mirror var
+  debug:
+    msg:
+      - "zuul_site_mirror_fqdn: {{ zuul_site_mirror_fqdn | default('NONE') }}"
+  ignore_errors: yes
+
+- name: Set docker_config variable
+  set_fact:
+    docker_config_file: "{{ docker_config_path }}/daemon.json"
+
+- name: Check if docker config file exists
+  stat:
+    path: "{{ docker_config_file }}"
+  register: res
+
+# Avoid long if/then/else blocks here below, pretend that config exists
+- name: Create empty docker config if it doesn't exist
   copy:
-    content: "{{ docker_config | to_nice_json }}"
-    dest: "{{ docker_config_path }}/daemon.json"
+    content: "{}"
+    dest: "{{ docker_config_file }}"
+  when: not res.stat.exists
+  become: yes
+
+- name: Get current docker configuration
+  command: "cat {{ docker_config_file }}"
+  register: res
+
+- name: Get current docker configuration as json
+  set_fact:
+    default_docker_conf: "{{ res.stdout | from_json }}"
+
+- name: Debug current docker configuration
+  debug:
+    var: default_docker_conf
+
+- name: Merge default and custom configuration
+  set_fact:
+    merged_docker_config: "{{ default_docker_conf | combine(docker_config) }}"
+
+- name: Debug merged docker configuration
+  debug:
+    var: merged_docker_config
+
+- name: Add container images mirror configuration
+  set_fact:
+    merged_docker_config: "{{ merged_docker_config | combine({ 'registry-mirrors': [ 'http://' + zuul_site_mirror_fqdn + ':8082' ] })}}"
+  when: zuul_site_mirror_fqdn is defined
+
+- name: Debug merged docker configuration
+  debug:
+    var: merged_docker_config
+
+- name: Save merged docker daemon configuration
+  copy:
+    content: "{{ merged_docker_config | to_nice_json }}"
+    dest: "{{ docker_config_file }}"
   become: yes
 
 - name: Start docker
@@ -72,9 +124,8 @@
     daemon_reload: yes
     enabled: true
 
-- name: Change group ownership on docker sock
+- name: Change group ownership on docker socket
   become: yes
   file:
     path: /var/run/docker.sock
     group: docker
-
