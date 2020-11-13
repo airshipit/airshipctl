@@ -45,6 +45,12 @@ func TestNewClient(t *testing.T) {
 	assert.NotNil(t, c)
 }
 
+func TestNewClientInterface(t *testing.T) {
+	c, err := ClientFactory(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	assert.NoError(t, err)
+	assert.NotNil(t, c)
+}
+
 func TestNewClientDefaultValues(t *testing.T) {
 	sysActRetr := 111
 	sysRebDel := 999

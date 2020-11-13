@@ -26,6 +26,7 @@ import (
 	redfishClient "opendev.org/airship/go-redfish/client"
 
 	"opendev.org/airship/airshipctl/pkg/log"
+	"opendev.org/airship/airshipctl/pkg/remote/ifc"
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 )
 
@@ -126,8 +127,8 @@ func (c *Client) SetBootSourceByType(ctx context.Context) error {
 	return nil
 }
 
-// NewClient returns a client with the capability to make Redfish requests.
-func NewClient(redfishURL string,
+// newClient returns a client with the capability to make Redfish requests.
+func newClient(redfishURL string,
 	insecure bool,
 	useProxy bool,
 	username string,
@@ -143,4 +144,16 @@ func NewClient(redfishURL string,
 	c := &Client{username, password, *genericClient, genericClient.RedfishAPI, genericClient.RedfishCFG}
 
 	return c, nil
+}
+
+// ClientFactory is a constructor for redfish ifc.Client implementation
+var ClientFactory ifc.ClientFactory = func(redfishURL string,
+	insecure bool,
+	useProxy bool,
+	username string,
+	password string,
+	systemActionRetries int,
+	systemRebootDelay int) (ifc.Client, error) {
+	return newClient(redfishURL, insecure, useProxy,
+		username, password, systemActionRetries, systemRebootDelay)
 }

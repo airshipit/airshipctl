@@ -34,14 +34,20 @@ const (
 )
 
 func TestNewClient(t *testing.T) {
-	_, err := NewClient(redfishURL, false, false, "username", "password", systemActionRetries, systemRebootDelay)
+	_, err := newClient(redfishURL, false, false, "username", "password", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
+}
+
+func TestNewClientInterface(t *testing.T) {
+	c, err := ClientFactory(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	assert.NoError(t, err)
+	assert.NotNil(t, c)
 }
 
 func TestNewClientDefaultValues(t *testing.T) {
 	sysActRetr := 222
 	sysRebDel := 555
-	c, err := NewClient(redfishURL, false, false, "", "", sysActRetr, sysRebDel)
+	c, err := newClient(redfishURL, false, false, "", "", sysActRetr, sysRebDel)
 	assert.Equal(t, c.SystemActionRetries(), sysActRetr)
 	assert.Equal(t, c.SystemRebootDelay(), sysRebDel)
 	assert.NoError(t, err)
@@ -50,7 +56,7 @@ func TestSetBootSourceByTypeGetSystemError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := newClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
 	ctx := redfish.SetAuth(context.Background(), "", "")
