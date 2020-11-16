@@ -3,14 +3,12 @@ resources:
   - ../../../../function/hwcc
   - ../../../../function/clusterctl
   - ../../../../composite/flux-helm
-  - ../../../../composite/infra
   - ../catalogues
 
 commonLabels:
   airshipit.org/stage: initinfra
 
 transformers:
-  - ../../../../composite/infra/replacements
   - ../../../../function/baremetal-operator/replacements
   - ../../../../function/flux/source-controller/replacements
   - ../../../../function/flux/helm-controller/replacements
