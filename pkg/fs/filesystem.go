@@ -16,6 +16,8 @@ package fs
 
 import (
 	"io/ioutil"
+	"os"
+	"path/filepath"
 
 	kustfs "sigs.k8s.io/kustomize/api/filesys"
 )
@@ -31,6 +33,8 @@ type FileSystem interface {
 	kustfs.FileSystem
 	TempFile(string, string) (File, error)
 	TempDir(string, string) (string, error)
+	Chmod(string, os.FileMode) error
+	Dir(string) string
 }
 
 // Fs is adaptor to TempFile
@@ -51,4 +55,14 @@ func (dfs Fs) TempFile(tmpDir string, prefix string) (File, error) {
 // TempDir creates a temporary directory in given root directory
 func (dfs Fs) TempDir(rootDir string, prefix string) (string, error) {
 	return ioutil.TempDir(rootDir, prefix)
+}
+
+// Chmod applies desired permissions on file
+func (dfs Fs) Chmod(path string, mode os.FileMode) error {
+	return os.Chmod(path, mode)
+}
+
+// Dir returns all but the last element of path, typically the path's directory
+func (dfs Fs) Dir(path string) string {
+	return filepath.Dir(path)
 }
