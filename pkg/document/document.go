@@ -15,6 +15,8 @@
 package document
 
 import (
+	"fmt"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
@@ -35,6 +37,7 @@ type Document interface {
 	GetAnnotations() map[string]string
 	GetBool(path string) (bool, error)
 	GetFloat64(path string) (float64, error)
+	GetFieldValue(path string) (interface{}, error)
 	GetGroup() string
 	GetInt64(path string) (int64, error)
 	GetKind() string
@@ -96,26 +99,58 @@ func (d *Factory) GetString(path string) (string, error) {
 
 // GetStringSlice returns a string slice at path.
 func (d *Factory) GetStringSlice(path string) ([]string, error) {
-	r := d.GetKustomizeResource()
-	return r.GetStringSlice(path)
+	slice, err := d.GetSlice(path)
+	if err != nil {
+		return nil, err
+	}
+	lst := make([]string, len(slice))
+	for i, val := range slice {
+		str, ok := val.(string)
+		if !ok {
+			return nil, ErrBadValueFormat{Value: path, Expected: "[]string", Actual: fmt.Sprintf("%T", val)}
+		}
+		lst[i] = str
+	}
+	return lst, nil
 }
 
 // GetBool returns a bool at path.
 func (d *Factory) GetBool(path string) (bool, error) {
-	r := d.GetKustomizeResource()
-	return r.GetBool(path)
+	val, err := d.GetFieldValue(path)
+	if err != nil {
+		return false, err
+	}
+	result, ok := val.(bool)
+	if !ok {
+		return false, ErrBadValueFormat{Value: path, Expected: "bool", Actual: fmt.Sprintf("%T", val)}
+	}
+	return result, nil
 }
 
 // GetFloat64 returns a float64 at path.
 func (d *Factory) GetFloat64(path string) (float64, error) {
-	r := d.GetKustomizeResource()
-	return r.GetFloat64(path)
+	val, err := d.GetFieldValue(path)
+	if err != nil {
+		return 0, err
+	}
+	result, ok := val.(float64)
+	if !ok {
+		return 0, ErrBadValueFormat{Value: path, Expected: "float64", Actual: fmt.Sprintf("%T", val)}
+	}
+	return result, nil
 }
 
 // GetInt64 returns an int64 at path.
 func (d *Factory) GetInt64(path string) (int64, error) {
-	r := d.GetKustomizeResource()
-	return r.GetInt64(path)
+	val, err := d.GetFieldValue(path)
+	if err != nil {
+		return 0, err
+	}
+	result, ok := val.(int64)
+	if !ok {
+		return 0, ErrBadValueFormat{Value: path, Expected: "int64", Actual: fmt.Sprintf("%T", val)}
+	}
+	return result, nil
 }
 
 // GetSlice returns a slice at path.
@@ -126,14 +161,32 @@ func (d *Factory) GetSlice(path string) ([]interface{}, error) {
 
 // GetStringMap returns a string map at path.
 func (d *Factory) GetStringMap(path string) (map[string]string, error) {
-	r := d.GetKustomizeResource()
-	return r.GetStringMap(path)
+	val, err := d.GetMap(path)
+	if err != nil {
+		return nil, err
+	}
+	strMap := make(map[string]string, len(val))
+	for k, v := range val {
+		str, ok := v.(string)
+		if !ok {
+			return nil, ErrBadValueFormat{Value: path, Expected: "map[string]string", Actual: fmt.Sprintf("%T", val)}
+		}
+		strMap[k] = str
+	}
+	return strMap, nil
 }
 
 // GetMap returns a map at path.
 func (d *Factory) GetMap(path string) (map[string]interface{}, error) {
-	r := d.GetKustomizeResource()
-	return r.GetMap(path)
+	val, err := d.GetFieldValue(path)
+	if err != nil {
+		return nil, err
+	}
+	result, ok := val.(map[string]interface{})
+	if !ok {
+		return nil, ErrBadValueFormat{Value: path, Expected: "map[string]interface{}", Actual: fmt.Sprintf("%T", val)}
+	}
+	return result, nil
 }
 
 // AsYAML returns the document as a YAML byte stream.
@@ -207,6 +260,12 @@ func (d *Factory) ToAPIObject(obj runtime.Object, scheme *runtime.Scheme) error 
 
 	_, _, err = yamlSerializer.Decode(y, nil, obj)
 	return err
+}
+
+// GetFieldValue get object at path
+func (d *Factory) GetFieldValue(path string) (interface{}, error) {
+	r := d.GetKustomizeResource()
+	return r.GetFieldValue(path)
 }
 
 // NewDocument is a convenience method to construct a new Document.  Although

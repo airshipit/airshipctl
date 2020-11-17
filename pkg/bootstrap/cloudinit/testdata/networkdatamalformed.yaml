@@ -14,11 +14,11 @@ stringData:
 ---
 apiVersion: v1
 kind: Secret
-namespace: malformed
 metadata:
   labels:
     test: networkdatamalformed
   name: networkdatamalformed-malformed
+  namespace: malformed
 type: Opaque
 stringData:
   no-net-data-key: the required 'net-data' key is missing

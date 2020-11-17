@@ -28,11 +28,11 @@ stringData:
 ---
 apiVersion: v1
 kind: Secret
-namespace: metal3
 metadata:
   labels:
     test: validdocset
   name: master-1-networkdata
+  namespace: metal3
 type: Opaque
 stringData:
   networkData: net-config

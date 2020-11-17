@@ -83,8 +83,8 @@ object:
       defaultMode: 0777
 metadata:
   annotations:
-    config.kubernetes.io/function: "container:\n  image: quay.io/test/image:v0.0.1\n
-      \ network: {}\nexec: {}\nstarlark: {}\n"
+    config.kubernetes.io/function: "container:\n  image: quay.io/test/image:v0.0.1\nexec:
+      {}\nstarlark: {}\n"
 `
 	singleExecutorBundlePath = "testdata/single"
 	firstDocInput            = `---

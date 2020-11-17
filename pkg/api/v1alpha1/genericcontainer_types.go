@@ -54,6 +54,12 @@ func (in *GenericContainer) DeepCopyInto(out *GenericContainer) {
 		*out = make([]runtimeutil.StorageMount, len(*in))
 		copy(*out, *in)
 	}
+	if in.Spec.Container.Env != nil {
+		in, out := &in.Spec.Container.Env, &out.Spec.Container.Env
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+
 	out.Spec.Starlark = in.Spec.Starlark
 	out.Spec.Exec = in.Spec.Exec
 	if in.Spec.StorageMounts != nil {
