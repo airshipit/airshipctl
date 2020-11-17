@@ -1,0 +1,18 @@
+[{
+    "op": "replace",
+    "path": "/init-options/infrastructure-providers",
+    "value": ["azure:v0.4.9"]
+ },
+ {
+    "op": "replace",
+    "path": "/providers/0",
+    "value": {
+        "name": "azure",
+        "type": "InfrastructureProvider",
+        "variable-substitution": true,
+        "versions": {
+            "v0.4.9": "airshipctl/manifests/function/capz/v0.4.9"
+        }
+    }
+ }
+]
