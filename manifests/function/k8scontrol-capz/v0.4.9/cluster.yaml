@@ -1,0 +1,33 @@
+apiVersion: cluster.x-k8s.io/v1alpha3
+kind: Cluster
+metadata:
+  labels:
+    cni: calico
+  name: target-cluster
+  namespace: default
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 192.168.0.0/16
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+    kind: KubeadmControlPlane
+    name: target-cluster-control-plane
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+    kind: AzureCluster
+    name: target-cluster
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: AzureCluster
+metadata:
+  name: target-cluster
+  namespace: default
+spec:
+  location: eastus
+  networkSpec:
+    vnet:
+      name: azure-workload-vnet
+  resourceGroup: azure-workload
+  subscriptionID: cb3e23d3-b697-4c4f-a1a7-529e308691e4
