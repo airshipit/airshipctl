@@ -23,10 +23,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubectl"
 	k8sutils "opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/testutil"
-	"opendev.org/airship/airshipctl/testutil/fs"
+	testfs "opendev.org/airship/airshipctl/testutil/fs"
 	k8stest "opendev.org/airship/airshipctl/testutil/k8sutils"
 )
 
@@ -73,14 +74,14 @@ func TestApply(t *testing.T) {
 	tests := []struct {
 		name        string
 		expectedErr error
-		fs          document.FileSystem
+		fs          fs.FileSystem
 	}{
 		{
 			expectedErr: nil,
-			fs: fs.MockFileSystem{
+			fs: testfs.MockFileSystem{
 				MockRemoveAll: func() error { return nil },
-				MockTempFile: func(string, string) (document.File, error) {
-					return fs.TestFile{
+				MockTempFile: func(string, string) (fs.File, error) {
+					return testfs.TestFile{
 						MockName:  func() string { return filenameRC },
 						MockWrite: func() (int, error) { return 0, nil },
 						MockClose: func() error { return nil },
@@ -90,15 +91,15 @@ func TestApply(t *testing.T) {
 		},
 		{
 			expectedErr: ErrWriteOutError,
-			fs: fs.MockFileSystem{
-				MockTempFile: func(string, string) (document.File, error) { return nil, ErrWriteOutError }},
+			fs: testfs.MockFileSystem{
+				MockTempFile: func(string, string) (fs.File, error) { return nil, ErrWriteOutError }},
 		},
 		{
 			expectedErr: ErrTempFileError,
-			fs: fs.MockFileSystem{
+			fs: testfs.MockFileSystem{
 				MockRemoveAll: func() error { return nil },
-				MockTempFile: func(string, string) (document.File, error) {
-					return fs.TestFile{
+				MockTempFile: func(string, string) (fs.File, error) {
+					return testfs.TestFile{
 						MockWrite: func() (int, error) { return 0, ErrTempFileError },
 						MockName:  func() string { return filenameRC },
 						MockClose: func() error { return nil },

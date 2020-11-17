@@ -22,19 +22,20 @@ import (
 
 	fixtures "github.com/go-git/go-git-fixtures/v4"
 	"github.com/stretchr/testify/require"
-	fs "sigs.k8s.io/kustomize/api/filesys"
+	kustfs "sigs.k8s.io/kustomize/api/filesys"
 
 	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/fs"
 )
 
 // SetupTestFs help manufacture a fake file system for testing purposes. It
 // will iterate over the files in fixtureDir, which is a directory relative
 // to the tests themselves, and will write each of those files (preserving
 // names) to an in-memory file system and return that fs
-func SetupTestFs(t *testing.T, fixtureDir string) document.FileSystem {
+func SetupTestFs(t *testing.T, fixtureDir string) fs.FileSystem {
 	t.Helper()
 
-	x := &document.Fs{FileSystem: fs.MakeFsInMemory()}
+	x := &fs.Fs{FileSystem: kustfs.MakeFsInMemory()}
 
 	files, err := ioutil.ReadDir(fixtureDir)
 	require.NoErrorf(t, err, "Failed to read fixture directory %s", fixtureDir)

@@ -29,10 +29,10 @@ import (
 	kustfs "sigs.k8s.io/kustomize/api/filesys"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
-	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/k8s/client/fake"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
-	"opendev.org/airship/airshipctl/testutil/fs"
+	testfs "opendev.org/airship/airshipctl/testutil/fs"
 )
 
 const (
@@ -123,15 +123,15 @@ var (
 
 func TestKubeconfigContent(t *testing.T) {
 	expectedData := []byte(testValidKubeconfig)
-	fs := document.NewDocumentFs()
+	fSys := fs.NewDocumentFs()
 	kubeconf := kubeconfig.NewKubeConfig(
 		kubeconfig.FromByte(expectedData),
-		kubeconfig.InjectFileSystem(fs),
+		kubeconfig.InjectFileSystem(fSys),
 		kubeconfig.InjectTempRoot("."))
 	path, clean, err := kubeconf.GetFile()
 	require.NoError(t, err)
 	defer clean()
-	actualData, err := fs.ReadFile(path)
+	actualData, err := fSys.ReadFile(path)
 	require.NoError(t, err)
 	assert.Equal(t, expectedData, actualData)
 }
@@ -357,9 +357,9 @@ func TestNewKubeConfig(t *testing.T) {
 			src:  kubeconfig.FromByte([]byte(testValidKubeconfig)),
 			options: []kubeconfig.Option{
 				kubeconfig.InjectFileSystem(
-					fs.MockFileSystem{
-						MockTempFile: func(root, pattern string) (document.File, error) {
-							return fs.TestFile{
+					testfs.MockFileSystem{
+						MockTempFile: func(root, pattern string) (fs.File, error) {
+							return testfs.TestFile{
 								MockName:  func() string { return "kubeconfig-142398" },
 								MockWrite: func() (int, error) { return 0, nil },
 								MockClose: func() error { return nil },
@@ -378,13 +378,13 @@ func TestNewKubeConfig(t *testing.T) {
 			options: []kubeconfig.Option{
 				kubeconfig.InjectTempRoot("/my-unique-root"),
 				kubeconfig.InjectFileSystem(
-					fs.MockFileSystem{
-						MockTempFile: func(root, _ string) (document.File, error) {
+					testfs.MockFileSystem{
+						MockTempFile: func(root, _ string) (fs.File, error) {
 							// check if root path is passed to the TempFile interface
 							if root != "/my-unique-root" {
 								return nil, errTempFile
 							}
-							return fs.TestFile{
+							return testfs.TestFile{
 								MockName:  func() string { return "kubeconfig-142398" },
 								MockWrite: func() (int, error) { return 0, nil },
 								MockClose: func() error { return nil },
@@ -419,8 +419,8 @@ func TestNewKubeConfig(t *testing.T) {
 			expectedErrorContains: errTempFile.Error(),
 			options: []kubeconfig.Option{
 				kubeconfig.InjectFileSystem(
-					fs.MockFileSystem{
-						MockTempFile: func(string, string) (document.File, error) {
+					testfs.MockFileSystem{
+						MockTempFile: func(string, string) (fs.File, error) {
 							return nil, errTempFile
 						},
 						MockRemoveAll: func() error { return nil },
@@ -505,7 +505,7 @@ func TestKubeConfigWriteFile(t *testing.T) {
 		path                  string
 		expectedErrorContains string
 
-		fs  document.FileSystem
+		fs  fs.FileSystem
 		src kubeconfig.KubeSourceFunc
 	}{
 		{
@@ -537,8 +537,8 @@ func TestKubeConfigWriteFile(t *testing.T) {
 	}
 }
 
-func readFile(t *testing.T, path string, fs document.FileSystem) string {
-	b, err := fs.ReadFile(path)
+func readFile(t *testing.T, path string, fSys fs.FileSystem) string {
+	b, err := fSys.ReadFile(path)
 	require.NoError(t, err)
 	return string(b)
 }
@@ -549,8 +549,8 @@ func read(t *testing.T, r io.Reader) string {
 	return string(b)
 }
 
-func fsWithFile(t *testing.T, path string) document.FileSystem {
-	fSys := fs.MockFileSystem{
+func fsWithFile(t *testing.T, path string) fs.FileSystem {
+	fSys := testfs.MockFileSystem{
 		FileSystem: kustfs.MakeFsInMemory(),
 		MockRemoveAll: func() error {
 			return nil

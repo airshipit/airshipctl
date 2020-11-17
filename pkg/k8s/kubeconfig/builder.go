@@ -19,8 +19,8 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/errors"
+	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/util"
 )
 
@@ -77,8 +77,8 @@ func (b *Builder) WithTempRoot(root string) *Builder {
 func (b *Builder) Build() Interface {
 	switch {
 	case b.path != "":
-		fs := document.NewDocumentFs()
-		return NewKubeConfig(FromFile(b.path, fs), InjectFilePath(b.path, fs), InjectTempRoot(b.root))
+		fSys := fs.NewDocumentFs()
+		return NewKubeConfig(FromFile(b.path, fSys), InjectFilePath(b.path, fSys), InjectTempRoot(b.root))
 	case b.fromParent():
 		// TODO add method that would get kubeconfig from parent cluster and glue it together
 		// with parent kubeconfig if needed
@@ -88,10 +88,10 @@ func (b *Builder) Build() Interface {
 	case b.bundlePath != "":
 		return NewKubeConfig(FromBundle(b.bundlePath), InjectTempRoot(b.root))
 	default:
-		fs := document.NewDocumentFs()
+		fSys := fs.NewDocumentFs()
 		// return default path to kubeconfig file in airship workdir
 		path := filepath.Join(util.UserHomeDir(), config.AirshipConfigDir, KubeconfigDefaultFileName)
-		return NewKubeConfig(FromFile(path, fs), InjectFilePath(path, fs), InjectTempRoot(b.root))
+		return NewKubeConfig(FromFile(path, fSys), InjectFilePath(path, fSys), InjectTempRoot(b.root))
 	}
 }
 

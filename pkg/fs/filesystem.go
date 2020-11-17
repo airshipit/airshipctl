@@ -12,35 +12,35 @@
  limitations under the License.
 */
 
-package document
+package fs
 
 import (
 	"io/ioutil"
 
-	fs "sigs.k8s.io/kustomize/api/filesys"
+	kustfs "sigs.k8s.io/kustomize/api/filesys"
 )
 
 // File extends kustomize File and provide abstraction to creating temporary files
 type File interface {
-	fs.File
+	kustfs.File
 	Name() string
 }
 
 // FileSystem extends kustomize FileSystem and provide abstraction to creating temporary files
 type FileSystem interface {
-	fs.FileSystem
+	kustfs.FileSystem
 	TempFile(string, string) (File, error)
 	TempDir(string, string) (string, error)
 }
 
 // Fs is adaptor to TempFile
 type Fs struct {
-	fs.FileSystem
+	kustfs.FileSystem
 }
 
 // NewDocumentFs returns an instance of Fs
 func NewDocumentFs() FileSystem {
-	return &Fs{FileSystem: fs.MakeFsOnDisk()}
+	return &Fs{FileSystem: kustfs.MakeFsOnDisk()}
 }
 
 // TempFile creates file in temporary filesystem, at default os.TempDir

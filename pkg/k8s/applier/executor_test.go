@@ -26,12 +26,13 @@ import (
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
+	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/k8s/applier"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
-	"opendev.org/airship/airshipctl/testutil/fs"
+	testfs "opendev.org/airship/airshipctl/testutil/fs"
 )
 
 const (
@@ -279,9 +280,9 @@ func testKubeconfig(stringData string) kubeconfig.Interface {
 	return kubeconfig.NewKubeConfig(
 		kubeconfig.FromByte([]byte(stringData)),
 		kubeconfig.InjectFileSystem(
-			fs.MockFileSystem{
-				MockTempFile: func(root, pattern string) (document.File, error) {
-					return fs.TestFile{
+			testfs.MockFileSystem{
+				MockTempFile: func(root, pattern string) (fs.File, error) {
+					return testfs.TestFile{
 						MockName:  func() string { return "kubeconfig-142398" },
 						MockWrite: func() (int, error) { return 0, nil },
 						MockClose: func() error { return nil },

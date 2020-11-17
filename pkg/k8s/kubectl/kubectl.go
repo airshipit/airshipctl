@@ -22,6 +22,7 @@ import (
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 
 	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/log"
 	utilyaml "opendev.org/airship/airshipctl/pkg/util/yaml"
 )
@@ -31,7 +32,7 @@ import (
 type Kubectl struct {
 	cmdutil.Factory
 	genericclioptions.IOStreams
-	document.FileSystem
+	fs.FileSystem
 	// Directory to buffer documents before passing them to kubectl commands
 	// default is empty, this means that /tmp dir will be used
 	bufferDir string
@@ -47,7 +48,7 @@ func NewKubectl(f cmdutil.Factory) *Kubectl {
 			Out:    os.Stdout,
 			ErrOut: os.Stderr,
 		},
-		FileSystem: document.NewDocumentFs(),
+		FileSystem: fs.NewDocumentFs(),
 	}
 }
 
@@ -77,7 +78,7 @@ func (kubectl *Kubectl) ApplyYaml(yaml []byte, ao *ApplyOptions) error {
 		return err
 	}
 
-	defer func(f document.File) {
+	defer func(f fs.File) {
 		fName := f.Name()
 		dErr := kubectl.RemoveAll(fName)
 		if dErr != nil {
