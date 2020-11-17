@@ -115,6 +115,7 @@ func (p *phase) Executor() (ifc.Executor, error) {
 
 // Run runs the phase via executor
 func (p *phase) Run(ro ifc.RunOptions) error {
+	defer p.processor.Close()
 	executor, err := p.Executor()
 	if err != nil {
 		return err
