@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: target-cluster-cloud-config
+  namespace: default
+data:
+  cacert: Cg==
+  clouds.yaml: Y2xvdWRzOgogIGRldnN0YWNrOgogICAgYXV0aDoKICAgICAgYXV0aF91cmw6IGh0dHA6Ly8xMC4wLjAuNC9pZGVudGl0eQogICAgICBwYXNzd29yZDogcGFzcwogICAgICBwcm9qZWN0X2RvbWFpbl9pZDogZGVmYXVsdAogICAgICBwcm9qZWN0X25hbWU6IGRlbW8KICAgICAgdXNlcl9kb21haW5faWQ6IGRlZmF1bHQKICAgICAgdXNlcm5hbWU6IGRlbW8KICAgIGlkZW50aXR5X2FwaV92ZXJzaW9uOiAnMycKICAgIHJlZ2lvbl9uYW1lOiBSZWdpb25PbmUKICAgIHZvbHVtZV9hcGlfdmVyc2lvbjogJzMnCg==
