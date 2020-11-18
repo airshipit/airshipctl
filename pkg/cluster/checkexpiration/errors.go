@@ -24,3 +24,13 @@ type ErrInvalidFormat struct {
 func (e ErrInvalidFormat) Error() string {
 	return fmt.Sprintf("invalid output format specified %s. Allowed values are json|yaml", e.RequestedFormat)
 }
+
+// ErrPEMFail is called where there is a PEM related failure while parsing the certificate block
+type ErrPEMFail struct {
+	Context string
+	Err     string
+}
+
+func (e ErrPEMFail) Error() string {
+	return fmt.Sprintf("failed to %s certificate PEM: %s", e.Context, e.Err)
+}

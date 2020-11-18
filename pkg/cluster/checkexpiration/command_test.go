@@ -16,11 +16,15 @@ package checkexpiration_test
 
 import (
 	"bytes"
+	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/yaml"
+	"k8s.io/kubectl/pkg/scheme"
 
 	"opendev.org/airship/airshipctl/pkg/cluster/checkexpiration"
 	"opendev.org/airship/airshipctl/pkg/config"
@@ -30,7 +34,28 @@ import (
 )
 
 const (
-	testNotImplementedErr = "not implemented: check certificate expiration logic"
+	testThreshold = 5000
+
+	expectedJSONOutput = `[
+			{
+				"name": "test-cluster-etcd",
+				"namespace": "default",
+				"certificate": {
+					"ca.crt": "2030-08-31 10:12:49 +0000 UTC",
+					"tls.crt": "2030-08-31 10:12:49 +0000 UTC"
+				}
+			}
+		]`
+
+	expectedYAMLOutput = `
+---
+- certificate:
+    ca.crt: 2030-08-31 10:12:49 +0000 UTC
+    tls.crt: 2030-08-31 10:12:49 +0000 UTC
+  name: test-cluster-etcd
+  namespace: default
+...
+`
 )
 
 func TestRunE(t *testing.T) {
@@ -59,11 +84,12 @@ func TestRunE(t *testing.T) {
 				return cfg, nil
 			},
 			checkFlags: checkexpiration.CheckFlags{
-				Threshold:  5000,
+				Threshold:  testThreshold,
 				FormatType: "json",
 				Kubeconfig: "",
 			},
-			testErr: testNotImplementedErr,
+			testErr:        "",
+			expectedOutput: expectedJSONOutput,
 		},
 		{
 			testCaseName: "valid-input-format-yaml",
@@ -72,17 +98,17 @@ func TestRunE(t *testing.T) {
 				return cfg, nil
 			},
 			checkFlags: checkexpiration.CheckFlags{
-				Threshold:  5000,
+				Threshold:  testThreshold,
 				FormatType: "yaml",
 			},
-			testErr: testNotImplementedErr,
+			testErr:        "",
+			expectedOutput: expectedYAMLOutput,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.testCaseName, func(t *testing.T) {
-			var objects []runtime.Object
-			// TODO (guhan) append a dummy object for testing
+			objects := []runtime.Object{getTLSSecret(t)}
 			ra := fake.WithTypedObjects(objects...)
 
 			command := checkexpiration.CheckCommand{
@@ -99,8 +125,38 @@ func TestRunE(t *testing.T) {
 			if tt.testErr != "" {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), tt.testErr)
+			} else {
+				require.NoError(t, err)
+				switch tt.checkFlags.FormatType {
+				case "json":
+					assert.JSONEq(t, tt.expectedOutput, buffer.String())
+				case "yaml":
+					assert.YAMLEq(t, tt.expectedOutput, buffer.String())
+				}
 			}
-			// TODO (guhan) add else part to check the actual vs expected o/p
 		})
 	}
+}
+
+func getTLSSecret(t *testing.T) *v1.Secret {
+	t.Helper()
+	object := readObjectFromFile(t, "testdata/tls-secret.yaml")
+	secret, ok := object.(*v1.Secret)
+	require.True(t, ok)
+	return secret
+}
+
+func readObjectFromFile(t *testing.T, fileName string) runtime.Object {
+	t.Helper()
+
+	contents, err := ioutil.ReadFile(fileName)
+	require.NoError(t, err)
+
+	jsonContents, err := yaml.ToJSON(contents)
+	require.NoError(t, err)
+
+	object, err := runtime.Decode(scheme.Codecs.UniversalDeserializer(), jsonContents)
+	require.NoError(t, err)
+
+	return object
 }

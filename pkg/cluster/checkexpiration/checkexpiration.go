@@ -15,23 +15,29 @@
 package checkexpiration
 
 import (
+	"crypto/x509"
+	"encoding/pem"
+	"fmt"
+	"log"
+	"time"
+
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/k8s/client"
 )
 
 // CertificateExpirationStore is the customized client store
 type CertificateExpirationStore struct {
-	Kclient  client.Interface
-	Settings config.Factory
+	Kclient             client.Interface
+	Settings            config.Factory
+	ExpirationThreshold int
 }
-
-// Expiration captures expiration information of all expirable entities in the cluster
-type Expiration struct{}
 
 // NewStore returns an instance of a CertificateExpirationStore
 func NewStore(cfgFactory config.Factory, clientFactory client.Factory,
-	kubeconfig string, _ string) (CertificateExpirationStore, error) {
+	kubeconfig, _ string, expirationThreshold int) (CertificateExpirationStore, error) {
 	airshipconfig, err := cfgFactory()
 	if err != nil {
 		return CertificateExpirationStore{}, err
@@ -47,14 +53,80 @@ func NewStore(cfgFactory config.Factory, clientFactory client.Factory,
 	}
 
 	return CertificateExpirationStore{
-		Kclient:  kclient,
-		Settings: cfgFactory,
+		Kclient:             kclient,
+		Settings:            cfgFactory,
+		ExpirationThreshold: expirationThreshold,
 	}, nil
 }
 
-// GetExpiringCertificates checks for the expiration data
-// NOT IMPLEMENTED (guhan)
-// TODO (guhan) check for TLS certificates, workload kubeconfig and node certificates
-func (store CertificateExpirationStore) GetExpiringCertificates(expirationThreshold int) (Expiration, error) {
-	return Expiration{}, errors.ErrNotImplemented{What: "check certificate expiration logic"}
+// GetExpiringTLSCertificates returns the list of TLS certificates whose expiration date
+// falls within the given expirationThreshold
+func (store CertificateExpirationStore) GetExpiringTLSCertificates() ([]TLSSecret, error) {
+	secrets, err := store.getAllTLSCertificates()
+	if err != nil {
+		return nil, err
+	}
+
+	tlsData := make([]TLSSecret, 0)
+	for _, secret := range secrets.Items {
+		expiringCertificates := store.getExpiringCertificates(secret)
+		if len(expiringCertificates) > 0 {
+			tlsData = append(tlsData, TLSSecret{
+				Name:                 secret.Name,
+				Namespace:            secret.Namespace,
+				ExpiringCertificates: expiringCertificates,
+			})
+		}
+	}
+	return tlsData, nil
+}
+
+// getAllTLSCertificates juist returns all the k8s secrets with tyoe as TLS
+func (store CertificateExpirationStore) getAllTLSCertificates() (*corev1.SecretList, error) {
+	secretTypeFieldSelector := fmt.Sprintf("type=%s", corev1.SecretTypeTLS)
+	listOptions := metav1.ListOptions{FieldSelector: secretTypeFieldSelector}
+	return store.Kclient.ClientSet().CoreV1().Secrets("").List(listOptions)
+}
+
+// getExpiringCertificates skims through all the TLS certificates and returns the ones
+// lesser than threshold
+func (store CertificateExpirationStore) getExpiringCertificates(secret corev1.Secret) map[string]string {
+	expiringCertificates := map[string]string{}
+	for _, certName := range []string{corev1.TLSCertKey, corev1.ServiceAccountRootCAKey} {
+		if cert, found := secret.Data[certName]; found {
+			expirationDate, err := extractExpirationDateFromCertificate(cert)
+			if err != nil {
+				log.Printf("Unable to parse certificate for %s in secret %s in namespace %s: %v",
+					certName, secret.Name, secret.Namespace, err)
+				continue
+			}
+
+			if isWithinDuration(expirationDate, store.ExpirationThreshold) {
+				expiringCertificates[certName] = expirationDate.String()
+			}
+		}
+	}
+	return expiringCertificates
+}
+
+// isWithinDuration checks if the certificate expirationDate is within the duration (input)
+func isWithinDuration(expirationDate time.Time, duration int) bool {
+	if duration < 0 {
+		return true
+	}
+	daysUntilExpiration := int(time.Until(expirationDate).Hours() / 24)
+	return 0 <= daysUntilExpiration && daysUntilExpiration < duration
+}
+
+// extractExpirationDateFromCertificate parses the certificate and returns the expiration date
+func extractExpirationDateFromCertificate(certData []byte) (time.Time, error) {
+	block, _ := pem.Decode(certData)
+	if block == nil {
+		return time.Time{}, ErrPEMFail{Context: "decode", Err: "no PEM data could be found"}
+	}
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return time.Time{}, ErrPEMFail{Context: "parse", Err: err.Error()}
+	}
+	return cert.NotAfter, nil
 }
