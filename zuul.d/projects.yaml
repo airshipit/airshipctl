@@ -13,6 +13,12 @@
 - project:
     vars:
       sphinx_build_dir: docs/build
+      proxy:
+        enabled: false
+        http: ""
+        https: ""
+        noproxy: ""
+      image_repo: https://quay.io/api/v1/
     check:
       jobs:
         - openstack-tox-docs: &docs

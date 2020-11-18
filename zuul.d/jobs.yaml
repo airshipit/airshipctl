@@ -198,4 +198,3 @@
         pass-to-parent: true
     vars:
       image: quay.io/airshipit/airshipctl
-      image_repo: https://quay.io/api/v1/
