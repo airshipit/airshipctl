@@ -15,6 +15,7 @@
 package encryptionkey_test
 
 import (
+	"fmt"
 	"testing"
 
 	"opendev.org/airship/airshipctl/cmd/secret/generate/encryptionkey"
@@ -26,6 +27,12 @@ func TestGenerateEncryptionKey(t *testing.T) {
 		{
 			Name:    "generate-encryptionkey-cmd-with-help",
 			CmdLine: "--help",
+			Cmd:     encryptionkey.NewGenerateEncryptionKeyCommand(),
+		},
+		{
+			Name:    "generate-encryptionkey-cmd-error",
+			CmdLine: "--limit 10",
+			Error:   fmt.Errorf("Required Regex flag with limit option"),
 			Cmd:     encryptionkey.NewGenerateEncryptionKeyCommand(),
 		},
 	}
