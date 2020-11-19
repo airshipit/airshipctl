@@ -27,6 +27,7 @@ import (
 // EventProcessor use to process event channels produced by executors
 type EventProcessor interface {
 	Process(<-chan Event) error
+	Close()
 }
 
 // DefaultProcessor is implementation of EventProcessor
@@ -70,6 +71,11 @@ func (p *DefaultProcessor) Process(ch <-chan Event) error {
 		}
 	}
 	return checkErrors(p.errors)
+}
+
+// Close cleans up the auxiliary channels used to process events
+func (p *DefaultProcessor) Close() {
+	close(p.applierChan)
 }
 
 func (p *DefaultProcessor) processApplierEvent(e applyevent.Event) {

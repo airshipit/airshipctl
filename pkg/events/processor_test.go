@@ -28,6 +28,7 @@ import (
 
 func TestDefaultProcessor(t *testing.T) {
 	proc := events.NewDefaultProcessor(utils.Streams())
+	defer proc.Close()
 	tests := []struct {
 		name      string
 		events    []events.Event
