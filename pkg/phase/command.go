@@ -274,3 +274,35 @@ func (c *ClusterListCommand) RunE() error {
 	}
 	return nil
 }
+
+// ValidateFlags options for phase validate command
+type ValidateFlags struct {
+	PhaseID ifc.ID
+}
+
+// ValidateCommand phase validate command
+type ValidateCommand struct {
+	Options ValidateFlags
+	Factory config.Factory
+}
+
+// RunE runs the phase validate command
+func (c *ValidateCommand) RunE() error {
+	cfg, err := c.Factory()
+	if err != nil {
+		return err
+	}
+
+	helper, err := NewHelper(cfg)
+	if err != nil {
+		return err
+	}
+
+	client := NewClient(helper)
+
+	phase, err := client.PhaseByID(c.Options.PhaseID)
+	if err != nil {
+		return err
+	}
+	return phase.Validate()
+}

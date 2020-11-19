@@ -437,3 +437,99 @@ func TestClusterListCommand_RunE(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateCommand(t *testing.T) {
+	tests := []struct {
+		name        string
+		errContains string
+		flags       phase.ValidateFlags
+		factory     config.Factory
+	}{
+		{
+			name: "Error config factory",
+			factory: func() (*config.Config, error) {
+				return nil, fmt.Errorf(testFactoryErr)
+			},
+			errContains: testFactoryErr,
+		},
+		{
+			name: "Error new helper",
+			factory: func() (*config.Config, error) {
+				return &config.Config{
+					CurrentContext: "does not exist",
+					Contexts:       make(map[string]*config.Context),
+				}, nil
+			},
+			errContains: testNewHelperErr,
+		},
+		{
+			name: "Error phase by id",
+			factory: func() (*config.Config, error) {
+				conf := config.NewConfig()
+				conf.Manifests = map[string]*config.Manifest{
+					"manifest": {
+						MetadataPath:        "broken_metadata.yaml",
+						TargetPath:          "testdata",
+						PhaseRepositoryName: config.DefaultTestPhaseRepo,
+						Repositories: map[string]*config.Repository{
+							config.DefaultTestPhaseRepo: {
+								URLString: "",
+							},
+						},
+					},
+				}
+				conf.CurrentContext = defaultCurrentContext
+				conf.Contexts = map[string]*config.Context{
+					"context": {
+						Manifest: "manifest",
+					},
+				}
+				return conf, nil
+			},
+			errContains: testNoBundlePath,
+		},
+		{
+			name: "success",
+			// flags: phase.ValidateFlags{PhaseID: }
+			factory: func() (*config.Config, error) {
+				conf := config.NewConfig()
+				conf.Manifests = map[string]*config.Manifest{
+					"manifest": {
+						MetadataPath:        "metadata.yaml",
+						TargetPath:          "testdata",
+						PhaseRepositoryName: config.DefaultTestPhaseRepo,
+						Repositories: map[string]*config.Repository{
+							config.DefaultTestPhaseRepo: {
+								URLString: "",
+							},
+						},
+					},
+				}
+				conf.CurrentContext = defaultCurrentContext
+				conf.Contexts = map[string]*config.Context{
+					"context": {
+						Manifest: "manifest",
+					},
+				}
+				return conf, nil
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			command := phase.ValidateCommand{
+				Options: tt.flags,
+				Factory: tt.factory,
+			}
+			err := command.RunE()
+			if tt.errContains != "" {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errContains)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
