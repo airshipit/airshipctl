@@ -6,6 +6,7 @@ Usage:
 
 Available Commands:
   check-certificate-expiration Check for expiring TLS certificates, secrets and kubeconfigs in the kubernetes cluster
+  get-kubeconfig               Retrieve kubeconfig for a desired cluster
   help                         Help about any command
   init                         Deploy cluster-api provider components
   move                         Move Cluster API objects, provider specific objects and all dependencies to the target cluster
