@@ -1,0 +1,4 @@
+[
+    { "op": "replace","path": "/spec/template/spec/location","value": "centralus" },
+    { "op": "replace","path": "/spec/template/spec/vmSize","value": "Standard_D2s_v3" }
+]
