@@ -1,10 +1,10 @@
 apiVersion: cluster.x-k8s.io/v1alpha3
 kind: MachineDeployment
 metadata:
-  name: az-workload-cluster-md-0
+  name: target-cluster-md-0
   namespace: default
 spec:
-  clusterName: az-workload-cluster
+  clusterName: target-cluster
   replicas: 3
   selector:
     matchLabels: null
@@ -14,18 +14,18 @@ spec:
         configRef:
           apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
           kind: KubeadmConfigTemplate
-          name: az-workload-cluster-md-0
-      clusterName: az-workload-cluster
+          name: target-cluster-md-0
+      clusterName: target-cluster
       infrastructureRef:
         apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
         kind: AzureMachineTemplate
-        name: az-workload-cluster-md-0
-      version: v1.18.2
+        name: target-cluster-md-0
+      version: v1.18.6
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
 kind: AzureMachineTemplate
 metadata:
-  name: az-workload-cluster-md-0
+  name: target-cluster-md-0
   namespace: default
 spec:
   template:
@@ -42,7 +42,7 @@ spec:
 apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
 kind: KubeadmConfigTemplate
 metadata:
-  name: az-workload-cluster-md-0
+  name: target-cluster-md-0
   namespace: default
 spec:
   template:
@@ -51,7 +51,7 @@ spec:
       - contentFrom:
           secret:
             key: azure.json
-            name: az-workload-cluster-md-0-azure-json
+            name: target-cluster-md-0-azure-json
         owner: root:root
         path: /etc/kubernetes/azure.json
         permissions: "0644"
