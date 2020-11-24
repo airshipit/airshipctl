@@ -3,9 +3,10 @@
 ## Table of Contents
 
 * [Compile-In Plugins](#compile-in-plugins)
-* [Fine Tuning a Build](#fine-tuning-a-build)
-  * [Command Selection](#command-selection)
-  * [Accessing `airshipctl` settings](#accessing-airshipctl-settings)
+  * [Fine Tuning a Build](#fine-tuning-a-build)
+    * [Command Selection](#command-selection)
+    * [Accessing `airshipctl` options](#accessing-airshipctl-options)
+* [Container Plugins](#container-plugins)
 
 Our requirements for `airshipctl` contain two very conflicting concepts. One,
 we'd like to assert that `airshipctl` is a statically linked executable, such
@@ -34,10 +35,7 @@ import (
 )
 
 func main() {
-	rootCmd, _, err := cmd.NewRootCmd(os.Stdout)
-	if err != nil {
-		panic(err)
-	}
+	rootCmd, _ := cmd.NewRootCommand(os.Stdout)
 	rootCmd.Execute()
 }
 ```
@@ -46,30 +44,7 @@ Compiling and running the above gives the following output:
 
 ```
 $ ./airshipctl
-airshipctl is a unified entrypoint to various airship components
-
-Usage:
-  airshipctl [command]
-
-Available Commands:
-  bootstrap   Bootstrap ephemeral Kubernetes cluster
-  completion  Generate autocompletions script for the specified shell (bash or zsh)
-  config      Modify airshipctl config files
-  document    manages deployment documents
-  help        Help about any command
-  kubectl     kubectl controls the Kubernetes cluster manager
-  version     Show the version number of airshipctl
-
-Flags:
-      --airshipconf string   Path to file for airshipctl configuration. (default "$HOME/.airship/config")
-      --debug                enable verbose output
-  -h, --help                 help for airshipctl
-      --kubeconfig string    Path to kubeconfig associated with airshipctl configuration. (default "$HOME/.airship/kubeconfig")
-
-Additional help topics:
-  airshipctl cluster    Control Kubernetes cluster
-
-Use "airshipctl [command] --help" for more information about a command.
+A unified entrypoint to various airship components
 ```
 
 Every other command is treated as a plugin. Changing `main` to the following
@@ -77,31 +52,43 @@ adds the default commands, or "plugins", to the `airshipctl` tool:
 
 ```go
 func main() {
-	rootCmd, settings, err := cmd.NewRootCmd(os.Stdout)
-	if err != nil {
-		panic(err)
-	}
-	cmd.AddDefaultAirshipCTLCommands(rootCmd, settings)
+	rootCmd, settings := cmd.NewRootCommand(os.Stdout)
+	cmd.AddDefaultAirshipCTLCommands(rootCmd, cfg.CreateFactory(&settings.AirshipConfigPath))
 	rootCmd.Execute()
 }
 ```
 
-Compiling and running now provides the following commands:
+Compiling and running now provides the following output:
 
 ```
+$ ./airshipctl
+A unified entrypoint to various airship components
+
+Usage:
+  airshipctl [command]
+
 Available Commands:
-  bootstrap   Bootstrap ephemeral Kubernetes cluster
-  completion  Generate autocompletions script for the specified shell (bash or zsh)
-  config      Modify airshipctl config files
-  document    manages deployment documents
+  baremetal   Perform actions on baremetal hosts
+  cluster     Manage Kubernetes clusters
+  completion  Generate completion script for the specified shell (bash or zsh)
+  config      Manage the airshipctl config file
+  document    Manage deployment documents
   help        Help about any command
-  kubectl     kubectl controls the Kubernetes cluster manager
+  image       Manage ISO image creation
+  phase       Manage phases
+  secret      Manage secrets
   version     Show the version number of airshipctl
-  ------ more commands TBD ------
+
+Flags:
+      --airshipconf string   Path to file for airshipctl configuration. (default "$HOME/.airship/config")
+      --debug                enable verbose output
+  -h, --help                 help for airshipctl
+
+Use "airshipctl [command] --help" for more information about a command.
 ```
 
 Downloading and building the main `airshipctl` project will default to
-providing the builtin commands (such as `bootstrap`), much like the above. A
+providing the builtin commands (such as `phase`), much like the above. A
 plugin author wishing to use `airshipctl` can then use the `rootCmd` as the
 first of a series of building blocks. The following demonstrates the addition
 of a new command, `hello`:
@@ -114,15 +101,12 @@ import (
 	"os"
 	"opendev.org/airship/airshipctl/cmd"
 	"github.com/spf13/cobra"
+	cfg "opendev.org/airship/airshipctl/pkg/config"
 )
 
 func main() {
-	rootCmd, settings, err := cmd.NewRootCmd(os.Stdout)
-	if err != nil {
-		panic(err)
-	}
-
-	cmd.AddDefaultAirshipCTLCommands(rootCmd, settings)
+	rootCmd, settings := cmd.NewRootCommand(os.Stdout)
+	cmd.AddDefaultAirshipCTLCommands(rootCmd, cfg.CreateFactory(&settings.AirshipConfigPath))
 
 	helloCmd := &cobra.Command{
 		Use: "hello",
@@ -137,14 +121,14 @@ func main() {
 }
 ```
 
-## Fine Tuning a Build
+### Fine Tuning a Build
 
 There are a couple of ways in which a plugin author can fine tune their version
 of `airshipctl`. These manifest as an ability to pick and choose various
 plugins (including the defaults), and capabilities for accessing the same
 settings as other `airshipctl` commands.
 
-### Command Selection
+#### Command Selection
 
 In the previous section, we introduced the `AddDefaultAirshipCTLCommands`
 function. That command will simply dump all of the builtin commands onto the
@@ -158,31 +142,29 @@ package main
 import (
 	"os"
 	"opendev.org/airship/airshipctl/cmd"
-	"opendev.org/airship/airshipctl/cmd/bootstrap"
+	"opendev.org/airship/airshipctl/cmd/phase"
+	cfg "opendev.org/airship/airshipctl/pkg/config"
 )
 
 func main() {
-	rootCmd, settings, err := cmd.NewRootCmd(os.Stdout)
-	if err != nil {
-		panic(err)
-	}
-	rootCmd.AddCommand(bootstrap.NewBootstrapCommand(settings))
+	rootCmd, settings := cmd.NewRootCommand(os.Stdout)
+	rootCmd.AddCommand(phase.NewPhaseCommand(cfg.CreateFactory(&settings.AirshipConfigPath)))
 	rootCmd.Execute()
 }
 ```
 
-This variant of `airshipctl` will have the `bootstrap` command, but will not
+This variant of `airshipctl` will have the `phase` command, but will not
 have any other builtins.
 
 This can be particularly useful if a plugin author desires to "override" a
 specific functionality provided by a builtin command. For example, you might
-write your own `bootstrap` command and use it in place of the builtin.
+write your own `phase` command and use it in place of the builtin.
 
-### Accessing `airshipctl` settings
+#### Accessing `airshipctl` options
 
-The `airshipctl` will contain several settings which may be useful to a plugin
-author. The following snippet demonstrates how to use the `debug` flag,
-provided by `airshipctl`, as well as a custom `alt-message` flag, provided by
+A plugin author can define plugin options and/or use root command options.
+The following snippet demonstrates how to use the `debug` flag,
+provided by root command options, as well as a custom `alt-message` flag, provided by
 the plugin.
 
 ```go
@@ -190,45 +172,74 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"opendev.org/airship/airshipctl/cmd"
-	"opendev.org/airship/airshipctl/pkg/environment"
 	"github.com/spf13/cobra"
+	"opendev.org/airship/airshipctl/cmd"
+	"os"
 )
 
-type Settings struct {
-	*environment.AirshipCTLSettings
-
+type Options struct {
+	*cmd.RootOptions
 	AltMessage bool
 }
 
 func main() {
-	rootCmd, rootSettings, err := cmd.NewRootCmd(os.Stdout)
-	if err != nil {
-		panic(err)
-	}
-
-	settings := Settings{AirshipCTLSettings: rootSettings}
+	rootCmd, rootOptions := cmd.NewRootCommand(os.Stdout)
+	options := &Options{RootOptions: rootOptions}
 	helloCmd := &cobra.Command{
 		Use:   "hello",
 		Short: "Prints a friendly message to the screen",
 		Run: func(cmd *cobra.Command, args []string) {
-			if settings.Debug {
-				fmt.Println("DEBUG: a debugging message")
+			if options.Debug {
+				fmt.Println("Debug message")
 			}
-			if settings.AltMessage {
-				fmt.Println("Goodbye World!")
-			} else {
+			if !options.AltMessage {
 				fmt.Println("Hello World!")
+			} else {
+				fmt.Println("Goodbye World!")
 			}
 		},
 	}
-	helloCmd.PersistentFlags().BoolVar(&settings.AltMessage, "alt-message", false, "display an alternate message")
-	rootCmd.AddCommand(helloCmd)
 
+	helloCmd.PersistentFlags().BoolVar(&options.AltMessage, "alt-message", false, "display an alternate message")
+	rootCmd.AddCommand(helloCmd)
 	rootCmd.Execute()
 }
 ```
 
-The `AirshipCTLSettings` object can be found
-[here](../../pkg/environment/settings.go). Future documentation TBD.
+## Container Plugins
+
+`airshipctl` is mostly focused on managing Kubernetes cluster lifecycle using yaml documents. `airshipctl` uses
+`kustomize` capabilities to deal with bundles of yaml documents. In turn, `kustomize` provides a way to
+generate/transform yaml documents using plugins (functions). We can define a yaml document with the annotation
+as follows
+
+```yaml
+apiVersion: airshipit.org/v1alpha1
+kind: Templater
+metadata:
+  annotations:
+    config.kubernetes.io/function: |
+      container:
+        image: quay.io/airshipit/templater:latest
+values:
+  hosts:
+  - macAddress: 00:aa:bb:cc:dd
+    name: node-1
+  - macAddress: 00:aa:bb:cc:ee
+    name: node-2
+template: |
+  {{ range .hosts -}}
+  ---
+  apiVersion: metal3.io/v1alpha1
+  kind: BareMetalHost
+  metadata:
+    name: {{ .name }}
+  spec:
+    bootMACAddress: {{ .macAddress }}
+  {{ end -}}
+```
+
+`kustomize` looks at the annotation `config.kubernetes.io/function` and runs the container with the image defined in the
+annotation. The container usually accepts a bunch of yaml documents on its stdin and
+outputs a generated/modified bunch of yaml documents on its output. The document in the above example defines the
+configuration for the template plugin. This particular example generates two `BareMetalHost` documents.
