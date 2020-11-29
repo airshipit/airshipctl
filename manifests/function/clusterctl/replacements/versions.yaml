@@ -113,6 +113,27 @@ replacements:
       kind: Clusterctl
       name: clusterctl_init
     fieldrefs: ["{.additional-vars.CONTAINER_CAPO_AUTH_PROXY}"]
+# Replace capg versions
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: versions-airshipctl
+    fieldref: "{.images.capg.manager}"
+  target:
+    objref:
+      kind: Clusterctl
+      name: clusterctl_init
+    fieldrefs: ["{.additional-vars.CONTAINER_CAPG_MANAGER}"]
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: versions-airshipctl
+    fieldref: "{.images.capg.auth_proxy}"
+  target:
+    objref:
+      kind: Clusterctl
+      name: clusterctl_init
+    fieldrefs: ["{.additional-vars.CONTAINER_CAPG_AUTH_PROXY}"]
 # Replace capi versions
 - source:
     objref:

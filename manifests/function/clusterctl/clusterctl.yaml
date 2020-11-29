@@ -73,3 +73,5 @@ additional-vars:
   CONTAINER_CAPD_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.0
   CONTAINER_CAPO_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
   CONTAINER_CAPZ_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
+  CONTAINER_CAPG_MANAGER: gcr.io/k8s-staging-cluster-api-gcp/cluster-api-gcp-controller:master
+  CONTAINER_CAPG_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1

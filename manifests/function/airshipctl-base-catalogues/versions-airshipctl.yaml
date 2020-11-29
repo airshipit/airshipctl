@@ -49,6 +49,9 @@ images:
   capo:
     manager: gcr.io/k8s-staging-capi-openstack/capi-openstack-controller-amd64:v20200707-v0.3.1
     auth_proxy: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
+  capg:
+    manager: gcr.io/k8s-staging-cluster-api-gcp/cluster-api-gcp-controller:master
+    auth_proxy: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
   capi:
     manager:
       repository: us.gcr.io/k8s-artifacts-prod/cluster-api

@@ -14,5 +14,10 @@
             "v0.3.0": "airshipctl/manifests/function/capg/v0.3.0"
         }
     }
+ },
+{
+    "op": "replace",
+    "path": "/env-vars",
+    "value": true
  }
 ]
