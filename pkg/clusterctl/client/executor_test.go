@@ -33,10 +33,11 @@ import (
 	"opendev.org/airship/airshipctl/pkg/document"
 	airerrors "opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
+	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
-	"opendev.org/airship/airshipctl/testutil/fs"
+	testfs "opendev.org/airship/airshipctl/testutil/fs"
 )
 
 var (
@@ -103,7 +104,7 @@ func TestExecutorRun(t *testing.T) {
 	testCases := []struct {
 		name        string
 		cfgDoc      document.Document
-		fs          document.FileSystem
+		fs          fs.FileSystem
 		bundlePath  string
 		expectedEvt []events.Event
 		clusterMap  clustermap.ClusterMap
@@ -120,8 +121,8 @@ func TestExecutorRun(t *testing.T) {
 		{
 			name:   "Error temporary file",
 			cfgDoc: executorDoc(t, "init"),
-			fs: fs.MockFileSystem{
-				MockTempFile: func(string, string) (document.File, error) {
+			fs: testfs.MockFileSystem{
+				MockTempFile: func(string, string) (fs.File, error) {
 					return nil, errTmpFile
 				},
 			},
@@ -137,9 +138,9 @@ func TestExecutorRun(t *testing.T) {
 		{
 			name:   "Regular Run init",
 			cfgDoc: executorDoc(t, "init"),
-			fs: fs.MockFileSystem{
-				MockTempFile: func(string, string) (document.File, error) {
-					return fs.TestFile{
+			fs: testfs.MockFileSystem{
+				MockTempFile: func(string, string) (fs.File, error) {
+					return testfs.TestFile{
 						MockName:  func() string { return "filename" },
 						MockWrite: func() (int, error) { return 0, nil },
 						MockClose: func() error { return nil },

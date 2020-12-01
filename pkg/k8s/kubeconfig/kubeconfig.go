@@ -22,6 +22,7 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/fs"
 )
 
 // Interface provides a uniform way to interact with kubeconfig file
@@ -44,7 +45,7 @@ type kubeConfig struct {
 	path     string
 	dumpRoot string
 
-	fileSystem document.FileSystem
+	fileSystem fs.FileSystem
 	sourceFunc KubeSourceFunc
 }
 
@@ -60,7 +61,7 @@ func NewKubeConfig(source KubeSourceFunc, options ...Option) Interface {
 	}
 	kf.sourceFunc = source
 	if kf.fileSystem == nil {
-		kf.fileSystem = document.NewDocumentFs()
+		kf.fileSystem = fs.NewDocumentFs()
 	}
 	return kf
 }
@@ -96,9 +97,9 @@ func FromSecret(kubeOpts *FromClusterOptions) KubeSourceFunc {
 }
 
 // FromFile returns KubeSource type, uses path to kubeconfig on FS as source to construct kubeconfig object
-func FromFile(path string, fs document.FileSystem) KubeSourceFunc {
+func FromFile(path string, fSys fs.FileSystem) KubeSourceFunc {
 	return func() ([]byte, error) {
-		return fs.ReadFile(path)
+		return fSys.ReadFile(path)
 	}
 }
 
@@ -130,9 +131,9 @@ func FromBundle(root string) KubeSourceFunc {
 }
 
 // InjectFileSystem sets fileSystem to be used, mostly to be used for tests
-func InjectFileSystem(fs document.FileSystem) Option {
+func InjectFileSystem(fSys fs.FileSystem) Option {
 	return func(k *kubeConfig) {
-		k.fileSystem = fs
+		k.fileSystem = fSys
 	}
 }
 
@@ -146,10 +147,10 @@ func InjectTempRoot(dumpRoot string) Option {
 // InjectFilePath enables setting kubeconfig path, useful when you have kubeconfig
 // from the actual filesystem, if this option is used, please also make sure that
 // FromFile option is also used as a first argument in NewKubeConfig function
-func InjectFilePath(path string, fs document.FileSystem) Option {
+func InjectFilePath(path string, fSys fs.FileSystem) Option {
 	return func(k *kubeConfig) {
 		k.path = path
-		k.fileSystem = fs
+		k.fileSystem = fSys
 	}
 }
 
@@ -202,12 +203,12 @@ func (k *kubeConfig) GetFile() (string, Cleanup, error) {
 	return k.WriteTempFile(k.dumpRoot)
 }
 
-func cleanup(path string, fs document.FileSystem) Cleanup {
+func cleanup(path string, fSys fs.FileSystem) Cleanup {
 	if path == "" {
 		return func() {}
 	}
 	return func() {
-		if err := fs.RemoveAll(path); err != nil {
+		if err := fSys.RemoveAll(path); err != nil {
 			log.Fatalf("Failed to cleanup kubeconfig file %s, error: %v", path, err)
 		}
 	}

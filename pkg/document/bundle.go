@@ -24,6 +24,7 @@ import (
 	"sigs.k8s.io/kustomize/api/resource"
 	"sigs.k8s.io/kustomize/api/types"
 
+	"opendev.org/airship/airshipctl/pkg/fs"
 	utilyaml "opendev.org/airship/airshipctl/pkg/util/yaml"
 )
 
@@ -37,14 +38,14 @@ type KustomizeBuildOptions struct {
 type BundleFactory struct {
 	KustomizeBuildOptions
 	resmap.ResMap
-	FileSystem
+	fs.FileSystem
 }
 
 // Bundle interface provides the specification for a bundle implementation
 type Bundle interface {
 	Write(out io.Writer) error
-	SetFileSystem(FileSystem) error
-	GetFileSystem() FileSystem
+	SetFileSystem(fs.FileSystem) error
+	GetFileSystem() fs.FileSystem
 	Select(selector Selector) ([]Document, error)
 	SelectOne(selector Selector) (Document, error)
 	SelectBundle(selector Selector) (Bundle, error)
@@ -64,13 +65,13 @@ type BundleFactoryFunc func() (Bundle, error)
 // NewBundleByPath is a function which builds new document.Bundle from kustomize rootPath using default FS object
 // example: document.NewBundleByPath("path/to/phase-root")
 func NewBundleByPath(rootPath string) (Bundle, error) {
-	return NewBundle(NewDocumentFs(), rootPath)
+	return NewBundle(fs.NewDocumentFs(), rootPath)
 }
 
 // NewBundle is a convenience function to create a new bundle
 // Over time, it will evolve to support allowing more control
 // for kustomize plugins
-func NewBundle(fSys FileSystem, kustomizePath string) (Bundle, error) {
+func NewBundle(fSys fs.FileSystem, kustomizePath string) (Bundle, error) {
 	var options = KustomizeBuildOptions{
 		KustomizationPath: kustomizePath,
 		LoadRestrictions:  types.LoadRestrictionsRootOnly,
@@ -132,13 +133,13 @@ func (b *BundleFactory) SetKustomizeBuildOptions(k KustomizeBuildOptions) error 
 }
 
 // SetFileSystem sets the filesystem that will be used by this bundle
-func (b *BundleFactory) SetFileSystem(fSys FileSystem) error {
+func (b *BundleFactory) SetFileSystem(fSys fs.FileSystem) error {
 	b.FileSystem = fSys
 	return nil
 }
 
 // GetFileSystem gets the filesystem that will be used by this bundle
-func (b *BundleFactory) GetFileSystem() FileSystem {
+func (b *BundleFactory) GetFileSystem() fs.FileSystem {
 	return b.FileSystem
 }
 

@@ -15,27 +15,27 @@
 package fs
 
 import (
-	fs "sigs.k8s.io/kustomize/api/filesys"
+	kustfs "sigs.k8s.io/kustomize/api/filesys"
 
-	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/fs"
 )
 
-var _ document.FileSystem = MockFileSystem{}
+var _ fs.FileSystem = MockFileSystem{}
 
 // MockFileSystem implements Filesystem
 type MockFileSystem struct {
 	MockRemoveAll func() error
 	MockTempDir   func() (string, error)
 	// allow to check content of the incoming parameters, root and patter for temp file
-	MockTempFile func(string, string) (document.File, error)
-	fs.FileSystem
+	MockTempFile func(string, string) (fs.File, error)
+	kustfs.FileSystem
 }
 
 // RemoveAll Filesystem interface implementation
 func (fsys MockFileSystem) RemoveAll(string) error { return fsys.MockRemoveAll() }
 
 // TempFile Filesystem interface implementation
-func (fsys MockFileSystem) TempFile(root, pattern string) (document.File, error) {
+func (fsys MockFileSystem) TempFile(root, pattern string) (fs.File, error) {
 	return fsys.MockTempFile(root, pattern)
 }
 
@@ -46,7 +46,7 @@ func (fsys MockFileSystem) TempDir(string, string) (string, error) {
 
 // TestFile implements file
 type TestFile struct {
-	document.File
+	fs.File
 	MockName  func() string
 	MockWrite func() (int, error)
 	MockClose func() error
