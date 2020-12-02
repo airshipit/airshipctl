@@ -166,7 +166,7 @@ print-docker-image-tag:
 	@echo "$(DOCKER_IMAGE)"
 
 .PHONY: docker-image-test-suite
-docker-image-test-suite: DOCKER_MAKE_TARGET = "cover update-golden check-git-diff"
+docker-image-test-suite: DOCKER_MAKE_TARGET = "cover update-golden generate check-git-diff"
 docker-image-test-suite: DOCKER_TARGET_STAGE = builder
 docker-image-test-suite: docker-image
 
