@@ -12,9 +12,9 @@
 
 ## This task will populate kctl_context_list variable with list of contexts if they exist
 ---
-- name: "Set cluster scoped collectibles"
+- name: "Set default cluster scoped collectibles"
   set_fact:
-    collect_clustered_objects:
+    default_clustered_objects:
       - node
       - clusterrole
       - clusterrolebinding
@@ -23,9 +23,13 @@
       - persistentvolume
       - customresourcedefinition
 
-- name: "Set namespace scoped collectibles"
+- name: "Set cluster scoped collectibles"
   set_fact:
-    collect_namespaced_objects:
+     collect_clustered_objects: "{{ clustered_objects | default(default_clustered_objects) }}"
+
+- name: "Set default namespace scoped collectibles"
+  set_fact:
+    default_namespaced_objects:
       - baremetalhosts
       - clusters
       - configmaps
@@ -57,6 +61,9 @@
       - services
       - statefulsets
 
+- name: "Set namespace scoped collectibles"
+  set_fact:
+     collect_namespaced_objects: "{{ namespaced_objects | default(default_namespaced_objects) }}"
 
 - name: "Get context list"
   include_tasks: get-contexts.yaml
