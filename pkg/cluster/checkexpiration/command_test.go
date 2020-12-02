@@ -36,7 +36,8 @@ import (
 const (
 	testThreshold = 5000
 
-	expectedJSONOutput = `[
+	expectedJSONOutput = ` {
+		"tlsSecrets": [
 			{
 				"name": "test-cluster-etcd",
 				"namespace": "default",
@@ -45,10 +46,43 @@ const (
 					"tls.crt": "2030-08-31 10:12:49 +0000 UTC"
 				}
 			}
-		]`
+		],
+		"kubeconfs": [
+			{
+				"secretName": "test-cluster-kubeconfig",
+				"secretNamespace": "default",
+				"cluster": [
+					{
+						"name": "workload-cluster",
+						"certificateName": "CertificateAuthorityData",
+						"expirationDate": "2030-08-31 10:12:48 +0000 UTC"
+					}
+				],
+				"user": [
+					{
+						"name": "workload-cluster-admin",
+						"certificateName": "ClientCertificateData",
+						"expirationDate": "2021-09-02 10:12:50 +0000 UTC"
+					}
+				]
+			}
+		]
+	}`
 
 	expectedYAMLOutput = `
 ---
+kubeconfs:
+- cluster:
+  - certificateName: CertificateAuthorityData
+    expirationDate: 2030-08-31 10:12:48 +0000 UTC
+    name: workload-cluster
+  secretName: test-cluster-kubeconfig
+  secretNamespace: default
+  user:
+  - certificateName: ClientCertificateData
+    expirationDate: 2021-09-02 10:12:50 +0000 UTC
+    name: workload-cluster-admin
+tlsSecrets:
 - certificate:
     ca.crt: 2030-08-31 10:12:49 +0000 UTC
     tls.crt: 2030-08-31 10:12:49 +0000 UTC
@@ -108,7 +142,10 @@ func TestRunE(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.testCaseName, func(t *testing.T) {
-			objects := []runtime.Object{getTLSSecret(t)}
+			objects := []runtime.Object{
+				getObject(t, "testdata/tls-secret.yaml"),
+				getObject(t, "testdata/kubeconfig.yaml"),
+			}
 			ra := fake.WithTypedObjects(objects...)
 
 			command := checkexpiration.CheckCommand{
@@ -127,6 +164,7 @@ func TestRunE(t *testing.T) {
 				assert.Contains(t, err.Error(), tt.testErr)
 			} else {
 				require.NoError(t, err)
+				t.Log(buffer.String())
 				switch tt.checkFlags.FormatType {
 				case "json":
 					assert.JSONEq(t, tt.expectedOutput, buffer.String())
@@ -138,11 +176,13 @@ func TestRunE(t *testing.T) {
 	}
 }
 
-func getTLSSecret(t *testing.T) *v1.Secret {
+func getObject(t *testing.T, fileName string) *v1.Secret {
 	t.Helper()
-	object := readObjectFromFile(t, "testdata/tls-secret.yaml")
+
+	object := readObjectFromFile(t, fileName)
 	secret, ok := object.(*v1.Secret)
 	require.True(t, ok)
+
 	return secret
 }
 

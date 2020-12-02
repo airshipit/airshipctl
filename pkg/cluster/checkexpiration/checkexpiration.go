@@ -19,13 +19,20 @@ import (
 	"encoding/pem"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/clientcmd"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/k8s/client"
+)
+
+const (
+	kubeconfigIdentifierSuffix = "-kubeconfig"
 )
 
 // CertificateExpirationStore is the customized client store
@@ -85,6 +92,11 @@ func (store CertificateExpirationStore) GetExpiringTLSCertificates() ([]TLSSecre
 func (store CertificateExpirationStore) getAllTLSCertificates() (*corev1.SecretList, error) {
 	secretTypeFieldSelector := fmt.Sprintf("type=%s", corev1.SecretTypeTLS)
 	listOptions := metav1.ListOptions{FieldSelector: secretTypeFieldSelector}
+	return store.getSecrets(listOptions)
+}
+
+// getSecrets returns the secret list based on the listOptions
+func (store CertificateExpirationStore) getSecrets(listOptions metav1.ListOptions) (*corev1.SecretList, error) {
 	return store.Kclient.ClientSet().CoreV1().Secrets("").List(listOptions)
 }
 
@@ -129,4 +141,120 @@ func extractExpirationDateFromCertificate(certData []byte) (time.Time, error) {
 		return time.Time{}, ErrPEMFail{Context: "parse", Err: err.Error()}
 	}
 	return cert.NotAfter, nil
+}
+
+// GetExpiringKubeConfigs - fetches all the '-kubeconfig' secrets and identifies expiration
+func (store CertificateExpirationStore) GetExpiringKubeConfigs() ([]Kubeconfig, error) {
+	kubeconfigs, err := store.getKubeconfSecrets()
+
+	if err != nil {
+		return nil, err
+	}
+
+	kSecretData := make([]Kubeconfig, 0)
+
+	for _, kubeconfig := range kubeconfigs {
+		kubecontent, err := clientcmd.Load(kubeconfig.Data["value"])
+		if err != nil {
+			log.Printf("Failed to read kubeconfig from %s in %s-"+
+				"it maybe malformed : %v", kubeconfig.Name, kubeconfig.Namespace, err.Error())
+			continue
+		}
+
+		expiringClusters := store.getExpiringClusterCertificates(kubecontent)
+
+		expiringUsers := store.getExpiringUserCertificates(kubecontent)
+
+		if len(expiringClusters) > 0 || len(expiringUsers) > 0 {
+			kSecretData = append(kSecretData, Kubeconfig{
+				SecretName:      kubeconfig.Name,
+				SecretNamespace: kubeconfig.Namespace,
+				Cluster:         expiringClusters,
+				User:            expiringUsers,
+			})
+		}
+	}
+	return kSecretData, nil
+}
+
+// filterKubeConfigs identifies the kubeconfig secrets based on the kubeconfigIdentifierSuffix
+func filterKubeConfigs(secrets []corev1.Secret) []corev1.Secret {
+	filteredSecrets := []corev1.Secret{}
+	for _, secret := range secrets {
+		if strings.HasSuffix(secret.Name, kubeconfigIdentifierSuffix) {
+			filteredSecrets = append(filteredSecrets, secret)
+		}
+	}
+	return filteredSecrets
+}
+
+// filterOwners allows only the secrets with Ownerreferences matching ownerKind
+func filterOwners(secrets []corev1.Secret, ownerKind string) []corev1.Secret {
+	filteredSecrets := []corev1.Secret{}
+	for _, secret := range secrets {
+		for _, ownerRef := range secret.OwnerReferences {
+			if ownerRef.Kind == ownerKind {
+				filteredSecrets = append(filteredSecrets, secret)
+			}
+		}
+	}
+	return filteredSecrets
+}
+
+func (store CertificateExpirationStore) getExpiringClusterCertificates(
+	kubeconfig *clientcmdapi.Config) []kubeconfData {
+	expiringClusterCertificates := make([]kubeconfData, 0)
+
+	// Iterate through each Cluster and identify expiration
+	for clusterName, clusterData := range kubeconfig.Clusters {
+		expirationDate, err := extractExpirationDateFromCertificate(clusterData.CertificateAuthorityData)
+		if err != nil {
+			log.Printf("Unable to parse certificate for %s : %v", clusterName, err)
+			continue
+		}
+
+		if isWithinDuration(expirationDate, store.ExpirationThreshold) {
+			expiringClusterCertificates = append(expiringClusterCertificates, kubeconfData{
+				Name:            clusterName,
+				CertificateName: "CertificateAuthorityData",
+				ExpirationDate:  expirationDate.String(),
+			})
+		}
+	}
+	return expiringClusterCertificates
+}
+
+func (store CertificateExpirationStore) getExpiringUserCertificates(
+	kubeconfig *clientcmdapi.Config) []kubeconfData {
+	expiringUserCertificates := make([]kubeconfData, 0)
+
+	// Iterate through each User and identify expiration
+	for userName, userData := range kubeconfig.AuthInfos {
+		expirationDate, err := extractExpirationDateFromCertificate(userData.ClientCertificateData)
+		if err != nil {
+			log.Printf("Unable to parse certificate for %s : %v", userName, err)
+			continue
+		}
+
+		if isWithinDuration(expirationDate, store.ExpirationThreshold) {
+			expiringUserCertificates = append(expiringUserCertificates, kubeconfData{
+				Name:            userName,
+				CertificateName: "ClientCertificateData",
+				ExpirationDate:  expirationDate.String(),
+			})
+		}
+	}
+	return expiringUserCertificates
+}
+
+// getKubeconfSecrets filters the kubeconf secrets
+func (store CertificateExpirationStore) getKubeconfSecrets() ([]corev1.Secret, error) {
+	secrets, err := store.getSecrets(metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	kubeconfigs := filterKubeConfigs(secrets.Items)
+	kubeconfigs = filterOwners(kubeconfigs, "KubeadmControlPlane")
+	return kubeconfigs, nil
 }
