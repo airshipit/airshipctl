@@ -15,6 +15,8 @@
 package fs
 
 import (
+	"os"
+
 	kustfs "sigs.k8s.io/kustomize/api/filesys"
 
 	"opendev.org/airship/airshipctl/pkg/fs"
@@ -28,6 +30,8 @@ type MockFileSystem struct {
 	MockTempDir   func() (string, error)
 	// allow to check content of the incoming parameters, root and patter for temp file
 	MockTempFile func(string, string) (fs.File, error)
+	MockChmod    func(string, os.FileMode) error
+	MockDir      func(string) string
 	kustfs.FileSystem
 }
 
@@ -42,6 +46,16 @@ func (fsys MockFileSystem) TempFile(root, pattern string) (fs.File, error) {
 // TempDir Filesystem interface implementation
 func (fsys MockFileSystem) TempDir(string, string) (string, error) {
 	return fsys.MockTempDir()
+}
+
+// Chmod Filesystem interface implementation
+func (fsys MockFileSystem) Chmod(path string, mode os.FileMode) error {
+	return fsys.MockChmod(path, mode)
+}
+
+// Dir Filesystem interface implementation
+func (fsys MockFileSystem) Dir(path string) string {
+	return fsys.MockDir(path)
 }
 
 // TestFile implements file
