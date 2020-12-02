@@ -52,6 +52,7 @@ func init() {
 		&ReplacementTransformer{},
 		&Templater{},
 		&BootConfiguration{},
+		&GenericContainer{},
 	)
 	_ = AddToScheme(Scheme) //nolint:errcheck
 }

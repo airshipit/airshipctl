@@ -55,7 +55,7 @@ func (p *DefaultProcessor) Process(ch <-chan Event) error {
 		case ErrorType:
 			log.Printf("Received error on event channel %v", e.ErrorEvent)
 			p.errors = append(p.errors, e.ErrorEvent.Error)
-		case ClusterctlType, IsogenType:
+		case ClusterctlType, IsogenType, GenericContainerType:
 			// TODO each event needs to be interface that allows us to print it for example
 			// Stringer interface or AsYAML for further processing.
 			// For now we print the event object as is
