@@ -36,6 +36,9 @@ spec:
           image: "centos"
           imagePullPolicy: Always
           command: ['/bin/init-bootstrap']
+          envFrom:
+            - configMapRef:
+                name: ironic-vars
           volumeMounts:
             - name: ironic-storage
               mountPath: "/shared"
@@ -46,6 +49,16 @@ spec:
               mountPath: /cfg
             - name: ironic-vars
               mountPath: /ironic-vars
+        - name: init-images
+          image: quay.io/airshipit/ipa:latest
+          imagePullPolicy: Always
+          command: ['/bin/init-images']
+          volumeMounts:
+            - name: ironic-storage
+              mountPath: "/shared"
+            - name: ironic-entrypoints
+              mountPath: /bin/init-images
+              subPath: init-images
       containers:
         - name: dnsmasq
           image: "quay.io/metal3-io/ironic:latest"
@@ -88,6 +101,9 @@ spec:
           image: "quay.io/metal3-io/ironic-inspector:latest"
           imagePullPolicy: Always
           command: ["/bin/runironic-inspector"]
+          envFrom:
+            - configMapRef:
+                name: ironic-vars
           securityContext:
             privileged: true
           volumeMounts:

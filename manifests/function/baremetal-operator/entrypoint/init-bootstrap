@@ -31,20 +31,6 @@ for f in $( ls ); do
 done
 popd
 
-pushd /shared/html/images
-STATUSCODE=$(curl --silent --insecure --location -O --write-out "%{http_code}" ${IPA_RAMDISK})
-if test $STATUSCODE -ne 200; then
-    echo "Failed to load ${ARTS[${art}]}"
-    exit 1
-fi
-
-STATUSCODE=$(curl --silent --insecure --location -O --write-out "%{http_code}" ${IPA_KERNEL})
-if test $STATUSCODE -ne 200; then
-    echo "Failed to load ${ARTS[${art}]}"
-    exit 1
-fi
-popd
-
 chmod -R 0777 /shared/html
 
 touch /shared/init_finished
