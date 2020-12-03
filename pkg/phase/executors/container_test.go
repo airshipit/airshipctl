@@ -32,6 +32,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
+	yaml_util "opendev.org/airship/airshipctl/pkg/util/yaml"
 )
 
 const (
@@ -107,7 +108,6 @@ metadata:
   name: master-0-bmc-secret
 type: Opaque
 `
-	yamlSeparator = "---\n"
 )
 
 func TestRegisterContainerExecutor(t *testing.T) {
@@ -161,9 +161,12 @@ func TestSetInputSingleDocument(t *testing.T) {
 	require.NoError(t, err)
 	docBytes, err := doc.AsYAML()
 	require.NoError(t, err)
-	docBytes = append([]byte(yamlSeparator), docBytes...)
+	buf := &bytes.Buffer{}
+	buf.Write([]byte(yaml_util.DashYamlSeparator))
+	buf.Write(docBytes)
+	buf.Write([]byte(yaml_util.DotYamlSeparator))
 
-	assert.Equal(t, bytes.NewReader(docBytes), e.RunFns.Input)
+	assert.Equal(t, buf, e.RunFns.Input)
 }
 
 func TestSetInputManyDocuments(t *testing.T) {
@@ -192,16 +195,21 @@ func TestSetInputManyDocuments(t *testing.T) {
 	require.NoError(t, err)
 	docSecondBytes, err := docSecond.AsYAML()
 	require.NoError(t, err)
-	docBytes := append([]byte(yamlSeparator), docSecondBytes...)
+
+	buf := &bytes.Buffer{}
+	buf.Write([]byte(yaml_util.DashYamlSeparator))
+	buf.Write(docSecondBytes)
+	buf.Write([]byte(yaml_util.DotYamlSeparator))
 
 	docFirst, err := document.NewDocumentFromBytes([]byte(firstDocInput))
 	require.NoError(t, err)
 	docFirstBytes, err := docFirst.AsYAML()
 	require.NoError(t, err)
-	docBytes = append(docBytes, []byte(yamlSeparator)...)
-	docBytes = append(docBytes, docFirstBytes...)
+	buf.Write([]byte(yaml_util.DashYamlSeparator))
+	buf.Write(docFirstBytes)
+	buf.Write([]byte(yaml_util.DotYamlSeparator))
 
-	assert.Equal(t, bytes.NewReader(docBytes), e.RunFns.Input)
+	assert.Equal(t, buf, e.RunFns.Input)
 }
 
 func TestPrepareFunctions(t *testing.T) {

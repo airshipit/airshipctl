@@ -35,11 +35,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
-const (
-	// yamlSeparator uses to separate yaml files
-	yamlSeparator = "---\n"
-)
-
 var _ ifc.Executor = &ContainerExecutor{}
 
 // ContainerExecutor contains resources for generic container executor
@@ -130,23 +125,14 @@ func (c *ContainerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 
 // SetInput sets input for function
 func (c *ContainerExecutor) SetInput(evtCh chan events.Event) {
-	docs, err := c.ExecutorBundle.GetAllDocuments()
+	buf := &bytes.Buffer{}
+	err := c.ExecutorBundle.Write(buf)
 	if err != nil {
 		handleError(evtCh, err)
 		return
 	}
 
-	docsBytes := make([]byte, 0)
-	for _, doc := range docs {
-		data, err := doc.AsYAML()
-		if err != nil {
-			handleError(evtCh, err)
-			return
-		}
-		docsBytes = append(docsBytes, []byte(yamlSeparator)...)
-		docsBytes = append(docsBytes, data...)
-	}
-	c.RunFns.Input = bytes.NewReader(docsBytes)
+	c.RunFns.Input = buf
 }
 
 // PrepareFunctions prepares data for function
