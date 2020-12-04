@@ -1,0 +1,15 @@
+This command provides capabilities for interacting with plan objects,
+responsible for execution phases in groups
+
+Usage:
+  plan [command]
+
+Available Commands:
+  help        Help about any command
+  list        List plans
+  run         Run plan
+
+Flags:
+  -h, --help   help for plan
+
+Use "plan [command] --help" for more information about a command.

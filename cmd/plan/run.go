@@ -12,32 +12,31 @@
  limitations under the License.
 */
 
-package phase
+package plan
 
 import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/errors"
 )
 
 const (
-	phaseLong = `
-This command provides capabilities for interacting with phases,
-such as getting list and applying specific one.
+	runLong = `
+Run life-cycle phase plan which was defined in document model.
 `
 )
 
-// NewPhaseCommand creates a command for interacting with phases
-func NewPhaseCommand(cfgFactory config.Factory) *cobra.Command {
-	phaseRootCmd := &cobra.Command{
-		Use:   "phase",
-		Short: "Manage phases",
-		Long:  phaseLong[1:],
+// NewRunCommand creates a command which execute a particular phase plan
+func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
+	listCmd := &cobra.Command{
+		Use:   "run PLAN_NAME",
+		Short: "Run plan",
+		Long:  runLong[1:],
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return errors.ErrNotImplemented{What: "airshipctl plan run"}
+		},
 	}
-
-	phaseRootCmd.AddCommand(NewRenderCommand(cfgFactory))
-	phaseRootCmd.AddCommand(NewPlanCommand(cfgFactory))
-	phaseRootCmd.AddCommand(NewRunCommand(cfgFactory))
-
-	return phaseRootCmd
+	return listCmd
 }
