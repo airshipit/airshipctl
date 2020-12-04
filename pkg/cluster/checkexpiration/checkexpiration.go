@@ -32,7 +32,9 @@ import (
 )
 
 const (
-	kubeconfigIdentifierSuffix = "-kubeconfig"
+	kubeconfigIdentifierSuffix   = "-kubeconfig"
+	timeFormat                   = "Jan 02, 2006 15:04 MST"
+	nodeCertExpirationAnnotation = "cert-expiration"
 )
 
 // CertificateExpirationStore is the customized client store
@@ -257,4 +259,92 @@ func (store CertificateExpirationStore) getKubeconfSecrets() ([]corev1.Secret, e
 	kubeconfigs := filterKubeConfigs(secrets.Items)
 	kubeconfigs = filterOwners(kubeconfigs, "KubeadmControlPlane")
 	return kubeconfigs, nil
+}
+
+// GetExpiringNodeCertificates runs through all the nodes and identifies expiration
+func (store CertificateExpirationStore) GetExpiringNodeCertificates() ([]NodeCert, error) {
+	// Node will be updated with an annotation with the expiry content (Activity
+	// of HostConfig Operator - 'check-expiry' CR Object) every day (Cron like
+	// activity is performed by reconcile tag in the Operator) Below code is
+	// implemented to just read the annotation, parse it, identify expirable
+	// content and report back
+
+	// Expected Annotation Format:
+	// "cert-expiration": "{ admin.conf: Aug 06, 2021 12:36 UTC },
+	// 					   { apiserver: Aug 06, 2021 12:36 UTC },
+	//                     { apiserver-etcd-client: Aug 06, 2021 12:36 UTC },
+	//                     { apiserver-kubelet-client: Aug 06, 2021 12:36 UTC },
+	//                     { controller-manager.conf: Aug 06, 2021 12:36 UTC },
+	//                     { etcd-healthcheck-client: Aug 06, 2021 12:36 UTC },
+	//                     { etcd-peer: Aug 06, 2021 12:36 UTC },
+	//                     { etcd-server: Aug 06, 2021 12:36 UTC },
+	//                     { front-proxy-client: Aug 06, 2021 12:36 UTC },
+	//                     { scheduler.conf: Aug 06, 2021 12:36 UTC },
+	//                     { ca: Aug 04, 2030 12:36 UTC },
+	//                     { etcd-ca: Aug 04, 2030 12:36 UTC },
+	//                     { front-proxy-ca: Aug 04, 2030 12:36 UTC }"
+
+	nodes, err := store.getNodes(metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	nodeData := make([]NodeCert, 0)
+	for _, node := range nodes.Items {
+		expiringNodeCertificates := store.getExpiringNodeCertificates(node)
+		if len(expiringNodeCertificates) > 0 {
+			nodeData = append(nodeData, NodeCert{
+				Name:                 node.Name,
+				Namespace:            node.Namespace,
+				ExpiringCertificates: expiringNodeCertificates,
+			})
+		}
+	}
+	return nodeData, nil
+}
+
+// getSecrets returns the Nodes list based on the listOptions
+func (store CertificateExpirationStore) getNodes(listOptions metav1.ListOptions) (*corev1.NodeList, error) {
+	return store.Kclient.ClientSet().CoreV1().Nodes().List(listOptions)
+}
+
+// getExpiringNodeCertificates skims through all the node certificates and returns
+// the ones lesser than threshold
+func (store CertificateExpirationStore) getExpiringNodeCertificates(node corev1.Node) map[string]string {
+	if cert, found := node.ObjectMeta.Annotations[nodeCertExpirationAnnotation]; found {
+		certificateList := splitAsList(cert)
+
+		expiringCertificates := map[string]string{}
+		for _, certificate := range certificateList {
+			certificateName, expirationDate := identifyCertificateNameAndExpirationDate(certificate)
+			if certificateName != "" && isWithinDuration(expirationDate, store.ExpirationThreshold) {
+				expiringCertificates[certificateName] = expirationDate.String()
+			}
+		}
+		return expiringCertificates
+	}
+	log.Printf("%s annotation missing for node %s in %s", nodeCertExpirationAnnotation,
+		node.Name, node.Namespace)
+	return nil
+}
+
+// splitAsList performes the required string manipulations and returns list of items
+func splitAsList(value string) []string {
+	return strings.Split(strings.ReplaceAll(value, "{", ""), "},")
+}
+
+// identifyCertificateNameAndExpirationDate performs string manipulations and returns
+// certificate name and its expiration date
+func identifyCertificateNameAndExpirationDate(certificate string) (string, time.Time) {
+	certificateName := strings.TrimSpace(strings.Split(certificate, ":")[0])
+	expirationDate := strings.TrimSpace(strings.Split(certificate, ":")[1]) +
+		":" +
+		strings.TrimSpace(strings.ReplaceAll(strings.Split(certificate, ":")[2], "}", ""))
+
+	formattedExpirationDate, err := time.Parse(timeFormat, expirationDate)
+	if err != nil {
+		log.Printf(err.Error())
+		return "", time.Time{}
+	}
+	return certificateName, formattedExpirationDate
 }
