@@ -28,7 +28,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
@@ -151,9 +150,8 @@ func TestSetInputSingleDocument(t *testing.T) {
 			Functions: []*kyaml.RNode{},
 		},
 	}
-	ch := make(chan events.Event)
-	e.SetInput(ch)
-	assert.Empty(t, ch)
+	err = e.SetInput()
+	require.NoError(t, err)
 
 	// need to use kustomize here, because
 	// it changes order of lines in document
@@ -185,9 +183,8 @@ func TestSetInputManyDocuments(t *testing.T) {
 			Functions: []*kyaml.RNode{},
 		},
 	}
-	ch := make(chan events.Event)
-	e.SetInput(ch)
-	assert.Empty(t, ch)
+	err = e.SetInput()
+	require.NoError(t, err)
 
 	// need to use kustomize here, because
 	// it changes order of lines in document
@@ -232,9 +229,8 @@ func TestPrepareFunctions(t *testing.T) {
 		},
 	}
 
-	ch := make(chan events.Event)
-	e.PrepareFunctions(ch)
-	assert.Empty(t, ch)
+	err = e.PrepareFunctions()
+	require.NoError(t, err)
 	strFuncs, err := e.RunFns.Functions[0].String()
 	require.NoError(t, err)
 

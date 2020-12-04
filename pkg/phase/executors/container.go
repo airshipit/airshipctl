@@ -103,16 +103,23 @@ func (c *ContainerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 		return
 	}
 
-	c.SetInput(evtCh)
-	c.PrepareFunctions(evtCh)
+	if err := c.SetInput(); err != nil {
+		handleError(evtCh, err)
+		return
+	}
+
+	if err := c.PrepareFunctions(); err != nil {
+		handleError(evtCh, err)
+		return
+	}
+
 	c.SetMounts()
 
 	if c.ContConf.PrintOutput {
 		c.RunFns.Output = os.Stdout
 	}
 
-	err := c.RunFns.Execute()
-	if err != nil {
+	if err := c.RunFns.Execute(); err != nil {
 		handleError(evtCh, err)
 		return
 	}
@@ -124,39 +131,38 @@ func (c *ContainerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 }
 
 // SetInput sets input for function
-func (c *ContainerExecutor) SetInput(evtCh chan events.Event) {
+func (c *ContainerExecutor) SetInput() error {
 	buf := &bytes.Buffer{}
 	err := c.ExecutorBundle.Write(buf)
 	if err != nil {
-		handleError(evtCh, err)
-		return
+		return err
 	}
 
 	c.RunFns.Input = buf
+	return nil
 }
 
 // PrepareFunctions prepares data for function
-func (c *ContainerExecutor) PrepareFunctions(evtCh chan events.Event) {
+func (c *ContainerExecutor) PrepareFunctions() error {
 	rnode, err := kyaml.Parse(c.ContConf.Config)
 	if err != nil {
-		handleError(evtCh, err)
-		return
+		return err
 	}
 	// Transform GenericContainer.Spec to annotation,
 	// because we need to specify runFns config in annotation
 	spec, err := yaml.Marshal(c.ContConf.Spec)
 	if err != nil {
-		handleError(evtCh, err)
-		return
+		return err
 	}
 	annotation := kyaml.SetAnnotation(runtimeutil.FunctionAnnotationKey, string(spec))
 	_, err = annotation.Filter(rnode)
 	if err != nil {
-		handleError(evtCh, err)
-		return
+		return err
 	}
 
 	c.RunFns.Functions = append(c.RunFns.Functions, rnode)
+
+	return nil
 }
 
 // SetMounts allows to set relative path for storage mounts to prevent security issues
