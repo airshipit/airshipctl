@@ -219,3 +219,73 @@ func TestPrepareFunctions(t *testing.T) {
 
 	assert.Equal(t, transformedFunction, strFuncs)
 }
+
+func TestSetMounts(t *testing.T) {
+	testCases := []struct {
+		name        string
+		targetPath  string
+		in          []runtimeutil.StorageMount
+		expectedOut []runtimeutil.StorageMount
+	}{
+		{
+			name:        "Empty TargetPath and mounts",
+			targetPath:  "",
+			in:          nil,
+			expectedOut: nil,
+		},
+		{
+			name:       "Empty TargetPath with Src and DstPath",
+			targetPath: "",
+			in: []runtimeutil.StorageMount{
+				{
+					MountType: "bind",
+					Src:       "src",
+					DstPath:   "dst",
+				},
+			},
+			expectedOut: []runtimeutil.StorageMount{
+				{
+					MountType: "bind",
+					Src:       "src",
+					DstPath:   "dst",
+				},
+			},
+		},
+		{
+			name:       "Not empty TargetPath with Src and DstPath",
+			targetPath: "target_path",
+			in: []runtimeutil.StorageMount{
+				{
+					MountType: "bind",
+					Src:       "src",
+					DstPath:   "dst",
+				},
+			},
+			expectedOut: []runtimeutil.StorageMount{
+				{
+					MountType: "bind",
+					Src:       "target_path/src",
+					DstPath:   "dst",
+				},
+			},
+		},
+	}
+
+	for _, test := range testCases {
+		tt := test
+		t.Run(tt.name, func(t *testing.T) {
+			c := executors.ContainerExecutor{
+				ContConf: &v1alpha1.GenericContainer{
+					Spec: runtimeutil.FunctionSpec{
+						Container: runtimeutil.ContainerSpec{
+							StorageMounts: tt.in,
+						},
+					},
+				},
+				TargetPath: tt.targetPath,
+			}
+			c.SetMounts()
+			assert.Equal(t, c.RunFns.StorageMounts, tt.expectedOut)
+		})
+	}
+}

@@ -54,7 +54,7 @@ metadata:
   name: generic-container
   labels:
     airshipit.org/deploy-k8s: "false"
-outputToStdout: true
+kustomizeSinkOutputDir: ""
 spec:
   container:
       image: quay.io/sample/image:v0.0.1
