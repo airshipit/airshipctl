@@ -12,6 +12,7 @@ Available Commands:
   help        Help about any command
   image       Manage ISO image creation
   phase       Manage phases
+  plan        Manage plans
   secret      Manage secrets
   version     Show the version number of airshipctl
 

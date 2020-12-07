@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package phase
+package plan
 
 import (
 	"github.com/spf13/cobra"
@@ -21,23 +21,22 @@ import (
 )
 
 const (
-	phaseLong = `
-This command provides capabilities for interacting with phases,
-such as getting list and applying specific one.
+	planLong = `
+This command provides capabilities for interacting with plan objects,
+responsible for execution phases in groups
 `
 )
 
-// NewPhaseCommand creates a command for interacting with phases
-func NewPhaseCommand(cfgFactory config.Factory) *cobra.Command {
-	phaseRootCmd := &cobra.Command{
-		Use:   "phase",
-		Short: "Manage phases",
-		Long:  phaseLong[1:],
+// NewPlanCommand creates a command for interacting with phases
+func NewPlanCommand(cfgFactory config.Factory) *cobra.Command {
+	planRootCmd := &cobra.Command{
+		Use:   "plan",
+		Short: "Manage plans",
+		Long:  planLong[1:],
 	}
 
-	phaseRootCmd.AddCommand(NewRenderCommand(cfgFactory))
-	phaseRootCmd.AddCommand(NewPlanCommand(cfgFactory))
-	phaseRootCmd.AddCommand(NewRunCommand(cfgFactory))
+	planRootCmd.AddCommand(NewListCommand(cfgFactory))
+	planRootCmd.AddCommand(NewRunCommand(cfgFactory))
 
-	return phaseRootCmd
+	return planRootCmd
 }

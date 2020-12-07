@@ -23,6 +23,7 @@ A unified entrypoint to various airship components
 * [airshipctl document](airshipctl_document.md)	 - Manage deployment documents
 * [airshipctl image](airshipctl_image.md)	 - Manage ISO image creation
 * [airshipctl phase](airshipctl_phase.md)	 - Manage phases
+* [airshipctl plan](airshipctl_plan.md)	 - Manage plans
 * [airshipctl secret](airshipctl_secret.md)	 - Manage secrets
 * [airshipctl version](airshipctl_version.md)	 - Show the version number of airshipctl
 

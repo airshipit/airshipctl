@@ -1,0 +1,7 @@
+List life-cycle plans which were defined in document model.
+
+Usage:
+  list [flags]
+
+Flags:
+  -h, --help   help for list

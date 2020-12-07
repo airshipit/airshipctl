@@ -1,0 +1,7 @@
+Run life-cycle phase plan which was defined in document model.
+
+Usage:
+  run PLAN_NAME [flags]
+
+Flags:
+  -h, --help   help for run
