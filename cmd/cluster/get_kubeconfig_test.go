@@ -26,7 +26,7 @@ func TestNewKubeConfigCommandCmd(t *testing.T) {
 		{
 			Name:    "cluster-get-kubeconfig-cmd-with-help",
 			CmdLine: "--help",
-			Cmd:     cluster.NewGetKubeconfigCommand(),
+			Cmd:     cluster.NewGetKubeconfigCommand(nil),
 		},
 	}
 	for _, testcase := range tests {

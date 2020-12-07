@@ -15,10 +15,13 @@
 package cmd
 
 import (
+	"io"
+
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase"
 )
@@ -104,4 +107,23 @@ func (c *Command) Move(toKubeconfigContext string) error {
 			c.kubeconfigPath, toKubeconfigContext, c.options.MoveOptions.Namespace)
 	}
 	return c.client.Move(c.kubeconfigPath, c.kubeconfigContext, c.kubeconfigPath, toKubeconfigContext, "")
+}
+
+// GetKubeconfig creates new kubeconfig interface object from secret and prints its content to writer
+func GetKubeconfig(cfgFactory config.Factory, options *client.GetKubeconfigOptions, writer io.Writer) error {
+	cfg, err := cfgFactory()
+	if err != nil {
+		return err
+	}
+
+	targetPath, err := cfg.CurrentContextTargetPath()
+	if err != nil {
+		return err
+	}
+
+	client, err := client.NewClient(targetPath, log.DebugEnabled(), &airshipv1.Clusterctl{})
+	if err != nil {
+		return err
+	}
+	return kubeconfig.NewKubeConfig(kubeconfig.FromSecret(client, options)).Write(writer)
 }
