@@ -22,7 +22,6 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/bootstrap/isogen"
-	clusterctl "opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
@@ -30,6 +29,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/pkg/log"
+	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
@@ -40,7 +40,7 @@ type ExecutorRegistry func() map[schema.GroupVersionKind]ifc.ExecutorFactory
 func DefaultExecutorRegistry() map[schema.GroupVersionKind]ifc.ExecutorFactory {
 	execMap := make(map[schema.GroupVersionKind]ifc.ExecutorFactory)
 
-	if err := clusterctl.RegisterExecutor(execMap); err != nil {
+	if err := executors.RegisterExecutor(execMap); err != nil {
 		log.Fatal(ErrExecutorRegistration{ExecutorName: "clusterctl", Err: err})
 	}
 	if err := applier.RegisterExecutor(execMap); err != nil {

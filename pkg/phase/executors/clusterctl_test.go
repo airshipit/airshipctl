@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package client_test
+package executors_test
 
 import (
 	"bytes"
@@ -23,12 +23,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
-	cctlclient "opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	airerrors "opendev.org/airship/airshipctl/pkg/errors"
@@ -36,6 +34,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/phase"
+	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	testfs "opendev.org/airship/airshipctl/testutil/fs"
 )
@@ -67,7 +66,7 @@ func TestRegisterExecutor(t *testing.T) {
 		Version: "v1alpha1",
 		Kind:    "Clusterctl",
 	}
-	err := cctlclient.RegisterExecutor(registry)
+	err := executors.RegisterExecutor(registry)
 	require.NoError(t, err)
 
 	_, found := registry[expectedGVK]
@@ -89,7 +88,7 @@ func TestNewExecutor(t *testing.T) {
 	for _, test := range testCases {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
-			_, actualErr := cctlclient.NewExecutor(ifc.ExecutorConfig{
+			_, actualErr := executors.NewExecutor(ifc.ExecutorConfig{
 				ExecutorDocument: sampleCfgDoc,
 				Helper:           tt.helper,
 			})
@@ -114,7 +113,7 @@ func TestExecutorRun(t *testing.T) {
 			cfgDoc:     executorDoc(t, "someAction"),
 			bundlePath: "testdata/executor_init",
 			expectedEvt: []events.Event{
-				wrapError(cctlclient.ErrUnknownExecutorAction{Action: "someAction"}),
+				wrapError(executors.ErrUnknownExecutorAction{Action: "someAction"}),
 			},
 			clusterMap: clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
 		},
@@ -168,7 +167,7 @@ func TestExecutorRun(t *testing.T) {
 				kubeconfig.FromByte([]byte("someKubeConfig")),
 				kubeconfig.InjectFileSystem(tt.fs),
 			)
-			executor, err := cctlclient.NewExecutor(
+			executor, err := executors.NewExecutor(
 				ifc.ExecutorConfig{
 					ExecutorDocument: tt.cfgDoc,
 					Helper:           makeDefaultHelper(t),
@@ -199,7 +198,7 @@ func TestExecutorRun(t *testing.T) {
 
 func TestExecutorValidate(t *testing.T) {
 	sampleCfgDoc := executorDoc(t, "init")
-	executor, err := cctlclient.NewExecutor(
+	executor, err := executors.NewExecutor(
 		ifc.ExecutorConfig{
 			ExecutorDocument: sampleCfgDoc,
 			Helper:           makeDefaultHelper(t),
@@ -209,9 +208,10 @@ func TestExecutorValidate(t *testing.T) {
 	actualErr := executor.Validate()
 	assert.Equal(t, expectedErr, actualErr)
 }
+
 func TestExecutorRender(t *testing.T) {
 	sampleCfgDoc := executorDoc(t, "init")
-	executor, err := cctlclient.NewExecutor(
+	executor, err := executors.NewExecutor(
 		ifc.ExecutorConfig{
 			ExecutorDocument: sampleCfgDoc,
 			Helper:           makeDefaultHelper(t),
@@ -226,7 +226,7 @@ func TestExecutorRender(t *testing.T) {
 func makeDefaultHelper(t *testing.T) ifc.Helper {
 	t.Helper()
 	cfg := config.NewConfig()
-	cfg.Manifests[config.AirshipDefaultManifest].TargetPath = "./testdata"
+	cfg.Manifests[config.AirshipDefaultManifest].TargetPath = "../../clusterctl/client/testdata"
 	cfg.Manifests[config.AirshipDefaultManifest].MetadataPath = "metadata.yaml"
 	cfg.Manifests[config.AirshipDefaultManifest].Repositories[config.DefaultTestPhaseRepo].URLString = ""
 	cfg.SetLoadedConfigPath(".")

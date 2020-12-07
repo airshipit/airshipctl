@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package client
+package executors
 
 import (
 	"io"
@@ -21,6 +21,7 @@ import (
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
+	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
@@ -34,7 +35,7 @@ var _ ifc.Executor = &ClusterctlExecutor{}
 type ClusterctlExecutor struct {
 	clusterName string
 
-	Interface
+	client.Interface
 	clusterMap clustermap.ClusterMap
 	options    *airshipv1.Clusterctl
 	kubecfg    kubeconfig.Interface
@@ -57,7 +58,7 @@ func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 	if err := cfg.ExecutorDocument.ToAPIObject(options, airshipv1.Scheme); err != nil {
 		return nil, err
 	}
-	client, err := NewClient(cfg.Helper.TargetPath(), log.DebugEnabled(), options)
+	client, err := client.NewClient(cfg.Helper.TargetPath(), log.DebugEnabled(), options)
 	if err != nil {
 		return nil, err
 	}
