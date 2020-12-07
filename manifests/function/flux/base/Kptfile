@@ -1,0 +1,13 @@
+apiVersion: kpt.dev/v1alpha1
+kind: Kptfile
+dependencies:
+- name: upstream/rbac
+  git:
+    repo: "https://github.com/fluxcd/flux2"
+    directory: "manifests/rbac"
+    ref: "v0.5.1"
+- name: upstream/policies
+  git:
+    repo: "https://github.com/fluxcd/flux2"
+    directory: "manifests/policies"
+    ref: "v0.5.1"

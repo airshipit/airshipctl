@@ -1,0 +1,20 @@
+apiVersion: kpt.dev/v1alpha1
+kind: Kptfile
+upstream:
+  type: git
+  git:
+    commit: c602c5d85093a8e38fae993fee0ed743c8615e46
+    repo: https://github.com/fluxcd/source-controller
+    directory: config/manager
+    ref: v0.5.2
+dependencies:
+- name: upstream/crd
+  git:
+    repo: https://github.com/fluxcd/source-controller
+    directory: config/crd
+    ref: v0.5.2
+- name: upstream/manager
+  git:
+    repo: https://github.com/fluxcd/source-controller
+    directory: config/manager
+    ref: v0.5.2

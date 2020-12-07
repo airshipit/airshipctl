@@ -1,0 +1,43 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: crd-controller
+rules:
+- apiGroups: ['source.toolkit.fluxcd.io']
+  resources: ['*']
+  verbs: ['*']
+- apiGroups: ['kustomize.toolkit.fluxcd.io']
+  resources: ['*']
+  verbs: ['*']
+- apiGroups: ['helm.toolkit.fluxcd.io']
+  resources: ['*']
+  verbs: ['*']
+- apiGroups: ['notification.toolkit.fluxcd.io']
+  resources: ['*']
+  verbs: ['*']
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - configmaps/status
+  verbs: ['*']
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: crd-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: crd-controller
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: system

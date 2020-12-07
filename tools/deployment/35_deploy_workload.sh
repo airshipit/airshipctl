@@ -27,5 +27,10 @@ airshipctl phase run workload-target --debug
 echo "Ensure we can reach ingress controller default backend"
 if [ "404" != "$(curl --head --write-out '%{http_code}' --silent --output /dev/null $TARGET_IP:$TARGET_PORT/should-404)" ]; then
     echo -e "\nFailed to reach ingress controller default backend."
+
+    kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get all -n flux-system
+    kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT logs -n flux-system -l app=helm-controller
+    kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get hr --all-namespaces -o yaml
+
     exit 1
 fi

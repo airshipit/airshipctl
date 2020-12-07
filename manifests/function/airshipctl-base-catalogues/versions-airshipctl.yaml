@@ -87,9 +87,9 @@ images:
       helm_operator: docker.io/fluxcd/helm-operator:1.2.0
   flux:
     helm_controller: # helm-controller Deployment
-      manager: ghcr.io/fluxcd/helm-controller:v0.2.0
+      manager: ghcr.io/fluxcd/helm-controller:v0.4.3
     source_controller: # source-controller Deployment
-      manager: ghcr.io/fluxcd/source-controller:v0.2.1
+      manager: ghcr.io/fluxcd/source-controller:v0.5.3
   cert-manager:
     repository: "quay.io/jetstack"
 
