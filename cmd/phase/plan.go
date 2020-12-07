@@ -31,10 +31,10 @@ are executed in parallel.
 
 // NewPlanCommand creates a command which prints available phases
 func NewPlanCommand(cfgFactory config.Factory) *cobra.Command {
-	p := &phase.PlanCommand{Factory: cfgFactory}
+	p := &phase.ListCommand{Factory: cfgFactory}
 
 	planCmd := &cobra.Command{
-		Use:   "plan",
+		Use:   "list",
 		Short: "List phases",
 		Long:  cmdLong[1:],
 		RunE: func(cmd *cobra.Command, args []string) error {

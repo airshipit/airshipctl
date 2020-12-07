@@ -3,7 +3,7 @@ Phases within a group are executed sequentially. Multiple phase groups
 are executed in parallel.
 
 Usage:
-  plan [flags]
+  list [flags]
 
 Flags:
-  -h, --help   help for plan
+  -h, --help   help for list

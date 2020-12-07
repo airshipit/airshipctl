@@ -156,7 +156,7 @@ func TestPlanCommand(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			command := phase.PlanCommand{
+			command := phase.ListCommand{
 				Factory: tt.factory,
 			}
 			err := command.RunE()

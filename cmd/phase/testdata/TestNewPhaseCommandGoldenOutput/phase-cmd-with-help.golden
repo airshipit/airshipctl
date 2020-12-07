@@ -6,7 +6,7 @@ Usage:
 
 Available Commands:
   help        Help about any command
-  plan        List phases
+  list        List phases
   render      Render phase documents from model
   run         Run phase
   tree        Tree view of kustomize entrypoints of phase

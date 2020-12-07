@@ -24,6 +24,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
+	"opendev.org/airship/airshipctl/pkg/util"
 )
 
 // RunFlags options for phase run command
@@ -63,14 +64,14 @@ func (c *RunCommand) RunE() error {
 	return phase.Run(ifc.RunOptions{DryRun: c.Options.DryRun, Timeout: c.Options.Timeout, Progress: c.Options.Progress})
 }
 
-// PlanCommand plan command
-type PlanCommand struct {
+// ListCommand phase list command
+type ListCommand struct {
 	Factory config.Factory
 	Writer  io.Writer
 }
 
 // RunE runs a phase plan command
-func (c *PlanCommand) RunE() error {
+func (c *ListCommand) RunE() error {
 	cfg, err := c.Factory()
 	if err != nil {
 		return err
@@ -81,12 +82,18 @@ func (c *PlanCommand) RunE() error {
 		return err
 	}
 
-	plan, err := helper.Plan()
+	phases, err := helper.ListPhases()
 	if err != nil {
 		return err
 	}
 
-	return PrintPlan(plan, c.Writer)
+	rt, err := util.NewResourceTable(phases, util.DefaultStatusFunction())
+	if err != nil {
+		return err
+	}
+
+	util.DefaultTablePrinter(c.Writer, nil).PrintTable(rt, 0)
+	return nil
 }
 
 // TreeCommand plan command
