@@ -18,7 +18,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/errors"
+	"opendev.org/airship/airshipctl/pkg/phase"
 )
 
 const (
@@ -29,12 +29,15 @@ List life-cycle plans which were defined in document model.
 
 // NewListCommand creates a command which prints available phase plans
 func NewListCommand(cfgFactory config.Factory) *cobra.Command {
+	planCmd := &phase.PlanListCommand{Factory: cfgFactory}
+
 	listCmd := &cobra.Command{
 		Use:   "list",
 		Short: "List plans",
 		Long:  listLong[1:],
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return errors.ErrNotImplemented{What: "airshipctl plan list"}
+			planCmd.Writer = cmd.OutOrStdout()
+			return planCmd.RunE()
 		},
 	}
 	return listCmd

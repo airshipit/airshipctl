@@ -15,12 +15,17 @@
 package phase
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/cli-utils/pkg/print/table"
+
+	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
@@ -144,5 +149,56 @@ func (c *TreeCommand) RunE() error {
 		return err
 	}
 	t.PrintTree("")
+	return nil
+}
+
+// PlanListCommand phase list command
+type PlanListCommand struct {
+	Factory config.Factory
+	Writer  io.Writer
+}
+
+// RunE runs a phase plan command
+func (c *PlanListCommand) RunE() error {
+	cfg, err := c.Factory()
+	if err != nil {
+		return err
+	}
+
+	helper, err := NewHelper(cfg)
+	if err != nil {
+		return err
+	}
+
+	phases, err := helper.ListPlans()
+	if err != nil {
+		return err
+	}
+
+	rt, err := util.NewResourceTable(phases, util.DefaultStatusFunction())
+	if err != nil {
+		return err
+	}
+
+	printer := util.DefaultTablePrinter(c.Writer, nil)
+	descriptionCol := table.ColumnDef{
+		ColumnName:   "description",
+		ColumnHeader: "DESCRIPTION",
+		ColumnWidth:  40,
+		PrintResourceFunc: func(w io.Writer, width int, r table.Resource) (int, error) {
+			rs := r.ResourceStatus()
+			if rs == nil {
+				return 0, nil
+			}
+			plan := &v1alpha1.PhasePlan{}
+			err := runtime.DefaultUnstructuredConverter.FromUnstructured(rs.Resource.Object, plan)
+			if err != nil {
+				return 0, err
+			}
+			return fmt.Fprint(w, plan.Description)
+		},
+	}
+	printer.Columns = append(printer.Columns, descriptionCol)
+	printer.PrintTable(rt, 0)
 	return nil
 }

@@ -24,6 +24,7 @@ import (
 type PhasePlan struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
+	Description       string       `json:"description,omitempty"`
 	PhaseGroups       []PhaseGroup `json:"phaseGroups,omitempty"`
 }
 

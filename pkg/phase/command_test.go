@@ -15,7 +15,9 @@
 package phase_test
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -101,7 +103,7 @@ func TestRunCommand(t *testing.T) {
 	}
 }
 
-func TestPlanCommand(t *testing.T) {
+func TestListCommand(t *testing.T) {
 	tests := []struct {
 		name        string
 		errContains string
@@ -233,6 +235,61 @@ func TestTreeCommand(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
+		})
+	}
+}
+
+func TestPlanListCommand(t *testing.T) {
+	testErr := fmt.Errorf(testFactoryErr)
+	testCases := []struct {
+		name        string
+		factory     config.Factory
+		expectedOut [][]byte
+		expectedErr string
+	}{
+		{
+			name: "Error config factory",
+			factory: func() (*config.Config, error) {
+				return nil, testErr
+			},
+			expectedErr: testFactoryErr,
+			expectedOut: [][]byte{{}},
+		},
+		{
+			name: "List phases",
+			factory: func() (*config.Config, error) {
+				conf := config.NewConfig()
+				manifest := conf.Manifests[config.AirshipDefaultManifest]
+				manifest.TargetPath = "testdata"
+				manifest.MetadataPath = "metadata.yaml"
+				manifest.Repositories[config.DefaultTestPhaseRepo].URLString = ""
+				return conf, nil
+			},
+			expectedOut: [][]byte{
+				[]byte("NAMESPACE   RESOURCE                                  DESCRIPTION                             "),
+				[]byte("            PhasePlan/phasePlan                       Default phase plan                      "),
+				{},
+			},
+		},
+	}
+	for _, tc := range testCases {
+		tt := tc
+		t.Run(tt.name, func(t *testing.T) {
+			buf := &bytes.Buffer{}
+			cmd := phase.PlanListCommand{
+				Factory: tt.factory,
+				Writer:  buf,
+			}
+			err := cmd.RunE()
+			if tt.expectedErr != "" {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.expectedErr)
+			} else {
+				assert.NoError(t, err)
+			}
+			out, err := ioutil.ReadAll(buf)
+			require.NoError(t, err)
+			assert.Equal(t, tt.expectedOut, bytes.Split(out, []byte("\n")))
 		})
 	}
 }

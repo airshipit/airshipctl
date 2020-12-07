@@ -29,6 +29,7 @@ type Helper interface {
 	Phase(phaseID ID) (*v1alpha1.Phase, error)
 	Plan() (*v1alpha1.PhasePlan, error)
 	ListPhases() ([]*v1alpha1.Phase, error)
+	ListPlans() ([]*v1alpha1.PhasePlan, error)
 	ClusterMapAPIobj() (*v1alpha1.ClusterMap, error)
 	ClusterMap() (clustermap.ClusterMap, error)
 	ExecutorDoc(phaseID ID) (document.Document, error)

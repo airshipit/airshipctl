@@ -15,8 +15,6 @@
 package phase
 
 import (
-	"fmt"
-	"io"
 	"path/filepath"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -144,6 +142,35 @@ func (helper *Helper) ListPhases() ([]*v1alpha1.Phase, error) {
 	return phases, nil
 }
 
+// ListPlans returns all phases associated with manifest
+func (helper *Helper) ListPlans() ([]*v1alpha1.PhasePlan, error) {
+	bundle, err := document.NewBundleByPath(helper.phaseBundleRoot)
+	if err != nil {
+		return nil, err
+	}
+
+	plan := &v1alpha1.PhasePlan{}
+	selector, err := document.NewSelector().ByObject(plan, v1alpha1.Scheme)
+	if err != nil {
+		return nil, err
+	}
+
+	docs, err := bundle.Select(selector)
+	if err != nil {
+		return nil, err
+	}
+
+	plans := make([]*v1alpha1.PhasePlan, len(docs))
+	for i, doc := range docs {
+		p := &v1alpha1.PhasePlan{}
+		if err = doc.ToAPIObject(p, v1alpha1.Scheme); err != nil {
+			return nil, err
+		}
+		plans[i] = p
+	}
+	return plans, nil
+}
+
 // ClusterMapAPIobj associated with the the manifest
 func (helper *Helper) ClusterMapAPIobj() (*v1alpha1.ClusterMap, error) {
 	bundle, err := document.NewBundleByPath(helper.phaseBundleRoot)
@@ -235,28 +262,4 @@ func (helper *Helper) PhaseEntryPointBasePath() string {
 // TODO add creation of WorkDir if it doesn't exist
 func (helper *Helper) WorkDir() (string, error) {
 	return filepath.Join(util.UserHomeDir(), config.AirshipConfigDir), nil
-}
-
-// PrintPlan prints plan
-// TODO make this more readable in the future, and move to client
-func PrintPlan(plan *v1alpha1.PhasePlan, w io.Writer) error {
-	result := make(map[string][]string)
-	for _, phaseGroup := range plan.PhaseGroups {
-		phases := make([]string, len(phaseGroup.Phases))
-		for i, phase := range phaseGroup.Phases {
-			phases[i] = phase.Name
-		}
-		result[phaseGroup.Name] = phases
-	}
-
-	tw := util.NewTabWriter(w)
-	defer tw.Flush()
-	fmt.Fprintf(tw, "GROUP\tPHASE\n")
-	for group, phaseList := range result {
-		fmt.Fprintf(tw, "%s\t\n", group)
-		for _, phase := range phaseList {
-			fmt.Fprintf(tw, "\t%s\n", phase)
-		}
-	}
-	return nil
 }

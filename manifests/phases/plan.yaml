@@ -2,6 +2,7 @@ apiVersion: airshipit.org/v1alpha1
 kind: PhasePlan
 metadata:
   name: phasePlan
+description: "Default phase plan"
 phaseGroups:
   - name: group1
     phases:

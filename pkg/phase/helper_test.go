@@ -15,7 +15,6 @@
 package phase_test
 
 import (
-	"bytes"
 	"path/filepath"
 	"testing"
 
@@ -236,6 +235,57 @@ func TestHelperListPhases(t *testing.T) {
 	}
 }
 
+func TestHelperListPlans(t *testing.T) {
+	testCases := []struct {
+		name        string
+		errContains string
+		expectedLen int
+		config      func(t *testing.T) *config.Config
+	}{
+		{
+			name:        "Success plan list",
+			expectedLen: 1,
+			config:      testConfig,
+		},
+		{
+			name: "Error bundle path doesn't exist",
+			config: func(t *testing.T) *config.Config {
+				conf := testConfig(t)
+				conf.Manifests["dummy_manifest"].MetadataPath = brokenMetaPath
+				return conf
+			},
+			errContains: "no such file or directory",
+		},
+		{
+			name: "Success 0 plans",
+			config: func(t *testing.T) *config.Config {
+				conf := testConfig(t)
+				conf.Manifests["dummy_manifest"].MetadataPath = noPlanMetaPath
+				return conf
+			},
+			expectedLen: 0,
+		},
+	}
+
+	for _, test := range testCases {
+		tt := test
+		t.Run(tt.name, func(t *testing.T) {
+			helper, err := phase.NewHelper(tt.config(t))
+			require.NoError(t, err)
+			require.NotNil(t, helper)
+
+			actualList, actualErr := helper.ListPlans()
+			if tt.errContains != "" {
+				require.Error(t, actualErr)
+				assert.Contains(t, actualErr.Error(), tt.errContains)
+			} else {
+				require.NoError(t, actualErr)
+				assert.Len(t, actualList, tt.expectedLen)
+			}
+		})
+	}
+}
+
 func TestHelperClusterMapAPI(t *testing.T) {
 	testCases := []struct {
 		name         string
@@ -399,24 +449,6 @@ func TestHelperExecutorDoc(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestHelperPrintPlan(t *testing.T) {
-	helper, err := phase.NewHelper(testConfig(t))
-	require.NoError(t, err)
-	require.NotNil(t, helper)
-	plan, err := helper.Plan()
-	require.NoError(t, err)
-	require.NotNil(t, plan)
-	buf := bytes.NewBuffer([]byte{})
-	err = phase.PrintPlan(plan, buf)
-	require.NoError(t, err)
-	// easy check to make sure printed plan contains all phases in plan
-	assert.Contains(t, buf.String(), "remotedirect")
-	assert.Contains(t, buf.String(), "isogen")
-	assert.Contains(t, buf.String(), "initinfra")
-	assert.Contains(t, buf.String(), "some_phase")
-	assert.Contains(t, buf.String(), "capi_init")
 }
 
 func TestHelperTargetPath(t *testing.T) {
