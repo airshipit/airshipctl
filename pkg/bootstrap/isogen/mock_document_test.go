@@ -40,6 +40,7 @@ type MockDocument struct {
 	MockMarshalJSON    func() ([]byte, error)
 	MockToObject       func() error
 	MockToAPIObject    func() error
+	MockGetFieldValue  func() (interface{}, error)
 }
 
 func (md *MockDocument) Annotate(_ map[string]string) {
@@ -60,6 +61,10 @@ func (md *MockDocument) GetBool(_ string) (bool, error) {
 
 func (md *MockDocument) GetFloat64(_ string) (float64, error) {
 	return md.MockGetFloat64()
+}
+
+func (md *MockDocument) GetFieldValue(_ string) (interface{}, error) {
+	return md.MockGetFieldValue()
 }
 
 func (md *MockDocument) GetGroup() string {

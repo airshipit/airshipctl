@@ -49,6 +49,13 @@ type ErrRuntimeObjectKind struct {
 	Obj runtime.Object
 }
 
+// ErrBadValueFormat returned if wrong field type requested
+type ErrBadValueFormat struct {
+	Value    string
+	Expected string
+	Actual   string
+}
+
 func (e ErrDocNotFound) Error() string {
 	return fmt.Sprintf("document filtered by selector %v found no documents", e.Selector)
 }
@@ -67,4 +74,8 @@ func (e ErrDocumentMalformed) Error() string {
 
 func (e ErrRuntimeObjectKind) Error() string {
 	return fmt.Sprintf("object %#v has either none or multiple kinds in scheme (expected one)", e.Obj)
+}
+
+func (e ErrBadValueFormat) Error() string {
+	return fmt.Sprintf("value of %s expected to have %s type, got %s", e.Value, e.Expected, e.Actual)
 }
