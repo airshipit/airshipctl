@@ -32,17 +32,21 @@ type EventProcessor interface {
 
 // DefaultProcessor is implementation of EventProcessor
 type DefaultProcessor struct {
-	errors      []error
-	applierChan chan<- applyevent.Event
+	errors         []error
+	applierChan    chan<- applyevent.Event
+	genericPrinter GenericPrinter
 }
 
 // NewDefaultProcessor returns instance of DefaultProcessor as interface Implementation
 func NewDefaultProcessor(streams genericclioptions.IOStreams) EventProcessor {
 	applyCh := make(chan applyevent.Event)
 	go printers.GetPrinter(printers.EventsPrinter, streams).Print(applyCh, common.DryRunNone)
+	// printer for custom airshipctl events
+	genericPrinter := NewGenericPrinter(log.Writer(), JSONPrinter)
 	return &DefaultProcessor{
-		errors:      []error{},
-		applierChan: applyCh,
+		errors:         []error{},
+		applierChan:    applyCh,
+		genericPrinter: genericPrinter,
 	}
 }
 
@@ -55,19 +59,16 @@ func (p *DefaultProcessor) Process(ch <-chan Event) error {
 		case ErrorType:
 			log.Printf("Received error on event channel %v", e.ErrorEvent)
 			p.errors = append(p.errors, e.ErrorEvent.Error)
-		case ClusterctlType, IsogenType, GenericContainerType:
-			// TODO each event needs to be interface that allows us to print it for example
-			// Stringer interface or AsYAML for further processing.
-			// For now we print the event object as is
-			log.Printf("Received event: %v", e)
-		case BootstrapType:
-			log.Printf("%s", e.BootstrapEvent.Message)
 		case StatusPollerType:
 			log.Fatalf("Processing for status poller events are not yet implemented")
 		case WaitType:
 			log.Fatalf("Processing for wait events are not yet implemented")
 		default:
-			log.Fatalf("Unknown event type received: %d", e.Type)
+			ge := Normalize(e)
+			err := p.genericPrinter.PrintEvent(ge)
+			if err != nil {
+				p.errors = append(p.errors, err)
+			}
 		}
 	}
 	return checkErrors(p.errors)
