@@ -17,6 +17,7 @@ package checkexpiration_test
 import (
 	"bytes"
 	"io/ioutil"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -34,7 +35,11 @@ import (
 )
 
 const (
-	testThreshold = 5000
+	testThreshold = 7200
+
+	nodeFile      = "testdata/node.yaml"
+	kubeconfFile  = "testdata/kubeconfig.yaml"
+	tlsSecretFile = "testdata/tls-secret.yaml" //nolint:gosec
 
 	expectedJSONOutput = ` {
 		"tlsSecrets": [
@@ -179,9 +184,9 @@ func TestRunE(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testCaseName, func(t *testing.T) {
 			objects := []runtime.Object{
-				getSecretObject(t, "testdata/tls-secret.yaml"),
-				getSecretObject(t, "testdata/kubeconfig.yaml"),
-				getNodeObject(t, "testdata/node.yaml"),
+				getSecretObject(t, tlsSecretFile),
+				getSecretObject(t, kubeconfFile),
+				getNodeObject(t, nodeFile, "2021"),
 			}
 			ra := fake.WithTypedObjects(objects...)
 
@@ -223,12 +228,15 @@ func getSecretObject(t *testing.T, fileName string) *v1.Secret {
 	return secret
 }
 
-func getNodeObject(t *testing.T, fileName string) *v1.Node {
+func getNodeObject(t *testing.T, fileName string, expirationYear string) *v1.Node {
 	t.Helper()
 
 	object := readObjectFromFile(t, fileName)
 	node, ok := object.(*v1.Node)
 	require.True(t, ok)
+
+	node.Annotations["cert-expiration"] = strings.ReplaceAll(node.Annotations["cert-expiration"],
+		"{{year}}", expirationYear)
 
 	return node
 }
