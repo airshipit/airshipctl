@@ -74,7 +74,7 @@ func NewApplier(eventCh chan events.Event, f cmdutil.Factory) *Applier {
 func (a *Applier) ApplyBundle(bundle document.Bundle, ao ApplyOptions) {
 	defer close(a.eventChannel)
 	log.Debugf("Getting infos for bundle, inventory id is %s", ao.BundleName)
-	infos, err := a.getInfos(ao.BundleName, bundle)
+	infos, err := a.getInfos(ao.BundleName, bundle, ao.DryRunStrategy)
 	if err != nil {
 		handleError(a.eventChannel, err)
 		return
@@ -90,7 +90,10 @@ func (a *Applier) ApplyBundle(bundle document.Bundle, ao ApplyOptions) {
 	}
 }
 
-func (a *Applier) getInfos(bundleName string, bundle document.Bundle) ([]*resource.Info, error) {
+func (a *Applier) getInfos(
+	bundleName string,
+	bundle document.Bundle,
+	dryRun clicommon.DryRunStrategy) ([]*resource.Info, error) {
 	if bundle == nil {
 		return nil, ErrNilBundle{}
 	}
@@ -117,7 +120,7 @@ func (a *Applier) getInfos(bundleName string, bundle document.Bundle) ([]*resour
 			return nil, innerErr
 		}
 		log.Debugf("Making sure that inventory object namespace %s exists", invDoc.GetNamespace())
-		innerErr = a.ensureNamespaceExists(invDoc.GetNamespace())
+		innerErr = a.ensureNamespaceExists(invDoc.GetNamespace(), dryRun)
 		if innerErr != nil {
 			return nil, innerErr
 		}
@@ -130,7 +133,11 @@ func (a *Applier) getInfos(bundleName string, bundle document.Bundle) ([]*resour
 	return a.ManifestReaderFactory(false, bundle, a.Factory).Read()
 }
 
-func (a *Applier) ensureNamespaceExists(name string) error {
+func (a *Applier) ensureNamespaceExists(name string, dryRun clicommon.DryRunStrategy) error {
+	if dryRun != clicommon.DryRunNone {
+		log.Printf("Dryrun strategy is specified, otherwise Namespace '%s' would have been created", name)
+		return nil
+	}
 	clientSet, err := a.Factory.KubernetesClientSet()
 	if err != nil {
 		return err
