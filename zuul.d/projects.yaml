@@ -18,7 +18,7 @@
         http: ""
         https: ""
         noproxy: ""
-      image_repo: https://quay.io/api/v1/
+      image_repo: quay.io
     check:
       jobs:
         - openstack-tox-docs: &docs
