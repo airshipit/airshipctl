@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package isogen
+package isogen_test
 
 import (
 	"testing"
@@ -20,10 +20,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/bootstrap/isogen"
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
@@ -59,7 +59,7 @@ func TestRegisterExecutor(t *testing.T) {
 		Version: "v1alpha1",
 		Kind:    "ImageConfiguration",
 	}
-	err := RegisterExecutor(registry)
+	err := isogen.RegisterExecutor(registry)
 	require.NoError(t, err)
 
 	_, found := registry[expectedGVK]
@@ -69,7 +69,7 @@ func TestRegisterExecutor(t *testing.T) {
 func TestNewExecutor(t *testing.T) {
 	execDoc, err := document.NewDocumentFromBytes([]byte(executorDoc))
 	require.NoError(t, err)
-	_, err = NewExecutor(ifc.ExecutorConfig{
+	_, err = isogen.NewExecutor(ifc.ExecutorConfig{
 		ExecutorDocument: execDoc,
 		BundleFactory:    testBundleFactory(executorBundlePath)})
 	require.NoError(t, err)
@@ -144,11 +144,11 @@ func TestExecutorRun(t *testing.T) {
 	for _, test := range testCases {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
-			executor := &Executor{
+			executor := &isogen.Executor{
 				ExecutorDocument: testDoc,
 				ExecutorBundle:   bundle,
-				imgConf:          testCfg,
-				builder:          tt.builder,
+				ImgConf:          testCfg,
+				Builder:          tt.builder,
 			}
 			ch := make(chan events.Event)
 			go executor.Run(ch, ifc.RunOptions{})
