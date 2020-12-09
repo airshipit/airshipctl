@@ -30,6 +30,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	"opendev.org/airship/airshipctl/testutil"
 	testcontainer "opendev.org/airship/airshipctl/testutil/container"
+	testdoc "opendev.org/airship/airshipctl/testutil/document"
 )
 
 var (
@@ -93,7 +94,7 @@ func TestExecutorRun(t *testing.T) {
 			NetworkConfigFileName: "net-conf",
 		},
 	}
-	testDoc := &MockDocument{
+	testDoc := &testdoc.MockDocument{
 		MockAsYAML: func() ([]byte, error) { return []byte("TESTDOC"), nil },
 	}
 
