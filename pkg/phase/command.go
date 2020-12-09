@@ -32,13 +32,18 @@ import (
 	"opendev.org/airship/airshipctl/pkg/util"
 )
 
-// RunFlags options for phase run command
-type RunFlags struct {
+// GenericRunFlags generic options for run command
+type GenericRunFlags struct {
 	DryRun     bool
 	Timeout    time.Duration
-	PhaseID    ifc.ID
 	Kubeconfig string
 	Progress   bool
+}
+
+// RunFlags options for phase run command
+type RunFlags struct {
+	GenericRunFlags
+	PhaseID ifc.ID
 }
 
 // RunCommand phase run command
@@ -201,4 +206,38 @@ func (c *PlanListCommand) RunE() error {
 	printer.Columns = append(printer.Columns, descriptionCol)
 	printer.PrintTable(rt, 0)
 	return nil
+}
+
+// PlanRunFlags options for phase run command
+type PlanRunFlags struct {
+	GenericRunFlags
+	PlanID ifc.ID
+}
+
+// PlanRunCommand phase run command
+type PlanRunCommand struct {
+	Options PlanRunFlags
+	Factory config.Factory
+}
+
+// RunE executes phase plan
+func (c *PlanRunCommand) RunE() error {
+	cfg, err := c.Factory()
+	if err != nil {
+		return err
+	}
+
+	helper, err := NewHelper(cfg)
+	if err != nil {
+		return err
+	}
+
+	kubeconfigOption := InjectKubeconfigPath(c.Options.Kubeconfig)
+	client := NewClient(helper, kubeconfigOption)
+
+	plan, err := client.PlanByID(c.Options.PlanID)
+	if err != nil {
+		return err
+	}
+	return plan.Run(ifc.RunOptions{DryRun: c.Options.DryRun, Timeout: c.Options.Timeout, Progress: c.Options.Progress})
 }

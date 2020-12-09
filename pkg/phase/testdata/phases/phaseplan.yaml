@@ -3,7 +3,5 @@ kind: PhasePlan
 metadata:
   name: phasePlan
 description: "Default phase plan"
-phaseGroups:
-  - name: group1
-    phases:
-      - name: phase
+phases:
+  - name: phase

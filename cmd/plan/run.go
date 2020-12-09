@@ -18,7 +18,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/errors"
+	"opendev.org/airship/airshipctl/pkg/phase"
 )
 
 const (
@@ -29,14 +29,37 @@ Run life-cycle phase plan which was defined in document model.
 
 // NewRunCommand creates a command which execute a particular phase plan
 func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
-	listCmd := &cobra.Command{
+	r := &phase.PlanRunCommand{
+		Factory: cfgFactory,
+		Options: phase.PlanRunFlags{},
+	}
+	runCmd := &cobra.Command{
 		Use:   "run PLAN_NAME",
 		Short: "Run plan",
 		Long:  runLong[1:],
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return errors.ErrNotImplemented{What: "airshipctl plan run"}
+			r.Options.PlanID.Name = args[0]
+			return r.RunE()
 		},
 	}
-	return listCmd
+
+	flags := runCmd.Flags()
+	flags.BoolVar(
+		&r.Options.DryRun,
+		"dry-run",
+		false,
+		"simulate phase execution")
+	flags.DurationVar(
+		&r.Options.Timeout,
+		"wait-timeout",
+		0,
+		"wait timeout")
+	flags.StringVar(
+		&r.Options.Kubeconfig,
+		"kubeconfig",
+		"",
+		"Path to kubeconfig associated with site being managed")
+
+	return runCmd
 }

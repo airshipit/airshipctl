@@ -788,15 +788,13 @@ apiVersion: airshipit.org/v1alpha1
 kind: PhasePlan
 metadata:
   name: phasePlan
-phaseGroups:
-  - name: group1
-    phases:
-      - name: clusterctl-init-ephemeral
-      - name: controlplane-ephemeral
-      - name: initinfra-target
-      - name: clusterctl-init-target
-      - name: clusterctl-move
-      - name: workers-target
+phases:
+  - name: clusterctl-init-ephemeral
+  - name: controlplane-ephemeral
+  - name: initinfra-target
+  - name: clusterctl-init-target
+  - name: clusterctl-move
+  - name: workers-target
 ```
 
 ### Cluster Templates

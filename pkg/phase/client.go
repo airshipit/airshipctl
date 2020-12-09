@@ -177,6 +177,34 @@ func (p *phase) Details() (string, error) {
 	return "", nil
 }
 
+var _ ifc.Plan = &plan{}
+
+type plan struct {
+	helper      ifc.Helper
+	apiObj      *v1alpha1.PhasePlan
+	phaseClient ifc.Client
+}
+
+// Validate makes sure that phase plan is properly configured
+// TODO implement this
+func (p *plan) Validate() error { return nil }
+
+// Run function excutes Run method for each phase
+func (p *plan) Run(ro ifc.RunOptions) error {
+	for _, step := range p.apiObj.Phases {
+		phaseRunner, err := p.phaseClient.PhaseByID(ifc.ID{Name: step.Name})
+		if err != nil {
+			return err
+		}
+
+		log.Printf("executing phase: %s\n", step)
+		if err = phaseRunner.Run(ro); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 var _ ifc.Client = &client{}
 
 type client struct {
@@ -243,6 +271,18 @@ func (c *client) PhaseByID(id ifc.ID) (ifc.Phase, error) {
 		kubeconfig: c.kubeconfig,
 	}
 	return phase, nil
+}
+
+func (c *client) PlanByID(id ifc.ID) (ifc.Plan, error) {
+	planObj, err := c.Plan(id)
+	if err != nil {
+		return nil, err
+	}
+	return &plan{
+		apiObj:      planObj,
+		helper:      c.Helper,
+		phaseClient: c,
+	}, nil
 }
 
 func (c *client) PhaseByAPIObj(phaseObj *v1alpha1.Phase) (ifc.Phase, error) {
