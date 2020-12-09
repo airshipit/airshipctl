@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package isogen_test
+package executors_test
 
 import (
 	"testing"
@@ -23,10 +23,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
-	"opendev.org/airship/airshipctl/pkg/bootstrap/isogen"
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
+	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	"opendev.org/airship/airshipctl/testutil"
 	testcontainer "opendev.org/airship/airshipctl/testutil/container"
@@ -34,7 +34,7 @@ import (
 )
 
 var (
-	executorDoc = `
+	isogenExecutorDoc = `
 apiVersion: airshipit.org/v1alpha1
 kind: ImageConfiguration
 metadata:
@@ -49,33 +49,33 @@ container:
   containerRuntime: docker
   image: quay.io/airshipit/isogen:latest-ubuntu_focal
   volume: /srv/iso:/config`
-	executorBundlePath = "testdata/primary/site/test-site/ephemeral/bootstrap"
+	executorBundlePath = "../../bootstrap/isogen/testdata/primary/site/test-site/ephemeral/bootstrap"
 )
 
-func TestRegisterExecutor(t *testing.T) {
+func TestRegisterIsogenExecutor(t *testing.T) {
 	registry := make(map[schema.GroupVersionKind]ifc.ExecutorFactory)
 	expectedGVK := schema.GroupVersionKind{
 		Group:   "airshipit.org",
 		Version: "v1alpha1",
 		Kind:    "ImageConfiguration",
 	}
-	err := isogen.RegisterExecutor(registry)
+	err := executors.RegisterIsogenExecutor(registry)
 	require.NoError(t, err)
 
 	_, found := registry[expectedGVK]
 	assert.True(t, found)
 }
 
-func TestNewExecutor(t *testing.T) {
-	execDoc, err := document.NewDocumentFromBytes([]byte(executorDoc))
+func TestNewIsogenExecutor(t *testing.T) {
+	execDoc, err := document.NewDocumentFromBytes([]byte(isogenExecutorDoc))
 	require.NoError(t, err)
-	_, err = isogen.NewExecutor(ifc.ExecutorConfig{
+	_, err = executors.NewIsogenExecutor(ifc.ExecutorConfig{
 		ExecutorDocument: execDoc,
 		BundleFactory:    testBundleFactory(executorBundlePath)})
 	require.NoError(t, err)
 }
 
-func TestExecutorRun(t *testing.T) {
+func TestIsogenExecutorRun(t *testing.T) {
 	bundle, err := document.NewBundleByPath(executorBundlePath)
 	require.NoError(t, err)
 	require.NotNil(t, bundle)
@@ -144,7 +144,7 @@ func TestExecutorRun(t *testing.T) {
 	for _, test := range testCases {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
-			executor := &isogen.Executor{
+			executor := &executors.IsogenExecutor{
 				ExecutorDocument: testDoc,
 				ExecutorBundle:   bundle,
 				ImgConf:          testCfg,
@@ -169,12 +169,6 @@ func TestExecutorRun(t *testing.T) {
 			assert.Equal(t, tt.expectedEvt, actualEvt)
 		})
 	}
-}
-
-func wrapError(err error) events.Event {
-	return events.NewEvent().WithErrorEvent(events.ErrorEvent{
-		Error: err,
-	})
 }
 
 func testBundleFactory(path string) document.BundleFactoryFunc {

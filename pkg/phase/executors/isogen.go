@@ -12,15 +12,19 @@
  limitations under the License.
 */
 
-package isogen
+package executors
 
 import (
 	"context"
 	"io"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/bootstrap/isogen"
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/errors"
@@ -29,10 +33,10 @@ import (
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
-var _ ifc.Executor = &Executor{}
+var _ ifc.Executor = &IsogenExecutor{}
 
-// Executor contains resources for isogen executor
-type Executor struct {
+// IsogenExecutor contains resources for isogen executor
+type IsogenExecutor struct {
 	ExecutorBundle   document.Bundle
 	ExecutorDocument document.Document
 
@@ -40,19 +44,19 @@ type Executor struct {
 	Builder container.Container
 }
 
-// RegisterExecutor adds executor to phase executor registry
-func RegisterExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFactory) error {
+// RegisterIsogenExecutor adds executor to phase executor registry
+func RegisterIsogenExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFactory) error {
 	obj := v1alpha1.DefaultImageConfiguration()
 	gvks, _, err := v1alpha1.Scheme.ObjectKinds(obj)
 	if err != nil {
 		return err
 	}
-	registry[gvks[0]] = NewExecutor
+	registry[gvks[0]] = NewIsogenExecutor
 	return nil
 }
 
-// NewExecutor creates instance of phase executor
-func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
+// NewIsogenExecutor creates instance of phase executor
+func NewIsogenExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 	apiObj := &v1alpha1.ImageConfiguration{
 		Container: &v1alpha1.Container{},
 		Builder:   &v1alpha1.Builder{},
@@ -67,7 +71,7 @@ func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 		return nil, err
 	}
 
-	return &Executor{
+	return &IsogenExecutor{
 		ExecutorBundle:   bundle,
 		ExecutorDocument: cfg.ExecutorDocument,
 		ImgConf:          apiObj,
@@ -75,7 +79,7 @@ func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 }
 
 // Run isogen as a phase runner
-func (c *Executor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
+func (c *IsogenExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 	defer close(evtCh)
 
 	if c.ExecutorBundle == nil {
@@ -109,7 +113,7 @@ func (c *Executor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 		}
 	}
 
-	bootstrapOpts := BootstrapIsoOptions{
+	bootstrapOpts := isogen.BootstrapIsoOptions{
 		DocBundle: c.ExecutorBundle,
 		Builder:   c.Builder,
 		Doc:       c.ExecutorDocument,
@@ -141,13 +145,20 @@ func (c *Executor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 	})
 }
 
+func verifyArtifacts(cfg *v1alpha1.ImageConfiguration) error {
+	hostVol := strings.Split(cfg.Container.Volume, ":")[0]
+	metadataPath := filepath.Join(hostVol, cfg.Builder.OutputMetadataFileName)
+	_, err := os.Stat(metadataPath)
+	return err
+}
+
 // Validate executor configuration and documents
-func (c *Executor) Validate() error {
+func (c *IsogenExecutor) Validate() error {
 	return errors.ErrNotImplemented{}
 }
 
 // Render executor documents
-func (c *Executor) Render(w io.Writer, _ ifc.RenderOptions) error {
+func (c *IsogenExecutor) Render(w io.Writer, _ ifc.RenderOptions) error {
 	// will be implemented later
 	_, err := w.Write([]byte{})
 	return err

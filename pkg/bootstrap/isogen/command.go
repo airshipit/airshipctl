@@ -105,13 +105,6 @@ func getContainerCfg(
 	return fls
 }
 
-func verifyArtifacts(cfg *v1alpha1.ImageConfiguration) error {
-	hostVol := strings.Split(cfg.Container.Volume, ":")[0]
-	metadataPath := filepath.Join(hostVol, cfg.Builder.OutputMetadataFileName)
-	_, err := os.Stat(metadataPath)
-	return err
-}
-
 // CreateBootstrapIso prepares and runs appropriate container to create a bootstrap ISO
 func (opts BootstrapIsoOptions) CreateBootstrapIso() error {
 	cntVol := strings.Split(opts.Cfg.Container.Volume, ":")[1]
