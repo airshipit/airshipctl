@@ -51,15 +51,22 @@ container:
 apiVersion: airshipit.org/v1alpha1
 kind: GenericContainer
 metadata:
-  name: generic-container
+  name: encrypter
   labels:
     airshipit.org/deploy-k8s: "false"
-kustomizeSinkOutputDir: ""
+kustomizeSinkOutputDir: "target/generator/results/generated"
 spec:
   container:
-      image: quay.io/sample/image:v0.0.1
+    image: quay.io/aodinokov/sops:v0.0.3
+    envs:
+    - SOPS_IMPORT_PGP
+    - SOPS_PGP_FP
 config: |
-  foo: bar
+  apiVersion: v1
+  kind: ConfigMap
+  data:
+    cmd: encrypt
+    unencrypted-regex: '^(kind|apiVersion|group|metadata)$'
 ---
 # This executor launchs a bootstrap container, which creates
 # an Azure Kubernetes Service (AKS) cluster

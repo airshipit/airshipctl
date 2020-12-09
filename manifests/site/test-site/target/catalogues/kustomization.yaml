@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - ../../../../type/gating/shared/catalogues
   - hosts.yaml
+  - ../generator/results
 
 patchesStrategicMerge:
   - versions-airshipctl.yaml
