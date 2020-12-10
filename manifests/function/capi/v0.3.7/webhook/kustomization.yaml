@@ -4,7 +4,7 @@ resources:
 - namespace.yaml
 - manifests.yaml
 - service.yaml
-- ../../../certmanager
+- ../certmanager
 - ../manager
 
 configurations:

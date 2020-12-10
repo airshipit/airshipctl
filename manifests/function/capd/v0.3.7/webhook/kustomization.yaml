@@ -5,7 +5,7 @@ namespace: capd-system
 resources:
 - manifests.yaml
 - service.yaml
-- ../../../certmanager
+- ../certmanager
 - ../manager
 
 patchesStrategicMerge:
