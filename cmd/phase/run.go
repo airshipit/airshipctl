@@ -65,5 +65,10 @@ func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
 		"kubeconfig",
 		"",
 		"Path to kubeconfig associated with site being managed")
+	flags.BoolVar(
+		&p.Options.Progress,
+		"progress",
+		false,
+		"show progress")
 	return runCmd
 }
