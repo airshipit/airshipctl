@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package container
+package executors
 
 import (
 	"bytes"
@@ -40,10 +40,10 @@ const (
 	yamlSeparator = "---\n"
 )
 
-var _ ifc.Executor = &Executor{}
+var _ ifc.Executor = &ContainerExecutor{}
 
-// Executor contains resources for generic container executor
-type Executor struct {
+// ContainerExecutor contains resources for generic container executor
+type ContainerExecutor struct {
 	ExecutorBundle   document.Bundle
 	ExecutorDocument document.Document
 
@@ -52,19 +52,19 @@ type Executor struct {
 	targetPath string
 }
 
-// RegisterExecutor adds executor to phase executor registry
-func RegisterExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFactory) error {
+// RegisterContainerExecutor adds executor to phase executor registry
+func RegisterContainerExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFactory) error {
 	obj := v1alpha1.DefaultGenericContainer()
 	gvks, _, err := v1alpha1.Scheme.ObjectKinds(obj)
 	if err != nil {
 		return err
 	}
-	registry[gvks[0]] = NewExecutor
+	registry[gvks[0]] = NewContainerExecutor
 	return nil
 }
 
-// NewExecutor creates instance of phase executor
-func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
+// NewContainerExecutor creates instance of phase executor
+func NewContainerExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 	bundle, err := cfg.BundleFactory()
 	if err != nil {
 		return nil, err
@@ -78,7 +78,7 @@ func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 		return nil, err
 	}
 
-	return &Executor{
+	return &ContainerExecutor{
 		ExecutorBundle:   bundle,
 		ExecutorDocument: cfg.ExecutorDocument,
 
@@ -91,7 +91,7 @@ func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 }
 
 // Run generic container as a phase runner
-func (c *Executor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
+func (c *ContainerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 	defer close(evtCh)
 
 	evtCh <- events.NewEvent().WithGenericContainerEvent(events.GenericContainerEvent{
@@ -129,7 +129,7 @@ func (c *Executor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 }
 
 // SetInput sets input for function
-func (c *Executor) SetInput(evtCh chan events.Event) {
+func (c *ContainerExecutor) SetInput(evtCh chan events.Event) {
 	docs, err := c.ExecutorBundle.GetAllDocuments()
 	if err != nil {
 		handleError(evtCh, err)
@@ -150,7 +150,7 @@ func (c *Executor) SetInput(evtCh chan events.Event) {
 }
 
 // PrepareFunctions prepares data for function
-func (c *Executor) PrepareFunctions(evtCh chan events.Event) {
+func (c *ContainerExecutor) PrepareFunctions(evtCh chan events.Event) {
 	rnode, err := kyaml.Parse(c.ContConf.Config)
 	if err != nil {
 		handleError(evtCh, err)
@@ -174,7 +174,7 @@ func (c *Executor) PrepareFunctions(evtCh chan events.Event) {
 }
 
 // SetMounts allows to set relative path for storage mounts to prevent security issues
-func (c *Executor) SetMounts() {
+func (c *ContainerExecutor) SetMounts() {
 	if len(c.ContConf.Spec.Container.StorageMounts) == 0 {
 		return
 	}
@@ -186,17 +186,11 @@ func (c *Executor) SetMounts() {
 }
 
 // Validate executor configuration and documents
-func (c *Executor) Validate() error {
+func (c *ContainerExecutor) Validate() error {
 	return errors.ErrNotImplemented{}
 }
 
 // Render executor documents
-func (c *Executor) Render(_ io.Writer, _ ifc.RenderOptions) error {
+func (c *ContainerExecutor) Render(_ io.Writer, _ ifc.RenderOptions) error {
 	return errors.ErrNotImplemented{}
-}
-
-func handleError(ch chan<- events.Event, err error) {
-	ch <- events.NewEvent().WithErrorEvent(events.ErrorEvent{
-		Error: err,
-	})
 }
