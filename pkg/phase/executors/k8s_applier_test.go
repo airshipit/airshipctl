@@ -23,13 +23,11 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
-	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/k8s/utils"
-	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	testfs "opendev.org/airship/airshipctl/testutil/fs"
@@ -96,7 +94,7 @@ func TestNewKubeApplierExecutor(t *testing.T) {
 			name:          "valid executor",
 			cfgDoc:        ValidExecutorDoc,
 			kubeconf:      testKubeconfig(testValidKubeconfig),
-			helper:        makeKubeApplierDefaultHelper(t),
+			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata"),
 			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
 		},
 		{
@@ -109,7 +107,7 @@ metadata:
   labels:
     cli-utils.sigs.k8s.io/inventory-id: "some id"`,
 			expectedErr:   "wrong config document",
-			helper:        makeKubeApplierDefaultHelper(t),
+			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata"),
 			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
 		},
 
@@ -118,7 +116,7 @@ metadata:
 			cfgDoc:        ValidExecutorDoc,
 			expectedErr:   "no such file or directory",
 			kubeconf:      testKubeconfig(testValidKubeconfig),
-			helper:        makeKubeApplierDefaultHelper(t),
+			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata"),
 			bundleFactory: testBundleFactory("does not exist"),
 		},
 	}
@@ -131,10 +129,10 @@ metadata:
 			require.NotNil(t, doc)
 
 			exec, err := executors.NewKubeApplierExecutor(
-				executors.ExecutorOptions{
+				ifc.ExecutorConfig{
 					ExecutorDocument: doc,
 					BundleFactory:    tt.bundleFactory,
-					Kubeconfig:       tt.kubeconf,
+					KubeConfig:       tt.kubeconf,
 					Helper:           tt.helper,
 				})
 			if tt.expectedErr != "" {
@@ -167,10 +165,10 @@ func TestKubeApplierExecutorRun(t *testing.T) {
 		{
 			name:          "cant read kubeconfig error",
 			containsErr:   "no such file or directory",
-			helper:        makeKubeApplierDefaultHelper(t),
+			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata"),
 			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
 			kubeconf:      testKubeconfig(`invalid kubeconfig`),
-			execDoc:       toKubernetesApply(t, ValidExecutorDocNamespaced),
+			execDoc:       executorDoc(t, ValidExecutorDocNamespaced),
 			clusterName:   "ephemeral-cluster",
 			clusterMap: clustermap.NewClusterMap(&v1alpha1.ClusterMap{
 				Map: map[string]*v1alpha1.Cluster{
@@ -181,10 +179,10 @@ func TestKubeApplierExecutorRun(t *testing.T) {
 		{
 			name:          "error cluster not defined",
 			containsErr:   "cluster  is not defined in in cluster map",
-			helper:        makeKubeApplierDefaultHelper(t),
+			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata"),
 			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
 			kubeconf:      testKubeconfig(testValidKubeconfig),
-			execDoc:       toKubernetesApply(t, ValidExecutorDocNamespaced),
+			execDoc:       executorDoc(t, ValidExecutorDocNamespaced),
 			clusterMap:    clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
 		},
 	}
@@ -192,11 +190,11 @@ func TestKubeApplierExecutorRun(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			exec, err := executors.NewKubeApplierExecutor(
-				executors.ExecutorOptions{
+				ifc.ExecutorConfig{
 					ExecutorDocument: tt.execDoc,
 					Helper:           tt.helper,
 					BundleFactory:    tt.bundleFactory,
-					Kubeconfig:       tt.kubeconf,
+					KubeConfig:       tt.kubeconf,
 					ClusterMap:       tt.clusterMap,
 					ClusterName:      tt.clusterName,
 				})
@@ -225,7 +223,7 @@ func TestRender(t *testing.T) {
 	execDoc, err := document.NewDocumentFromBytes([]byte(ValidExecutorDoc))
 	require.NoError(t, err)
 	require.NotNil(t, execDoc)
-	exec, err := executors.NewKubeApplierExecutor(executors.ExecutorOptions{
+	exec, err := executors.NewKubeApplierExecutor(ifc.ExecutorConfig{
 		BundleFactory:    testBundleFactory("../../k8s/applier/testdata/source_bundle"),
 		ExecutorDocument: execDoc,
 	})
@@ -238,42 +236,6 @@ func TestRender(t *testing.T) {
 
 	result := writerReader.String()
 	assert.Contains(t, result, "ReplicationController")
-}
-
-func makeKubeApplierDefaultHelper(t *testing.T) ifc.Helper {
-	t.Helper()
-	conf := &config.Config{
-		CurrentContext: "default",
-		Contexts: map[string]*config.Context{
-			"default": {
-				Manifest: "default-manifest",
-			},
-		},
-		Manifests: map[string]*config.Manifest{
-			"default-manifest": {
-				MetadataPath:        "metadata.yaml",
-				TargetPath:          "../../k8s/applier/testdata",
-				PhaseRepositoryName: config.DefaultTestPhaseRepo,
-				Repositories: map[string]*config.Repository{
-					config.DefaultTestPhaseRepo: {
-						URLString: "",
-					},
-				},
-			},
-		},
-	}
-	helper, err := phase.NewHelper(conf)
-	require.NoError(t, err)
-	require.NotNil(t, helper)
-	return helper
-}
-
-// toKubernetesApply converts string to document object
-func toKubernetesApply(t *testing.T, s string) document.Document {
-	doc, err := document.NewDocumentFromBytes([]byte(s))
-	require.NoError(t, err)
-	require.NotNil(t, doc)
-	return doc
 }
 
 func testKubeconfig(stringData string) kubeconfig.Interface {

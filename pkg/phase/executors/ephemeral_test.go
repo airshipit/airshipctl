@@ -24,8 +24,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/bootstrap/ephemeral"
 	"opendev.org/airship/airshipctl/pkg/container"
@@ -56,21 +54,6 @@ bootstrapContainer:
   saveKubeconfigFileName: capz.kubeconfig
 `
 )
-
-// TestRegisterEphemeralExecutor - Unit testing function RegisterEphemeralExecutor()
-func TestRegisterEphemeralExecutor(t *testing.T) {
-	registry := make(map[schema.GroupVersionKind]ifc.ExecutorFactory)
-	expectedGVK := schema.GroupVersionKind{
-		Group:   "airshipit.org",
-		Version: "v1alpha1",
-		Kind:    "BootConfiguration",
-	}
-	err := executors.RegisterEphemeralExecutor(registry)
-	require.NoError(t, err)
-
-	_, found := registry[expectedGVK]
-	assert.True(t, found)
-}
 
 // TestNewEphemeralExecutor - Unit testing function NewExecutor()
 func TestNewEphemeralExecutor(t *testing.T) {

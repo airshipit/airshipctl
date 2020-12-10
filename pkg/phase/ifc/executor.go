@@ -57,6 +57,7 @@ type ExecutorFactory func(config ExecutorConfig) (Executor, error)
 type ExecutorConfig struct {
 	PhaseName   string
 	ClusterName string
+	BundleName  string
 
 	ClusterMap       clustermap.ClusterMap
 	ExecutorDocument document.Document

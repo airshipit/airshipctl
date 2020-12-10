@@ -35,3 +35,13 @@ type ErrIsogenNilBundle struct {
 func (e ErrIsogenNilBundle) Error() string {
 	return "Cannot build iso with empty bundle, no data source is available"
 }
+
+// ErrUnknownExecutorName is returned for unknown executor name parameter
+// received by RegisterExecutor function
+type ErrUnknownExecutorName struct {
+	ExecutorName string
+}
+
+func (e ErrUnknownExecutorName) Error() string {
+	return fmt.Sprintf("unknown executor name '%s'", e.ExecutorName)
+}

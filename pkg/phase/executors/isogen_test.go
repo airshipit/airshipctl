@@ -23,7 +23,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/container"
@@ -52,20 +51,6 @@ container:
   volume: /srv/images:/config`
 	executorBundlePath = "../../bootstrap/isogen/testdata/primary/site/test-site/ephemeral/bootstrap"
 )
-
-func TestRegisterIsogenExecutor(t *testing.T) {
-	registry := make(map[schema.GroupVersionKind]ifc.ExecutorFactory)
-	expectedGVK := schema.GroupVersionKind{
-		Group:   "airshipit.org",
-		Version: "v1alpha1",
-		Kind:    "IsoConfiguration",
-	}
-	err := executors.RegisterIsogenExecutor(registry)
-	require.NoError(t, err)
-
-	_, found := registry[expectedGVK]
-	assert.True(t, found)
-}
 
 func TestNewIsogenExecutor(t *testing.T) {
 	execDoc, err := document.NewDocumentFromBytes([]byte(isogenExecutorDoc))
@@ -174,11 +159,5 @@ func TestIsogenExecutorRun(t *testing.T) {
 			}
 			assert.Equal(t, tt.expectedEvt, actualEvt)
 		})
-	}
-}
-
-func testBundleFactory(path string) document.BundleFactoryFunc {
-	return func() (document.Bundle, error) {
-		return document.NewBundleByPath(path)
 	}
 }

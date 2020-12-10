@@ -21,8 +21,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/bootstrap/isogen"
 	"opendev.org/airship/airshipctl/pkg/container"
@@ -42,17 +40,6 @@ type IsogenExecutor struct {
 
 	ImgConf *v1alpha1.IsoConfiguration
 	Builder container.Container
-}
-
-// RegisterIsogenExecutor adds executor to phase executor registry
-func RegisterIsogenExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFactory) error {
-	obj := v1alpha1.DefaultIsoConfiguration()
-	gvks, _, err := v1alpha1.Scheme.ObjectKinds(obj)
-	if err != nil {
-		return err
-	}
-	registry[gvks[0]] = NewIsogenExecutor
-	return nil
 }
 
 // NewIsogenExecutor creates instance of phase executor
@@ -160,10 +147,4 @@ func (c *IsogenExecutor) Render(w io.Writer, _ ifc.RenderOptions) error {
 	// will be implemented later
 	_, err := w.Write([]byte{})
 	return err
-}
-
-func handleError(ch chan<- events.Event, err error) {
-	ch <- events.NewEvent().WithErrorEvent(events.ErrorEvent{
-		Error: err,
-	})
 }

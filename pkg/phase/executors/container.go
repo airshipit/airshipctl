@@ -26,8 +26,6 @@ import (
 	kyaml "sigs.k8s.io/kustomize/kyaml/yaml"
 	"sigs.k8s.io/yaml"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/errors"
@@ -45,17 +43,6 @@ type ContainerExecutor struct {
 	ContConf   *v1alpha1.GenericContainer
 	RunFns     runfn.RunFns
 	targetPath string
-}
-
-// RegisterContainerExecutor adds executor to phase executor registry
-func RegisterContainerExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFactory) error {
-	obj := v1alpha1.DefaultGenericContainer()
-	gvks, _, err := v1alpha1.Scheme.ObjectKinds(obj)
-	if err != nil {
-		return err
-	}
-	registry[gvks[0]] = NewContainerExecutor
-	return nil
 }
 
 // NewContainerExecutor creates instance of phase executor

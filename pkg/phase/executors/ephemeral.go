@@ -19,8 +19,6 @@ import (
 	"io"
 	"time"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/bootstrap/ephemeral"
 	"opendev.org/airship/airshipctl/pkg/container"
@@ -40,17 +38,6 @@ type EphemeralExecutor struct {
 
 	BootConf  *v1alpha1.BootConfiguration
 	Container container.Container
-}
-
-// RegisterEphemeralExecutor adds executor to phase executor registry
-func RegisterEphemeralExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFactory) error {
-	obj := v1alpha1.DefaultBootConfiguration()
-	gvks, _, err := v1alpha1.Scheme.ObjectKinds(obj)
-	if err != nil {
-		return err
-	}
-	registry[gvks[0]] = NewEphemeralExecutor
-	return nil
 }
 
 // NewEphemeralExecutor creates instance of phase executor
@@ -92,7 +79,7 @@ func (c *EphemeralExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 			c.BootConf.BootstrapContainer.ContainerRuntime,
 			c.BootConf.BootstrapContainer.Image)
 		if err != nil {
-			handleEphemeralError(evtCh, err)
+			handleError(evtCh, err)
 			return
 		}
 		c.Container = builder
@@ -111,7 +98,7 @@ func (c *EphemeralExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 
 	err := bootstrapOpts.VerifyInputs()
 	if err != nil {
-		handleEphemeralError(evtCh, err)
+		handleError(evtCh, err)
 		return
 	}
 
@@ -122,7 +109,7 @@ func (c *EphemeralExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 
 	err = bootstrapOpts.CreateBootstrapContainer()
 	if err != nil {
-		handleEphemeralError(evtCh, err)
+		handleError(evtCh, err)
 		return
 	}
 
@@ -133,7 +120,7 @@ func (c *EphemeralExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 
 	err = bootstrapOpts.VerifyArtifacts()
 	if err != nil {
-		handleEphemeralError(evtCh, err)
+		handleError(evtCh, err)
 		return
 	}
 
@@ -152,13 +139,4 @@ func (c *EphemeralExecutor) Validate() error {
 func (c *EphemeralExecutor) Render(w io.Writer, _ ifc.RenderOptions) error {
 	log.Print("Ephemeral Executor Render() will be implemented later.")
 	return nil
-}
-
-func handleEphemeralError(ch chan<- events.Event, err error) {
-	ch <- events.Event{
-		Type: events.ErrorType,
-		ErrorEvent: events.ErrorEvent{
-			Error: err,
-		},
-	}
 }
