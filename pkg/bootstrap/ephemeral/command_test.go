@@ -26,45 +26,8 @@ import (
 	"opendev.org/airship/airshipctl/pkg/bootstrap/ephemeral"
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/log"
+	testcontainer "opendev.org/airship/airshipctl/testutil/container"
 )
-
-type mockContainer struct {
-	imagePull         func() error
-	runCommand        func() error
-	getContainerLogs  func() (io.ReadCloser, error)
-	rmContainer       func() error
-	getID             func() string
-	waitUntilFinished func() error
-	inspectContainer  func() (container.State, error)
-}
-
-func (mc *mockContainer) ImagePull() error {
-	return mc.imagePull()
-}
-
-func (mc *mockContainer) RunCommand([]string, io.Reader, []string, []string) error {
-	return mc.runCommand()
-}
-
-func (mc *mockContainer) GetContainerLogs() (io.ReadCloser, error) {
-	return mc.getContainerLogs()
-}
-
-func (mc *mockContainer) RmContainer() error {
-	return mc.rmContainer()
-}
-
-func (mc *mockContainer) GetID() string {
-	return mc.getID()
-}
-
-func (mc *mockContainer) WaitUntilFinished() error {
-	return mc.waitUntilFinished()
-}
-
-func (mc *mockContainer) InspectContainer() (container.State, error) {
-	return mc.inspectContainer()
-}
 
 // Unit test for the method getContainerStatus()
 func TestGetContainerStatus(t *testing.T) {
@@ -82,16 +45,49 @@ func TestGetContainerStatus(t *testing.T) {
 	}
 
 	tests := []struct {
-		container      *mockContainer
+		container      *testcontainer.MockContainer
 		cfg            *api.BootConfiguration
 		debug          bool
 		expectedStatus container.Status
 		expectedErr    error
 	}{
 		{
+			// options.Container.InspectContainer() returning error
+			container: &testcontainer.MockContainer{
+				MockInspectContainer: func() (container.State, error) {
+					state := container.State{}
+					state.Status = ephemeral.BootNullString
+					state.ExitCode = 0
+					return state, ephemeral.ErrInvalidBootstrapCommand{}
+				},
+			},
+			cfg:            testCfg,
+			debug:          false,
+			expectedStatus: ephemeral.BootNullString,
+			expectedErr:    ephemeral.ErrInvalidBootstrapCommand{},
+		},
+		{
+			// options.Container.GetContainerLogs() returns error
+			container: &testcontainer.MockContainer{
+				MockInspectContainer: func() (container.State, error) {
+					state := container.State{}
+					state.Status = container.RunningContainerStatus
+					state.ExitCode = 1
+					return state, nil
+				},
+				MockGetContainerLogs: func() (io.ReadCloser, error) {
+					return nil, ephemeral.ErrInvalidBootstrapCommand{}
+				},
+			},
+			cfg:            testCfg,
+			debug:          false,
+			expectedStatus: ephemeral.BootNullString,
+			expectedErr:    ephemeral.ErrInvalidBootstrapCommand{},
+		},
+		{
 			// Container running and no errors
-			container: &mockContainer{
-				inspectContainer: func() (container.State, error) {
+			container: &testcontainer.MockContainer{
+				MockInspectContainer: func() (container.State, error) {
 					state := container.State{}
 					state.Status = container.RunningContainerStatus
 					state.ExitCode = 0
@@ -105,14 +101,14 @@ func TestGetContainerStatus(t *testing.T) {
 		},
 		{
 			// Container running and with ContainerLoadEphemeralConfigError
-			container: &mockContainer{
-				inspectContainer: func() (container.State, error) {
+			container: &testcontainer.MockContainer{
+				MockInspectContainer: func() (container.State, error) {
 					state := container.State{}
 					state.Status = container.ExitedContainerStatus
 					state.ExitCode = 1
 					return state, nil
 				},
-				getContainerLogs: func() (io.ReadCloser, error) {
+				MockGetContainerLogs: func() (io.ReadCloser, error) {
 					return nil, nil
 				},
 			},
@@ -126,14 +122,14 @@ func TestGetContainerStatus(t *testing.T) {
 		},
 		{
 			// Container running and with ContainerValidationEphemeralConfigError
-			container: &mockContainer{
-				inspectContainer: func() (container.State, error) {
+			container: &testcontainer.MockContainer{
+				MockInspectContainer: func() (container.State, error) {
 					state := container.State{}
 					state.Status = container.ExitedContainerStatus
 					state.ExitCode = 2
 					return state, nil
 				},
-				getContainerLogs: func() (io.ReadCloser, error) {
+				MockGetContainerLogs: func() (io.ReadCloser, error) {
 					return nil, nil
 				},
 			},
@@ -147,14 +143,14 @@ func TestGetContainerStatus(t *testing.T) {
 		},
 		{
 			// Container running and with ContainerSetEnvVarsError
-			container: &mockContainer{
-				inspectContainer: func() (container.State, error) {
+			container: &testcontainer.MockContainer{
+				MockInspectContainer: func() (container.State, error) {
 					state := container.State{}
 					state.Status = container.ExitedContainerStatus
 					state.ExitCode = 3
 					return state, nil
 				},
-				getContainerLogs: func() (io.ReadCloser, error) {
+				MockGetContainerLogs: func() (io.ReadCloser, error) {
 					return nil, nil
 				},
 			},
@@ -168,14 +164,14 @@ func TestGetContainerStatus(t *testing.T) {
 		},
 		{
 			// Container running and with ContainerUnknownCommandError
-			container: &mockContainer{
-				inspectContainer: func() (container.State, error) {
+			container: &testcontainer.MockContainer{
+				MockInspectContainer: func() (container.State, error) {
 					state := container.State{}
 					state.Status = container.ExitedContainerStatus
 					state.ExitCode = 4
 					return state, nil
 				},
-				getContainerLogs: func() (io.ReadCloser, error) {
+				MockGetContainerLogs: func() (io.ReadCloser, error) {
 					return nil, nil
 				},
 			},
@@ -189,14 +185,14 @@ func TestGetContainerStatus(t *testing.T) {
 		},
 		{
 			// Container running and with ContainerCreationEphemeralFailedError
-			container: &mockContainer{
-				inspectContainer: func() (container.State, error) {
+			container: &testcontainer.MockContainer{
+				MockInspectContainer: func() (container.State, error) {
 					state := container.State{}
 					state.Status = container.ExitedContainerStatus
 					state.ExitCode = 5
 					return state, nil
 				},
-				getContainerLogs: func() (io.ReadCloser, error) {
+				MockGetContainerLogs: func() (io.ReadCloser, error) {
 					return nil, nil
 				},
 			},
@@ -210,14 +206,14 @@ func TestGetContainerStatus(t *testing.T) {
 		},
 		{
 			// Container running and with ContainerDeletionEphemeralFailedError
-			container: &mockContainer{
-				inspectContainer: func() (container.State, error) {
+			container: &testcontainer.MockContainer{
+				MockInspectContainer: func() (container.State, error) {
 					state := container.State{}
 					state.Status = container.ExitedContainerStatus
 					state.ExitCode = 6
 					return state, nil
 				},
-				getContainerLogs: func() (io.ReadCloser, error) {
+				MockGetContainerLogs: func() (io.ReadCloser, error) {
 					return nil, nil
 				},
 			},
@@ -231,14 +227,14 @@ func TestGetContainerStatus(t *testing.T) {
 		},
 		{
 			// Container running and with ContainerHelpCommandFailedError
-			container: &mockContainer{
-				inspectContainer: func() (container.State, error) {
+			container: &testcontainer.MockContainer{
+				MockInspectContainer: func() (container.State, error) {
 					state := container.State{}
 					state.Status = container.ExitedContainerStatus
 					state.ExitCode = 7
 					return state, nil
 				},
-				getContainerLogs: func() (io.ReadCloser, error) {
+				MockGetContainerLogs: func() (io.ReadCloser, error) {
 					return nil, nil
 				},
 			},
@@ -252,14 +248,14 @@ func TestGetContainerStatus(t *testing.T) {
 		},
 		{
 			// Container running and with ContainerUnknownError
-			container: &mockContainer{
-				inspectContainer: func() (container.State, error) {
+			container: &testcontainer.MockContainer{
+				MockInspectContainer: func() (container.State, error) {
 					state := container.State{}
 					state.Status = container.ExitedContainerStatus
 					state.ExitCode = 8
 					return state, nil
 				},
-				getContainerLogs: func() (io.ReadCloser, error) {
+				MockGetContainerLogs: func() (io.ReadCloser, error) {
 					return nil, nil
 				},
 			},
@@ -304,7 +300,7 @@ func TestWaitUntilContainerExitsOrTimesout(t *testing.T) {
 	}
 
 	tests := []struct {
-		container   *mockContainer
+		container   *testcontainer.MockContainer
 		cfg         *api.BootConfiguration
 		debug       bool
 		maxRetries  int
@@ -312,14 +308,14 @@ func TestWaitUntilContainerExitsOrTimesout(t *testing.T) {
 	}{
 		{
 			// Test: container exits normally
-			container: &mockContainer{
-				inspectContainer: func() (container.State, error) {
+			container: &testcontainer.MockContainer{
+				MockInspectContainer: func() (container.State, error) {
 					state := container.State{}
 					state.Status = container.ExitedContainerStatus
 					state.ExitCode = 0
 					return state, nil
 				},
-				getContainerLogs: func() (io.ReadCloser, error) {
+				MockGetContainerLogs: func() (io.ReadCloser, error) {
 					return nil, nil
 				},
 			},
@@ -330,14 +326,14 @@ func TestWaitUntilContainerExitsOrTimesout(t *testing.T) {
 		},
 		{
 			// Test: container times out
-			container: &mockContainer{
-				inspectContainer: func() (container.State, error) {
+			container: &testcontainer.MockContainer{
+				MockInspectContainer: func() (container.State, error) {
 					state := container.State{}
 					state.Status = container.RunningContainerStatus
 					state.ExitCode = 0
 					return state, nil
 				},
-				getContainerLogs: func() (io.ReadCloser, error) {
+				MockGetContainerLogs: func() (io.ReadCloser, error) {
 					return nil, nil
 				},
 			},
@@ -345,6 +341,21 @@ func TestWaitUntilContainerExitsOrTimesout(t *testing.T) {
 			debug:       false,
 			maxRetries:  1,
 			expectedErr: ephemeral.ErrNumberOfRetriesExceeded{},
+		},
+		{
+			// Test: options.GetContainerStatus() returns error
+			container: &testcontainer.MockContainer{
+				MockInspectContainer: func() (container.State, error) {
+					state := container.State{}
+					state.Status = ephemeral.BootNullString
+					state.ExitCode = 0
+					return state, ephemeral.ErrInvalidBootstrapCommand{}
+				},
+			},
+			cfg:         testCfg,
+			debug:       false,
+			maxRetries:  10,
+			expectedErr: ephemeral.ErrInvalidBootstrapCommand{},
 		},
 	}
 	for _, tt := range tests {
@@ -377,7 +388,7 @@ func TestCreateBootstrapContainer(t *testing.T) {
 	}
 
 	tests := []struct {
-		container        *mockContainer
+		container        *testcontainer.MockContainer
 		cfg              *api.BootConfiguration
 		debug            bool
 		bootstrapCommand string
@@ -385,16 +396,16 @@ func TestCreateBootstrapContainer(t *testing.T) {
 	}{
 		{
 			// Test: Create Ephemeral Cluster successful
-			container: &mockContainer{
-				runCommand:  func() error { return nil },
-				rmContainer: func() error { return nil },
-				inspectContainer: func() (container.State, error) {
+			container: &testcontainer.MockContainer{
+				MockRunCommand:  func() error { return nil },
+				MockRmContainer: func() error { return nil },
+				MockInspectContainer: func() (container.State, error) {
 					state := container.State{}
 					state.Status = container.ExitedContainerStatus
 					state.ExitCode = 0
 					return state, nil
 				},
-				getContainerLogs: func() (io.ReadCloser, error) {
+				MockGetContainerLogs: func() (io.ReadCloser, error) {
 					return nil, nil
 				},
 			},
@@ -405,16 +416,16 @@ func TestCreateBootstrapContainer(t *testing.T) {
 		},
 		{
 			// Test: Delete Ephemeral Cluster successful
-			container: &mockContainer{
-				runCommand:  func() error { return nil },
-				rmContainer: func() error { return nil },
-				inspectContainer: func() (container.State, error) {
+			container: &testcontainer.MockContainer{
+				MockRunCommand:  func() error { return nil },
+				MockRmContainer: func() error { return nil },
+				MockInspectContainer: func() (container.State, error) {
 					state := container.State{}
 					state.Status = container.ExitedContainerStatus
 					state.ExitCode = 0
 					return state, nil
 				},
-				getContainerLogs: func() (io.ReadCloser, error) {
+				MockGetContainerLogs: func() (io.ReadCloser, error) {
 					return nil, nil
 				},
 			},
@@ -425,16 +436,16 @@ func TestCreateBootstrapContainer(t *testing.T) {
 		},
 		{
 			// Test: Create Ephemeral Cluster exit with error
-			container: &mockContainer{
-				runCommand:  func() error { return nil },
-				rmContainer: func() error { return nil },
-				inspectContainer: func() (container.State, error) {
+			container: &testcontainer.MockContainer{
+				MockRunCommand:  func() error { return nil },
+				MockRmContainer: func() error { return nil },
+				MockInspectContainer: func() (container.State, error) {
 					state := container.State{}
 					state.Status = container.ExitedContainerStatus
 					state.ExitCode = 1
 					return state, nil
 				},
-				getContainerLogs: func() (io.ReadCloser, error) {
+				MockGetContainerLogs: func() (io.ReadCloser, error) {
 					return nil, nil
 				},
 			},
@@ -448,16 +459,16 @@ func TestCreateBootstrapContainer(t *testing.T) {
 		},
 		{
 			// Test: Delete Ephemeral Cluster exit with error
-			container: &mockContainer{
-				runCommand:  func() error { return nil },
-				rmContainer: func() error { return nil },
-				inspectContainer: func() (container.State, error) {
+			container: &testcontainer.MockContainer{
+				MockRunCommand:  func() error { return nil },
+				MockRmContainer: func() error { return nil },
+				MockInspectContainer: func() (container.State, error) {
 					state := container.State{}
 					state.Status = container.ExitedContainerStatus
 					state.ExitCode = 1
 					return state, nil
 				},
-				getContainerLogs: func() (io.ReadCloser, error) {
+				MockGetContainerLogs: func() (io.ReadCloser, error) {
 					return nil, nil
 				},
 			},
@@ -468,6 +479,16 @@ func TestCreateBootstrapContainer(t *testing.T) {
 				ExitCode: 1,
 				ErrMsg:   ephemeral.ContainerLoadEphemeralConfigError,
 			},
+		},
+		{
+			// Test: options.Container.RunCommand() returns error
+			container: &testcontainer.MockContainer{
+				MockRunCommand: func() error { return ephemeral.ErrBootstrapContainerRun{} },
+			},
+			cfg:              testCfg,
+			bootstrapCommand: ephemeral.BootCmdCreate,
+			debug:            false,
+			expectedErr:      ephemeral.ErrBootstrapContainerRun{},
 		},
 	}
 

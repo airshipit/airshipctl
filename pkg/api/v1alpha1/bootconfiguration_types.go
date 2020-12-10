@@ -41,7 +41,7 @@ type BootstrapContainer struct {
 	ContainerRuntime string `json:"containerRuntime,omitempty"`
 	Image            string `json:"image,omitempty"`
 	Volume           string `json:"volume,omitempty"`
-	Kubeconfig       string `json:"kubeconfig,omitempty"`
+	Kubeconfig       string `json:"saveKubeconfigFileName,omitempty"`
 }
 
 // DefaultBootConfiguration can be used to safely unmarshal BootConfiguration object without nil pointers
