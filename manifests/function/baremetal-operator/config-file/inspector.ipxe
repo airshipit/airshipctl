@@ -4,6 +4,6 @@
 echo In inspector.ipxe
 imgfree
 # NOTE(dtantsur): keep inspection kernel params in [mdns]params in ironic-inspector-image
-kernel --timeout 60000 http://$(PROVISIONING_IP):80/images/tinyipa-stable-ussuri.vmlinuz ipa-inspection-callback-url=http://$(PROVISIONING_IP):5050/v1/continue ipa-inspection-collectors=default,extra-hardware,logs systemd.journald.forward_to_console=yes BOOTIF=${mac} ipa-debug=1 ipa-inspection-dhcp-all-interfaces=1 ipa-collect-lldp=1 initrd=tinyipa-stable-ussuri.gz || goto retry_boot
-initrd --timeout 60000 http://$(PROVISIONING_IP):80/images/tinyipa-stable-ussuri.gz || goto retry_boot
+kernel --timeout 60000 http://$(PROVISIONING_IP):80/images/ipa-ubuntu-master.kernel ipa-inspection-callback-url=http://$(PROVISIONING_IP):5050/v1/continue ipa-inspection-collectors=default,extra-hardware,logs systemd.journald.forward_to_console=yes BOOTIF=${mac} ipa-debug=1 ipa-inspection-dhcp-all-interfaces=1 ipa-collect-lldp=1 initrd=ipa-ubuntu-master.initramfs || goto retry_boot
+initrd --timeout 60000 http://$(PROVISIONING_IP):80/images/ipa-ubuntu-master.initramfs || goto retry_boot
 boot

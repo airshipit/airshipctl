@@ -6,6 +6,7 @@ configMapGenerator:
   files:
     - dnsmasq-entrypoint
     - httpd-entrypoint
+    - init-images
     - init-bootstrap
     - inspector-entrypoint
     - ironic-entrypoint
