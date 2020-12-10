@@ -128,3 +128,75 @@ config:
     kind: KubernetesApply
     name: kubernetes-apply
   documentEntryPoint: target/workload
+---
+# This phase triggers the deployment of an ephemeral cluster
+# on Azure Cloud platform
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: ephemeral-az-genesis
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: BootConfiguration
+    name: ephemeral-az-genesis
+---
+# This phase triggers the deletion of an ephemeral cluster
+# on Azure Cloud platform
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: ephemeral-az-cleanup
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: BootConfiguration
+    name: ephemeral-az-cleanup
+---
+# This phase triggers the deployment of an ephemeral cluster
+# on Google Cloud platform
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: ephemeral-gcp-genesis
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: BootConfiguration
+    name: ephemeral-gcp-genesis
+---
+# This phase triggers the deletion of an ephemeral cluster
+# on Google Cloud platform
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: ephemeral-gcp-cleanup
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: BootConfiguration
+    name: ephemeral-gcp-cleanup
+---
+# This phase triggers the deployment of an ephemeral cluster
+# on Openstack
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: ephemeral-os-genesis
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: BootConfiguration
+    name: ephemeral-os-genesis
+---
+# This phase triggers the deletion of an ephemeral cluster
+# on Openstack
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: ephemeral-os-cleanup
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: BootConfiguration
+    name: ephemeral-os-cleanup
