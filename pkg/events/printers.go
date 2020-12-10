@@ -64,6 +64,7 @@ func (p GenericPrinter) PrintEvent(ge GenericEvent) error {
 	if err != nil {
 		return err
 	}
+	data = append(data, '\n')
 	_, err = p.writer.Write(data)
 	return err
 }
