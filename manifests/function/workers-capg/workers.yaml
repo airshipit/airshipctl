@@ -1,32 +1,32 @@
 apiVersion: cluster.x-k8s.io/v1alpha3
 kind: MachineDeployment
 metadata:
-  name: "gtc-md-0"
+  name: "target-cluster-md-0"
   namespace: default
 spec:
-  clusterName: "gtc"
+  clusterName: "target-cluster"
   replicas: "${WORKER_MACHINE_COUNT}"
   selector:
     matchLabels:
   template:
     spec:
-      clusterName: "gtc"
+      clusterName: "target-cluster"
       failureDomain: "${GCP_REGION}"
-      version: "v1.16.14"
+      version: "v1.17.14"
       bootstrap:
         configRef:
-          name: "gtc-md-0"
+          name: "target-cluster-md-0"
           apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
           kind: KubeadmConfigTemplate
       infrastructureRef:
-        name: "gtc-md-0"
+        name: "target-cluster-md-0"
         apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
         kind: GCPMachineTemplate
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
 kind: GCPMachineTemplate
 metadata:
-  name: "gtc-md-0"
+  name: "target-cluster-md-0"
   namespace: default
 spec:
   template:
@@ -36,7 +36,7 @@ spec:
 apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
 kind: KubeadmConfigTemplate
 metadata:
-  name: "gtc-md-0"
+  name: "target-cluster-md-0"
   namespace: default
 spec:
   template:
