@@ -113,8 +113,7 @@ func (cm clusterMap) ClusterNamespace(clusterName string) (string, error) {
 	return "default", nil
 }
 
-// ClusterNamespace a namespace for given cluster
-// TODO implement how to get namespace for cluster
+// ClusterKubeconfigContext returns name of the context in kubeconfig corresponding to a given cluster
 func (cm clusterMap) ClusterKubeconfigContext(clusterName string) (string, error) {
 	cluster, exists := cm.apiMap.Map[clusterName]
 
