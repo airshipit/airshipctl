@@ -152,7 +152,42 @@
         - airship-airshipctl-gather-configs
         - describe-kubernetes-objects
         - airship-gather-pod-logs
-
+- job:
+    name: airship-airshipctl-gate-script-runner-docker
+    attempts: 1
+    timeout: 3600
+    pre-run: playbooks/airship-airshipctl-deploy-docker.yaml
+    run: playbooks/airshipctl-gate-runner.yaml
+    nodeset: airship-airshipctl-single-node
+    irrelevant-files: *noncodefiles
+    dependencies:
+      - name: openstack-tox-docs
+        soft: true
+      - name: airship-airshipctl-lint
+        soft: true
+      - name: airship-airshipctl-unit
+        soft: true
+      - name: airship-airshipctl-golint
+        soft: true
+      - name: airship-airshipctl-build-image
+        soft: true
+      - name: airship-airshipctl-validate-site-docs
+        soft: true
+    vars:
+      site_name: docker-test-site
+      gate_scripts:
+        - ./tools/deployment/21_systemwide_executable.sh
+        - ./tools/deployment/01_install_kubectl.sh
+        - ./tools/deployment/provider_common/01_install_kind.sh
+        - ./tools/deployment/provider_common/02_install_jq.sh
+        - CLUSTER=ephemeral-cluster KIND_CONFIG=./tools/deployment/templates/kind-cluster-with-extramounts ./tools/document/start_kind.sh
+        - AIRSHIP_CONFIG_METADATA_PATH=manifests/site/docker-test-site/metadata.yaml SITE=docker-test-site EXTERNAL_KUBECONFIG="true" ./tools/deployment/22_test_configs.sh
+        - PROVIDER=default SITE=docker-test-site ./tools/deployment/26_deploy_capi_ephemeral_node.sh
+        - CONTROLPLANE_COUNT=1 SITE=docker-test-site ./tools/deployment/provider_common/30_deploy_controlplane.sh
+        - KUBECONFIG=/tmp/target-cluster.kubeconfig ./tools/deployment/provider_common/32_cluster_init_target_node.sh
+        - ./tools/deployment/provider_common/33_cluster_move_target_node.sh
+        - WORKERS_COUNT=2 KUBECONFIG=/tmp/target-cluster.kubeconfig SITE=docker-test-site ./tools/deployment/provider_common/34_deploy_worker_node.sh
+    voting: false
 - job:
     name: airship-airshipctl-publish-image
     parent: airship-airshipctl-build-image

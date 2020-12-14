@@ -12,16 +12,51 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -e
 # This starts up a kubernetes cluster which is sufficient for
 # assisting with tasks like `kubectl apply --dry-run` style validation
-set -e
+# Usage
+# example 1: create a kind cluster, with name as airship
+#
+#              ./tools/document/start_kind.sh
+#
+# example 2: create a kind cluster, with a custom name
+#
+#              CLUSTER=ephemeral-cluster ./tools/document/start_kind.sh
+#
+# example 3: create a kind cluster, using custom name and config
+#
+#              CLUSTER=ephemeral-cluster KIND_CONFIG=./tools/deployment/templates/kind-cluster-with-extramounts.yaml \
+#              ./tools/document/start_kind.sh
+#
+# example 4: create a kind cluster with name as airship, using custom config
+#
+#              KIND_CONFIG=./tools/deployment/templates/kind-cluster-with-extramounts.yaml \
+#              ./tools/document/start_kind.sh
 
 : ${KIND:="/usr/local/bin/kind"}
 : ${CLUSTER:="airship"} # NB: kind prepends "kind-"
 : ${KUBECONFIG:="${HOME}/.airship/kubeconfig"}
+: ${TIMEOUT:=3600}
+: ${KIND_CONFIG:=""}
+export KIND_EXPERIMENTAL_DOCKER_NETWORK=bridge
 
-${KIND} create cluster --name ${CLUSTER} \
-    --kubeconfig ${KUBECONFIG}
+echo "cluster name: $CLUSTER";
+
+if [ -z "$KIND_CONFIG" ]
+then
+      ${KIND} create cluster --name $CLUSTER --wait 120s --kubeconfig ${KUBECONFIG}
+else
+      echo "Using kind configuration file: $KIND_CONFIG"
+      ${KIND} create cluster --config $KIND_CONFIG --name $CLUSTER --wait 120s --kubeconfig ${KUBECONFIG}
+fi
+
+# Wait till Control Plane Node is ready
+kubectl wait --for=condition=ready node --all --timeout=1000s --kubeconfig $KUBECONFIG -A
+
+# Add context <cluster> e.g ephemeral-cluster.
+# By default, kind creates context kind-<cluster_name>
+kubectl config set-context ${CLUSTER} --cluster kind-${CLUSTER} --user kind-${CLUSTER} --kubeconfig $KUBECONFIG
 
 echo "This cluster can be deleted via:"
 echo "${KIND} delete cluster --name ${CLUSTER}"
