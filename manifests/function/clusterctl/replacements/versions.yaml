@@ -18,7 +18,7 @@ replacements:
     objref:
       kind: Clusterctl
       name: clusterctl_init
-    fieldrefs: ["{.additional-vars.CONTAINER_CAPM3_MANAGER}"]
+    fieldrefs: ["{.images.infrastructure-metal3/cluster-api-provider-metal3}"]
 - source:
     objref:
       kind: VariableCatalogue
@@ -28,7 +28,7 @@ replacements:
     objref:
       kind: Clusterctl
       name: clusterctl_init
-    fieldrefs: ["{.additional-vars.CONTAINER_CAPM3_AUTH_PROXY}"]
+    fieldrefs: ["{.images.infrastructure-metal3/kube-rbac-proxy}"]
 # Replace cacpk versions
 - source:
     objref:
@@ -39,7 +39,7 @@ replacements:
     objref:
       kind: Clusterctl
       name: clusterctl_init
-    fieldrefs: ["{.additional-vars.CONTAINER_CACPK_MANAGER}"]
+    fieldrefs: ["{.images.control-plane-kubeadm/kubeadm-control-plane-controller}"]
 - source:
     objref:
       kind: VariableCatalogue
@@ -49,7 +49,7 @@ replacements:
     objref:
       kind: Clusterctl
       name: clusterctl_init
-    fieldrefs: ["{.additional-vars.CONTAINER_CACPK_AUTH_PROXY}"]
+    fieldrefs: ["{.images.control-plane-kubeadm/kube-rbac-proxy}"]
 # Replace cabpk versions
 - source:
     objref:
@@ -60,7 +60,7 @@ replacements:
     objref:
       kind: Clusterctl
       name: clusterctl_init
-    fieldrefs: ["{.additional-vars.CONTAINER_CABPK_MANAGER}"]
+    fieldrefs: ["{.images.bootstrap-kubeadm/kubeadm-bootstrap-controller}"]
 - source:
     objref:
       kind: VariableCatalogue
@@ -70,7 +70,7 @@ replacements:
     objref:
       kind: Clusterctl
       name: clusterctl_init
-    fieldrefs: ["{.additional-vars.CONTAINER_CABPK_AUTH_PROXY}"]
+    fieldrefs: ["{.images.bootstrap-kubeadm/kube-rbac-proxy}"]
 # Replace capd versions
 - source:
     objref:
@@ -123,7 +123,7 @@ replacements:
     objref:
       kind: Clusterctl
       name: clusterctl_init
-    fieldrefs: ["{.additional-vars.CONTAINER_CAPI_MANAGER}"]
+    fieldrefs: ["{.images.cluster-api/cluster-api-controller}"]
 - source:
     objref:
       kind: VariableCatalogue
@@ -133,7 +133,7 @@ replacements:
     objref:
       kind: Clusterctl
       name: clusterctl_init
-    fieldrefs: ["{.additional-vars.CONTAINER_CAPI_AUTH_PROXY}"]
+    fieldrefs: ["{.images.cluster-api/kube-rbac-proxy}"]
 
 # Replace the cert-manager image repository in the Clusterctl
 - source:

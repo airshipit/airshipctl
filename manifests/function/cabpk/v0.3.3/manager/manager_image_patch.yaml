@@ -7,5 +7,5 @@ spec:
   template:
     spec:
       containers:
-        - image: ${CONTAINER_CABPK_MANAGER}
+        - image: us.gcr.io/k8s-artifacts-prod/cluster-api/kubeadm-bootstrap-controller:v0.3.3
           name: manager

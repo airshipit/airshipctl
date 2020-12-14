@@ -23,14 +23,26 @@ files:
 
 images:
   capm3: # Images specific to the camp3 function; etc.
-    manager: quay.io/metal3-io/cluster-api-provider-metal3:v0.3.2
-    auth_proxy: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.0
+    manager:
+      repository: quay.io/metal3-io
+      tag: v0.3.2
+    auth_proxy:
+      repository: gcr.io/kubebuilder
+      tag: v0.4.0
   cacpk:
-    manager: us.gcr.io/k8s-artifacts-prod/cluster-api/kubeadm-control-plane-controller:v0.3.7
-    auth_proxy: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
+    manager:
+      repository: us.gcr.io/k8s-artifacts-prod/cluster-api
+      tag: v0.3.7
+    auth_proxy:
+       repository: gcr.io/kubebuilder
+       tag: v0.4.1
   cabpk:
-    manager: us.gcr.io/k8s-artifacts-prod/cluster-api/kubeadm-bootstrap-controller:v0.3.7
-    auth_proxy: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
+    manager:
+      repository: us.gcr.io/k8s-artifacts-prod/cluster-api
+      tag: v0.3.7
+    auth_proxy:
+      repository: gcr.io/kubebuilder
+      tag: v0.4.1
   capd:
     manager: gcr.io/k8s-staging-cluster-api/capd-manager:v20201019-v0.3.10-86-gc1647481f
     auth_proxy: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.0
@@ -38,8 +50,12 @@ images:
     manager: gcr.io/k8s-staging-capi-openstack/capi-openstack-controller-amd64:v20200707-v0.3.1
     auth_proxy: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
   capi:
-    manager: us.gcr.io/k8s-artifacts-prod/cluster-api/cluster-api-controller:v0.3.7
-    auth_proxy: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
+    manager:
+      repository: us.gcr.io/k8s-artifacts-prod/cluster-api
+      tag: v0.3.7
+    auth_proxy:
+      repository: gcr.io/kubebuilder
+      tag: v0.4.1
   baremetal_operator:
     ironic: # ironic Deployment
       init_bootstrap: centos

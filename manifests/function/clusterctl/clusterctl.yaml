@@ -39,20 +39,37 @@ providers:
 images:
   cert-manager:
     repository: "quay.io/jetstack"
+  cluster-api/cluster-api-controller:
+    repository: "us.gcr.io/k8s-artifacts-prod/cluster-api"
+    tag: "v0.3.7"
+  cluster-api/kube-rbac-proxy:
+    repository: "gcr.io/kubebuilder"
+    tag: "v0.4.1"
+  bootstrap-kubeadm/kubeadm-bootstrap-controller:
+    repository: "us.gcr.io/k8s-artifacts-prod/cluster-api"
+    tag: "v0.3.7"
+  bootstrap-kubeadm/kube-rbac-proxy:
+    repository: "gcr.io/kubebuilder"
+    tag: "v0.4.1"
+  control-plane-kubeadm/kubeadm-control-plane-controller:
+    repository: "us.gcr.io/k8s-artifacts-prod/cluster-api"
+    tag: "v0.3.7"
+  control-plane-kubeadm/kube-rbac-proxy:
+    repository: "gcr.io/kubebuilder"
+    tag: "v0.4.1"
+  infrastructure-metal3/cluster-api-provider-metal3:
+    repository: "quay.io/metal3-io"
+    tag: "v0.3.2"
+  infrastructure-metal3/kube-rbac-proxy:
+    repository: "gcr.io/kubebuilder"
+    tag: "v0.4.0"
+
 
 # These default images can be overridden via the `replacements/` entrypoint
 additional-vars:
-  CONTAINER_CAPM3_MANAGER: quay.io/metal3-io/cluster-api-provider-metal3:v0.3.2
-  CONTAINER_CACPK_MANAGER: us.gcr.io/k8s-artifacts-prod/cluster-api/kubeadm-control-plane-controller:v0.3.7
-  CONTAINER_CABPK_MANAGER: us.gcr.io/k8s-artifacts-prod/cluster-api/kubeadm-bootstrap-controller:v0.3.7
-  CONTAINER_CAPI_MANAGER:  us.gcr.io/k8s-artifacts-prod/cluster-api/cluster-api-controller:v0.3.7
   CONTAINER_CAPD_MANAGER: gcr.io/k8s-staging-cluster-api/capd-manager:v20201019-v0.3.10-86-gc1647481f
   CONTAINER_CAPO_MANAGER: gcr.io/k8s-staging-capi-openstack/capi-openstack-controller-amd64:v20200707-v0.3.1
   CONTAINER_CAPZ_MANAGER: gcr.io/k8s-staging-cluster-api-azure/cluster-api-azure-controller:v0.4.9
-  CONTAINER_CAPM3_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.0
-  CONTAINER_CACPK_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
-  CONTAINER_CABPK_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
-  CONTAINER_CAPI_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
   CONTAINER_CAPD_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.0
   CONTAINER_CAPO_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
   CONTAINER_CAPZ_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
