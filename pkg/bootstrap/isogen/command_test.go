@@ -31,6 +31,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/testutil"
 	testcontainer "opendev.org/airship/airshipctl/testutil/container"
+	testdoc "opendev.org/airship/airshipctl/testutil/document"
 )
 
 const testID = "TESTID"
@@ -54,7 +55,7 @@ func TestBootstrapIso(t *testing.T) {
 			NetworkConfigFileName: "net-conf",
 		},
 	}
-	testDoc := &MockDocument{
+	testDoc := &testdoc.MockDocument{
 		MockAsYAML: func() ([]byte, error) { return []byte("TESTDOC"), nil },
 	}
 	testBuilder := &testcontainer.MockContainer{
@@ -74,7 +75,7 @@ func TestBootstrapIso(t *testing.T) {
 	tests := []struct {
 		builder     *testcontainer.MockContainer
 		cfg         *api.ImageConfiguration
-		doc         *MockDocument
+		doc         *testdoc.MockDocument
 		debug       bool
 		expectedOut []string
 		expectedErr error
@@ -121,7 +122,7 @@ func TestBootstrapIso(t *testing.T) {
 		{
 			builder: testBuilder,
 			cfg:     testCfg,
-			doc: &MockDocument{
+			doc: &testdoc.MockDocument{
 				MockAsYAML: func() ([]byte, error) { return nil, testErr },
 			},
 			debug:       false,
