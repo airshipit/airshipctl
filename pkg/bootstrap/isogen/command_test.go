@@ -27,49 +27,11 @@ import (
 
 	api "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/testutil"
+	testcontainer "opendev.org/airship/airshipctl/testutil/container"
 )
-
-type mockContainer struct {
-	imagePull         func() error
-	runCommand        func() error
-	getContainerLogs  func() (io.ReadCloser, error)
-	rmContainer       func() error
-	getID             func() string
-	waitUntilFinished func() error
-	inspectContainer  func() (container.State, error)
-}
-
-func (mc *mockContainer) ImagePull() error {
-	return mc.imagePull()
-}
-
-func (mc *mockContainer) RunCommand([]string, io.Reader, []string, []string) error {
-	return mc.runCommand()
-}
-
-func (mc *mockContainer) GetContainerLogs() (io.ReadCloser, error) {
-	return mc.getContainerLogs()
-}
-
-func (mc *mockContainer) RmContainer() error {
-	return mc.rmContainer()
-}
-
-func (mc *mockContainer) GetID() string {
-	return mc.getID()
-}
-
-func (mc *mockContainer) WaitUntilFinished() error {
-	return mc.waitUntilFinished()
-}
-
-func (mc *mockContainer) InspectContainer() (container.State, error) {
-	return mc.inspectContainer()
-}
 
 const testID = "TESTID"
 
@@ -95,10 +57,10 @@ func TestBootstrapIso(t *testing.T) {
 	testDoc := &MockDocument{
 		MockAsYAML: func() ([]byte, error) { return []byte("TESTDOC"), nil },
 	}
-	testBuilder := &mockContainer{
-		runCommand:  func() error { return nil },
-		getID:       func() string { return testID },
-		rmContainer: func() error { return nil },
+	testBuilder := &testcontainer.MockContainer{
+		MockRunCommand:  func() error { return nil },
+		MockGetID:       func() string { return testID },
+		MockRmContainer: func() error { return nil },
 	}
 
 	expOut := []string{
@@ -110,7 +72,7 @@ func TestBootstrapIso(t *testing.T) {
 	}
 
 	tests := []struct {
-		builder     *mockContainer
+		builder     *testcontainer.MockContainer
 		cfg         *api.ImageConfiguration
 		doc         *MockDocument
 		debug       bool
@@ -118,10 +80,10 @@ func TestBootstrapIso(t *testing.T) {
 		expectedErr error
 	}{
 		{
-			builder: &mockContainer{
-				runCommand:        func() error { return testErr },
-				waitUntilFinished: func() error { return nil },
-				rmContainer:       func() error { return nil },
+			builder: &testcontainer.MockContainer{
+				MockRunCommand:        func() error { return testErr },
+				MockWaitUntilFinished: func() error { return nil },
+				MockRmContainer:       func() error { return nil },
 			},
 			cfg:         testCfg,
 			doc:         testDoc,
@@ -130,12 +92,12 @@ func TestBootstrapIso(t *testing.T) {
 			expectedErr: testErr,
 		},
 		{
-			builder: &mockContainer{
-				runCommand:        func() error { return nil },
-				getID:             func() string { return "TESTID" },
-				waitUntilFinished: func() error { return nil },
-				rmContainer:       func() error { return nil },
-				getContainerLogs:  func() (io.ReadCloser, error) { return ioutil.NopCloser(strings.NewReader("")), nil },
+			builder: &testcontainer.MockContainer{
+				MockRunCommand:        func() error { return nil },
+				MockGetID:             func() string { return "TESTID" },
+				MockWaitUntilFinished: func() error { return nil },
+				MockRmContainer:       func() error { return nil },
+				MockGetContainerLogs:  func() (io.ReadCloser, error) { return ioutil.NopCloser(strings.NewReader("")), nil },
 			},
 			cfg:         testCfg,
 			doc:         testDoc,
@@ -144,11 +106,11 @@ func TestBootstrapIso(t *testing.T) {
 			expectedErr: nil,
 		},
 		{
-			builder: &mockContainer{
-				runCommand:        func() error { return nil },
-				getID:             func() string { return "TESTID" },
-				rmContainer:       func() error { return testErr },
-				waitUntilFinished: func() error { return nil },
+			builder: &testcontainer.MockContainer{
+				MockRunCommand:        func() error { return nil },
+				MockGetID:             func() string { return "TESTID" },
+				MockRmContainer:       func() error { return testErr },
+				MockWaitUntilFinished: func() error { return nil },
 			},
 			cfg:         testCfg,
 			doc:         testDoc,

@@ -29,6 +29,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	"opendev.org/airship/airshipctl/testutil"
+	testcontainer "opendev.org/airship/airshipctl/testutil/container"
 )
 
 var (
@@ -98,16 +99,16 @@ func TestExecutorRun(t *testing.T) {
 
 	testCases := []struct {
 		name        string
-		builder     *mockContainer
+		builder     *testcontainer.MockContainer
 		expectedEvt []events.Event
 	}{
 		{
 			name: "Run isogen successfully",
-			builder: &mockContainer{
-				runCommand:        func() error { return nil },
-				getID:             func() string { return "TESTID" },
-				rmContainer:       func() error { return nil },
-				waitUntilFinished: func() error { return nil },
+			builder: &testcontainer.MockContainer{
+				MockRunCommand:        func() error { return nil },
+				MockGetID:             func() string { return "TESTID" },
+				MockRmContainer:       func() error { return nil },
+				MockWaitUntilFinished: func() error { return nil },
 			},
 			expectedEvt: []events.Event{
 				events.NewEvent().WithIsogenEvent(events.IsogenEvent{
@@ -123,12 +124,12 @@ func TestExecutorRun(t *testing.T) {
 		},
 		{
 			name: "Fail on container command",
-			builder: &mockContainer{
-				runCommand: func() error {
+			builder: &testcontainer.MockContainer{
+				MockRunCommand: func() error {
 					return container.ErrRunContainerCommand{Cmd: "super fail"}
 				},
-				getID:       func() string { return "TESTID" },
-				rmContainer: func() error { return nil },
+				MockGetID:       func() string { return "TESTID" },
+				MockRmContainer: func() error { return nil },
 			},
 
 			expectedEvt: []events.Event{
