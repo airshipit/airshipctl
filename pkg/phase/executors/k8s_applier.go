@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package applier
+package executors
 
 import (
 	"io"
@@ -26,6 +26,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
+	k8sapplier "opendev.org/airship/airshipctl/pkg/k8s/applier"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/pkg/log"
@@ -46,8 +47,8 @@ type ExecutorOptions struct {
 
 var _ ifc.Executor = &Executor{}
 
-// RegisterExecutor adds executor to phase executor registry
-func RegisterExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFactory) error {
+// RegisterKubeApplierExecutor adds executor to phase executor registry
+func RegisterKubeApplierExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFactory) error {
 	obj := &airshipv1.KubernetesApply{}
 	gvks, _, err := airshipv1.Scheme.ObjectKinds(obj)
 	if err != nil {
@@ -59,7 +60,7 @@ func RegisterExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFactory) 
 
 // registerExecutor is here so that executor in theory can be used outside phases
 func registerExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
-	return NewExecutor(ExecutorOptions{
+	return NewKubeApplierExecutor(ExecutorOptions{
 		ClusterName:      cfg.ClusterName,
 		BundleName:       cfg.PhaseName,
 		Helper:           cfg.Helper,
@@ -79,8 +80,8 @@ type Executor struct {
 	cleanup   kubeconfig.Cleanup
 }
 
-// NewExecutor returns instance of executor
-func NewExecutor(opts ExecutorOptions) (*Executor, error) {
+// NewKubeApplierExecutor returns instance of executor
+func NewKubeApplierExecutor(opts ExecutorOptions) (*Executor, error) {
 	apiObj := &airshipv1.KubernetesApply{}
 	err := opts.ExecutorDocument.ToAPIObject(apiObj, airshipv1.Scheme)
 	if err != nil {
@@ -116,7 +117,7 @@ func (e *Executor) Run(ch chan events.Event, runOpts ifc.RunOptions) {
 	}
 
 	log.Debugf("WaitTimeout: %v", timeout)
-	applyOptions := ApplyOptions{
+	applyOptions := k8sapplier.ApplyOptions{
 		DryRunStrategy: dryRunStrategy,
 		Prune:          e.apiObject.Config.PruneOptions.Prune,
 		BundleName:     e.Options.BundleName,
@@ -125,7 +126,7 @@ func (e *Executor) Run(ch chan events.Event, runOpts ifc.RunOptions) {
 	applier.ApplyBundle(filteredBundle, applyOptions)
 }
 
-func (e *Executor) prepareApplier(ch chan events.Event) (*Applier, document.Bundle, error) {
+func (e *Executor) prepareApplier(ch chan events.Event) (*k8sapplier.Applier, document.Bundle, error) {
 	log.Debug("Getting kubeconfig context name from cluster map")
 	context, err := e.Options.ClusterMap.ClusterKubeconfigContext(e.Options.ClusterName)
 	if err != nil {
@@ -146,7 +147,7 @@ func (e *Executor) prepareApplier(ch chan events.Event) (*Applier, document.Bund
 	e.cleanup = cleanup
 	log.Debugf("Using kubeconfig at '%s' and context '%s'", path, context)
 	factory := utils.FactoryFromKubeConfig(path, context)
-	return NewApplier(ch, factory), bundle, nil
+	return k8sapplier.NewApplier(ch, factory), bundle, nil
 }
 
 // Validate document set

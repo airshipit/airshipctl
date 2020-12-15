@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package applier_test
+package executors_test
 
 import (
 	"bytes"
@@ -27,10 +27,10 @@ import (
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/fs"
-	"opendev.org/airship/airshipctl/pkg/k8s/applier"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/pkg/phase"
+	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	testfs "opendev.org/airship/airshipctl/testutil/fs"
 )
@@ -83,7 +83,7 @@ users:
 `
 )
 
-func TestNewExecutor(t *testing.T) {
+func TestNewKubeApplierExecutor(t *testing.T) {
 	tests := []struct {
 		name          string
 		cfgDoc        string
@@ -96,8 +96,8 @@ func TestNewExecutor(t *testing.T) {
 			name:          "valid executor",
 			cfgDoc:        ValidExecutorDoc,
 			kubeconf:      testKubeconfig(testValidKubeconfig),
-			helper:        makeDefaultHelper(t),
-			bundleFactory: testBundleFactory("testdata/source_bundle"),
+			helper:        makeKubeApplierDefaultHelper(t),
+			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
 		},
 		{
 			name: "wrong config document",
@@ -109,8 +109,8 @@ metadata:
   labels:
     cli-utils.sigs.k8s.io/inventory-id: "some id"`,
 			expectedErr:   "wrong config document",
-			helper:        makeDefaultHelper(t),
-			bundleFactory: testBundleFactory("testdata/source_bundle"),
+			helper:        makeKubeApplierDefaultHelper(t),
+			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
 		},
 
 		{
@@ -118,7 +118,7 @@ metadata:
 			cfgDoc:        ValidExecutorDoc,
 			expectedErr:   "no such file or directory",
 			kubeconf:      testKubeconfig(testValidKubeconfig),
-			helper:        makeDefaultHelper(t),
+			helper:        makeKubeApplierDefaultHelper(t),
 			bundleFactory: testBundleFactory("does not exist"),
 		},
 	}
@@ -130,8 +130,8 @@ metadata:
 			require.NoError(t, err)
 			require.NotNil(t, doc)
 
-			exec, err := applier.NewExecutor(
-				applier.ExecutorOptions{
+			exec, err := executors.NewKubeApplierExecutor(
+				executors.ExecutorOptions{
 					ExecutorDocument: doc,
 					BundleFactory:    tt.bundleFactory,
 					Kubeconfig:       tt.kubeconf,
@@ -152,7 +152,7 @@ metadata:
 // TODO We need valid test that checks that actual bundle has arrived to applier
 // for that we need a way to inject fake applier, which is not doable with `black box` test currently
 // since we tests are in different package from executor
-func TestExecutorRun(t *testing.T) {
+func TestKubeApplierExecutorRun(t *testing.T) {
 	tests := []struct {
 		name        string
 		containsErr string
@@ -167,8 +167,8 @@ func TestExecutorRun(t *testing.T) {
 		{
 			name:          "cant read kubeconfig error",
 			containsErr:   "no such file or directory",
-			helper:        makeDefaultHelper(t),
-			bundleFactory: testBundleFactory("testdata/source_bundle"),
+			helper:        makeKubeApplierDefaultHelper(t),
+			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
 			kubeconf:      testKubeconfig(`invalid kubeconfig`),
 			execDoc:       toKubernetesApply(t, ValidExecutorDocNamespaced),
 			clusterName:   "ephemeral-cluster",
@@ -181,8 +181,8 @@ func TestExecutorRun(t *testing.T) {
 		{
 			name:          "error cluster not defined",
 			containsErr:   "cluster  is not defined in in cluster map",
-			helper:        makeDefaultHelper(t),
-			bundleFactory: testBundleFactory("testdata/source_bundle"),
+			helper:        makeKubeApplierDefaultHelper(t),
+			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
 			kubeconf:      testKubeconfig(testValidKubeconfig),
 			execDoc:       toKubernetesApply(t, ValidExecutorDocNamespaced),
 			clusterMap:    clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
@@ -191,8 +191,8 @@ func TestExecutorRun(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			exec, err := applier.NewExecutor(
-				applier.ExecutorOptions{
+			exec, err := executors.NewKubeApplierExecutor(
+				executors.ExecutorOptions{
 					ExecutorDocument: tt.execDoc,
 					Helper:           tt.helper,
 					BundleFactory:    tt.bundleFactory,
@@ -225,8 +225,8 @@ func TestRender(t *testing.T) {
 	execDoc, err := document.NewDocumentFromBytes([]byte(ValidExecutorDoc))
 	require.NoError(t, err)
 	require.NotNil(t, execDoc)
-	exec, err := applier.NewExecutor(applier.ExecutorOptions{
-		BundleFactory:    testBundleFactory("testdata/source_bundle"),
+	exec, err := executors.NewKubeApplierExecutor(executors.ExecutorOptions{
+		BundleFactory:    testBundleFactory("../../k8s/applier/testdata/source_bundle"),
 		ExecutorDocument: execDoc,
 	})
 	require.NoError(t, err)
@@ -240,7 +240,7 @@ func TestRender(t *testing.T) {
 	assert.Contains(t, result, "ReplicationController")
 }
 
-func makeDefaultHelper(t *testing.T) ifc.Helper {
+func makeKubeApplierDefaultHelper(t *testing.T) ifc.Helper {
 	t.Helper()
 	conf := &config.Config{
 		CurrentContext: "default",
@@ -252,7 +252,7 @@ func makeDefaultHelper(t *testing.T) ifc.Helper {
 		Manifests: map[string]*config.Manifest{
 			"default-manifest": {
 				MetadataPath:        "metadata.yaml",
-				TargetPath:          "testdata",
+				TargetPath:          "../../k8s/applier/testdata",
 				PhaseRepositoryName: config.DefaultTestPhaseRepo,
 				Repositories: map[string]*config.Repository{
 					config.DefaultTestPhaseRepo: {
@@ -291,10 +291,4 @@ func testKubeconfig(stringData string) kubeconfig.Interface {
 				MockRemoveAll: func() error { return nil },
 			},
 		))
-}
-
-func testBundleFactory(path string) document.BundleFactoryFunc {
-	return func() (document.Bundle, error) {
-		return document.NewBundleByPath(path)
-	}
 }
