@@ -53,18 +53,19 @@ const (
 
 // BootstrapIsoOptions are used to generate bootstrap ISO
 type BootstrapIsoOptions struct {
-	docBundle document.Bundle
-	builder   container.Container
-	doc       document.Document
-	cfg       *v1alpha1.ImageConfiguration
+	DocBundle document.Bundle
+	Builder   container.Container
+	Doc       document.Document
+	Cfg       *v1alpha1.ImageConfiguration
 
 	// optional fields for verbose output
-	debug    bool
-	progress bool
-	writer   io.Writer
+	Debug    bool
+	Progress bool
+	Writer   io.Writer
 }
 
-func verifyInputs(cfg *v1alpha1.ImageConfiguration) error {
+// VerifyInputs verifies image configuration
+func VerifyInputs(cfg *v1alpha1.ImageConfiguration) error {
 	if cfg.Container.Volume == "" {
 		return config.ErrMissingConfig{
 			What: "Must specify volume bind for ISO builder container",
@@ -111,25 +112,26 @@ func verifyArtifacts(cfg *v1alpha1.ImageConfiguration) error {
 	return err
 }
 
-func (opts BootstrapIsoOptions) createBootstrapIso() error {
-	cntVol := strings.Split(opts.cfg.Container.Volume, ":")[1]
+// CreateBootstrapIso prepares and runs appropriate container to create a bootstrap ISO
+func (opts BootstrapIsoOptions) CreateBootstrapIso() error {
+	cntVol := strings.Split(opts.Cfg.Container.Volume, ":")[1]
 	log.Print("Creating cloud-init for ephemeral K8s")
-	userData, netConf, err := cloudinit.GetCloudData(opts.docBundle)
+	userData, netConf, err := cloudinit.GetCloudData(opts.DocBundle)
 	if err != nil {
 		return err
 	}
 
-	builderCfgYaml, err := opts.doc.AsYAML()
+	builderCfgYaml, err := opts.Doc.AsYAML()
 	if err != nil {
 		return err
 	}
 
-	fls := getContainerCfg(opts.cfg, builderCfgYaml, userData, netConf)
+	fls := getContainerCfg(opts.Cfg, builderCfgYaml, userData, netConf)
 	if err = util.WriteFiles(fls, 0600); err != nil {
 		return err
 	}
 
-	vols := []string{opts.cfg.Container.Volume}
+	vols := []string{opts.Cfg.Container.Volume}
 	builderCfgLocation := filepath.Join(cntVol, builderConfigFileName)
 	log.Printf("Running default container command. Mounted dir: %s", vols)
 
@@ -142,28 +144,28 @@ func (opts BootstrapIsoOptions) createBootstrapIso() error {
 		fmt.Sprintf("NO_PROXY=%s", os.Getenv("NO_PROXY")),
 	}
 
-	err = opts.builder.RunCommand([]string{}, nil, vols, envVars)
+	err = opts.Builder.RunCommand([]string{}, nil, vols, envVars)
 	if err != nil {
 		return err
 	}
 
 	log.Print("ISO generation is in progress. The whole process could take up to several minutes, please wait...")
 
-	if opts.debug || opts.progress {
+	if opts.Debug || opts.Progress {
 		var cLogs io.ReadCloser
-		cLogs, err = opts.builder.GetContainerLogs()
+		cLogs, err = opts.Builder.GetContainerLogs()
 		if err != nil {
 			log.Printf("failed to read container logs %s", err)
 		} else {
 			switch {
-			case opts.progress:
-				if err = showProgress(cLogs, opts.writer); err != nil {
+			case opts.Progress:
+				if err = ShowProgress(cLogs, opts.Writer); err != nil {
 					log.Debugf("the following error occurred while showing progress bar: %s", err.Error())
 				}
-			case opts.debug:
+			case opts.Debug:
 				log.Print("start reading container logs")
 				// either container log output or progress bar will be shown
-				if _, err = io.Copy(opts.writer, cLogs); err != nil {
+				if _, err = io.Copy(opts.Writer, cLogs); err != nil {
 					log.Debugf("failed to write container logs to log output %s", err)
 				}
 				log.Print("got EOF from container logs")
@@ -171,21 +173,22 @@ func (opts BootstrapIsoOptions) createBootstrapIso() error {
 		}
 	}
 
-	if err = opts.builder.WaitUntilFinished(); err != nil {
+	if err = opts.Builder.WaitUntilFinished(); err != nil {
 		return err
 	}
 
 	log.Print("ISO successfully built.")
-	if !opts.debug {
+	if !opts.Debug {
 		log.Print("Removing container.")
-		return opts.builder.RmContainer()
+		return opts.Builder.RmContainer()
 	}
 
-	log.Debugf("Debug flag is set. Container %s stopped but not deleted.", opts.builder.GetID())
+	log.Debugf("Debug flag is set. Container %s stopped but not deleted.", opts.Builder.GetID())
 	return nil
 }
 
-func showProgress(reader io.ReadCloser, writer io.Writer) error {
+// ShowProgress prints progress bar during bootstrap ISO preparation
+func ShowProgress(reader io.ReadCloser, writer io.Writer) error {
 	reFindActions := regexp.MustCompile(reInstallActions)
 	reBeginInstall := regexp.MustCompile(reInstallBegin)
 	reFinishInstall := regexp.MustCompile(reInstallFinish)

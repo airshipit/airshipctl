@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package isogen
+package isogen_test
 
 import (
 	"bytes"
@@ -26,6 +26,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	api "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/bootstrap/isogen"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/log"
@@ -134,14 +135,14 @@ func TestBootstrapIso(t *testing.T) {
 	for _, tt := range tests {
 		outBuf := &bytes.Buffer{}
 		log.Init(tt.debug, outBuf)
-		bootstrapOpts := BootstrapIsoOptions{
-			docBundle: bundle,
-			builder:   tt.builder,
-			doc:       tt.doc,
-			cfg:       tt.cfg,
-			debug:     tt.debug,
+		bootstrapOpts := isogen.BootstrapIsoOptions{
+			DocBundle: bundle,
+			Builder:   tt.builder,
+			Doc:       tt.doc,
+			Cfg:       tt.cfg,
+			Debug:     tt.debug,
 		}
-		actualErr := bootstrapOpts.createBootstrapIso()
+		actualErr := bootstrapOpts.CreateBootstrapIso()
 		actualOut := outBuf.String()
 
 		for _, line := range tt.expectedOut {
@@ -216,7 +217,7 @@ func TestVerifyInputs(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(subTest *testing.T) {
-			actualErr := verifyInputs(tt.cfg)
+			actualErr := isogen.VerifyInputs(tt.cfg)
 			assert.Equal(subTest, tt.expectedErr, actualErr)
 		})
 	}
@@ -242,7 +243,7 @@ func TestShowProgress(t *testing.T) {
 		require.NoError(t, err)
 		reader := ioutil.NopCloser(bytes.NewReader(testInput))
 		writer := bytes.NewBuffer(nil)
-		err = showProgress(reader, writer)
+		err = isogen.ShowProgress(reader, writer)
 		require.NoError(t, err)
 		assert.Contains(t, writer.String(), "Completed")
 	}

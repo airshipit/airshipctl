@@ -36,8 +36,8 @@ type Executor struct {
 	ExecutorBundle   document.Bundle
 	ExecutorDocument document.Document
 
-	imgConf *v1alpha1.ImageConfiguration
-	builder container.Container
+	ImgConf *v1alpha1.ImageConfiguration
+	Builder container.Container
 }
 
 // RegisterExecutor adds executor to phase executor registry
@@ -70,7 +70,7 @@ func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 	return &Executor{
 		ExecutorBundle:   bundle,
 		ExecutorDocument: cfg.ExecutorDocument,
-		imgConf:          apiObj,
+		ImgConf:          apiObj,
 	}, nil
 }
 
@@ -96,13 +96,13 @@ func (c *Executor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 		return
 	}
 
-	if c.builder == nil {
+	if c.Builder == nil {
 		ctx := context.Background()
 		builder, err := container.NewContainer(
 			ctx,
-			c.imgConf.Container.ContainerRuntime,
-			c.imgConf.Container.Image)
-		c.builder = builder
+			c.ImgConf.Container.ContainerRuntime,
+			c.ImgConf.Container.Image)
+		c.Builder = builder
 		if err != nil {
 			handleError(evtCh, err)
 			return
@@ -110,16 +110,16 @@ func (c *Executor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 	}
 
 	bootstrapOpts := BootstrapIsoOptions{
-		docBundle: c.ExecutorBundle,
-		builder:   c.builder,
-		doc:       c.ExecutorDocument,
-		cfg:       c.imgConf,
-		debug:     log.DebugEnabled(),
-		progress:  opts.Progress,
-		writer:    log.Writer(),
+		DocBundle: c.ExecutorBundle,
+		Builder:   c.Builder,
+		Doc:       c.ExecutorDocument,
+		Cfg:       c.ImgConf,
+		Debug:     log.DebugEnabled(),
+		Progress:  opts.Progress,
+		Writer:    log.Writer(),
 	}
 
-	err := bootstrapOpts.createBootstrapIso()
+	err := bootstrapOpts.CreateBootstrapIso()
 	if err != nil {
 		handleError(evtCh, err)
 		return
@@ -129,7 +129,7 @@ func (c *Executor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 		Operation: events.IsogenValidation,
 		Message:   "image is generated successfully, verifying artifacts",
 	})
-	err = verifyArtifacts(c.imgConf)
+	err = verifyArtifacts(c.ImgConf)
 	if err != nil {
 		handleError(evtCh, err)
 		return
