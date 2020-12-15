@@ -14,14 +14,6 @@
 
 package isogen
 
-// ErrIsoGenNilBundle is returned when isogen executor is not provided with bundle
-type ErrIsoGenNilBundle struct {
-}
-
-func (e ErrIsoGenNilBundle) Error() string {
-	return "Cannot build iso with empty bundle, no data source is available"
-}
-
 // ErrNoParsedNumPkgs is returned when it's unable to find number of packages to install
 type ErrNoParsedNumPkgs struct {
 }
