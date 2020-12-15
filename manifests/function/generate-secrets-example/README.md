@@ -101,7 +101,7 @@ metadata:
 kustomizeSinkOutputDir: "target/generator/results/generated"
 spec:
   container:
-    image: quay.io/airshipit/templater:latest
+    image: quay.io/airshipit/templater:v2
 config: |
   foo: bar
 ```
