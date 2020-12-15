@@ -10,3 +10,6 @@ resources:
   - namespace.yaml
 
 namespace: metal3
+
+patchesStrategicMerge:
+- ironic_toleration_patch.yaml

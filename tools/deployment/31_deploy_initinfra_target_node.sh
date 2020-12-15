@@ -18,13 +18,6 @@ export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
 NODENAME="node01"
 export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
 
-# TODO remove taint
-kubectl \
-  --kubeconfig $KUBECONFIG \
-  --context $KUBECONFIG_TARGET_CONTEXT \
-  --request-timeout 10s \
-  taint node $NODENAME node-role.kubernetes.io/master-
-
 echo "Deploy infra to cluster"
 airshipctl phase run initinfra-target --debug
 

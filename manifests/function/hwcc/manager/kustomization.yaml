@@ -6,3 +6,6 @@ images:
 - name: controller
   newName: controller
   newTag: latest
+
+patchesStrategicMerge:
+- manager_toleration_patch.yaml
