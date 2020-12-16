@@ -130,6 +130,57 @@ template: |
 			expectedOut: `touint32: 10
 `,
 		},
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: Templater
+metadata:
+  name: notImportantHere
+values:
+  regex: "^[a-z]{5,10}$"
+  nomatchregex: "^[a-z]{0,4}$"
+  limit: 10
+template: |
+  truepassword: {{ regexMatch .regex (regexGen .regex (.limit|int)) }}
+  falsepassword: {{ regexMatch .nomatchregex (regexGen .regex (.limit|int)) }}
+`,
+			expectedOut: `truepassword: true
+falsepassword: false
+`,
+		}, {
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: Templater
+metadata:
+  name: notImportantHere
+values:
+  name: test
+  regex: "^[a-z]{5,10}$"
+  limit: 0
+template: |
+  password: {{ regexGen .regex (.limit|int) }}
+`,
+			expectedErr: "template: tmpl:1:13: executing \"tmpl\" at " +
+				"<regexGen .regex (.limit | int)>: error calling regexGen: " +
+				"Limit cannot be less than or equal to 0",
+		},
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: Templater
+metadata:
+  name: notImportantHere
+values:
+  name: test
+  regex: "^[a-z"
+  limit: 10
+template: |
+  password: {{ regexGen .regex (.limit|int) }}
+`,
+			expectedErr: "template: tmpl:1:13: executing \"tmpl\" " +
+				"at <regexGen .regex (.limit | int)>: error calling " +
+				"regexGen: error parsing regexp: missing closing ]: `[a-z`",
+		},
 	}
 
 	for _, tc := range testCases {
