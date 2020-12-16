@@ -91,7 +91,7 @@ func TestNoContextsGetContextCmd(t *testing.T) {
 
 func getNamedTestContext(contextName string) *config.Context {
 	newContext := &config.Context{
-		NameInKubeconf: fmt.Sprintf("%s_%s", contextName, config.Ephemeral),
+		NameInKubeconf: contextName,
 		Manifest:       fmt.Sprintf("Manifest_%s", contextName),
 	}
 

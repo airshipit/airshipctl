@@ -21,6 +21,7 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/log"
@@ -73,7 +74,7 @@ func (kubectl *Kubectl) ApplyDocs(docs []document.Document, ao *ApplyOptions) er
 
 // ApplyYaml is abstraction to kubectl apply command
 func (kubectl *Kubectl) ApplyYaml(yaml []byte, ao *ApplyOptions) error {
-	tf, err := kubectl.TempFile(kubectl.bufferDir, "initinfra")
+	tf, err := kubectl.TempFile(kubectl.bufferDir, config.KubectlTempFilePrefix)
 	if err != nil {
 		return err
 	}

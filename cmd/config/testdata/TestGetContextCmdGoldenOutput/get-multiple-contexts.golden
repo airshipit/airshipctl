@@ -1,12 +1,12 @@
-contextKubeconf: ContextBar_ephemeral
+contextKubeconf: ContextBar
 managementConfiguration: ""
 manifest: Manifest_ContextBar
 
-contextKubeconf: ContextBaz_ephemeral
+contextKubeconf: ContextBaz
 managementConfiguration: ""
 manifest: Manifest_ContextBaz
 
-contextKubeconf: ContextFoo_ephemeral
+contextKubeconf: ContextFoo
 managementConfiguration: ""
 manifest: Manifest_ContextFoo
 

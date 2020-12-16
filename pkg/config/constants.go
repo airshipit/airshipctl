@@ -18,10 +18,7 @@ import "opendev.org/airship/airshipctl/pkg/remote/redfish"
 
 // Constants related to Phases
 const (
-	Ephemeral       = "ephemeral"
-	InitinfraPhase  = "initinfra"
-	ClusterctlPhase = InitinfraPhase
-	BootstrapPhase  = "bootstrap-iso"
+	BootstrapPhase = "bootstrap-iso"
 )
 
 // Constants defining default values
@@ -62,4 +59,9 @@ const (
 	DefaultTargetPath = "/tmp/default"
 	// DefaultManifestMetadataFile default path to manifest metadata file
 	DefaultManifestMetadataFile = "manifests/site/test-site/metadata.yaml"
+)
+
+// Default values for auxiliary parameters
+const (
+	KubectlTempFilePrefix = "initinfra"
 )
