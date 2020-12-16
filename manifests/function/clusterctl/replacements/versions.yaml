@@ -156,6 +156,28 @@ replacements:
       name: clusterctl_init
     fieldrefs: ["{.images.cluster-api/kube-rbac-proxy}"]
 
+# Replace capz versions
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: versions-airshipctl
+    fieldref: "{.images.capz.manager}"
+  target:
+    objref:
+      kind: Clusterctl
+      name: clusterctl_init
+    fieldrefs: ["{.images.infrastructure-azure/cluster-api-azure-controller}"]
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: versions-airshipctl
+    fieldref: "{.images.capz.auth_proxy}"
+  target:
+    objref:
+      kind: Clusterctl
+      name: clusterctl_init
+    fieldrefs: ["{.images.infrastructure-azure/kube-rbac-proxy}"]
+
 # Replace the cert-manager image repository in the Clusterctl
 - source:
     objref:

@@ -63,6 +63,13 @@ images:
     auth_proxy:
       repository: gcr.io/kubebuilder
       tag: v0.4.1
+  capz:
+    manager:
+      repository: gcr.io/k8s-staging-cluster-api-azure
+      tag: v0.4.9
+    auth_proxy:
+      repository: gcr.io/kubebuilder
+      tag: v0.4.1
   baremetal_operator:
     ironic: # ironic Deployment
       init_bootstrap: centos
