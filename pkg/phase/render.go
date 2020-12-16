@@ -23,8 +23,8 @@ import (
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
-// FilterOptions holds filters for selector
-type FilterOptions struct {
+// RenderCommand holds filters for selector
+type RenderCommand struct {
 	// Label filters documents by label string
 	Label string
 	// Annotation filters documents by annotation string
@@ -33,10 +33,12 @@ type FilterOptions struct {
 	APIVersion string
 	// Kind filters documents by document kind
 	Kind string
+	// Executor identifies if executor should perform rendering
+	Executor bool
 }
 
-// Render prints out filtered documents
-func (fo *FilterOptions) Render(cfgFactory config.Factory, phaseName string, out io.Writer) error {
+// RunE prints out filtered documents
+func (fo *RenderCommand) RunE(cfgFactory config.Factory, phaseName string, out io.Writer) error {
 	cfg, err := cfgFactory()
 	if err != nil {
 		return err
@@ -62,6 +64,5 @@ func (fo *FilterOptions) Render(cfgFactory config.Factory, phaseName string, out
 	}
 
 	sel := document.NewSelector().ByLabel(fo.Label).ByAnnotation(fo.Annotation).ByGvk(group, version, fo.Kind)
-
-	return phase.Render(out, ifc.RenderOptions{FilterSelector: sel})
+	return phase.Render(out, fo.Executor, ifc.RenderOptions{FilterSelector: sel})
 }

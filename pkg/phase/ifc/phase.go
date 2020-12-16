@@ -28,7 +28,7 @@ type Phase interface {
 	DocumentRoot() (string, error)
 	Details() (string, error)
 	Executor() (Executor, error)
-	Render(io.Writer, RenderOptions) error
+	Render(io.Writer, bool, RenderOptions) error
 }
 
 // ID uniquely identifies the phase

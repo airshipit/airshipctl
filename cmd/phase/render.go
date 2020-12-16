@@ -35,14 +35,14 @@ airshipctl phase render initinfra -l app=helm,service=tiller -k Deployment
 
 // NewRenderCommand create a new command for document rendering
 func NewRenderCommand(cfgFactory config.Factory) *cobra.Command {
-	filterOptions := &phase.FilterOptions{}
+	filterOptions := &phase.RenderCommand{}
 	renderCmd := &cobra.Command{
 		Use:     "render PHASE_NAME",
 		Short:   "Render phase documents from model",
 		Example: renderExample,
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return filterOptions.Render(cfgFactory, args[0], cmd.OutOrStdout())
+			return filterOptions.RunE(cfgFactory, args[0], cmd.OutOrStdout())
 		},
 	}
 
@@ -51,7 +51,7 @@ func NewRenderCommand(cfgFactory config.Factory) *cobra.Command {
 }
 
 // addRenderFlags adds flags for document render sub-command
-func addRenderFlags(filterOptions *phase.FilterOptions, cmd *cobra.Command) {
+func addRenderFlags(filterOptions *phase.RenderCommand, cmd *cobra.Command) {
 	flags := cmd.Flags()
 
 	flags.StringVarP(
@@ -81,4 +81,12 @@ func addRenderFlags(filterOptions *phase.FilterOptions, cmd *cobra.Command) {
 		"k",
 		"",
 		"filter documents by Kinds")
+	flags.BoolVarP(
+		&filterOptions.Executor,
+		"executor",
+		"e",
+		false,
+		"if set to true rendering will be performed by executor "+
+			"otherwise phase entrypoint will be rendered by kustomize, if entrypoint is not specified "+
+			"error will be returned")
 }

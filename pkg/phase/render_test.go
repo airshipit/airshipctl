@@ -43,19 +43,19 @@ func TestRender(t *testing.T) {
 	fixturePath := "phase"
 	tests := []struct {
 		name       string
-		settings   *phase.FilterOptions
+		settings   *phase.RenderCommand
 		expResFile string
 		expErr     error
 	}{
 		{
 			name:       "No Filters",
-			settings:   &phase.FilterOptions{},
+			settings:   &phase.RenderCommand{},
 			expResFile: "noFilter.yaml",
 			expErr:     nil,
 		},
 		{
 			name: "All Filters",
-			settings: &phase.FilterOptions{
+			settings: &phase.RenderCommand{
 				Label:      "airshipit.org/deploy-k8s=false",
 				Annotation: "airshipit.org/clustertype=ephemeral",
 				APIVersion: "metal3.io/v1alpha1",
@@ -66,7 +66,7 @@ func TestRender(t *testing.T) {
 		},
 		{
 			name: "Multiple Labels",
-			settings: &phase.FilterOptions{
+			settings: &phase.RenderCommand{
 				Label: "airshipit.org/deploy-k8s=false, airshipit.org/ephemeral-node=true",
 			},
 			expResFile: "multiLabels.yaml",
@@ -74,8 +74,17 @@ func TestRender(t *testing.T) {
 		},
 		{
 			name: "Malformed Label",
-			settings: &phase.FilterOptions{
+			settings: &phase.RenderCommand{
 				Label: "app=(",
+			},
+			expResFile: "",
+			expErr:     fmt.Errorf("unable to parse requirement: found '(', expected: identifier"),
+		},
+		{
+			name: "Malformed Label",
+			settings: &phase.RenderCommand{
+				Label:    "app=(",
+				Executor: true,
 			},
 			expResFile: "",
 			expErr:     fmt.Errorf("unable to parse requirement: found '(', expected: identifier"),
@@ -92,7 +101,7 @@ func TestRender(t *testing.T) {
 				require.NoError(t, err)
 			}
 			out := &bytes.Buffer{}
-			err = tt.settings.Render(func() (*config.Config, error) {
+			err = tt.settings.RunE(func() (*config.Config, error) {
 				return rs, nil
 			}, fixturePath, out)
 			assert.Equal(t, tt.expErr, err)

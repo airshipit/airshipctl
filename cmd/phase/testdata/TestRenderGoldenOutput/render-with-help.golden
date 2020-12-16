@@ -17,6 +17,7 @@ airshipctl phase render initinfra -l app=helm,service=tiller -k Deployment
 Flags:
   -a, --annotation string   filter documents by Annotations
   -g, --apiversion string   filter documents by API version
+  -e, --executor            if set to true rendering will be performed by executor otherwise phase entrypoint will be rendered by kustomize, if entrypoint is not specified error will be returned
   -h, --help                help for render
   -k, --kind string         filter documents by Kinds
   -l, --label string        filter documents by Labels
