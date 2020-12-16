@@ -95,7 +95,7 @@ func (p *phase) Executor() (ifc.Executor, error) {
 		return nil, err
 	}
 	kubeconf := kubeconfig.NewBuilder().
-		WithBundle(p.helper.PhaseRoot()).
+		WithBundle(p.helper.PhaseBundleRoot()).
 		WithClusterMap(cMap).
 		WithClusterName(p.apiObj.ClusterName).
 		WithPath(p.kubeconfig).
@@ -172,10 +172,8 @@ func (p *phase) DocumentRoot() (string, error) {
 		}
 	}
 
-	targetPath := p.helper.TargetPath()
-	phaseRepoDir := p.helper.PhaseRepoDir()
-	docEntryPointPrefix := p.helper.DocEntryPointPrefix()
-	return filepath.Join(targetPath, phaseRepoDir, docEntryPointPrefix, relativePath), nil
+	phaseEntryPointBasePath := p.helper.PhaseEntryPointBasePath()
+	return filepath.Join(phaseEntryPointBasePath, relativePath), nil
 }
 
 // Details returns description of the phase

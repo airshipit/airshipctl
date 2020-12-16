@@ -31,11 +31,12 @@ import (
 
 // Helper provides functions built around phase bundle to filter and build documents
 type Helper struct {
-	phaseRoot     string
-	inventoryRoot string
-	targetPath    string
-	phaseRepoDir  string
-	metadata      *config.Metadata
+	phaseBundleRoot         string
+	inventoryRoot           string
+	targetPath              string
+	phaseRepoDir            string
+	phaseEntryPointBasePath string
+	metadata                *config.Metadata
 }
 
 // NewHelper constructs metadata interface based on config
@@ -55,14 +56,16 @@ func NewHelper(cfg *config.Config) (ifc.Helper, error) {
 	if err != nil {
 		return nil, err
 	}
-	helper.phaseRoot = filepath.Join(helper.targetPath, helper.phaseRepoDir, helper.metadata.PhaseMeta.Path)
+	helper.phaseBundleRoot = filepath.Join(helper.targetPath, helper.phaseRepoDir, helper.metadata.PhaseMeta.Path)
 	helper.inventoryRoot = filepath.Join(helper.targetPath, helper.phaseRepoDir, helper.metadata.Inventory.Path)
+	helper.phaseEntryPointBasePath = filepath.Join(helper.targetPath, helper.phaseRepoDir,
+		helper.metadata.PhaseMeta.DocEntryPointPrefix)
 	return helper, nil
 }
 
 // Phase returns a phase APIObject based on phase selector
 func (helper *Helper) Phase(phaseID ifc.ID) (*v1alpha1.Phase, error) {
-	bundle, err := document.NewBundleByPath(helper.phaseRoot)
+	bundle, err := document.NewBundleByPath(helper.phaseBundleRoot)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +93,7 @@ func (helper *Helper) Phase(phaseID ifc.ID) (*v1alpha1.Phase, error) {
 
 // Plan returns plan associated with a manifest
 func (helper *Helper) Plan() (*v1alpha1.PhasePlan, error) {
-	bundle, err := document.NewBundleByPath(helper.phaseRoot)
+	bundle, err := document.NewBundleByPath(helper.phaseBundleRoot)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +117,7 @@ func (helper *Helper) Plan() (*v1alpha1.PhasePlan, error) {
 
 // ListPhases returns all phases associated with manifest
 func (helper *Helper) ListPhases() ([]*v1alpha1.Phase, error) {
-	bundle, err := document.NewBundleByPath(helper.phaseRoot)
+	bundle, err := document.NewBundleByPath(helper.phaseBundleRoot)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +146,7 @@ func (helper *Helper) ListPhases() ([]*v1alpha1.Phase, error) {
 
 // ClusterMapAPIobj associated with the the manifest
 func (helper *Helper) ClusterMapAPIobj() (*v1alpha1.ClusterMap, error) {
-	bundle, err := document.NewBundleByPath(helper.phaseRoot)
+	bundle, err := document.NewBundleByPath(helper.phaseBundleRoot)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +179,7 @@ func (helper *Helper) ClusterMap() (clustermap.ClusterMap, error) {
 
 // ExecutorDoc returns executor document associated with phase
 func (helper *Helper) ExecutorDoc(phaseID ifc.ID) (document.Document, error) {
-	bundle, err := document.NewBundleByPath(helper.phaseRoot)
+	bundle, err := document.NewBundleByPath(helper.phaseBundleRoot)
 	if err != nil {
 		return nil, err
 	}
@@ -218,9 +221,14 @@ func (helper *Helper) DocEntryPointPrefix() string {
 	return helper.metadata.PhaseMeta.DocEntryPointPrefix
 }
 
-// PhaseRoot returns path to document root with phase documents
-func (helper *Helper) PhaseRoot() string {
-	return helper.phaseRoot
+// PhaseBundleRoot returns path to document root with phase documents
+func (helper *Helper) PhaseBundleRoot() string {
+	return helper.phaseBundleRoot
+}
+
+// PhaseEntryPointBasePath returns path to current site directory
+func (helper *Helper) PhaseEntryPointBasePath() string {
+	return helper.phaseEntryPointBasePath
 }
 
 // WorkDir return manifest root

@@ -32,5 +32,6 @@ type Helper interface {
 	ClusterMapAPIobj() (*v1alpha1.ClusterMap, error)
 	ClusterMap() (clustermap.ClusterMap, error)
 	ExecutorDoc(phaseID ID) (document.Document, error)
-	PhaseRoot() string
+	PhaseBundleRoot() string
+	PhaseEntryPointBasePath() string
 }
