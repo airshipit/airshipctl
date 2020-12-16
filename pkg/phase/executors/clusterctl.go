@@ -118,6 +118,7 @@ func (c *ClusterctlExecutor) move(opts ifc.RunOptions, evtCh chan events.Event) 
 		err = c.Move(kubeConfigFile, fromContext, kubeConfigFile, toContext, ns)
 		if err != nil {
 			c.handleErr(err, evtCh)
+			return
 		}
 	}
 
@@ -160,6 +161,7 @@ func (c *ClusterctlExecutor) init(opts ifc.RunOptions, evtCh chan events.Event) 
 	err = c.Init(kubeConfigFile, context)
 	if err != nil {
 		c.handleErr(err, evtCh)
+		return
 	}
 	evtCh <- events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
 		Operation: events.ClusterctlInitEnd,
