@@ -1,0 +1,20 @@
+apiVersion: airshipit.org/v1alpha1
+kind: VariableCatalogue
+metadata:
+  # NOTE: change this when copying this example
+  name: certificates-example
+  labels:
+    airshipit.org/deploy-k8s: "false"
+generate:
+  certificates:
+    ca-cert:
+      namespace: dummy
+      cn: kubernetes
+      validity: 20
+    ca-cert-key:
+      deployk8s: true
+      keyEncoding: "rsa"
+      namespace: test
+      cn: k8
+      validity: 365
+

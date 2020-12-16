@@ -1,0 +1,53 @@
+apiVersion: airshipit.org/v1alpha1
+kind: Templater
+metadata:
+  name: generate-passphrases-template
+  annotations:
+    config.kubernetes.io/function: |-
+      container:
+        image: quay.io/airshipit/templater:latest
+values:
+  passphrases:
+template: |
+  {{- range $key, $val := .passphrases }}
+  {{- $secretName := $key }}
+  {{- $secret := $val }}
+  ---
+  apiVersion: v1
+  kind: Secret
+  type: Opaque
+  metadata:
+    name: {{ $secretName }}
+    {{- if $secret.deployk8s }}
+    namespace: {{ $secret.namespace | default "default" }}
+    {{- end }}
+    labels:
+      airshipit.org/deploy-k8s: {{ $secret.deployk8s | default "false" }}
+  data:
+    {{range $secret.values -}}
+      {{- if not .keyName }}
+      {{- $_ := set . "keyName" "password" }}
+      {{- end }}
+      {{ if not .generationType -}}
+        {{- fail "no valid generationType specified!" }}
+      {{ end -}}
+      {{if eq .generationType "static" -}}
+        {{ .keyName }}: {{ .value | b64enc }}
+      {{else if eq .generationType "randAscii" -}}
+        {{ .keyName }}: {{ randAscii .length | b64enc }}
+      {{else if eq .generationType "randAlpha" -}}
+        {{ .keyName }}: {{ randAlpha .length | b64enc }}
+      {{else if eq .generationType "randAlphaNum" -}}
+        {{ .keyName }}: {{ randAlphaNum .length | b64enc }}
+      {{else if eq .generationType "randNumeric" -}}
+        {{ .keyName }}: {{ randNumeric .length | b64enc }}
+      {{else if eq .generationType "regexGen" -}}
+        {{ .keyName }}: {{ regexGen .regex (.limit | int) | b64enc }}
+      {{else if eq .generationType "derivePassword" -}}
+        {{ .keyName }}: {{ derivePassword (.length | toUint32) .passwordType .masterPassword .user .site | b64enc }}
+      {{else -}}
+        {{ $error := printf "%s is not a valid generationType!" .generationType }}
+        {{- fail $error }}
+      {{end}}
+    {{end -}}
+  {{end -}}
