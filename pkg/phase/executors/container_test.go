@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package container_test
+package executors_test
 
 import (
 	"bytes"
@@ -27,15 +27,15 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/phase"
+	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
 const (
-	executorDoc = `
+	containerExecutorDoc = `
 apiVersion: airshipit.org/v1alpha1
 kind: GenericContainer
 metadata:
@@ -86,7 +86,7 @@ metadata:
     config.kubernetes.io/function: "container:\n  image: quay.io/test/image:v0.0.1\nexec:
       {}\nstarlark: {}\n"
 `
-	singleExecutorBundlePath = "testdata/single"
+	singleExecutorBundlePath = "../../container/testdata/single"
 	firstDocInput            = `---
 apiVersion: v1
 kind: Secret
@@ -97,7 +97,7 @@ stringData:
     #!/bin/sh
     echo WORKS! $var >&2
 type: Opaque`
-	manyExecutorBundlePath = "testdata/many"
+	manyExecutorBundlePath = "../../container/testdata/many"
 	secondDocInput         = `---
 apiVersion: v1
 kind: Secret
@@ -110,27 +110,27 @@ type: Opaque
 	yamlSeparator = "---\n"
 )
 
-func TestRegisterExecutor(t *testing.T) {
+func TestRegisterContainerExecutor(t *testing.T) {
 	registry := make(map[schema.GroupVersionKind]ifc.ExecutorFactory)
 	expectedGVK := schema.GroupVersionKind{
 		Group:   "airshipit.org",
 		Version: "v1alpha1",
 		Kind:    "GenericContainer",
 	}
-	err := container.RegisterExecutor(registry)
+	err := executors.RegisterContainerExecutor(registry)
 	require.NoError(t, err)
 
 	_, found := registry[expectedGVK]
 	assert.True(t, found)
 }
 
-func TestNewExecutor(t *testing.T) {
-	execDoc, err := document.NewDocumentFromBytes([]byte(executorDoc))
+func TestNewContainerExecutor(t *testing.T) {
+	execDoc, err := document.NewDocumentFromBytes([]byte(containerExecutorDoc))
 	require.NoError(t, err)
-	_, err = container.NewExecutor(ifc.ExecutorConfig{
+	_, err = executors.NewContainerExecutor(ifc.ExecutorConfig{
 		ExecutorDocument: execDoc,
 		BundleFactory:    testBundleFactory(singleExecutorBundlePath),
-		Helper:           makeDefaultHelper(t),
+		Helper:           makeDefaultContainerHelper(t),
 	})
 	require.NoError(t, err)
 }
@@ -138,9 +138,9 @@ func TestNewExecutor(t *testing.T) {
 func TestSetInputSingleDocument(t *testing.T) {
 	bundle, err := document.NewBundleByPath(singleExecutorBundlePath)
 	require.NoError(t, err)
-	execDoc, err := document.NewDocumentFromBytes([]byte(executorDoc))
+	execDoc, err := document.NewDocumentFromBytes([]byte(containerExecutorDoc))
 	require.NoError(t, err)
-	e := &container.Executor{
+	e := &executors.ContainerExecutor{
 		ExecutorBundle:   bundle,
 		ExecutorDocument: execDoc,
 
@@ -169,9 +169,9 @@ func TestSetInputSingleDocument(t *testing.T) {
 func TestSetInputManyDocuments(t *testing.T) {
 	bundle, err := document.NewBundleByPath(manyExecutorBundlePath)
 	require.NoError(t, err)
-	execDoc, err := document.NewDocumentFromBytes([]byte(executorDoc))
+	execDoc, err := document.NewDocumentFromBytes([]byte(containerExecutorDoc))
 	require.NoError(t, err)
-	e := &container.Executor{
+	e := &executors.ContainerExecutor{
 		ExecutorBundle:   bundle,
 		ExecutorDocument: execDoc,
 
@@ -207,14 +207,14 @@ func TestSetInputManyDocuments(t *testing.T) {
 func TestPrepareFunctions(t *testing.T) {
 	bundle, err := document.NewBundleByPath(singleExecutorBundlePath)
 	require.NoError(t, err)
-	execDoc, err := document.NewDocumentFromBytes([]byte(executorDoc))
+	execDoc, err := document.NewDocumentFromBytes([]byte(containerExecutorDoc))
 	require.NoError(t, err)
 	contConf := &v1alpha1.GenericContainer{
 		Spec: runtimeutil.FunctionSpec{},
 	}
 	err = execDoc.ToAPIObject(contConf, v1alpha1.Scheme)
 	require.NoError(t, err)
-	e := &container.Executor{
+	e := &executors.ContainerExecutor{
 		ExecutorBundle:   bundle,
 		ExecutorDocument: execDoc,
 
@@ -233,16 +233,10 @@ func TestPrepareFunctions(t *testing.T) {
 	assert.Equal(t, transformedFunction, strFuncs)
 }
 
-func testBundleFactory(path string) document.BundleFactoryFunc {
-	return func() (document.Bundle, error) {
-		return document.NewBundleByPath(path)
-	}
-}
-
-func makeDefaultHelper(t *testing.T) ifc.Helper {
+func makeDefaultContainerHelper(t *testing.T) ifc.Helper {
 	t.Helper()
 	cfg := config.NewConfig()
-	cfg.Manifests[config.AirshipDefaultManifest].TargetPath = "./testdata"
+	cfg.Manifests[config.AirshipDefaultManifest].TargetPath = "../../container/testdata"
 	cfg.Manifests[config.AirshipDefaultManifest].MetadataPath = "metadata.yaml"
 	cfg.Manifests[config.AirshipDefaultManifest].Repositories[config.DefaultTestPhaseRepo].URLString = ""
 	cfg.SetLoadedConfigPath(".")

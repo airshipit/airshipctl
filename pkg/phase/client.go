@@ -21,7 +21,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
-	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
@@ -47,7 +46,7 @@ func DefaultExecutorRegistry() map[schema.GroupVersionKind]ifc.ExecutorFactory {
 	if err := executors.RegisterIsogenExecutor(execMap); err != nil {
 		log.Fatal(ErrExecutorRegistration{ExecutorName: "isogen", Err: err})
 	}
-	if err := container.RegisterExecutor(execMap); err != nil {
+	if err := executors.RegisterContainerExecutor(execMap); err != nil {
 		log.Fatal(ErrExecutorRegistration{ExecutorName: "generic-container", Err: err})
 	}
 	return execMap
