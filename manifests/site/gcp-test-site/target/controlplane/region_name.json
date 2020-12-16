@@ -1,3 +1,0 @@
-[
-  { "op": "replace","path": "/spec/region","value": "us-west1" }
-]

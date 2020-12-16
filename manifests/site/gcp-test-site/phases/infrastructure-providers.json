@@ -1,0 +1,18 @@
+[{
+    "op": "replace",
+    "path": "/init-options/infrastructure-providers",
+    "value": ["gcp:v0.3.0"]
+ },
+ {
+    "op": "replace",
+    "path": "/providers/0",
+    "value": {
+        "name": "gcp",
+        "type": "InfrastructureProvider",
+        "variable-substitution": true,
+        "versions": {
+            "v0.3.0": "airshipctl/manifests/function/capg/v0.3.0"
+        }
+    }
+ }
+]
