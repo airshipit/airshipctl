@@ -15,10 +15,24 @@
 package document
 
 import (
+	"fmt"
+	"path/filepath"
+
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document/pull"
+)
+
+const (
+	long = `
+The remote manifests repositories as well as the target path where
+the repositories will be cloned are defined in the airship config file.
+
+By default the airship config file is initialized with the
+repository "https://opendev.org/airship/treasuremap" as a source of
+manifests and with the manifests target path "%s".
+`
 )
 
 // NewPullCommand creates a new command for pulling airship document repositories
@@ -27,6 +41,8 @@ func NewPullCommand(cfgFactory config.Factory) *cobra.Command {
 	documentPullCmd := &cobra.Command{
 		Use:   "pull",
 		Short: "Pulls documents from remote git repository",
+		Long: fmt.Sprintf(long[1:], filepath.Join(
+			config.HomeEnvVar, config.AirshipConfigDir, config.AirshipDefaultManifest)),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return pull.Pull(cfgFactory, noCheckout)
 		},

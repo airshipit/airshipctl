@@ -16,8 +16,10 @@ package config
 
 import (
 	"encoding/base64"
+	"path/filepath"
 
 	"opendev.org/airship/airshipctl/pkg/fs"
+	"opendev.org/airship/airshipctl/pkg/util"
 )
 
 // NewConfig returns a newly initialized Config object
@@ -49,7 +51,7 @@ func NewConfig() *Config {
 						},
 					},
 				},
-				TargetPath:              "/tmp/" + AirshipDefaultManifest,
+				TargetPath:              filepath.Join(util.UserHomeDir(), AirshipConfigDir, AirshipDefaultManifest),
 				PhaseRepositoryName:     DefaultTestPhaseRepo,
 				InventoryRepositoryName: DefaultTestPhaseRepo,
 				MetadataPath:            DefaultManifestMetadataFile,
@@ -84,7 +86,7 @@ func NewManifest() *Manifest {
 	return &Manifest{
 		InventoryRepositoryName: DefaultTestPhaseRepo,
 		PhaseRepositoryName:     DefaultTestPhaseRepo,
-		TargetPath:              DefaultTargetPath,
+		TargetPath:              filepath.Join(util.UserHomeDir(), AirshipConfigDir, AirshipDefaultManifest),
 		Repositories:            map[string]*Repository{DefaultTestPhaseRepo: NewRepository()},
 		MetadataPath:            DefaultManifestMetadataFile,
 	}

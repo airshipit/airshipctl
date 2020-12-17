@@ -14,7 +14,9 @@ limitations under the License.
 
 package config
 
-import "sigs.k8s.io/yaml"
+import (
+	"sigs.k8s.io/yaml"
+)
 
 // Manifest is a tuple of references to a Manifest (how do Identify, collect ,
 // find the yaml manifests that airship uses to perform its operations)
@@ -73,4 +75,9 @@ func (m *Manifest) String() string {
 		return ""
 	}
 	return string(yamlData)
+}
+
+// GetTargetPath returns TargetPath field
+func (m *Manifest) GetTargetPath() string {
+	return m.TargetPath
 }

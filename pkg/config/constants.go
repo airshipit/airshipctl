@@ -50,8 +50,6 @@ const (
 const (
 	// DefaultTestPhaseRepo holds default repo name
 	DefaultTestPhaseRepo = "primary"
-	// DefaultTargetPath holds default target path
-	DefaultTargetPath = "/tmp/default"
 	// DefaultManifestMetadataFile default path to manifest metadata file
 	DefaultManifestMetadataFile = "manifests/site/test-site/metadata.yaml"
 )
