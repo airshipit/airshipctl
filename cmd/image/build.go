@@ -21,28 +21,19 @@ import (
 	"opendev.org/airship/airshipctl/pkg/phase"
 )
 
-// NewImageBuildCommand creates a new command with the capability to build an ISO image.
+// NewImageBuildCommand creates a new command with the capability to build ISO image.
 func NewImageBuildCommand(cfgFactory config.Factory) *cobra.Command {
-	var progress bool
 	cmd := &cobra.Command{
 		Use:   "build",
 		Short: "Build ISO image",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			p := &phase.RunCommand{
 				Factory: cfgFactory,
-				Options: phase.RunFlags{Progress: progress},
 			}
 			p.Options.PhaseID.Name = config.BootstrapPhase
 			return p.RunE()
 		},
 	}
-
-	flags := cmd.Flags()
-	flags.BoolVar(
-		&progress,
-		"progress",
-		false,
-		"show progress")
 
 	return cmd
 }

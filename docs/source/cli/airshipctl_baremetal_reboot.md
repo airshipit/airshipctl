@@ -16,7 +16,7 @@ airshipctl baremetal reboot [flags]
   -h, --help            help for reboot
   -l, --labels string   Label(s) to filter desired baremetal host documents
   -n, --name string     Name to filter desired baremetal host document
-      --phase string    airshipctl phase that contains the desired baremetal host document(s) (default "bootstrap")
+      --phase string    airshipctl phase that contains the desired baremetal host document(s) (default "bootstrap-iso")
 ```
 
 ### Options inherited from parent commands

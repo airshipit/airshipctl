@@ -9,7 +9,6 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1 // indirect
-	github.com/cheggaaa/pb/v3 v3.0.4
 	github.com/containerd/containerd v1.4.1 // indirect
 	github.com/docker/docker v1.4.2-0.20200203170920-46ec8731fbce
 	github.com/docker/go-connections v0.4.0 // indirect

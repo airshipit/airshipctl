@@ -21,7 +21,7 @@ const (
 	Ephemeral       = "ephemeral"
 	InitinfraPhase  = "initinfra"
 	ClusterctlPhase = InitinfraPhase
-	BootstrapPhase  = "bootstrap"
+	BootstrapPhase  = "bootstrap-iso"
 )
 
 // Constants defining default values

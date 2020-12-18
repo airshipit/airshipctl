@@ -21,11 +21,3 @@ type ErrNoParsedNumPkgs struct {
 func (e ErrNoParsedNumPkgs) Error() string {
 	return "No number of packages to install found in parsed container logs"
 }
-
-// ErrUnexpectedPb is returned when progress bar was not finished for some reason
-type ErrUnexpectedPb struct {
-}
-
-func (e ErrUnexpectedPb) Error() string {
-	return "An unexpected error occurred while parsing container logs"
-}

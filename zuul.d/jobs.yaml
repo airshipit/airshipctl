@@ -132,7 +132,7 @@
         # 21_systemwide_executable.sh is run in the build-gate pre-run above
         - ./tools/deployment/22_test_configs.sh
         - ./tools/deployment/23_pull_documents.sh
-        - ./tools/deployment/24_build_ephemeral_iso.sh
+        - ./tools/deployment/24_build_images.sh
         - ./tools/deployment/25_deploy_ephemeral_node.sh
         - ./tools/deployment/26_deploy_metal3_capi_ephemeral_node.sh
         - ./tools/deployment/30_deploy_controlplane.sh
@@ -142,7 +142,7 @@
         - ./tools/deployment/34_deploy_worker_node.sh
         - ./tools/deployment/35_deploy_workload.sh
         - ./tools/deployment/36_verify_hwcc_profiles.sh
-      serve_dir: /srv/iso
+      serve_dir: /srv/images
       serve_port: 8099
       log_roles:
         - gather-system-logs

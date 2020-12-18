@@ -15,6 +15,9 @@
 package executors_test
 
 import (
+	"log"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -36,19 +39,17 @@ import (
 var (
 	isogenExecutorDoc = `
 apiVersion: airshipit.org/v1alpha1
-kind: ImageConfiguration
+kind: IsoConfiguration
 metadata:
   name: isogen
   labels:
     airshipit.org/deploy-k8s: "false"
 builder:
-  networkConfigFileName: network-config
-  outputMetadataFileName: output-metadata.yaml
-  userDataFileName: user-data
+  outputFileName: ephemeral.iso
 container:
   containerRuntime: docker
-  image: quay.io/airshipit/isogen:latest-ubuntu_focal
-  volume: /srv/iso:/config`
+  image: quay.io/airshipit/image-builder:latest-ubuntu_focal
+  volume: /srv/images:/config`
 	executorBundlePath = "../../bootstrap/isogen/testdata/primary/site/test-site/ephemeral/bootstrap"
 )
 
@@ -57,7 +58,7 @@ func TestRegisterIsogenExecutor(t *testing.T) {
 	expectedGVK := schema.GroupVersionKind{
 		Group:   "airshipit.org",
 		Version: "v1alpha1",
-		Kind:    "ImageConfiguration",
+		Kind:    "IsoConfiguration",
 	}
 	err := executors.RegisterIsogenExecutor(registry)
 	require.NoError(t, err)
@@ -83,15 +84,20 @@ func TestIsogenExecutorRun(t *testing.T) {
 	tempVol, cleanup := testutil.TempDir(t, "bootstrap-test")
 	defer cleanup(t)
 
+	emptyFileName := filepath.Join(tempVol, "ephemeral.iso")
+	emptyFile, createErr := os.Create(emptyFileName)
+	require.NoError(t, createErr)
+	log.Println(emptyFile)
+	emptyFile.Close()
+
 	volBind := tempVol + ":/dst"
-	testCfg := &v1alpha1.ImageConfiguration{
-		Container: &v1alpha1.Container{
+	testCfg := &v1alpha1.IsoConfiguration{
+		IsoContainer: &v1alpha1.IsoContainer{
 			Volume:           volBind,
 			ContainerRuntime: "docker",
 		},
-		Builder: &v1alpha1.Builder{
-			UserDataFileName:      "user-data",
-			NetworkConfigFileName: "net-conf",
+		Isogen: &v1alpha1.Isogen{
+			OutputFileName: "ephemeral.iso",
 		},
 	}
 	testDoc := &testdoc.MockDocument{

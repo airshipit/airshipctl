@@ -28,10 +28,10 @@ func (e ErrUnknownExecutorAction) Error() string {
 	return fmt.Sprintf("unknown action type '%s'", e.Action)
 }
 
-// ErrIsoGenNilBundle is returned when isogen executor is not provided with bundle
-type ErrIsoGenNilBundle struct {
+// ErrIsogenNilBundle is returned when isogen executor is not provided with bundle
+type ErrIsogenNilBundle struct {
 }
 
-func (e ErrIsoGenNilBundle) Error() string {
+func (e ErrIsogenNilBundle) Error() string {
 	return "Cannot build iso with empty bundle, no data source is available"
 }

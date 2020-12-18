@@ -40,13 +40,13 @@ type IsogenExecutor struct {
 	ExecutorBundle   document.Bundle
 	ExecutorDocument document.Document
 
-	ImgConf *v1alpha1.ImageConfiguration
+	ImgConf *v1alpha1.IsoConfiguration
 	Builder container.Container
 }
 
 // RegisterIsogenExecutor adds executor to phase executor registry
 func RegisterIsogenExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFactory) error {
-	obj := v1alpha1.DefaultImageConfiguration()
+	obj := v1alpha1.DefaultIsoConfiguration()
 	gvks, _, err := v1alpha1.Scheme.ObjectKinds(obj)
 	if err != nil {
 		return err
@@ -57,9 +57,9 @@ func RegisterIsogenExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFac
 
 // NewIsogenExecutor creates instance of phase executor
 func NewIsogenExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
-	apiObj := &v1alpha1.ImageConfiguration{
-		Container: &v1alpha1.Container{},
-		Builder:   &v1alpha1.Builder{},
+	apiObj := &v1alpha1.IsoConfiguration{
+		IsoContainer: &v1alpha1.IsoContainer{},
+		Isogen:       &v1alpha1.Isogen{},
 	}
 	err := cfg.ExecutorDocument.ToAPIObject(apiObj, v1alpha1.Scheme)
 	if err != nil {
@@ -83,7 +83,7 @@ func (c *IsogenExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 	defer close(evtCh)
 
 	if c.ExecutorBundle == nil {
-		handleError(evtCh, ErrIsoGenNilBundle{})
+		handleError(evtCh, ErrIsogenNilBundle{})
 		return
 	}
 
@@ -104,8 +104,8 @@ func (c *IsogenExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 		ctx := context.Background()
 		builder, err := container.NewContainer(
 			ctx,
-			c.ImgConf.Container.ContainerRuntime,
-			c.ImgConf.Container.Image)
+			c.ImgConf.IsoContainer.ContainerRuntime,
+			c.ImgConf.IsoContainer.Image)
 		c.Builder = builder
 		if err != nil {
 			handleError(evtCh, err)
@@ -118,8 +118,6 @@ func (c *IsogenExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 		Builder:   c.Builder,
 		Doc:       c.ExecutorDocument,
 		Cfg:       c.ImgConf,
-		Debug:     log.DebugEnabled(),
-		Progress:  opts.Progress,
 		Writer:    log.Writer(),
 	}
 
@@ -145,10 +143,10 @@ func (c *IsogenExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 	})
 }
 
-func verifyArtifacts(cfg *v1alpha1.ImageConfiguration) error {
-	hostVol := strings.Split(cfg.Container.Volume, ":")[0]
-	metadataPath := filepath.Join(hostVol, cfg.Builder.OutputMetadataFileName)
-	_, err := os.Stat(metadataPath)
+func verifyArtifacts(cfg *v1alpha1.IsoConfiguration) error {
+	hostVol := strings.Split(cfg.IsoContainer.Volume, ":")[0]
+	outputFilePath := filepath.Join(hostVol, cfg.Isogen.OutputFileName)
+	_, err := os.Stat(outputFilePath)
 	return err
 }
 

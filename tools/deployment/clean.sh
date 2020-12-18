@@ -14,7 +14,7 @@
 
 set -x
 
-sudo rm -rf ~/.airship/ ~/.ansible.cfg /srv/iso/* /tmp/airship/
+sudo rm -rf ~/.airship/ ~/.ansible.cfg /srv/images/* /tmp/airship/
 sudo service sushy-tools stop
 sudo service apache2 stop
 sudo kill -9 $(lsof -t -i:8000 -i:8099)

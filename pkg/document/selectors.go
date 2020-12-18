@@ -189,3 +189,37 @@ func NewClusterctlMetadataSelector() Selector {
 		ClusterctlMetadataVersion,
 		ClusterctlMetadataKind)
 }
+
+//GetSecretData returns data located with a given key of a given document
+func GetSecretData(docBundle Bundle, apiSelector types.Selector, key string) ([]byte, error) {
+	s := NewSelector()
+	if apiSelector.Group != "" && apiSelector.Version != "" && apiSelector.Kind != "" {
+		s = s.ByGvk(apiSelector.Group, apiSelector.Version, apiSelector.Kind)
+	} else if apiSelector.Kind != "" {
+		s = s.ByKind(apiSelector.Kind)
+	}
+	if apiSelector.Namespace != "" {
+		s = s.ByNamespace(apiSelector.Namespace)
+	}
+	if apiSelector.Name != "" {
+		s = s.ByName(apiSelector.Name)
+	}
+	if apiSelector.AnnotationSelector != "" {
+		s = s.ByAnnotation(apiSelector.AnnotationSelector)
+	}
+	if apiSelector.LabelSelector != "" {
+		s = s.ByLabel(apiSelector.LabelSelector)
+	}
+
+	doc, docErr := docBundle.SelectOne(s)
+	if docErr != nil {
+		return nil, docErr
+	}
+
+	// finally, try and retrieve the data we want from the document
+	data, keyErr := DecodeSecretData(doc, key)
+	if keyErr != nil {
+		return nil, keyErr
+	}
+	return data, nil
+}

@@ -19,7 +19,7 @@
 
 set -xe
 
-export ISO_DIR=${ISO_DIR:-"/srv/iso"}
+export IMAGE_DIR=${IMAGE_DIR:-"/srv/images"}
 export SERVE_PORT=${SERVE_PORT:-"8099"}
 export AIRSHIPCTL_WS=${AIRSHIPCTL_WS:-$PWD}
 export TMP_DIR=${TMP_DIR:-"$(dirname $(mktemp -u))"}

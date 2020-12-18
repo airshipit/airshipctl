@@ -14,7 +14,7 @@
 
 set -ex
 
-TARGET_IMAGE_DIR="/srv/iso"
+TARGET_IMAGE_DIR="/srv/images"
 EPHEMERAL_DOMAIN_NAME="air-ephemeral"
 TARGET_IMAGE_URL="https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img"
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
@@ -45,7 +45,7 @@ if [ "${DOWNLOAD}" != "304" ]
 then
     curl -sSLo ${TARGET_IMAGE_DIR}/target-image.qcow2 ${TARGET_IMAGE_URL}
 fi
-md5sum /srv/iso/target-image.qcow2 | cut -d ' ' -f 1 > ${TARGET_IMAGE_DIR}/target-image.qcow2.md5sum
+md5sum /srv/images/target-image.qcow2 | cut -d ' ' -f 1 > ${TARGET_IMAGE_DIR}/target-image.qcow2.md5sum
 
 echo "Create target k8s cluster resources"
 airshipctl phase run controlplane-ephemeral --debug
