@@ -18,8 +18,9 @@
 # standard golint will catch, but it will fail to catch missing documentation.
 # The purpose of this script is to produce a nonzero return code if the
 # standard golint detects any issues.
-go install golang.org/x/lint/golint
-issues="$(golint ./...)"
+go get -u golang.org/x/lint/golint
+golint=`go list -f {{.Target}} golang.org/x/lint/golint`
+issues="$($golint ./...)"
 
 if [[ -n "$issues" ]]; then
   printf "ERROR: issues found when running 'golint ./...':\n"
