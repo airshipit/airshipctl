@@ -81,6 +81,7 @@ images:
   baremetal_operator:
     ironic: # ironic Deployment
       init_bootstrap: centos
+      init_images: quay.io/airshipit/ipa:latest
       dnsmasq: quay.io/metal3-io/ironic:capm3-v0.4.0
       httpd: quay.io/metal3-io/ironic:capm3-v0.4.0
       ironic: quay.io/metal3-io/ironic:capm3-v0.4.0

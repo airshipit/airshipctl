@@ -19,12 +19,14 @@ export TIMEOUT=${TIMEOUT:-3600}
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
 export KUBECONFIG_EPHEMERAL_CONTEXT=${KUBECONFIG_EPHEMERAL_CONTEXT:-"ephemeral-cluster"}
 export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
+export TARGET_NODE=${TARGET_NODE:-"node01"}
+export CLUSTER_NAMESPACE=${CLUSTER_NAMESPACE:-"default"}
 
 echo "Check Cluster Status"
-kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT get cluster target-cluster -o json | jq '.status.controlPlaneReady'
+kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT -n $CLUSTER_NAMESPACE get cluster target-cluster -o json | jq '.status.controlPlaneReady'
 
 echo "Annotate BMH for target node"
-kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT annotate bmh node01 baremetalhost.metal3.io/paused=true
+kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT -n $CLUSTER_NAMESPACE annotate bmh $TARGET_NODE baremetalhost.metal3.io/paused=true
 
 echo "Move Cluster Object to Target Cluster"
 airshipctl phase run clusterctl-move
@@ -37,11 +39,11 @@ kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get pods -
 end=$(($(date +%s) + $TIMEOUT))
 echo "Waiting $TIMEOUT seconds for crds to be created."
 while true; do
-    if (kubectl --request-timeout 20s --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get cluster target-cluster -o json | jq '.status.controlPlaneReady' | grep -q true) ; then
+    if (kubectl --request-timeout 20s --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT -n $CLUSTER_NAMESPACE get cluster target-cluster -o json | jq '.status.controlPlaneReady' | grep -q true) ; then
         echo -e "\nGet CRD status"
-        kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get bmh
-        kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get machines
-        kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get clusters
+        kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT -n $CLUSTER_NAMESPACE get bmh
+        kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT -n $CLUSTER_NAMESPACE get machines
+        kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT -n $CLUSTER_NAMESPACE get clusters
         break
     else
         now=$(date +%s)

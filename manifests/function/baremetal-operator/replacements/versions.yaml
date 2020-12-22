@@ -22,6 +22,15 @@ replacements:
 - source:
     objref:
       name: versions-airshipctl
+    fieldref: "{.images.baremetal_operator.ironic.init_images}"
+  target:
+    objref:
+      kind: Deployment
+      name: ironic
+    fieldrefs: ["{.spec.template.spec.initContainers[?(.name == 'init-images')].image}"]
+- source:
+    objref:
+      name: versions-airshipctl
     fieldref: "{.images.baremetal_operator.ironic.dnsmasq}"
   target:
     objref:

@@ -53,6 +53,7 @@ template: |
     bmc:
       address: {{ $host.bmcAddress }}
       credentialsName: {{ $hostName }}-bmc-secret
+      disableCertificateVerification: {{ $host.disableCertificateVerification }}
     firmware:
   {{ toYaml $hardwareProfile.firmware | indent 4 }}
   {{- /* If no raid is defined for a host, simply skip. There is no default setting for raid */ -}}

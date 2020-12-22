@@ -18,6 +18,7 @@ export USE_PROXY=${USE_PROXY:-"false"}
 export HTTPS_PROXY=${HTTPS_PROXY:-${https_proxy}}
 export HTTP_PROXY=${HTTP_PROXY:-${http_proxy}}
 export NO_PROXY=${NO_PROXY:-${no_proxy}}
+export PROXY=${PROXY:-${http_proxy}}
 
 echo "Build airshipctl docker images"
 make images
