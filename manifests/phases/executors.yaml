@@ -43,3 +43,105 @@ spec:
       image: quay.io/sample/image:v0.0.1
 config: |
   foo: bar
+---
+# This executor launchs a bootstrap container, which creates
+# an Azure Kubernetes Service (AKS) cluster
+apiVersion: airshipit.org/v1alpha1
+kind: BootConfiguration
+metadata:
+  name: ephemeral-az-genesis
+  labels:
+    airshipit.org/deploy-k8s: "false"
+ephemeralCluster:
+  bootstrapCommand: create
+  configFilename: azure-config.yaml
+bootstrapContainer:
+  containerRuntime: docker
+  image: quay.io/airshipit/capz-bootstrap:latest
+  volume: /tmp:/kube
+  saveKubeconfigFileName: capz.kubeconfig
+---
+# This executor launchs a bootstrap container, which deletes
+# an Azure Kubernetes Service (AKS) cluster
+apiVersion: airshipit.org/v1alpha1
+kind: BootConfiguration
+metadata:
+  name: ephemeral-az-cleanup
+  labels:
+    airshipit.org/deploy-k8s: "false"
+ephemeralCluster:
+  bootstrapCommand: delete
+  configFilename: azure-config.yaml
+bootstrapContainer:
+  containerRuntime: docker
+  image: quay.io/airshipit/capz-bootstrap:latest
+  volume: /tmp:/kube
+  saveKubeconfigFileName: capz.kubeconfig
+---
+# This executor launchs a bootstrap container, which creates
+# a Google Kubernetes Engine (GKE) cluster
+apiVersion: airshipit.org/v1alpha1
+kind: BootConfiguration
+metadata:
+  name: ephemeral-gcp-genesis
+  labels:
+    airshipit.org/deploy-k8s: "false"
+ephemeralCluster:
+  bootstrapCommand: create
+  configFilename: gcp-config.yaml
+bootstrapContainer:
+  containerRuntime: docker
+  image: quay.io/airshipit/capg-bootstrap:latest
+  volume: /tmp:/kube
+  saveKubeconfigFileName: capg.kubeconfig
+---
+# This executor launchs a bootstrap container, which deletes
+# a Google Kubernetes Engine (GKE) cluster
+apiVersion: airshipit.org/v1alpha1
+kind: BootConfiguration
+metadata:
+  name: ephemeral-gcp-cleanup
+  labels:
+    airshipit.org/deploy-k8s: "false"
+ephemeralCluster:
+  bootstrapCommand: delete
+  configFilename: gcp-config.yaml
+bootstrapContainer:
+  containerRuntime: docker
+  image: quay.io/airshipit/capg-bootstrap:latest
+  volume: /tmp:/kube
+  saveKubeconfigFileName: capg.kubeconfig
+---
+# This executor launchs a bootstrap container, which creates
+# an ephemeral K8S cluster in Openstack
+apiVersion: airshipit.org/v1alpha1
+kind: BootConfiguration
+metadata:
+  name: ephemeral-os-genesis
+  labels:
+    airshipit.org/deploy-k8s: "false"
+ephemeralCluster:
+  bootstrapCommand: create
+  configFilename: openstack-config.yaml
+bootstrapContainer:
+  containerRuntime: docker
+  image: quay.io/airshipit/capo-ephemeral:latest
+  volume: /tmp:/kube
+  saveKubeconfigFileName: capo.kubeconfig
+---
+# This executor launchs a bootstrap container, which deletes
+# ephemeral K8S cluster in Openstack
+apiVersion: airshipit.org/v1alpha1
+kind: BootConfiguration
+metadata:
+  name: ephemeral-os-cleanup
+  labels:
+    airshipit.org/deploy-k8s: "false"
+ephemeralCluster:
+  bootstrapCommand: delete
+  configFilename: openstack-config.yaml
+bootstrapContainer:
+  containerRuntime: docker
+  image: quay.io/airshipit/capo-ephemeral:latest
+  volume: /tmp:/kube
+  saveKubeconfigFileName: capo.kubeconfig
