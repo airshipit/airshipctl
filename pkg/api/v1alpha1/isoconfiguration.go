@@ -34,11 +34,11 @@ type Isogen struct {
 	// Cloud Init user data will be retrieved from the doc matching this object
 	UserDataSelector types.Selector `json:"userDataSelector,omitempty"`
 	// Cloud init user data will be retrieved from this document key
-	UserDataKey string `jsong:"userDataKey,omitempty"`
+	UserDataKey string `json:"userDataKey,omitempty"`
 	// Cloud Init network config will be retrieved from the doc matching this object
 	NetworkConfigSelector types.Selector `json:"networkConfigSelector,omitempty"`
 	// Cloud init network config will be retrieved from this document key
-	NetworkConfigKey string `jsong:"networkConfigKey,omitempty"`
+	NetworkConfigKey string `json:"networkConfigKey,omitempty"`
 	// File name to use for the output image that will be written to the container volume root
 	OutputFileName string `json:"outputFileName,omitempty"`
 }
