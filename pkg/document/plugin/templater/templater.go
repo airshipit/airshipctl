@@ -27,6 +27,7 @@ import (
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/fs"
 )
 
 var _ kio.Filter = &plugin{}
@@ -48,11 +49,13 @@ func New(obj map[string]interface{}) (kio.Filter, error) {
 }
 
 func (t *plugin) Filter(items []*yaml.RNode) ([]*yaml.RNode, error) {
+	docfs := fs.NewDocumentFs()
 	out := &bytes.Buffer{}
 	funcMap := sprig.TxtFuncMap()
 	funcMap["toUint32"] = func(i int) uint32 { return uint32(i) }
 	funcMap["toYaml"] = toYaml
 	funcMap["regexGen"] = regexGen
+	funcMap["fileExists"] = docfs.Exists
 	tmpl, err := template.New("tmpl").Funcs(funcMap).Parse(t.Template)
 	if err != nil {
 		return nil, err
