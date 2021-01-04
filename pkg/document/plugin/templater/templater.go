@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"text/template"
 
-	"github.com/Masterminds/sprig"
+	sprig "github.com/Masterminds/sprig/v3"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/kustomize/kyaml/kio"
@@ -49,6 +49,7 @@ func New(obj map[string]interface{}) (kio.Filter, error) {
 func (t *plugin) Filter(items []*yaml.RNode) ([]*yaml.RNode, error) {
 	out := &bytes.Buffer{}
 	funcMap := sprig.TxtFuncMap()
+	funcMap["toUint32"] = func(i int) uint32 { return uint32(i) }
 	funcMap["toYaml"] = toYaml
 	tmpl, err := template.New("tmpl").Funcs(funcMap).Parse(t.Template)
 	if err != nil {

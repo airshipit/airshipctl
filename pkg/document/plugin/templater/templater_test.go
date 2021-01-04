@@ -117,6 +117,19 @@ template: |
   {{ end }`,
 			expectedErr: "template: tmpl:1: unexpected \"}\" in end",
 		},
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: Templater
+metadata:
+  name: notImportantHere
+values:
+template: |
+  touint32: {{ toUint32 10 -}}
+`,
+			expectedOut: `touint32: 10
+`,
+		},
 	}
 
 	for _, tc := range testCases {
