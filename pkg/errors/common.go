@@ -27,3 +27,12 @@ func (e ErrNotImplemented) Error() string {
 	}
 	return "not implemented"
 }
+
+// ErrInvalidPhase is returned if the phase is invalid
+type ErrInvalidPhase struct {
+	Reason string
+}
+
+func (e ErrInvalidPhase) Error() string {
+	return fmt.Sprintf("invalid phase: %s", e.Reason)
+}
