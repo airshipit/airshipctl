@@ -27,6 +27,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase"
+	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
 const (
@@ -34,6 +35,8 @@ const (
 	testNewHelperErr      = "missing configuration"
 	testNoBundlePath      = "no such file or directory"
 	defaultCurrentContext = "context"
+	testTargetPath        = "testdata"
+	testMetadataPath      = "metadata.yaml"
 )
 
 func TestRunCommand(t *testing.T) {
@@ -67,7 +70,7 @@ func TestRunCommand(t *testing.T) {
 				conf.Manifests = map[string]*config.Manifest{
 					"manifest": {
 						MetadataPath:        "broken_metadata.yaml",
-						TargetPath:          "testdata",
+						TargetPath:          testTargetPath,
 						PhaseRepositoryName: config.DefaultTestPhaseRepo,
 						Repositories: map[string]*config.Repository{
 							config.DefaultTestPhaseRepo: {
@@ -107,18 +110,44 @@ func TestRunCommand(t *testing.T) {
 }
 
 func TestListCommand(t *testing.T) {
+	outputString1 := "NAMESPACE   RESOURCE                                  CLUSTER " +
+		"NAME          EXECUTOR              DOC ENTRYPOINT                          "
+	outputString2 := "            Phase/phase                               ephemeral" +
+		"-cluster     KubernetesApply       ephemeral/phase                         "
+	yamlOutput := `---
+- apiVersion: airshipit.org/v1alpha1
+  config:
+    documentEntryPoint: ephemeral/phase
+    executorRef:
+      apiVersion: airshipit.org/v1alpha1
+      kind: KubernetesApply
+      name: kubernetes-apply
+  kind: Phase
+  metadata:
+    clusterName: ephemeral-cluster
+    creationTimestamp: null
+    name: phase
+...
+`
 	tests := []struct {
-		name        string
-		errContains string
-		runFlags    phase.RunFlags
-		factory     config.Factory
+		name            string
+		errContains     string
+		runFlags        phase.RunFlags
+		expectedOut     [][]byte
+		expectedYamlOut string
+		factory         config.Factory
+		PlanID          ifc.ID
+		PhaseID         ifc.ID
+		OutputFormat    string
 	}{
 		{
 			name: "Error config factory",
 			factory: func() (*config.Config, error) {
 				return nil, fmt.Errorf(testFactoryErr)
 			},
-			errContains: testFactoryErr,
+			errContains:  testFactoryErr,
+			expectedOut:  [][]byte{{}},
+			OutputFormat: "table",
 		},
 		{
 			name: "Error new helper",
@@ -128,16 +157,18 @@ func TestListCommand(t *testing.T) {
 					Contexts:       make(map[string]*config.Context),
 				}, nil
 			},
-			errContains: testNewHelperErr,
+			errContains:  testNewHelperErr,
+			expectedOut:  [][]byte{{}},
+			OutputFormat: "table",
 		},
 		{
-			name: "Error phase by id",
+			name: "List phases",
 			factory: func() (*config.Config, error) {
 				conf := config.NewConfig()
 				conf.Manifests = map[string]*config.Manifest{
 					"manifest": {
-						MetadataPath:        "broken_metadata.yaml",
-						TargetPath:          "testdata",
+						MetadataPath:        testMetadataPath,
+						TargetPath:          testTargetPath,
 						PhaseRepositoryName: config.DefaultTestPhaseRepo,
 						Repositories: map[string]*config.Repository{
 							config.DefaultTestPhaseRepo: {
@@ -154,15 +185,55 @@ func TestListCommand(t *testing.T) {
 				}
 				return conf, nil
 			},
-			errContains: testNoBundlePath,
+			expectedOut: [][]byte{
+				[]byte(outputString1),
+				[]byte(outputString2),
+				{},
+			},
+			OutputFormat: "table",
+		},
+		{
+			name: "List phases of a plan",
+			factory: func() (*config.Config, error) {
+				conf := config.NewConfig()
+				manifest := conf.Manifests[config.AirshipDefaultManifest]
+				manifest.TargetPath = testTargetPath
+				manifest.MetadataPath = testMetadataPath
+				manifest.Repositories[config.DefaultTestPhaseRepo].URLString = ""
+				return conf, nil
+			},
+			PlanID: ifc.ID{Name: "phasePlan"},
+			expectedOut: [][]byte{
+				[]byte(outputString1),
+				[]byte(outputString2),
+				{},
+			},
+			OutputFormat: "table",
+		},
+		{
+			name: "List phases yaml format",
+			factory: func() (*config.Config, error) {
+				conf := config.NewConfig()
+				manifest := conf.Manifests[config.AirshipDefaultManifest]
+				manifest.TargetPath = testTargetPath
+				manifest.MetadataPath = testMetadataPath
+				manifest.Repositories[config.DefaultTestPhaseRepo].URLString = ""
+				return conf, nil
+			},
+			OutputFormat:    "yaml",
+			expectedYamlOut: yamlOutput,
 		},
 	}
 
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			buffer := &bytes.Buffer{}
 			command := phase.ListCommand{
-				Factory: tt.factory,
+				Factory:      tt.factory,
+				Writer:       buffer,
+				PlanID:       tt.PlanID,
+				OutputFormat: tt.OutputFormat,
 			}
 			err := command.RunE()
 			if tt.errContains != "" {
@@ -170,6 +241,14 @@ func TestListCommand(t *testing.T) {
 				assert.Contains(t, err.Error(), tt.errContains)
 			} else {
 				assert.NoError(t, err)
+			}
+			out, err := ioutil.ReadAll(buffer)
+			require.NoError(t, err)
+			if tt.OutputFormat == "yaml" {
+				assert.Equal(t, tt.expectedYamlOut, string(out))
+			} else {
+				b := bytes.Split(out, []byte("\n"))
+				assert.Equal(t, tt.expectedOut, b)
 			}
 		})
 	}
@@ -205,7 +284,7 @@ func TestTreeCommand(t *testing.T) {
 				conf.Manifests = map[string]*config.Manifest{
 					"manifest": {
 						MetadataPath:        "broken_metadata.yaml",
-						TargetPath:          "testdata",
+						TargetPath:          testTargetPath,
 						PhaseRepositoryName: config.DefaultTestPhaseRepo,
 						Repositories: map[string]*config.Repository{
 							config.DefaultTestPhaseRepo: {
@@ -264,7 +343,7 @@ func TestPlanListCommand(t *testing.T) {
 				conf := config.NewConfig()
 				manifest := conf.Manifests[config.AirshipDefaultManifest]
 				manifest.TargetPath = "testdata"
-				manifest.MetadataPath = "metadata.yaml"
+				manifest.MetadataPath = testMetadataPath
 				manifest.Repositories[config.DefaultTestPhaseRepo].URLString = ""
 				return conf, nil
 			},
@@ -328,7 +407,7 @@ func TestPlanRunCommand(t *testing.T) {
 				conf := config.NewConfig()
 				conf.Manifests = map[string]*config.Manifest{
 					"manifest": {
-						MetadataPath:        "metadata.yaml",
+						MetadataPath:        testMetadataPath,
 						TargetPath:          "testdata",
 						PhaseRepositoryName: config.DefaultTestPhaseRepo,
 						Repositories: map[string]*config.Repository{

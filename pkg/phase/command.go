@@ -28,8 +28,10 @@ import (
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
+	phaseerrors "opendev.org/airship/airshipctl/pkg/phase/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	"opendev.org/airship/airshipctl/pkg/util"
+	"opendev.org/airship/airshipctl/pkg/util/yaml"
 )
 
 // GenericRunFlags generic options for run command
@@ -73,14 +75,18 @@ func (c *RunCommand) RunE() error {
 
 // ListCommand phase list command
 type ListCommand struct {
-	Factory     config.Factory
-	Writer      io.Writer
-	ClusterName string
-	PlanID      ifc.ID
+	Factory      config.Factory
+	Writer       io.Writer
+	ClusterName  string
+	PlanID       ifc.ID
+	OutputFormat string
 }
 
-// RunE runs a phase plan command
+// RunE runs a phase list command
 func (c *ListCommand) RunE() error {
+	if c.OutputFormat != "table" && c.OutputFormat != "yaml" {
+		return phaseerrors.ErrInvalidFormat{RequestedFormat: c.OutputFormat}
+	}
 	cfg, err := c.Factory()
 	if err != nil {
 		return err
@@ -92,18 +98,14 @@ func (c *ListCommand) RunE() error {
 	}
 
 	o := ifc.ListPhaseOptions{ClusterName: c.ClusterName, PlanID: c.PlanID}
-	phases, err := helper.ListPhases(o)
+	phaseList, err := helper.ListPhases(o)
 	if err != nil {
 		return err
 	}
-
-	rt, err := util.NewResourceTable(phases, util.DefaultStatusFunction())
-	if err != nil {
-		return err
+	if c.OutputFormat == "table" {
+		return PrintPhaseListTable(c.Writer, phaseList)
 	}
-
-	util.DefaultTablePrinter(c.Writer, nil).PrintTable(rt, 0)
-	return nil
+	return yaml.WriteOut(c.Writer, phaseList)
 }
 
 // TreeCommand plan command

@@ -110,11 +110,13 @@ func TestHelperPlan(t *testing.T) {
 		name         string
 		errContains  string
 		expectedPlan *v1alpha1.PhasePlan
+		planID       ifc.ID
 		config       func(t *testing.T) *config.Config
 	}{
 		{
 			name:   "Valid Phase Plan",
 			config: testConfig,
+			planID: ifc.ID{Name: "phasePlan"},
 			expectedPlan: &airshipv1.PhasePlan{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "PhasePlan",
@@ -188,7 +190,7 @@ func TestHelperListPhases(t *testing.T) {
 	}{
 		{
 			name:     "Success phase list",
-			phaseLen: 5,
+			phaseLen: 8,
 			config:   testConfig,
 		},
 		{

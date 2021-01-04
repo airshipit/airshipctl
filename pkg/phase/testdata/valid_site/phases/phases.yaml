@@ -1,0 +1,32 @@
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: isogen
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: Clusterctl
+    name: clusterctl-v1
+  documentEntryPoint: valid_site/phases
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: remotedirect
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: Clusterctl
+    name: clusterctl-v1
+  documentEntryPoint: valid_site/phases
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: initinfra
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: Clusterctl
+    name: clusterctl-v1
+  documentEntryPoint: valid_site/phases
