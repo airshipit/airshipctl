@@ -17,6 +17,15 @@ set -xe
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
 export KUBECONFIG_EPHEMERAL_CONTEXT=${KUBECONFIG_EPHEMERAL_CONTEXT:-"ephemeral-cluster"}
 
+echo "Deploy calico using tigera operator"
+airshipctl phase run initinfra-networking-ephemeral --debug
+
+echo "Wait for Calico to be deployed using tigera"
+kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT wait --all-namespaces --for=condition=Ready pods --all --timeout=1000s
+
+echo "Wait for Tigerastatus to be Available"
+kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT wait --for=condition=Available tigerastatus --all --timeout=1000s -A
+
 echo "Deploy metal3.io components to ephemeral node"
 airshipctl phase run initinfra-ephemeral --debug
 

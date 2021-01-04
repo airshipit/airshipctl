@@ -18,6 +18,15 @@ export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
 NODENAME="node01"
 export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
 
+echo "Deploy calico using tigera operator"
+airshipctl phase run initinfra-networking-target --debug
+
+echo "Wait for Calico to be deployed using tigera"
+kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT wait --all-namespaces --for=condition=Ready pods --all --timeout=600s
+
+echo "Wait for Tigerastatus to be available"
+kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT wait --for=condition=Available tigerastatus --all --timeout=600s -A
+
 echo "Deploy infra to cluster"
 airshipctl phase run initinfra-target --debug
 

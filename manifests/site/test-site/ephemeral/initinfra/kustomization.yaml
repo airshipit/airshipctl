@@ -2,12 +2,10 @@ resources:
   - ../../../../function/baremetal-operator
   - ../../../../function/hwcc
   - ../../../../function/clusterctl
-  - ../../../../composite/infra
   - ../catalogues
 
 commonLabels:
   airshipit.org/stage: initinfra
 
 transformers:
-  - ../../../../composite/infra/replacements
   - ../../../../function/baremetal-operator/replacements
