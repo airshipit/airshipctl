@@ -20,6 +20,7 @@ import (
 	"text/template"
 
 	sprig "github.com/Masterminds/sprig/v3"
+	"github.com/lucasjones/reggen"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/kustomize/kyaml/kio"
@@ -51,6 +52,7 @@ func (t *plugin) Filter(items []*yaml.RNode) ([]*yaml.RNode, error) {
 	funcMap := sprig.TxtFuncMap()
 	funcMap["toUint32"] = func(i int) uint32 { return uint32(i) }
 	funcMap["toYaml"] = toYaml
+	funcMap["regexGen"] = regexGen
 	tmpl, err := template.New("tmpl").Funcs(funcMap).Parse(t.Template)
 	if err != nil {
 		return nil, err
@@ -73,6 +75,18 @@ func (t *plugin) Filter(items []*yaml.RNode) ([]*yaml.RNode, error) {
 		return nil, fmt.Errorf("Output conversion error")
 	}
 	return append(items, res.Nodes...), nil
+}
+
+// Generate Regex
+func regexGen(regex string, limit int) string {
+	if limit <= 0 {
+		panic("Limit cannot be less than or equal to 0")
+	}
+	str, err := reggen.Generate(regex, limit)
+	if err != nil {
+		panic(err)
+	}
+	return str
 }
 
 // Render input yaml as output yaml
