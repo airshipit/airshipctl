@@ -21,10 +21,10 @@ import (
 	"opendev.org/airship/airshipctl/testutil"
 )
 
-func TestNewPlanCommand(t *testing.T) {
+func TestNewListCommand(t *testing.T) {
 	tests := []*testutil.CmdTest{
 		{
-			Name:    "phase-plan-cmd-with-help",
+			Name:    "phase-list-cmd-with-help",
 			CmdLine: "--help",
 			Cmd:     phase.NewListCommand(nil),
 		},

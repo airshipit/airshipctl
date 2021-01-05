@@ -119,7 +119,7 @@ for plan in $phase_plans; do
     # removed since it was choking in certain cases and got to be more trouble than was worth.
     # This should be removed once we have a phase map that is smarter.
     # In the meantime, as new phases are added, please add them here as well.
-    phases=$(airshipctl --airshipconf ${AIRSHIPCONFIG} phase list --plan $plan -c $cluster | grep Phase | awk -F '/' '{print $2}' || true)
+    phases=$(airshipctl --airshipconf ${AIRSHIPCONFIG} phase list --plan $plan -c $cluster | grep Phase | awk -F '/' '{print $2}' | awk '{print $1}' || true)
 
     for phase in $phases; do
       # Guard against bootstrap or initinfra being missing, which could be the case for some configs
