@@ -24,8 +24,9 @@ airshipctl phase run initinfra-networking-target --debug
 echo "Wait for Calico to be deployed using tigera"
 kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT wait --all-namespaces --for=condition=Ready pods --all --timeout=600s
 
-echo "Wait for Tigerastatus to be available"
-kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT wait --for=condition=Available tigerastatus --all --timeout=600s -A
+# Skipping this check due a race condition till a work-around is identified.
+#echo "Wait for Tigerastatus to be available"
+#kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT wait --for=condition=Available tigerastatus --all --timeout=600s -A
 
 echo "Deploy infra to cluster"
 airshipctl phase run initinfra-target --debug
