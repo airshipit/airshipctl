@@ -8,5 +8,5 @@ spec:
     spec:
       containers:
       # Change the value of image field below to your controller image URL
-      - image: ${CONTAINER_CAPO_MANAGER}
+      - image: gcr.io/k8s-staging-capi-openstack/capi-openstack-controller-amd64:dev
         name: manager

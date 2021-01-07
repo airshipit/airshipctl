@@ -102,7 +102,7 @@ replacements:
     objref:
       kind: Clusterctl
       name: clusterctl_init
-    fieldrefs: ["{.additional-vars.CONTAINER_CAPO_MANAGER}"]
+    fieldrefs: ["{.images.infrastructure-openstack/capi-openstack-controller-amd64}"]
 - source:
     objref:
       kind: VariableCatalogue
@@ -112,7 +112,7 @@ replacements:
     objref:
       kind: Clusterctl
       name: clusterctl_init
-    fieldrefs: ["{.additional-vars.CONTAINER_CAPO_AUTH_PROXY}"]
+    fieldrefs: ["{.images.infrastructure-openstack/kube-rbac-proxy}"]
 # Replace capg versions
 - source:
     objref:
