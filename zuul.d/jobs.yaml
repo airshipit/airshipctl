@@ -175,7 +175,7 @@
         soft: true
     vars:
       site_name: docker-test-site
-      gate_scripts:
+      gate_scripts: &docker_gate_scripts
         - ./tools/deployment/21_systemwide_executable.sh
         - ./tools/deployment/01_install_kubectl.sh
         - ./tools/deployment/provider_common/01_install_kind.sh
@@ -191,6 +191,62 @@
         - WORKERS_COUNT=2 KUBECONFIG=/tmp/target-cluster.kubeconfig SITE=docker-test-site ./tools/deployment/provider_common/34_deploy_worker_node.sh
         - KUBECONFIG=/tmp/target-cluster.kubeconfig ./tools/deployment/provider_common/41_check_certificate_expiration.sh
         - KUBECONFIG=/tmp/target-cluster.kubeconfig ./tools/deployment/provider_common/42_rotate_sa_token.sh
+    voting: false
+- job:
+    name: airship-airshipctl-docker-kubebench-conformance
+    attempts: 1
+    timeout: 10800
+    pre-run: playbooks/airship-airshipctl-deploy-docker.yaml
+    run: playbooks/airshipctl-gate-runner.yaml
+    nodeset: airship-airshipctl-single-node
+    irrelevant-files: *noncodefiles
+    dependencies:
+      - name: openstack-tox-docs
+        soft: true
+      - name: airship-airshipctl-lint
+        soft: true
+      - name: airship-airshipctl-unit
+        soft: true
+      - name: airship-airshipctl-golint
+        soft: true
+      - name: airship-airshipctl-build-image
+        soft: true
+      - name: airship-airshipctl-validate-site-docs
+        soft: true
+    vars:
+      site_name: docker-test-site
+      gate_scripts:
+        - *docker_gate_scripts
+        - KUBECONFIG=/tmp/target-cluster.kubeconfig TARGET_CLUSTER_CONTEXT=target-cluster ./tools/deployment/sonobuoy/01-install_sonobuoy.sh
+        - KUBECONFIG=/tmp/target-cluster.kubeconfig TARGET_CLUSTER_CONTEXT=target-cluster ./tools/deployment/sonobuoy/03-kubebench.sh
+    voting: false
+- job:
+    name: airship-airshipctl-docker-cncf-conformance
+    attempts: 1
+    timeout: 10800
+    pre-run: playbooks/airship-airshipctl-deploy-docker.yaml
+    run: playbooks/airshipctl-gate-runner.yaml
+    nodeset: airship-airshipctl-single-node
+    irrelevant-files: *noncodefiles
+    dependencies:
+      - name: openstack-tox-docs
+        soft: true
+      - name: airship-airshipctl-lint
+        soft: true
+      - name: airship-airshipctl-unit
+        soft: true
+      - name: airship-airshipctl-golint
+        soft: true
+      - name: airship-airshipctl-build-image
+        soft: true
+      - name: airship-airshipctl-validate-site-docs
+        soft: true
+    vars:
+      site_name: docker-test-site
+      gate_scripts:
+        - *docker_gate_scripts
+        - KUBECONFIG=/tmp/target-cluster.kubeconfig TARGET_CLUSTER_CONTEXT=target-cluster ./tools/deployment/sonobuoy/01-install_sonobuoy.sh
+        - KUBECONFIG=/tmp/target-cluster.kubeconfig TARGET_CLUSTER_CONTEXT=target-cluster CONFORMANCE_MODE=certified-conformance ./tools/deployment/sonobuoy/02-run_default.sh
     voting: false
 - job:
     name: airship-airshipctl-publish-image

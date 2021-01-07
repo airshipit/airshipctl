@@ -35,6 +35,8 @@
         - airship-airshipctl-gate-script-runner-docker
     experimental:
       jobs:
+        - airship-airshipctl-docker-kubebench-conformance
+        - airship-airshipctl-docker-cncf-conformance
         - airship-airshipctl-gate-script-runner
     gate:
       jobs:
