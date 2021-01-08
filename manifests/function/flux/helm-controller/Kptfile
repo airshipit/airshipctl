@@ -1,0 +1,13 @@
+apiVersion: kpt.dev/v1alpha1
+kind: Kptfile
+dependencies:
+- name: upstream/crd
+  git:
+    repo: "https://github.com/fluxcd/helm-controller"
+    directory: "config/crd"
+    ref: "v0.4.3"
+- name: upstream/manager
+  git:
+    repo: "https://github.com/fluxcd/helm-controller"
+    directory: "config/manager"
+    ref: "v0.4.3"

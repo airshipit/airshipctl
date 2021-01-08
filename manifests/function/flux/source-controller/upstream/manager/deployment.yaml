@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: source-controller
+  labels:
+    control-plane: controller
+spec:
+  selector:
+    matchLabels:
+      app: source-controller
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: source-controller
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: manager
+        image: fluxcd/source-controller
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+        ports:
+          - containerPort: 9090
+            name: http
+          - containerPort: 8080
+            name: http-prom
+        env:
+          - name: RUNTIME_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        args:
+          - --watch-all-namespaces
+          - --log-level=info
+          - --log-json
+          - --enable-leader-election
+          - --storage-path=/data
+          - --storage-adv-addr=source-controller.$(RUNTIME_NAMESPACE).svc.cluster.local.
+        livenessProbe:
+          httpGet:
+            port: http
+            path: /
+        readinessProbe:
+          httpGet:
+            port: http
+            path: /
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+        volumeMounts:
+          - name: data
+            mountPath: /data
+          - name: tmp
+            mountPath: /tmp
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
