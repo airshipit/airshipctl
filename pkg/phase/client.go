@@ -49,6 +49,9 @@ func DefaultExecutorRegistry() map[schema.GroupVersionKind]ifc.ExecutorFactory {
 	if err := executors.RegisterContainerExecutor(execMap); err != nil {
 		log.Fatal(ErrExecutorRegistration{ExecutorName: "generic-container", Err: err})
 	}
+	if err := executors.RegisterEphemeralExecutor(execMap); err != nil {
+		log.Fatal(ErrExecutorRegistration{ExecutorName: "ephemeral", Err: err})
+	}
 	return execMap
 }
 

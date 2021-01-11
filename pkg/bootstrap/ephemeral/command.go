@@ -104,6 +104,14 @@ func (options *BootstrapContainerOptions) VerifyInputs() error {
 	return nil
 }
 
+// VerifyArtifacts verifies the artifacts
+func (options *BootstrapContainerOptions) VerifyArtifacts() error {
+	hostVol := strings.Split(options.Cfg.BootstrapContainer.Volume, ":")[0]
+	configPath := filepath.Join(hostVol, options.Cfg.EphemeralCluster.ConfigFilename)
+	_, err := os.Stat(configPath)
+	return err
+}
+
 // GetContainerStatus returns the Bootstrap Container state
 func (options *BootstrapContainerOptions) GetContainerStatus() (container.Status, error) {
 	// Check status of the container, e.g., "running"
