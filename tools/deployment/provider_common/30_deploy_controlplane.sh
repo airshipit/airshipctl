@@ -14,7 +14,7 @@
 
 # Example Usage
 # CONTROLPLANE_COUNT=1 \
-# TEST_SITE=docker-test-site \
+# SITE=docker-test-site \
 # ./tools/deployment/provider_common/30_deploy_controlplane.sh
 
 export AIRSHIP_SRC=${AIRSHIP_SRC:-"/tmp/airship"}
@@ -49,19 +49,12 @@ echo "add context target-cluster"
 kubectl config set-context ${TARGET_CLUSTER_NAME} --user ${TARGET_CLUSTER_NAME}-admin --cluster ${TARGET_CLUSTER_NAME} \
 --kubeconfig "/tmp/${TARGET_CLUSTER_NAME}.kubeconfig"
 
-if [ "$TEST_SITE" != "docker-test-site" ]; then
-  echo "apply cni as a part of initinfra"
-  airshipctl phase run initinfra-target --debug --kubeconfig "/tmp/${TARGET_CLUSTER_NAME}.kubeconfig"
-  kubectl --kubeconfig /tmp/"${TARGET_CLUSTER_NAME}".kubeconfig wait --for=condition=Ready nodes --all --timeout 4000s
-else
-   kubectl --kubeconfig /tmp/"${TARGET_CLUSTER_NAME}".kubeconfig wait --for=condition=Ready nodes --all --timeout 4000s
-fi
+echo "apply cni as a part of initinfra-networking"
+airshipctl phase run initinfra-networking-target --debug --kubeconfig "/tmp/${TARGET_CLUSTER_NAME}.kubeconfig"
 
 echo "Check nodes status"
-
 kubectl --kubeconfig /tmp/"${TARGET_CLUSTER_NAME}".kubeconfig wait --for=condition=Ready nodes --all --timeout 4000s
 kubectl get nodes --kubeconfig /tmp/"${TARGET_CLUSTER_NAME}".kubeconfig
-
 
 echo "Waiting for  pods to come up"
 kubectl --kubeconfig /tmp/${TARGET_CLUSTER_NAME}.kubeconfig  wait --for=condition=ready pods --all --timeout=4000s -A
