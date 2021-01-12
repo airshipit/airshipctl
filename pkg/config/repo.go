@@ -35,6 +35,10 @@ const (
 	HTTPBasic = "http-basic"
 )
 
+// remoteName is a remote name that airshipctl work with during document pull
+// TODO (raliev) consider make this variable configurable via repoCheckout options
+var remoteName = git.DefaultRemoteName
+
 // Repository struct holds the information for the remote sources of manifest yaml documents.
 // Information such as location, authentication info,
 // as well as details of what to get such as branch, tag, commit it, etc.
@@ -80,6 +84,8 @@ type RepoCheckout struct {
 	RemoteRef string `json:"remoteRef,omitempty"`
 	// ForceCheckout is a boolean to indicate whether to use the `--force` option when checking out
 	ForceCheckout bool `json:"force"`
+	// LocalBranch is a boolean to indicate whether the Branch is local one. False by default
+	LocalBranch bool `json:"localBranch"`
 }
 
 // RepoCheckout methods
@@ -223,7 +229,11 @@ func (repo *Repository) ToCheckoutOptions() *git.CheckoutOptions {
 		co.Force = repo.CheckoutOptions.ForceCheckout
 		switch {
 		case repo.CheckoutOptions.Branch != "":
-			co.Branch = plumbing.NewBranchReferenceName(repo.CheckoutOptions.Branch)
+			if repo.CheckoutOptions.LocalBranch {
+				co.Branch = plumbing.NewBranchReferenceName(repo.CheckoutOptions.Branch)
+			} else {
+				co.Branch = plumbing.NewRemoteReferenceName(remoteName, repo.CheckoutOptions.Branch)
+			}
 		case repo.CheckoutOptions.Tag != "":
 			co.Branch = plumbing.NewTagReferenceName(repo.CheckoutOptions.Tag)
 		case repo.CheckoutOptions.CommitHash != "":
@@ -238,8 +248,9 @@ func (repo *Repository) ToCheckoutOptions() *git.CheckoutOptions {
 // CloneOptions describes how a clone should be performed
 func (repo *Repository) ToCloneOptions(auth transport.AuthMethod) *git.CloneOptions {
 	return &git.CloneOptions{
-		Auth: auth,
-		URL:  repo.URLString,
+		Auth:       auth,
+		URL:        repo.URLString,
+		RemoteName: remoteName,
 	}
 }
 

@@ -28,6 +28,7 @@ manifests:
           branch: ""
           commitHash: ""
           force: false
+          localBranch: false
           tag: v1.0.1
         url: http://dummy.url.com/manifests.git
     targetPath: /var/tmp/

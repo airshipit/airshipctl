@@ -73,6 +73,7 @@ func TestPull(t *testing.T) {
 			name: "TestCloneRepositoriesValidOpts",
 			checkoutOpts: &config.RepoCheckout{
 				Branch:        "master",
+				LocalBranch:   true,
 				ForceCheckout: false,
 			},
 			error: nil,

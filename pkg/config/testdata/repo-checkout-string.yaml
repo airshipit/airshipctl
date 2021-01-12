@@ -1,4 +1,5 @@
 branch: ""
 commitHash: ""
 force: false
+localBranch: false
 tag: v1.0.1
