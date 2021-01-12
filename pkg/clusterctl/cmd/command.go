@@ -94,7 +94,7 @@ func getBundle(conf *config.Config) (document.Bundle, error) {
 	if err != nil {
 		return nil, err
 	}
-	return document.NewBundleByPath(helper.PhaseRoot())
+	return document.NewBundleByPath(helper.PhaseBundleRoot())
 }
 
 // Move runs clusterctl move
