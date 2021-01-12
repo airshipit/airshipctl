@@ -81,7 +81,7 @@ replacements:
     objref:
       kind: Clusterctl
       name: clusterctl_init
-    fieldrefs: ["{.additional-vars.CONTAINER_CAPD_MANAGER}"]
+    fieldrefs: ["{.images.infrastructure-docker/capd-manager}"]
 - source:
     objref:
       kind: VariableCatalogue
@@ -91,7 +91,7 @@ replacements:
     objref:
       kind: Clusterctl
       name: clusterctl_init
-    fieldrefs: ["{.additional-vars.CONTAINER_CAPD_AUTH_PROXY}"]
+    fieldrefs: ["{.images.infrastructure-docker/kube-rbac-proxy}"]
 # Replace capo versions
 - source:
     objref:

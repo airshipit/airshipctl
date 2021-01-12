@@ -63,14 +63,18 @@ images:
   infrastructure-metal3/kube-rbac-proxy:
     repository: "gcr.io/kubebuilder"
     tag: "v0.4.0"
+  infrastructure-docker/capd-manager:
+    repository: "gcr.io/k8s-staging-cluster-api"
+    tag: "v20201019-v0.3.10-86-gc1647481f"
+  infrastructure-docker/kube-rbac-proxy:
+    repository: "gcr.io/kubebuilder"
+    tag: "v0.4.0"
 
 
 # These default images can be overridden via the `replacements/` entrypoint
 additional-vars:
-  CONTAINER_CAPD_MANAGER: gcr.io/k8s-staging-cluster-api/capd-manager:v20201019-v0.3.10-86-gc1647481f
   CONTAINER_CAPO_MANAGER: gcr.io/k8s-staging-capi-openstack/capi-openstack-controller-amd64:v20200707-v0.3.1
   CONTAINER_CAPZ_MANAGER: gcr.io/k8s-staging-cluster-api-azure/cluster-api-azure-controller:v0.4.9
-  CONTAINER_CAPD_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.0
   CONTAINER_CAPO_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
   CONTAINER_CAPZ_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
   CONTAINER_CAPG_MANAGER: gcr.io/k8s-staging-cluster-api-gcp/cluster-api-gcp-controller:master
