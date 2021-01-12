@@ -202,7 +202,7 @@ func newBaremetalHost(mgmtCfg config.ManagementConfiguration,
 		log.Debug("Remote type: Redfish")
 		clientFactory = redfish.ClientFactory
 	case redfishdell.ClientType:
-		clientFactory = redfish.ClientFactory
+		clientFactory = redfishdell.ClientFactory
 	default:
 		return host, ErrUnknownManagementType{Type: mgmtCfg.Type}
 	}
