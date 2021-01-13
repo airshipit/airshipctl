@@ -18,7 +18,8 @@
       - packages:
           Debian:
           - qemu
-          - libvirt-bin
+          - libvirt-daemon-system
+          - libvirt-clients
           - libguestfs-tools
           - qemu-kvm
           - python3-lxml
