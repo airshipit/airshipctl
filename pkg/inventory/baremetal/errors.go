@@ -40,3 +40,12 @@ type ErrNoBaremetalHostsFound struct {
 func (e ErrNoBaremetalHostsFound) Error() string {
 	return fmt.Sprintf("No baremetal hosts matched selector %v", e.Selector)
 }
+
+// ErrBaremetalOperationNotSupported is returned when baremetal operation is not supported
+type ErrBaremetalOperationNotSupported struct {
+	Operation ifc.BaremetalOperation
+}
+
+func (e ErrBaremetalOperationNotSupported) Error() string {
+	return fmt.Sprintf("Baremetal operation not supported: '%s'", e.Operation)
+}

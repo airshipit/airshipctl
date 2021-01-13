@@ -15,6 +15,7 @@
 package baremetal
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -114,6 +115,101 @@ func TestSelectOne(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 				assert.NotNil(t, host)
+			}
+		})
+	}
+}
+
+func TestRunAction(t *testing.T) {
+	tests := []struct {
+		name, remoteDriver, expectedErr string
+		operation                       ifc.BaremetalOperation
+
+		selector ifc.BaremetalHostSelector
+	}{
+		{
+			name:         "success return one host",
+			remoteDriver: "redfish",
+			operation:    ifc.BaremetalOperation("not supported"),
+			selector:     (ifc.BaremetalHostSelector{}).ByName("master-0"),
+			expectedErr:  "Baremetal operation not supported",
+		},
+		{
+			name:         "success return one host",
+			remoteDriver: "redfish",
+			operation:    ifc.BaremetalOperationPowerOn,
+			selector:     (ifc.BaremetalHostSelector{}).ByName("does not exist"),
+			expectedErr:  "No baremetal hosts matched selector",
+		},
+		{
+			name:         "success return one host",
+			remoteDriver: "redfish",
+			operation:    ifc.BaremetalOperationPowerOn,
+			selector:     (ifc.BaremetalHostSelector{}).ByName("master-0"),
+			expectedErr:  "HTTP request failed",
+		},
+	}
+
+	bundle := testBundle(t)
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mgmCfg := config.ManagementConfiguration{Type: tt.remoteDriver}
+			inventory := NewInventory(mgmCfg, bundle)
+			err := inventory.RunOperation(
+				context.Background(),
+				tt.operation,
+				tt.selector,
+				ifc.BaremetalBatchRunOptions{})
+			if tt.expectedErr != "" {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.expectedErr)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestAction(t *testing.T) {
+	tests := []struct {
+		name      string
+		action    ifc.BaremetalOperation
+		expectErr bool
+	}{
+		{
+			name:   "poweron",
+			action: ifc.BaremetalOperationPowerOn,
+		},
+		{
+			name:   "poweroff",
+			action: ifc.BaremetalOperationPowerOff,
+		},
+		{
+			name:   "ejectvirtualmedia",
+			action: ifc.BaremetalOperationEjectVirtualMedia,
+		},
+		{
+			name:   "reboot",
+			action: ifc.BaremetalOperationReboot,
+		},
+		{
+			name:      "reboot",
+			action:    ifc.BaremetalOperation("not supported"),
+			expectErr: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			actionFunc, err := action(context.Background(), tt.action)
+			if tt.expectErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				// TODO inject fake host interface here to validate
+				// that correct actions were selected
+				assert.NotNil(t, actionFunc)
 			}
 		})
 	}
