@@ -49,6 +49,7 @@ type BootstrapIsoOptions struct {
 	Writer io.Writer
 }
 
+// VerifyInputs verifies image configuration
 func VerifyInputs(cfg *v1alpha1.IsoConfiguration) error {
 	if cfg.IsoContainer.Volume == "" {
 		return config.ErrMissingConfig{

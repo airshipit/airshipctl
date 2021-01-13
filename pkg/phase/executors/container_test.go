@@ -20,15 +20,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/kustomize/kyaml/fn/runtime/runtimeutil"
 	"sigs.k8s.io/kustomize/kyaml/runfn"
 	kyaml "sigs.k8s.io/kustomize/kyaml/yaml"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
-	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	yaml_util "opendev.org/airship/airshipctl/pkg/util/yaml"
@@ -109,27 +106,13 @@ type: Opaque
 `
 )
 
-func TestRegisterContainerExecutor(t *testing.T) {
-	registry := make(map[schema.GroupVersionKind]ifc.ExecutorFactory)
-	expectedGVK := schema.GroupVersionKind{
-		Group:   "airshipit.org",
-		Version: "v1alpha1",
-		Kind:    "GenericContainer",
-	}
-	err := executors.RegisterContainerExecutor(registry)
-	require.NoError(t, err)
-
-	_, found := registry[expectedGVK]
-	assert.True(t, found)
-}
-
 func TestNewContainerExecutor(t *testing.T) {
 	execDoc, err := document.NewDocumentFromBytes([]byte(containerExecutorDoc))
 	require.NoError(t, err)
 	_, err = executors.NewContainerExecutor(ifc.ExecutorConfig{
 		ExecutorDocument: execDoc,
 		BundleFactory:    testBundleFactory(singleExecutorBundlePath),
-		Helper:           makeDefaultContainerHelper(t),
+		Helper:           makeDefaultHelper(t, "../../container/testdata"),
 	})
 	require.NoError(t, err)
 }
@@ -235,17 +218,4 @@ func TestPrepareFunctions(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, transformedFunction, strFuncs)
-}
-
-func makeDefaultContainerHelper(t *testing.T) ifc.Helper {
-	t.Helper()
-	cfg := config.NewConfig()
-	cfg.Manifests[config.AirshipDefaultManifest].TargetPath = "../../container/testdata"
-	cfg.Manifests[config.AirshipDefaultManifest].MetadataPath = "metadata.yaml"
-	cfg.Manifests[config.AirshipDefaultManifest].Repositories[config.DefaultTestPhaseRepo].URLString = ""
-	cfg.SetLoadedConfigPath(".")
-	helper, err := phase.NewHelper(cfg)
-	require.NoError(t, err)
-	require.NotNil(t, helper)
-	return helper
 }

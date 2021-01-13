@@ -37,20 +37,11 @@ type ExecutorRegistry func() map[schema.GroupVersionKind]ifc.ExecutorFactory
 func DefaultExecutorRegistry() map[schema.GroupVersionKind]ifc.ExecutorFactory {
 	execMap := make(map[schema.GroupVersionKind]ifc.ExecutorFactory)
 
-	if err := executors.RegisterExecutor(execMap); err != nil {
-		log.Fatal(ErrExecutorRegistration{ExecutorName: "clusterctl", Err: err})
-	}
-	if err := executors.RegisterKubeApplierExecutor(execMap); err != nil {
-		log.Fatal(ErrExecutorRegistration{ExecutorName: "kubernetes-apply", Err: err})
-	}
-	if err := executors.RegisterIsogenExecutor(execMap); err != nil {
-		log.Fatal(ErrExecutorRegistration{ExecutorName: "isogen", Err: err})
-	}
-	if err := executors.RegisterContainerExecutor(execMap); err != nil {
-		log.Fatal(ErrExecutorRegistration{ExecutorName: "generic-container", Err: err})
-	}
-	if err := executors.RegisterEphemeralExecutor(execMap); err != nil {
-		log.Fatal(ErrExecutorRegistration{ExecutorName: "ephemeral", Err: err})
+	for _, execName := range []string{executors.Clusterctl, executors.KubernetesApply,
+		executors.Isogen, executors.GenericContainer, executors.Ephemeral} {
+		if err := executors.RegisterExecutor(execName, execMap); err != nil {
+			log.Fatal(ErrExecutorRegistration{ExecutorName: execName, Err: err})
+		}
 	}
 	return execMap
 }

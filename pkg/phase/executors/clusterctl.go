@@ -17,8 +17,6 @@ package executors
 import (
 	"io"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
@@ -41,19 +39,8 @@ type ClusterctlExecutor struct {
 	kubecfg    kubeconfig.Interface
 }
 
-// RegisterExecutor adds executor to phase executor registry
-func RegisterExecutor(registry map[schema.GroupVersionKind]ifc.ExecutorFactory) error {
-	obj := &airshipv1.Clusterctl{}
-	gvks, _, err := airshipv1.Scheme.ObjectKinds(obj)
-	if err != nil {
-		return err
-	}
-	registry[gvks[0]] = NewExecutor
-	return nil
-}
-
-// NewExecutor creates instance of 'clusterctl init' phase executor
-func NewExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
+// NewClusterctlExecutor creates instance of 'clusterctl init' phase executor
+func NewClusterctlExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 	options := airshipv1.DefaultClusterctl()
 	if err := cfg.ExecutorDocument.ToAPIObject(options, airshipv1.Scheme); err != nil {
 		return nil, err
@@ -80,7 +67,7 @@ func (c *ClusterctlExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 	case airshipv1.Init:
 		c.init(opts, evtCh)
 	default:
-		c.handleErr(ErrUnknownExecutorAction{Action: string(c.options.Action)}, evtCh)
+		handleError(evtCh, ErrUnknownExecutorAction{Action: string(c.options.Action)})
 	}
 }
 
@@ -92,23 +79,23 @@ func (c *ClusterctlExecutor) move(opts ifc.RunOptions, evtCh chan events.Event) 
 	ns := c.options.MoveOptions.Namespace
 	kubeConfigFile, cleanup, err := c.kubecfg.GetFile()
 	if err != nil {
-		c.handleErr(err, evtCh)
+		handleError(evtCh, err)
 		return
 	}
 	defer cleanup()
 	fromCluster, err := c.clusterMap.ParentCluster(c.clusterName)
 	if err != nil {
-		c.handleErr(err, evtCh)
+		handleError(evtCh, err)
 		return
 	}
 	fromContext, err := c.clusterMap.ClusterKubeconfigContext(fromCluster)
 	if err != nil {
-		c.handleErr(err, evtCh)
+		handleError(evtCh, err)
 		return
 	}
 	toContext, err := c.clusterMap.ClusterKubeconfigContext(c.clusterName)
 	if err != nil {
-		c.handleErr(err, evtCh)
+		handleError(evtCh, err)
 		return
 	}
 
@@ -117,7 +104,7 @@ func (c *ClusterctlExecutor) move(opts ifc.RunOptions, evtCh chan events.Event) 
 	if !opts.DryRun {
 		err = c.Move(kubeConfigFile, fromContext, kubeConfigFile, toContext, ns)
 		if err != nil {
-			c.handleErr(err, evtCh)
+			handleError(evtCh, err)
 			return
 		}
 	}
@@ -135,7 +122,7 @@ func (c *ClusterctlExecutor) init(opts ifc.RunOptions, evtCh chan events.Event) 
 	})
 	kubeConfigFile, cleanup, err := c.kubecfg.GetFile()
 	if err != nil {
-		c.handleErr(err, evtCh)
+		handleError(evtCh, err)
 		return
 	}
 
@@ -153,25 +140,19 @@ func (c *ClusterctlExecutor) init(opts ifc.RunOptions, evtCh chan events.Event) 
 
 	context, err := c.clusterMap.ClusterKubeconfigContext(c.clusterName)
 	if err != nil {
-		c.handleErr(err, evtCh)
+		handleError(evtCh, err)
 		return
 	}
 
 	// Use cluster name as context in kubeconfig file
 	err = c.Init(kubeConfigFile, context)
 	if err != nil {
-		c.handleErr(err, evtCh)
+		handleError(evtCh, err)
 		return
 	}
 	evtCh <- events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
 		Operation: events.ClusterctlInitEnd,
 		Message:   "clusterctl init completed successfully",
-	})
-}
-
-func (c *ClusterctlExecutor) handleErr(err error, evtCh chan events.Event) {
-	evtCh <- events.NewEvent().WithErrorEvent(events.ErrorEvent{
-		Error: err,
 	})
 }
 

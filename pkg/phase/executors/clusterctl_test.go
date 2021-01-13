@@ -23,17 +23,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
-	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	airerrors "opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
-	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	testfs "opendev.org/airship/airshipctl/testutil/fs"
@@ -59,22 +56,8 @@ providers:
       v0.3.3: manifests/function/capi/v0.3.3`
 )
 
-func TestRegisterExecutor(t *testing.T) {
-	registry := make(map[schema.GroupVersionKind]ifc.ExecutorFactory)
-	expectedGVK := schema.GroupVersionKind{
-		Group:   "airshipit.org",
-		Version: "v1alpha1",
-		Kind:    "Clusterctl",
-	}
-	err := executors.RegisterExecutor(registry)
-	require.NoError(t, err)
-
-	_, found := registry[expectedGVK]
-	assert.True(t, found)
-}
-
 func TestNewExecutor(t *testing.T) {
-	sampleCfgDoc := executorDoc(t, "init")
+	sampleCfgDoc := executorDoc(t, fmt.Sprintf(executorConfigTmpl, "init"))
 	testCases := []struct {
 		name        string
 		helper      ifc.Helper
@@ -82,13 +65,13 @@ func TestNewExecutor(t *testing.T) {
 	}{
 		{
 			name:   "New Clusterctl Executor",
-			helper: makeDefaultHelper(t),
+			helper: makeDefaultHelper(t, "../../clusterctl/client/testdata"),
 		},
 	}
 	for _, test := range testCases {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
-			_, actualErr := executors.NewExecutor(ifc.ExecutorConfig{
+			_, actualErr := executors.NewClusterctlExecutor(ifc.ExecutorConfig{
 				ExecutorDocument: sampleCfgDoc,
 				Helper:           tt.helper,
 			})
@@ -110,7 +93,7 @@ func TestExecutorRun(t *testing.T) {
 	}{
 		{
 			name:       "Error unknown action",
-			cfgDoc:     executorDoc(t, "someAction"),
+			cfgDoc:     executorDoc(t, fmt.Sprintf(executorConfigTmpl, "someAction")),
 			bundlePath: "testdata/executor_init",
 			expectedEvt: []events.Event{
 				wrapError(executors.ErrUnknownExecutorAction{Action: "someAction"}),
@@ -119,7 +102,7 @@ func TestExecutorRun(t *testing.T) {
 		},
 		{
 			name:   "Error temporary file",
-			cfgDoc: executorDoc(t, "init"),
+			cfgDoc: executorDoc(t, fmt.Sprintf(executorConfigTmpl, "init")),
 			fs: testfs.MockFileSystem{
 				MockTempFile: func(string, string) (fs.File, error) {
 					return nil, errTmpFile
@@ -136,7 +119,7 @@ func TestExecutorRun(t *testing.T) {
 		},
 		{
 			name:   "Regular Run init",
-			cfgDoc: executorDoc(t, "init"),
+			cfgDoc: executorDoc(t, fmt.Sprintf(executorConfigTmpl, "init")),
 			fs: testfs.MockFileSystem{
 				MockTempFile: func(string, string) (fs.File, error) {
 					return testfs.TestFile{
@@ -167,10 +150,10 @@ func TestExecutorRun(t *testing.T) {
 				kubeconfig.FromByte([]byte("someKubeConfig")),
 				kubeconfig.InjectFileSystem(tt.fs),
 			)
-			executor, err := executors.NewExecutor(
+			executor, err := executors.NewClusterctlExecutor(
 				ifc.ExecutorConfig{
 					ExecutorDocument: tt.cfgDoc,
-					Helper:           makeDefaultHelper(t),
+					Helper:           makeDefaultHelper(t, "../../clusterctl/client/testdata"),
 					KubeConfig:       kubeCfg,
 					ClusterMap:       tt.clusterMap,
 				})
@@ -197,11 +180,11 @@ func TestExecutorRun(t *testing.T) {
 }
 
 func TestExecutorValidate(t *testing.T) {
-	sampleCfgDoc := executorDoc(t, "init")
-	executor, err := executors.NewExecutor(
+	sampleCfgDoc := executorDoc(t, fmt.Sprintf(executorConfigTmpl, "init"))
+	executor, err := executors.NewClusterctlExecutor(
 		ifc.ExecutorConfig{
 			ExecutorDocument: sampleCfgDoc,
-			Helper:           makeDefaultHelper(t),
+			Helper:           makeDefaultHelper(t, "../../clusterctl/client/testdata"),
 		})
 	require.NoError(t, err)
 	expectedErr := airerrors.ErrNotImplemented{}
@@ -210,41 +193,15 @@ func TestExecutorValidate(t *testing.T) {
 }
 
 func TestExecutorRender(t *testing.T) {
-	sampleCfgDoc := executorDoc(t, "init")
-	executor, err := executors.NewExecutor(
+	sampleCfgDoc := executorDoc(t, fmt.Sprintf(executorConfigTmpl, "init"))
+	executor, err := executors.NewClusterctlExecutor(
 		ifc.ExecutorConfig{
 			ExecutorDocument: sampleCfgDoc,
-			Helper:           makeDefaultHelper(t),
+			Helper:           makeDefaultHelper(t, "../../clusterctl/client/testdata"),
 		})
 	require.NoError(t, err)
 	actualOut := &bytes.Buffer{}
 	actualErr := executor.Render(actualOut, ifc.RenderOptions{})
 	assert.Len(t, actualOut.Bytes(), 0)
 	assert.NoError(t, actualErr)
-}
-
-func makeDefaultHelper(t *testing.T) ifc.Helper {
-	t.Helper()
-	cfg := config.NewConfig()
-	cfg.Manifests[config.AirshipDefaultManifest].TargetPath = "../../clusterctl/client/testdata"
-	cfg.Manifests[config.AirshipDefaultManifest].MetadataPath = "metadata.yaml"
-	cfg.Manifests[config.AirshipDefaultManifest].Repositories[config.DefaultTestPhaseRepo].URLString = ""
-	cfg.SetLoadedConfigPath(".")
-	helper, err := phase.NewHelper(cfg)
-	require.NoError(t, err)
-	require.NotNil(t, helper)
-	return helper
-}
-
-func executorDoc(t *testing.T, action string) document.Document {
-	cfg := []byte(fmt.Sprintf(executorConfigTmpl, action))
-	cfgDoc, err := document.NewDocumentFromBytes(cfg)
-	require.NoError(t, err)
-	return cfgDoc
-}
-
-func wrapError(err error) events.Event {
-	return events.NewEvent().WithErrorEvent(events.ErrorEvent{
-		Error: err,
-	})
 }
