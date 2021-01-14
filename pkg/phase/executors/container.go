@@ -22,6 +22,7 @@ import (
 	"path/filepath"
 
 	"sigs.k8s.io/kustomize/kyaml/fn/runtime/runtimeutil"
+	"sigs.k8s.io/kustomize/kyaml/kio"
 	"sigs.k8s.io/kustomize/kyaml/runfn"
 	kyaml "sigs.k8s.io/kustomize/kyaml/yaml"
 	"sigs.k8s.io/yaml"
@@ -37,12 +38,13 @@ var _ ifc.Executor = &ContainerExecutor{}
 
 // ContainerExecutor contains resources for generic container executor
 type ContainerExecutor struct {
-	ExecutorBundle   document.Bundle
-	ExecutorDocument document.Document
+	PhaseEntryPointBasePath string
+	ExecutorBundle          document.Bundle
+	ExecutorDocument        document.Document
 
 	ContConf   *v1alpha1.GenericContainer
 	RunFns     runfn.RunFns
-	targetPath string
+	TargetPath string
 }
 
 // NewContainerExecutor creates instance of phase executor
@@ -61,14 +63,15 @@ func NewContainerExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 	}
 
 	return &ContainerExecutor{
-		ExecutorBundle:   bundle,
-		ExecutorDocument: cfg.ExecutorDocument,
+		PhaseEntryPointBasePath: cfg.Helper.PhaseEntryPointBasePath(),
+		ExecutorBundle:          bundle,
+		ExecutorDocument:        cfg.ExecutorDocument,
 
 		ContConf: apiObj,
 		RunFns: runfn.RunFns{
 			Functions: []*kyaml.RNode{},
 		},
-		targetPath: cfg.Helper.TargetPath(),
+		TargetPath: cfg.Helper.TargetPath(),
 	}, nil
 }
 
@@ -102,13 +105,24 @@ func (c *ContainerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 
 	c.SetMounts()
 
-	if c.ContConf.PrintOutput {
+	var fnsOutputBuffer bytes.Buffer
+
+	if c.ContConf.KustomizeSinkOutputDir != "" {
+		c.RunFns.Output = &fnsOutputBuffer
+	} else {
 		c.RunFns.Output = os.Stdout
 	}
 
 	if err := c.RunFns.Execute(); err != nil {
 		handleError(evtCh, err)
 		return
+	}
+
+	if c.ContConf.KustomizeSinkOutputDir != "" {
+		if err := c.WriteKustomizeSink(&fnsOutputBuffer); err != nil {
+			handleError(evtCh, err)
+			return
+		}
 	}
 
 	evtCh <- events.NewEvent().WithGenericContainerEvent(events.GenericContainerEvent{
@@ -159,9 +173,19 @@ func (c *ContainerExecutor) SetMounts() {
 	}
 	storageMounts := c.ContConf.Spec.Container.StorageMounts
 	for i, mount := range storageMounts {
-		storageMounts[i].Src = filepath.Join(c.targetPath, mount.Src)
+		storageMounts[i].Src = filepath.Join(c.TargetPath, mount.Src)
 	}
 	c.RunFns.StorageMounts = storageMounts
+}
+
+// WriteKustomizeSink writes output to kustomize sink
+func (c *ContainerExecutor) WriteKustomizeSink(fnsOutputBuffer *bytes.Buffer) error {
+	outputDirPath := filepath.Join(c.PhaseEntryPointBasePath, c.ContConf.KustomizeSinkOutputDir)
+	sinkOutputs := []kio.Writer{&kio.LocalPackageWriter{PackagePath: outputDirPath}}
+	err := kio.Pipeline{
+		Inputs:  []kio.Reader{&kio.ByteReader{Reader: fnsOutputBuffer}},
+		Outputs: sinkOutputs}.Execute()
+	return err
 }
 
 // Validate executor configuration and documents

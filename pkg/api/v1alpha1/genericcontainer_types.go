@@ -25,8 +25,10 @@ import (
 type GenericContainer struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	// If set to will print output of RunFns to Stdout
-	PrintOutput bool `json:"printOutput,omitempty"`
+	// Executor will write output using kustomize sink if this parameter is specified.
+	// Else it will write output to STDOUT.
+	// This path relative to current site root.
+	KustomizeSinkOutputDir string `json:"kustomizeSinkOutputDir,omitempty"`
 	// Settings for for a container
 	Spec runtimeutil.FunctionSpec `json:"spec,omitempty"`
 	// Config for the RunFns function in a custom format
