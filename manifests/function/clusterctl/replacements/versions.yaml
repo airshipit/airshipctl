@@ -123,7 +123,7 @@ replacements:
     objref:
       kind: Clusterctl
       name: clusterctl_init
-    fieldrefs: ["{.additional-vars.CONTAINER_CAPG_MANAGER}"]
+    fieldrefs: ["{.images.infrastructure-gcp/cluster-api-gcp-controller}"]
 - source:
     objref:
       kind: VariableCatalogue
@@ -133,7 +133,7 @@ replacements:
     objref:
       kind: Clusterctl
       name: clusterctl_init
-    fieldrefs: ["{.additional-vars.CONTAINER_CAPG_AUTH_PROXY}"]
+    fieldrefs: ["{.images.infrastructure-gcp/kube-rbac-proxy}"]
 # Replace capi versions
 - source:
     objref:
