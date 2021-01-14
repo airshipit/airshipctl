@@ -11,6 +11,8 @@
 # limitations under the License.
 
 - hosts: primary
+  environment:
+    SOPS_IMPORT_PGP: "{{ airship_config_pgp }}"
   tasks:
     - name: "set default gate scripts"
       set_fact:

@@ -225,3 +225,14 @@ config:
     apiVersion: airshipit.org/v1alpha1
     kind: BootConfiguration
     name: ephemeral-os-cleanup
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: secret-generate
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: encrypter
+  documentEntryPoint: target/generator
