@@ -183,16 +183,14 @@ func NewManager(cfg *config.Config, phaseName string, hosts ...HostSelector) (*M
 func newBaremetalHost(mgmtCfg config.ManagementConfiguration,
 	hostDoc document.Document,
 	docBundle document.Bundle) (baremetalHost, error) {
-	var host baremetalHost
-
 	address, err := document.GetBMHBMCAddress(hostDoc)
 	if err != nil {
-		return host, err
+		return baremetalHost{}, err
 	}
 
 	username, password, err := document.GetBMHBMCCredentials(hostDoc, docBundle)
 	if err != nil {
-		return host, err
+		return baremetalHost{}, err
 	}
 
 	var clientFactory remoteifc.ClientFactory
@@ -204,7 +202,7 @@ func newBaremetalHost(mgmtCfg config.ManagementConfiguration,
 	case redfishdell.ClientType:
 		clientFactory = redfishdell.ClientFactory
 	default:
-		return host, ErrUnknownManagementType{Type: mgmtCfg.Type}
+		return baremetalHost{}, ErrUnknownManagementType{Type: mgmtCfg.Type}
 	}
 
 	client, err := clientFactory(
@@ -216,11 +214,10 @@ func newBaremetalHost(mgmtCfg config.ManagementConfiguration,
 		mgmtCfg.SystemRebootDelay)
 
 	if err != nil {
-		return host, err
+		return baremetalHost{}, err
 	}
-	host = baremetalHost{client, address, hostDoc.GetName(), username, password}
 
-	return host, nil
+	return baremetalHost{client, address, hostDoc.GetName(), username, password}, nil
 }
 
 // reconcileHosts produces the intersection of two baremetal host arrays.
