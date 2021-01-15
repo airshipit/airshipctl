@@ -11,6 +11,8 @@
 # limitations under the License.
 
 - hosts: primary
+  vars_files:
+    - vars/test-config.yaml
   environment:
     SOPS_IMPORT_PGP: "{{ airship_config_pgp }}"
   tasks:
