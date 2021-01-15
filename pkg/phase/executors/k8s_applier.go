@@ -23,7 +23,6 @@ import (
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
 	k8sapplier "opendev.org/airship/airshipctl/pkg/k8s/applier"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
@@ -125,7 +124,18 @@ func (e *KubeApplierExecutor) prepareApplier(ch chan events.Event) (*k8sapplier.
 
 // Validate document set
 func (e *KubeApplierExecutor) Validate() error {
-	return errors.ErrNotImplemented{}
+	if e.BundleName == "" {
+		return ErrInvalidPhase{Reason: "k8s applier BundleName is empty"}
+	}
+	docs, err := e.ExecutorBundle.GetAllDocuments()
+	if err != nil {
+		return err
+	}
+	if len(docs) == 0 {
+		return ErrInvalidPhase{Reason: "no executor documents in the bundle"}
+	}
+	// TODO: need to find if any other validation needs to be added
+	return nil
 }
 
 // Render document set

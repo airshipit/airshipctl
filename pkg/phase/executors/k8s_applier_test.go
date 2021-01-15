@@ -254,3 +254,57 @@ func testKubeconfig(stringData string) kubeconfig.Interface {
 			},
 		))
 }
+
+func TestKubeApplierExecutor_Validate(t *testing.T) {
+	type fields struct {
+		BundleName string
+		path       string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{
+			name: "Error empty BundleName",
+			fields: fields{
+				path: "../../k8s/applier/testdata/source_bundle",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Error no documents",
+			fields: fields{BundleName: "some name",
+				path: "../../k8s/applier/testdata/no_bundle",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Success case",
+			fields: fields{BundleName: "some name",
+				path: "../../k8s/applier/testdata/source_bundle",
+			},
+			wantErr: false,
+		},
+	}
+	for _, test := range tests {
+		tt := test
+		t.Run(tt.name, func(t *testing.T) {
+			execDoc, err := document.NewDocumentFromBytes([]byte(ValidExecutorDoc))
+			require.NoError(t, err)
+			require.NotNil(t, execDoc)
+
+			e, err := executors.NewKubeApplierExecutor(ifc.ExecutorConfig{
+				BundleFactory:    testBundleFactory(tt.fields.path),
+				PhaseName:        tt.fields.BundleName,
+				ExecutorDocument: execDoc,
+			})
+			require.NoError(t, err)
+			require.NotNil(t, e)
+
+			if err := e.Validate(); (err != nil) != tt.wantErr {
+				t.Errorf("KubeApplierExecutor.Validate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
