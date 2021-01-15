@@ -117,13 +117,9 @@
         soft: true
       - name: airship-airshipctl-lint
         soft: true
-      - name: airship-airshipctl-golint
-        soft: true
       - name: airship-airshipctl-unit
         soft: true
       - name: airship-airshipctl-build-image
-        soft: true
-      - name: airship-airshipctl-validate-site-docs
         soft: true
     vars:
       site_name: test-site
