@@ -189,7 +189,7 @@ func TestHelperListPhases(t *testing.T) {
 	}{
 		{
 			name:     "Success phase list",
-			phaseLen: 4,
+			phaseLen: 5,
 			config:   testConfig,
 		},
 		{
@@ -240,7 +240,7 @@ func TestHelperListPlans(t *testing.T) {
 	}{
 		{
 			name:        "Success plan list",
-			expectedLen: 3,
+			expectedLen: 5,
 			config:      testConfig,
 		},
 		{

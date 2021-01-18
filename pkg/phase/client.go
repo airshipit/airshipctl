@@ -16,6 +16,7 @@ package phase
 
 import (
 	"io"
+	"io/ioutil"
 	"path/filepath"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -124,9 +125,19 @@ func (p *phase) Run(ro ifc.RunOptions) error {
 }
 
 // Validate makes sure that phase is properly configured
-// TODO implement this
 func (p *phase) Validate() error {
-	return nil
+	// Check that we can render documents supplied to phase
+	err := p.Render(ioutil.Discard, false, ifc.RenderOptions{})
+	if err != nil {
+		return err
+	}
+
+	// Check that executor if properly configured
+	executor, err := p.Executor()
+	if err != nil {
+		return err
+	}
+	return executor.Validate()
 }
 
 // Render executor documents
@@ -186,8 +197,18 @@ type plan struct {
 }
 
 // Validate makes sure that phase plan is properly configured
-// TODO implement this
-func (p *plan) Validate() error { return nil }
+func (p *plan) Validate() error {
+	for _, step := range p.apiObj.Phases {
+		phaseRunner, err := p.phaseClient.PhaseByID(ifc.ID{Name: step.Name})
+		if err != nil {
+			return err
+		}
+		if err = phaseRunner.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 // Run function excutes Run method for each phase
 func (p *plan) Run(ro ifc.RunOptions) error {

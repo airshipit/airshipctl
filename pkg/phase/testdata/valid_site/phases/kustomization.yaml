@@ -8,3 +8,4 @@ resources:
   - cluster_map.yaml
   - phase_no_docentrypoint.yaml
   - no_executor_phase.yaml
+  - kubeapply_phase.yaml

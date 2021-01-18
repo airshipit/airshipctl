@@ -15,6 +15,7 @@
 package phase_test
 
 import (
+	"fmt"
 	"io"
 	"testing"
 
@@ -128,6 +129,78 @@ func TestPhaseRun(t *testing.T) {
 			if tt.errContains != "" {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), tt.errContains)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestPhaseValidate(t *testing.T) {
+	tests := []struct {
+		name         string
+		errContains  string
+		phaseID      ifc.ID
+		configFunc   func(t *testing.T) *config.Config
+		registryFunc phase.ExecutorRegistry
+	}{
+		{
+			name:         "Success fake executor",
+			configFunc:   testConfig,
+			phaseID:      ifc.ID{Name: "capi_init"},
+			registryFunc: fakeRegistry,
+		},
+		{
+			name:         "Error no document entry point",
+			configFunc:   testConfig,
+			phaseID:      ifc.ID{Name: "no_entry_point"},
+			registryFunc: fakeRegistry,
+			errContains:  "documentEntryPoint is not defined for the phase 'no_entry_point' in namespace ''",
+		},
+		{
+			name:         "Error no executor",
+			configFunc:   testConfig,
+			phaseID:      ifc.ID{Name: "no_executor_phase"},
+			registryFunc: fakeRegistry,
+			errContains:  "Phase name 'no_executor_phase', namespace '' must have executorRef field defined in config",
+		},
+		{
+			name:       "Error executor validate",
+			configFunc: testConfig,
+			phaseID:    ifc.ID{Name: "kube_apply"},
+			registryFunc: func() map[schema.GroupVersionKind]ifc.ExecutorFactory {
+				gvk := schema.GroupVersionKind{
+					Group:   "airshipit.org",
+					Version: "v1alpha1",
+					Kind:    "KubernetesApply",
+				}
+				return map[schema.GroupVersionKind]ifc.ExecutorFactory{
+					gvk: func(config ifc.ExecutorConfig) (ifc.Executor, error) {
+						return fakeExecutor{
+							validate: fmt.Errorf("validation error"),
+						}, nil
+					},
+				}
+			},
+			errContains: "validation error",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			conf := tt.configFunc(t)
+			helper, err := phase.NewHelper(conf)
+			require.NoError(t, err)
+			require.NotNil(t, helper)
+			client := phase.NewClient(helper, phase.InjectRegistry(tt.registryFunc))
+			require.NotNil(t, client)
+			p, err := client.PhaseByID(tt.phaseID)
+			require.NoError(t, err)
+			err = p.Validate()
+			if tt.errContains != "" {
+				require.Error(t, err)
+				assert.Equal(t, tt.errContains, err.Error())
 			} else {
 				require.NoError(t, err)
 			}
@@ -300,6 +373,57 @@ func TestPlanRun(t *testing.T) {
 		})
 	}
 }
+func TestPlanValidate(t *testing.T) {
+	testCases := []struct {
+		name         string
+		errContains  string
+		planID       ifc.ID
+		configFunc   func(t *testing.T) *config.Config
+		registryFunc phase.ExecutorRegistry
+	}{
+		{
+			name:         "Valid fake executor",
+			configFunc:   testConfig,
+			planID:       ifc.ID{Name: "init"},
+			registryFunc: fakeRegistry,
+		},
+		{
+			name:         "Invalid fake executor",
+			configFunc:   testConfig,
+			planID:       ifc.ID{Name: "plan_invalid_phase"},
+			registryFunc: fakeRegistry,
+			errContains:  "documentEntryPoint is not defined for the phase 'no_entry_point' in namespace ''",
+		},
+		{
+			name:         "Phase does not exist",
+			configFunc:   testConfig,
+			planID:       ifc.ID{Name: "phase_not_exist"},
+			registryFunc: fakeRegistry,
+			errContains: `document filtered by selector [Group="airshipit.org", Version="v1alpha1", ` +
+				`Kind="Phase", Name="non_existent_name"] found no documents`,
+		},
+	}
+	for _, tc := range testCases {
+		tt := tc
+		t.Run(tt.name, func(t *testing.T) {
+			conf := tt.configFunc(t)
+			helper, err := phase.NewHelper(conf)
+			require.NoError(t, err)
+			require.NotNil(t, helper)
+			client := phase.NewClient(helper, phase.InjectRegistry(tt.registryFunc))
+			require.NotNil(t, client)
+			p, err := client.PlanByID(tt.planID)
+			require.NoError(t, err)
+			err = p.Validate()
+			if tt.errContains != "" {
+				require.Error(t, err)
+				assert.Equal(t, tt.errContains, err.Error())
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
 
 func fakeExecFactory(config ifc.ExecutorConfig) (ifc.Executor, error) {
 	return fakeExecutor{}, nil
@@ -308,6 +432,7 @@ func fakeExecFactory(config ifc.ExecutorConfig) (ifc.Executor, error) {
 var _ ifc.Executor = fakeExecutor{}
 
 type fakeExecutor struct {
+	validate error
 }
 
 func (e fakeExecutor) Render(_ io.Writer, _ ifc.RenderOptions) error {
@@ -319,5 +444,5 @@ func (e fakeExecutor) Run(ch chan events.Event, _ ifc.RunOptions) {
 }
 
 func (e fakeExecutor) Validate() error {
-	return nil
+	return e.validate
 }
