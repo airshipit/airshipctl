@@ -197,7 +197,11 @@ Make sure the following conditions are met:
 2. A Virtual Machine with 20 GB RAM, 4 vCPU and 60GB Disk and Ubuntu 18.04 Installed.
 3. Clone the following repo -
     - git clone https://opendev.org/airship/airshipctl.git
-4. Execute the following scripts one by one
+4. Download test security key and add it to environment variable.
+   - curl -fsSL -o /tmp/key.asc https://raw.githubusercontent.com/mozilla/sops/master/pgp/sops_functional_tests_key.asc
+   - export SOPS_IMPORT_PGP="$(cat /tmp/key.asc)"
+   - export SOPS_PGP_FP="FBC7B9E2A4F9289AC0C1D4843D16CEE4A27381B4"
+5. Execute the following scripts one by one
     1. ./tools/gate/00_setup.sh
     2. ./tools/gate/10_build_gate.sh
     3. sudo ./tools/deployment/01_install_kubectl.sh
@@ -214,7 +218,7 @@ Make sure the following conditions are met:
     14. sudo ./tools/deployment/34_deploy_worker_node.sh
     15. sudo ./tools/deployment/35_deploy_workload.sh
 
-5. How to verify the ephemeral cluster and target cluster is deployed successfully
+6. How to verify the ephemeral cluster and target cluster is deployed successfully
     Validate Ephemeral Cluster is Operational:
     ```Markdown
     kubectl --kubeconfig /home/user/.airship/kubeconfig --context ephemeral-cluster get pods --all-namespaces
@@ -276,7 +280,7 @@ Make sure the following conditions are met:
     metal3                              metal3-baremetal-operator-84f9df77fb-25h4w                       3/3     Running   0          11m
     ```
 
-6. How to deploy Workloads
+7. How to deploy Workloads
     Once the Target is Operational, Workloads can be deployed on the Target Cluster.
     A small demo workload can be deployed using ./tools/deployment/35_deploy_workload.sh.This demo includes ingress as a workload.
     To verify execute kubectl command as below:
@@ -306,7 +310,7 @@ Make sure the following conditions are met:
     drwxrwxr-x 3 user user 4096 Nov 16 17:02 ingress/
     -rw-rw-r-- 1 user user   23 Nov 16 17:02 kustomization.yaml
     ```
-7. In case the All-in-One-VM is restarted and the nested VMs do not get restarted automatically simply execute the below steps to make the Target Cluster up again.
+8. In case the All-in-One-VM is restarted and the nested VMs do not get restarted automatically simply execute the below steps to make the Target Cluster up again.
     ```Markdown
     $ sudo virsh list --all
     Id    Name                           State
@@ -329,7 +333,7 @@ Make sure the following conditions are met:
     4     air-worker-1                   running
     ```
 
-8. In case the deployment needs to be cleaned and rerun again, run the below script.
+9. In case the deployment needs to be cleaned and rerun again, run the below script.
     - sudo ./tools/deployment/clean.sh
 
 
