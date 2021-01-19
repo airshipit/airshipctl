@@ -51,8 +51,12 @@ images:
       repository: gcr.io/kubebuilder
       tag: v0.4.0
   capo:
-    manager: gcr.io/k8s-staging-capi-openstack/capi-openstack-controller-amd64:v20200707-v0.3.1
-    auth_proxy: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
+    manager:
+      repository: gcr.io/k8s-staging-capi-openstack
+      tag: v20200707-v0.3.1
+    auth_proxy:
+      repository: gcr.io/kubebuilder
+      tag: v0.4.1
   capg:
     manager:
       repository: gcr.io/k8s-staging-cluster-api-gcp

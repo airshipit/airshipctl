@@ -81,9 +81,13 @@ images:
   infrastructure-gcp/kube-rbac-proxy:
     repository: "gcr.io/kubebuilder"
     tag: "v0.4.1"
+  infrastructure-openstack/capi-openstack-controller-amd64:
+    repository: "gcr.io/k8s-staging-capi-openstack"
+    tag: "v20200707-v0.3.1"
+  infrastructure-openstack/kube-rbac-proxy:
+    repository: "gcr.io/kubebuilder"
+    tag: "v0.4.1"
 
 
 # These default images can be overridden via the `replacements/` entrypoint
-additional-vars:
-  CONTAINER_CAPO_MANAGER: gcr.io/k8s-staging-capi-openstack/capi-openstack-controller-amd64:v20200707-v0.3.1
-  CONTAINER_CAPO_AUTH_PROXY: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
+additional-vars: {}
