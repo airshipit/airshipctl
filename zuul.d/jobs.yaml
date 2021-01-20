@@ -22,7 +22,6 @@
     pre-run: playbooks/airship-airshipctl-deploy-docker.yaml
     run: playbooks/airship-airshipctl-golint.yaml
     nodeset: airship-airshipctl-single-node
-    voting: false
     files: &gofiles
       - ^Makefile$
       - ^\.golangci\.yaml$
@@ -116,6 +115,8 @@
       - name: openstack-tox-docs
         soft: true
       - name: airship-airshipctl-lint
+        soft: true
+      - name: airship-airshipctl-golint
         soft: true
       - name: airship-airshipctl-unit
         soft: true
