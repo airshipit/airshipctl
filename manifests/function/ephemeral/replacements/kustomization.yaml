@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - ephemeral-env-vars.yaml
   - networking.yaml
+  - generated-secrets.yaml
