@@ -249,7 +249,7 @@ func (c *Config) SetLoadedConfigPath(lcp string) {
 func (c *Config) GetContext(cName string) (*Context, error) {
 	context, exists := c.Contexts[cName]
 	if !exists {
-		return nil, ErrMissingConfig{What: fmt.Sprintf("Context with name '%s'", cName)}
+		return nil, ErrMissingConfig{What: fmt.Sprintf("context with name '%s'", cName)}
 	}
 	return context, nil
 }
@@ -539,7 +539,7 @@ func (c *Config) CurrentContextManagementConfig() (*ManagementConfiguration, err
 
 	if currentContext.ManagementConfiguration == "" {
 		return nil, ErrMissingConfig{
-			What: fmt.Sprintf("No management config listed for cluster %s", currentContext.NameInKubeconf),
+			What: fmt.Sprintf("no management config listed for cluster %s", currentContext.NameInKubeconf),
 		}
 	}
 

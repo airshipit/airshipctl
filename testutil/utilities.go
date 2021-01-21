@@ -104,6 +104,7 @@ func checkError(t *testing.T, actual, expected error) {
 		require.NoError(t, actual)
 	} else {
 		require.Error(t, actual)
+		require.Equal(t, expected.Error(), actual.Error())
 	}
 }
 

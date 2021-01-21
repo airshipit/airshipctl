@@ -1,4 +1,4 @@
-Error: Missing configuration: Context with name 'contextMissing'
+Error: missing configuration: context with name 'contextMissing'
 Usage:
   get-context [NAME] [flags]
 

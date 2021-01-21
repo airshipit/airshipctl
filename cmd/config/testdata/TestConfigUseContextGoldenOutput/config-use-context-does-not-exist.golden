@@ -1,4 +1,4 @@
-Error: Missing configuration: Context with name 'foo'
+Error: missing configuration: context with name 'foo'
 Usage:
   use-context NAME [flags]
 

@@ -83,7 +83,7 @@ func TestSetEncryptionConfig(t *testing.T) {
 			flags: []string{
 				"--decryption-key-path " + decryptionKeyFilePath,
 			},
-			error: fmt.Errorf("you must specify both encryption " +
+			error: fmt.Errorf("specify both encryption " +
 				"and decryption keys when setting encryption config"),
 			inputConfig: given,
 		},

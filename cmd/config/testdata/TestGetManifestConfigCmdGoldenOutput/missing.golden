@@ -1,4 +1,4 @@
-Error: Missing configuration: Manifest with name 'manifestMissing'
+Error: missing configuration: manifest with name 'manifestMissing'
 Usage:
   get-manifest NAME [flags]
 
