@@ -5,6 +5,7 @@ metadata:
 phases:
   - name: clusterctl-init-ephemeral
   - name: controlplane-ephemeral
+  - name: initinfra-networking-target
   - name: clusterctl-init-target
   - name: clusterctl-move
   - name: workers-target
