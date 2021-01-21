@@ -187,8 +187,12 @@ func GetVirtualMediaID(ctx context.Context, api redfishAPI.RedfishAPI, systemID 
 // responses and errors.
 func ScreenRedfishError(httpResp *http.Response, clientErr error) error {
 	if httpResp == nil {
+		m := "HTTP request failed. Redfish may be temporarily unavailable. Please try again."
+		if clientErr != nil {
+			m += fmt.Sprintf(" original error %s", clientErr.Error())
+		}
 		return ErrRedfishClient{
-			Message: "HTTP request failed. Redfish may be temporarily unavailable. Please try again.",
+			Message: m,
 		}
 	}
 

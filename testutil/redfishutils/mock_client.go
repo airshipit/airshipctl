@@ -63,7 +63,7 @@ func (m *MockClient) EjectVirtualMedia(ctx context.Context) error {
 //
 //         err := client.RebootSystem(<args>)
 func (m *MockClient) RebootSystem(ctx context.Context) error {
-	args := m.Called(ctx)
+	args := m.Called()
 	return args.Error(0)
 }
 
@@ -76,7 +76,7 @@ func (m *MockClient) RebootSystem(ctx context.Context) error {
 //
 //         err := client.SetBootSourceByType(<args>)
 func (m *MockClient) SetBootSourceByType(ctx context.Context) error {
-	args := m.Called(ctx)
+	args := m.Called()
 	return args.Error(0)
 }
 
@@ -89,7 +89,7 @@ func (m *MockClient) SetBootSourceByType(ctx context.Context) error {
 //
 //         err := client.SetVirtualMedia(<args>)
 func (m *MockClient) SetVirtualMedia(ctx context.Context, isoPath string) error {
-	args := m.Called(ctx, isoPath)
+	args := m.Called()
 	return args.Error(0)
 }
 
@@ -102,7 +102,7 @@ func (m *MockClient) SetVirtualMedia(ctx context.Context, isoPath string) error 
 //
 //         err := client.SystemPowerOff(<args>)
 func (m *MockClient) SystemPowerOff(ctx context.Context) error {
-	args := m.Called(ctx)
+	args := m.Called()
 	return args.Error(0)
 }
 
@@ -115,7 +115,7 @@ func (m *MockClient) SystemPowerOff(ctx context.Context) error {
 //
 //         err := client.SystemPowerOn(<args>)
 func (m *MockClient) SystemPowerOn(ctx context.Context) error {
-	args := m.Called(ctx)
+	args := m.Called()
 	return args.Error(0)
 }
 
@@ -128,13 +128,21 @@ func (m *MockClient) SystemPowerOn(ctx context.Context) error {
 //
 //         err := client.SystemPowerStatus(<args>)
 func (m *MockClient) SystemPowerStatus(ctx context.Context) (power.Status, error) {
-	args := m.Called(ctx)
+	args := m.Called()
 	powerStatus, ok := args.Get(0).(power.Status)
 	if !ok {
 		return power.StatusUnknown, args.Error(2)
 	}
 
 	return powerStatus, args.Error(1)
+}
+
+// RemoteDirect mocks remote client interface
+func (m *MockClient) RemoteDirect(ctx context.Context, isoURL string) error {
+	if isoURL == "" {
+		return redfish.ErrRedfishMissingConfig{What: "isoURL"}
+	}
+	return m.Called().Error(0)
 }
 
 // NewClient returns a mocked Redfish client in order to test functions that use the Redfish client without making any

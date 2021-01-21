@@ -914,3 +914,74 @@ func TestWaitForPowerStateDifferentPowerState(t *testing.T) {
 	err = client.waitForPowerState(ctx, redfishClient.POWERSTATE_ON)
 	assert.NoError(t, err)
 }
+
+func TestRemoteDirect(t *testing.T) {
+	m := &redfishMocks.RedfishAPI{}
+
+	client, err := NewClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	require.NoError(t, err)
+
+	client.RedfishAPI = m
+
+	inserted := true
+	testMediaCD := testutil.GetVirtualMedia([]string{"CD"})
+	testMediaCD.Inserted = &inserted
+	resetReq := redfishClient.ResetRequestBody{
+		ResetType: redfishClient.RESETTYPE_FORCE_OFF,
+	}
+	httpResp := &http.Response{StatusCode: 200}
+	system := redfishClient.ComputerSystem{
+		PowerState: redfishClient.POWERSTATE_ON,
+		Links: redfishClient.SystemLinks{
+			ManagedBy: []redfishClient.IdRef{
+				{OdataId: testutil.ManagerID},
+			},
+		},
+		Boot: redfishClient.Boot{
+			BootSourceOverrideTargetRedfishAllowableValues: []redfishClient.BootSource{
+				redfishClient.BOOTSOURCE_CD,
+			},
+		}}
+
+	ctx := SetAuth(context.Background(), "", "")
+
+	m.On("GetSystem", ctx, client.nodeID).Return(system, httpResp, nil).Times(6)
+	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).
+		Return(testutil.GetMediaCollection([]string{"Cd", "DVD", "Floppy"}), httpResp, nil)
+	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
+		Return(testMediaCD, httpResp, nil)
+	m.On("EjectVirtualMedia", ctx, testutil.ManagerID, "Cd", mock.Anything).Times(1).
+		Return(redfishClient.RedfishError{}, httpResp, nil)
+	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
+		Return(testutil.GetVirtualMedia([]string{"Cd"}), httpResp, nil)
+	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "DVD").Times(1).
+		Return(testutil.GetVirtualMedia([]string{"DVD"}), httpResp, nil)
+	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Floppy").Times(1).
+		Return(testutil.GetVirtualMedia([]string{"Floppy"}), httpResp, nil)
+
+	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
+		Return(testMediaCD, httpResp, nil)
+
+	m.On("InsertVirtualMedia", ctx, testutil.ManagerID, "Cd", mock.Anything).Return(
+		redfishClient.RedfishError{}, httpResp, redfishClient.GenericOpenAPIError{})
+
+	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
+		Return(testMediaCD, httpResp, nil)
+
+	m.On("SetSystem", ctx, client.nodeID, mock.Anything).Times(1).Return(
+		redfishClient.ComputerSystem{}, httpResp, nil)
+
+	m.On("ResetSystem", ctx, client.nodeID, resetReq).Times(1).Return(redfishClient.RedfishError{}, httpResp, nil)
+	offSystem := system
+	offSystem.PowerState = redfishClient.POWERSTATE_OFF
+	m.On("GetSystem", ctx, client.nodeID).Return(offSystem, httpResp, nil).Times(1)
+
+	m.On("ResetSystem", ctx, client.nodeID, redfishClient.ResetRequestBody{
+		ResetType: redfishClient.RESETTYPE_ON,
+	}).Times(1).Return(redfishClient.RedfishError{}, httpResp, nil)
+
+	m.On("GetSystem", ctx, client.nodeID).Return(system, httpResp, nil).Times(1)
+
+	err = client.RemoteDirect(ctx, "http://some-url")
+	assert.NoError(t, err)
+}

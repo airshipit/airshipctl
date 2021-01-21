@@ -20,10 +20,8 @@ import (
 	api "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
-	"opendev.org/airship/airshipctl/pkg/remote/power"
 )
 
 // DoRemoteDirect bootstraps the ephemeral node.
@@ -64,43 +62,5 @@ func (b baremetalHost) DoRemoteDirect(cfg *config.Config) error {
 		return err
 	}
 
-	log.Debugf("Bootstrapping ephemeral host '%s' with ID '%s' and BMC Address '%s'.", b.HostName, b.NodeID(),
-		b.BMCAddress)
-
-	powerStatus, err := b.SystemPowerStatus(context.Background())
-	if err != nil {
-		return err
-	}
-
-	// Power on node if it is off
-	if powerStatus != power.StatusOn {
-		log.Debugf("Ephemeral node has power status '%s'. Attempting to power on.", powerStatus.String())
-		if err = b.SystemPowerOn(context.Background()); err != nil {
-			return err
-		}
-	}
-
-	// Perform remote direct operations
-	if remoteDirectConfiguration.IsoURL == "" {
-		return ErrMissingOption{What: "isoURL"}
-	}
-
-	err = b.SetVirtualMedia(context.Background(), remoteDirectConfiguration.IsoURL)
-	if err != nil {
-		return err
-	}
-
-	err = b.SetBootSourceByType(context.Background())
-	if err != nil {
-		return err
-	}
-
-	err = b.RebootSystem(context.Background())
-	if err != nil {
-		return err
-	}
-
-	log.Printf("Successfully bootstrapped ephemeral host '%s'.", b.HostName)
-
-	return nil
+	return b.RemoteDirect(context.Background(), remoteDirectConfiguration.IsoURL)
 }
