@@ -1,13 +1,13 @@
 # Hardware Profile Guide
 
 This document explains the functionality of RAID and firmware configuration
-that is available in airshipctl. This will assist to author [Baremetal Host][1]
+that is available in airshipctl. This will assist to author [Baremetal Host][3]
 documents with added RAID and firmware functionality.
 
 ## The Host Generator M3 Function
 
 Airshipctl has a `hostgenerator-m3` function which it uses to generate Metal3
-[Baremetal Host][1] documents. This generator uses a `hosttemplate` to
+[Baremetal Host][3] documents. This generator uses a `hosttemplate` to
 templatize a BMH specification. It takes a set of parameters and a template as
 inputs and provides BMH documents as outputs, making it easier to generate
 a large set of BMH documents efficiently.
@@ -66,9 +66,11 @@ of using these levels in your configurations are given
       rotataional: False
 ```
 
-For additional detail on these parameters, see the [Baremetal Host][1] doc.
+For additional detail on these parameters, see the [Baremetal Host][1] API
+documentation.
 
 For more details on the example hardwareprofile, see [the repo][2].
 
 [1]: https://github.com/metal3-io/baremetal-operator/blob/master/docs/api.md
 [2]: https://opendev.org/airship/airshipctl/src/branch/master/manifests/function/hardwareprofile-example
+[3]: https://github.com/metal3-io/baremetal-operator/tree/master/apis/metal3.io/v1alpha1
