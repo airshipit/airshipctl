@@ -28,7 +28,7 @@ import (
 
 // Inventory implements baremetal invenotry interface
 type Inventory struct {
-	mgmtCfg         config.ManagementConfiguration
+	mgmtCfg         *config.ManagementConfiguration
 	inventoryBundle document.Bundle
 }
 
@@ -36,7 +36,7 @@ var _ ifc.BaremetalInventory = Inventory{}
 
 // NewInventory returns inventory implementation based on BaremetalHost objects
 func NewInventory(
-	mgmtCfg config.ManagementConfiguration,
+	mgmtCfg *config.ManagementConfiguration,
 	inventoryBundle document.Bundle) ifc.BaremetalInventory {
 	return Inventory{
 		mgmtCfg:         mgmtCfg,

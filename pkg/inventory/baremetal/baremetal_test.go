@@ -69,7 +69,7 @@ func TestSelect(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			mgmCfg := config.ManagementConfiguration{Type: tt.remoteDriver}
+			mgmCfg := &config.ManagementConfiguration{Type: tt.remoteDriver}
 			inventory := NewInventory(mgmCfg, bundle)
 			hosts, err := inventory.Select(tt.selector)
 			if tt.expectedErr != "" {
@@ -106,7 +106,7 @@ func TestSelectOne(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			mgmCfg := config.ManagementConfiguration{Type: tt.remoteDriver}
+			mgmCfg := &config.ManagementConfiguration{Type: tt.remoteDriver}
 			inventory := NewInventory(mgmCfg, bundle)
 			host, err := inventory.SelectOne(tt.selector)
 			if tt.expectedErr != "" {
@@ -155,7 +155,7 @@ func TestRunAction(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			mgmCfg := config.ManagementConfiguration{Type: tt.remoteDriver}
-			inventory := NewInventory(mgmCfg, bundle)
+			inventory := NewInventory(&mgmCfg, bundle)
 			err := inventory.RunOperation(
 				context.Background(),
 				tt.operation,
