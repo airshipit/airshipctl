@@ -16,8 +16,6 @@ package config
 
 import (
 	"encoding/base64"
-
-	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
 // NewConfig returns a newly initialized Config object
@@ -57,28 +55,6 @@ func NewConfig() *Config {
 	}
 }
 
-// NewKubeConfig returns a newly initialized clientcmdapi.Config object, will be removed later
-func NewKubeConfig() *clientcmdapi.Config {
-	return &clientcmdapi.Config{
-		Clusters: map[string]*clientcmdapi.Cluster{
-			AirshipDefaultContext: {
-				Server: "https://172.17.0.1:6443",
-			},
-		},
-		AuthInfos: map[string]*clientcmdapi.AuthInfo{
-			"admin": {
-				Username: "airship-admin",
-			},
-		},
-		Contexts: map[string]*clientcmdapi.Context{
-			AirshipDefaultContext: {
-				Cluster:  AirshipDefaultContext,
-				AuthInfo: "admin",
-			},
-		},
-	}
-}
-
 // NewContext is a convenience function that returns a new Context
 func NewContext() *Context {
 	return &Context{}
@@ -105,14 +81,4 @@ func NewRepository() *Repository {
 // EncodeString returns the base64 encoding of given string
 func EncodeString(given string) string {
 	return base64.StdEncoding.EncodeToString([]byte(given))
-}
-
-// DecodeString returns the base64 decoded string
-// If err decoding, return the given string
-func DecodeString(given string) (string, error) {
-	decoded, err := base64.StdEncoding.DecodeString(given)
-	if err != nil {
-		return "", err
-	}
-	return string(decoded), nil
 }
