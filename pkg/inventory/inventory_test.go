@@ -69,6 +69,7 @@ func TestBaremetalInventory(t *testing.T) {
 				require.NoError(t, err)
 				manifest.MetadataPath = "metadata.yaml"
 				manifest.PhaseRepositoryName = "testdata"
+				manifest.InventoryRepositoryName = "testdata"
 				manifest.Repositories["testdata"] = &config.Repository{
 					URLString: "/myrepo/testdata",
 				}
@@ -87,7 +88,7 @@ func TestBaremetalInventory(t *testing.T) {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), tt.errString)
 			} else {
-				require.NoError(t, err)
+				assert.NoError(t, err)
 				assert.NotNil(t, bmhInv)
 			}
 		})

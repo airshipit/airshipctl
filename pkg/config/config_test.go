@@ -336,8 +336,38 @@ func TestCurrentPhaseRepositoryDir(t *testing.T) {
 	conf.Manifests[defaultString].PhaseRepositoryName = "nonexisting"
 	phaseRepoDir, err = conf.CurrentContextPhaseRepositoryDir()
 	require.Error(t, err)
-	assert.Equal(t, config.ErrMissingRepositoryName{}, err)
+	assert.Equal(t, config.ErrMissingRepositoryName{RepoType: "phase"}, err)
 	assert.Equal(t, "", phaseRepoDir)
+}
+
+func TestCurrentInventoryRepositoryDir(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	conf.CurrentContext = currentContextName
+	conf.Contexts[currentContextName].Manifest = defaultString
+
+	invRepoDir, err := conf.CurrentContextInventoryRepositoryName()
+	require.NoError(t, err)
+	assert.Equal(t, util.GitDirNameFromURL(
+		conf.Manifests[defaultString].Repositories[conf.Manifests[defaultString].PhaseRepositoryName].URL()),
+		invRepoDir)
+
+	conf.Manifests[defaultString].InventoryRepositoryName = "nonexisting"
+	invRepoDir, err = conf.CurrentContextInventoryRepositoryName()
+	require.Error(t, err)
+	assert.Equal(t, config.ErrMissingRepositoryName{RepoType: "inventory"}, err)
+	assert.Equal(t, "", invRepoDir)
+
+	invRepoName := "inv-repo"
+	invRepoURL := "/my-repository"
+	conf.Manifests[defaultString].Repositories[invRepoName] = &config.Repository{URLString: invRepoURL}
+	conf.Manifests[defaultString].InventoryRepositoryName = invRepoName
+	invRepoDir, err = conf.CurrentContextInventoryRepositoryName()
+	require.NoError(t, err)
+	assert.Equal(t, util.GitDirNameFromURL(
+		conf.Manifests[defaultString].Repositories[conf.Manifests[defaultString].InventoryRepositoryName].URL()),
+		invRepoDir)
 }
 
 func TestCurrentContextManifestMetadata(t *testing.T) {

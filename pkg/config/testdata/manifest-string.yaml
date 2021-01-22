@@ -1,3 +1,4 @@
+inventoryRepositoryName: primary
 metadataPath: metadata.yaml
 phaseRepositoryName: primary
 repositories:

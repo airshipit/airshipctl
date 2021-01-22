@@ -348,7 +348,25 @@ func (c *Config) CurrentContextPhaseRepositoryDir() (string, error) {
 	}
 	repo, exist := ccm.Repositories[ccm.PhaseRepositoryName]
 	if !exist {
-		return "", ErrMissingRepositoryName{}
+		return "", ErrMissingRepositoryName{RepoType: "phase"}
+	}
+	return util.GitDirNameFromURL(repo.URL()), nil
+}
+
+// CurrentContextInventoryRepositoryName returns phase inventory directory from current context's manifest
+// if it is not defined PhaseRepositoryName will be used instead
+func (c *Config) CurrentContextInventoryRepositoryName() (string, error) {
+	ccm, err := c.CurrentContextManifest()
+	if err != nil {
+		return "", err
+	}
+	repoName := ccm.InventoryRepositoryName
+	if repoName == "" {
+		repoName = ccm.PhaseRepositoryName
+	}
+	repo, exist := ccm.Repositories[repoName]
+	if !exist {
+		return "", ErrMissingRepositoryName{RepoType: "inventory"}
 	}
 	return util.GitDirNameFromURL(repo.URL()), nil
 }
