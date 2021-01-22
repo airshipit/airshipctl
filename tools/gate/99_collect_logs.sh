@@ -25,4 +25,4 @@ PLAYBOOK_CONFIG=${PLAYBOOK_CONFIG:-"${TMP_DIR}/config.yaml"}
 
 sudo ansible-playbook -i "$ANSIBLE_HOSTS" \
 	playbooks/airship-collect-logs.yaml \
-	-e @"$PLAYBOOK_CONFIG"
+	-e @"$PLAYBOOK_CONFIG" --skip-tags zuul

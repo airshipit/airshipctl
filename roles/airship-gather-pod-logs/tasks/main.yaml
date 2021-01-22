@@ -27,3 +27,4 @@
     dest: "{{ zuul.executor.log_root }}/{{ inventory_hostname }}"
     mode: pull
   ignore_errors: True
+  tags: [zuul]

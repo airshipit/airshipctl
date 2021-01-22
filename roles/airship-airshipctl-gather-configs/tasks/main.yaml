@@ -28,3 +28,4 @@
         dest: "{{ zuul.executor.log_root }}/{{ inventory_hostname }}"
         mode: pull
       when: config_dir_stats.stat.exists
+      tags: [zuul]
