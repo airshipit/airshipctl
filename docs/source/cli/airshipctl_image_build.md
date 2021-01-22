@@ -13,7 +13,7 @@ airshipctl image build [flags]
 ### Options
 
 ```
-  -h, --help       help for build
+  -h, --help   help for build
 ```
 
 ### Options inherited from parent commands

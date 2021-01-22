@@ -18,16 +18,18 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/inventory"
+	"opendev.org/airship/airshipctl/pkg/inventory/ifc"
 )
 
 // NewPowerOnCommand provides a command with the capability to power on baremetal hosts.
-func NewPowerOnCommand(cfgFactory config.Factory, options *CommonOptions) *cobra.Command {
+func NewPowerOnCommand(cfgFactory config.Factory, options *inventory.CommandOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "poweron",
 		Short: "Power on a host",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return performAction(cfgFactory, options, powerOnAction, cmd.OutOrStdout())
+			return options.BMHAction(ifc.BaremetalOperationPowerOn)
 		},
 	}
 

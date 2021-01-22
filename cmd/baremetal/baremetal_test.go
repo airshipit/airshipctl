@@ -17,9 +17,8 @@ package baremetal_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"opendev.org/airship/airshipctl/cmd/baremetal"
+	"opendev.org/airship/airshipctl/pkg/inventory"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
@@ -33,51 +32,36 @@ func TestBaremetal(t *testing.T) {
 		{
 			Name:    "baremetal-ejectmedia-with-help",
 			CmdLine: "-h",
-			Cmd:     baremetal.NewEjectMediaCommand(nil, &baremetal.CommonOptions{}),
+			Cmd:     baremetal.NewEjectMediaCommand(nil, &inventory.CommandOptions{}),
 		},
 		{
 			Name:    "baremetal-poweroff-with-help",
 			CmdLine: "-h",
-			Cmd:     baremetal.NewPowerOffCommand(nil, &baremetal.CommonOptions{}),
+			Cmd:     baremetal.NewPowerOffCommand(nil, &inventory.CommandOptions{}),
 		},
 		{
 			Name:    "baremetal-poweron-with-help",
 			CmdLine: "-h",
-			Cmd:     baremetal.NewPowerOnCommand(nil, &baremetal.CommonOptions{}),
+			Cmd:     baremetal.NewPowerOnCommand(nil, &inventory.CommandOptions{}),
 		},
 		{
 			Name:    "baremetal-powerstatus-with-help",
 			CmdLine: "-h",
-			Cmd:     baremetal.NewPowerStatusCommand(nil, &baremetal.CommonOptions{}),
+			Cmd:     baremetal.NewPowerStatusCommand(nil, &inventory.CommandOptions{}),
 		},
 		{
 			Name:    "baremetal-reboot-with-help",
 			CmdLine: "-h",
-			Cmd:     baremetal.NewRebootCommand(nil, &baremetal.CommonOptions{}),
+			Cmd:     baremetal.NewRebootCommand(nil, &inventory.CommandOptions{}),
 		},
 		{
 			Name:    "baremetal-remotedirect-with-help",
 			CmdLine: "-h",
-			Cmd:     baremetal.NewRemoteDirectCommand(nil, &baremetal.CommonOptions{}),
+			Cmd:     baremetal.NewRemoteDirectCommand(nil, &inventory.CommandOptions{}),
 		},
 	}
 
 	for _, tt := range tests {
 		testutil.RunTest(t, tt)
 	}
-}
-
-func TestGetHostSelectionsOneSelector(t *testing.T) {
-	selectors := baremetal.GetHostSelections("node0", "")
-	assert.Len(t, selectors, 1)
-}
-
-func TestGetHostSelectionsBothSelectors(t *testing.T) {
-	selectors := baremetal.GetHostSelections("node0", "airshipit.org/ephemeral-node=true")
-	assert.Len(t, selectors, 2)
-}
-
-func TestGetHostSelectionsNone(t *testing.T) {
-	selectors := baremetal.GetHostSelections("", "")
-	assert.Len(t, selectors, 1)
 }
