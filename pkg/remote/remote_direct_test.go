@@ -15,20 +15,16 @@
 package remote
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
-	"opendev.org/airship/airshipctl/pkg/remote/power"
-	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 	"opendev.org/airship/airshipctl/testutil/redfishutils"
 )
 
 const (
-	systemID   = "System.Embedded.1"
-	isoURL     = "https://localhost:8080/ubuntu.iso"
 	redfishURL = "redfish+https://localhost:2344/Systems/System.Embedded.1"
 	username   = "admin"
 	password   = "password"
@@ -55,42 +51,11 @@ func TestDoRemoteDirectMissingConfigOpts(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestDoRemoteDirectMissingISOURL(t *testing.T) {
-	rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
-	assert.NoError(t, err)
-
-	ctx := context.Background()
-
-	rMock.On("NodeID").Times(1).Return(systemID)
-	rMock.On("SystemPowerStatus", ctx).Times(1).Return(power.StatusOn, nil)
-
-	ephemeralHost := baremetalHost{
-		rMock,
-		redfishURL,
-		"doc-name",
-		username,
-		password,
-	}
-
-	settings := initSettings(t, withTestDataPath("noisourl"))
-	err = ephemeralHost.DoRemoteDirect(settings)
-	expectedErrorMessage := `missing option: isoURL`
-	assert.Equal(t, expectedErrorMessage, fmt.Sprintf("%s", err))
-	assert.Error(t, err)
-}
-
 func TestDoRemoteDirectRedfish(t *testing.T) {
 	rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	ctx := context.Background()
-
-	rMock.On("NodeID").Times(1).Return(systemID)
-	rMock.On("SystemPowerStatus", ctx).Times(1).Return(power.StatusOn, nil)
-	rMock.On("SetVirtualMedia", ctx, isoURL).Times(1).Return(nil)
-	rMock.On("SetBootSourceByType", ctx).Times(1).Return(nil)
-	rMock.On("NodeID").Times(1).Return(systemID)
-	rMock.On("RebootSystem", ctx).Times(1).Return(nil)
+	rMock.On("RemoteDirect").Times(1).Return(nil)
 
 	ephemeralHost := baremetalHost{
 		rMock,
@@ -105,19 +70,12 @@ func TestDoRemoteDirectRedfish(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestDoRemoteDirectRedfishNodePoweredOff(t *testing.T) {
+func TestDoRemoteDirectError(t *testing.T) {
 	rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	ctx := context.Background()
-
-	rMock.On("NodeID").Times(1).Return(systemID)
-	rMock.On("SystemPowerStatus", ctx).Times(1).Return(power.StatusOff, nil)
-	rMock.On("SystemPowerOn", ctx).Times(1).Return(nil)
-	rMock.On("SetVirtualMedia", ctx, isoURL).Times(1).Return(nil)
-	rMock.On("SetBootSourceByType", ctx).Times(1).Return(nil)
-	rMock.On("NodeID").Times(1).Return(systemID)
-	rMock.On("RebootSystem", ctx).Times(1).Return(nil)
+	expectedErr := fmt.Errorf("remote direct error")
+	rMock.On("RemoteDirect").Times(1).Return(expectedErr)
 
 	ephemeralHost := baremetalHost{
 		rMock,
@@ -128,97 +86,6 @@ func TestDoRemoteDirectRedfishNodePoweredOff(t *testing.T) {
 	}
 
 	settings := initSettings(t, withTestDataPath("base"))
-	err = ephemeralHost.DoRemoteDirect(settings)
-	assert.NoError(t, err)
-}
-
-func TestDoRemoteDirectRedfishVirtualMediaError(t *testing.T) {
-	rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
-	assert.NoError(t, err)
-
-	ctx := context.Background()
-
-	expectedErr := redfish.ErrRedfishClient{Message: "Unable to set virtual media."}
-
-	rMock.On("NodeID").Times(1).Return(systemID)
-	rMock.On("SystemPowerStatus", ctx).Times(1).Return(power.StatusOn, nil)
-	rMock.On("SetVirtualMedia", ctx, isoURL).Times(1).Return(expectedErr)
-	rMock.On("SetBootSourceByType", ctx).Times(1).Return(nil)
-	rMock.On("NodeID").Times(1).Return(systemID)
-	rMock.On("RebootSystem", ctx).Times(1).Return(nil)
-
-	ephemeralHost := baremetalHost{
-		rMock,
-		redfishURL,
-		"doc-name",
-		username,
-		password,
-	}
-
-	settings := initSettings(t, withTestDataPath("base"))
-
-	err = ephemeralHost.DoRemoteDirect(settings)
-	_, ok := err.(redfish.ErrRedfishClient)
-	assert.True(t, ok)
-}
-
-func TestDoRemoteDirectRedfishBootSourceError(t *testing.T) {
-	rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
-	assert.NoError(t, err)
-
-	ctx := context.Background()
-
-	rMock.On("NodeID").Times(1).Return(systemID)
-	rMock.On("SystemPowerStatus", ctx).Times(1).Return(power.StatusOn, nil)
-	rMock.On("SetVirtualMedia", ctx, isoURL).Times(1).Return(nil)
-
-	expectedErr := redfish.ErrRedfishClient{Message: "Unable to set boot source."}
-	rMock.On("SetBootSourceByType", ctx).Times(1).Return(expectedErr)
-	rMock.On("NodeID").Times(1).Return(systemID)
-	rMock.On("RebootSystem", ctx).Times(1).Return(nil)
-
-	ephemeralHost := baremetalHost{
-		rMock,
-		redfishURL,
-		"doc-name",
-		username,
-		password,
-	}
-
-	settings := initSettings(t, withTestDataPath("base"))
-
-	err = ephemeralHost.DoRemoteDirect(settings)
-	_, ok := err.(redfish.ErrRedfishClient)
-	assert.True(t, ok)
-}
-
-func TestDoRemoteDirectRedfishRebootError(t *testing.T) {
-	rMock, err := redfishutils.NewClient(redfishURL, false, false, username, password)
-	assert.NoError(t, err)
-
-	ctx := context.Background()
-
-	rMock.On("NodeID").Times(1).Return(systemID)
-	rMock.On("SystemPowerStatus", ctx).Times(1).Return(power.StatusOn, nil)
-	rMock.On("SetVirtualMedia", ctx, isoURL).Times(1).Return(nil)
-	rMock.On("SetVirtualMedia", ctx, isoURL).Times(1).Return(nil)
-	rMock.On("SetBootSourceByType", ctx).Times(1).Return(nil)
-	rMock.On("NodeID").Times(1).Return(systemID)
-
-	expectedErr := redfish.ErrRedfishClient{Message: "Unable to set boot source."}
-	rMock.On("RebootSystem", ctx).Times(1).Return(expectedErr)
-
-	ephemeralHost := baremetalHost{
-		rMock,
-		redfishURL,
-		"doc-name",
-		username,
-		password,
-	}
-
-	settings := initSettings(t, withTestDataPath("base"))
-
-	err = ephemeralHost.DoRemoteDirect(settings)
-	_, ok := err.(redfish.ErrRedfishClient)
-	assert.True(t, ok)
+	actualErr := ephemeralHost.DoRemoteDirect(settings)
+	assert.Equal(t, expectedErr, actualErr)
 }

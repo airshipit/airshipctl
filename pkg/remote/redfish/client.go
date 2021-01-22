@@ -38,6 +38,7 @@ type Client struct {
 	nodeID              string
 	username            string
 	password            string
+	redfishURL          string
 	RedfishAPI          redfishAPI.RedfishAPI
 	RedfishCFG          *redfishClient.Configuration
 	systemActionRetries int
@@ -254,8 +255,8 @@ func (c *Client) SystemPowerOn(ctx context.Context) error {
 func (c *Client) SystemPowerStatus(ctx context.Context) (power.Status, error) {
 	ctx = SetAuth(ctx, c.username, c.password)
 	computerSystem, httpResp, err := c.RedfishAPI.GetSystem(ctx, c.nodeID)
-	if err = ScreenRedfishError(httpResp, err); err != nil {
-		return power.StatusUnknown, err
+	if screenErr := ScreenRedfishError(httpResp, err); screenErr != nil {
+		return power.StatusUnknown, screenErr
 	}
 
 	switch computerSystem.PowerState {
@@ -270,6 +271,49 @@ func (c *Client) SystemPowerStatus(ctx context.Context) (power.Status, error) {
 	default:
 		return power.StatusUnknown, nil
 	}
+}
+
+// RemoteDirect implements remote direct interface
+func (c *Client) RemoteDirect(ctx context.Context, isoURL string) error {
+	log.Debugf("Bootstrapping ephemeral host with ID '%s' and BMC Address '%s'.", c.NodeID(),
+		c.redfishURL)
+
+	powerStatus, err := c.SystemPowerStatus(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Power on node if it is off
+	if powerStatus != power.StatusOn {
+		log.Debugf("Ephemeral node has power status '%s'. Attempting to power on.", powerStatus.String())
+		if err = c.SystemPowerOn(ctx); err != nil {
+			return err
+		}
+	}
+
+	// Perform remote direct operations
+	if isoURL == "" {
+		return ErrRedfishMissingConfig{What: "isoURL"}
+	}
+
+	err = c.SetVirtualMedia(ctx, isoURL)
+	if err != nil {
+		return err
+	}
+
+	err = c.SetBootSourceByType(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = c.RebootSystem(ctx)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Successfully bootstrapped ephemeral host '%s'.", c.NodeID())
+
+	return nil
 }
 
 // NewClient returns a client with the capability to make Redfish requests.
@@ -330,6 +374,7 @@ func NewClient(redfishURL string,
 		systemRebootDelay:   systemRebootDelay,
 		password:            password,
 		username:            username,
+		redfishURL:          redfishURL,
 
 		Sleep: func(d time.Duration) {
 			time.Sleep(d)

@@ -30,6 +30,7 @@ type Client interface {
 	SystemPowerOff(context.Context) error
 	SystemPowerOn(context.Context) error
 	SystemPowerStatus(context.Context) (power.Status, error)
+	RemoteDirect(context.Context, string) error
 
 	// TODO(drewwalters96): This function is tightly coupled to Redfish. It should be combined with the
 	// SetBootSource operation and removed from the client interface.
