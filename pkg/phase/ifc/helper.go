@@ -18,6 +18,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/inventory/ifc"
 )
 
 // Helper is a phase helper that provides phases with additional config related information
@@ -34,5 +35,6 @@ type Helper interface {
 	ClusterMap() (clustermap.ClusterMap, error)
 	ExecutorDoc(phaseID ID) (document.Document, error)
 	PhaseBundleRoot() string
+	Inventory() (ifc.Inventory, error)
 	PhaseEntryPointBasePath() string
 }

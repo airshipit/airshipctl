@@ -47,12 +47,12 @@ func init() {
 		&KubeConfig{},
 		&KubernetesApply{},
 		&IsoConfiguration{},
-		&RemoteDirectConfiguration{},
 		&ClusterMap{},
 		&ReplacementTransformer{},
 		&Templater{},
 		&BootConfiguration{},
 		&GenericContainer{},
+		&BaremetalManager{},
 	)
 	_ = AddToScheme(Scheme) //nolint:errcheck
 }
