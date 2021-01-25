@@ -322,7 +322,12 @@ func (c *Config) CurrentContextManifest() (*Manifest, error) {
 		return nil, err
 	}
 
-	return c.Manifests[currentContext.Manifest], nil
+	manifest, exist := c.Manifests[currentContext.Manifest]
+	if !exist {
+		return nil, ErrMissingConfig{What: "manifest named " + currentContext.Manifest}
+	}
+
+	return manifest, nil
 }
 
 // CurrentContextTargetPath returns target path from current context's manifest

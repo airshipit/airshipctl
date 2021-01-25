@@ -17,16 +17,9 @@ package ifc
 // BaremetalHostSelector allows to select baremetal hosts, if used empty all possible hosts
 // will be should be returned by Select() method of BaremetalInvenotry interface
 type BaremetalHostSelector struct {
-	PhaseSelector PhaseSelector
 	Name          string
 	Namespace     string
 	LabelSelector string
-}
-
-// PhaseSelector allows to select hosts based on phase they belong to
-type PhaseSelector struct {
-	Name      string
-	Namespace string
 }
 
 // ByName allows to select hosts based on their name
@@ -36,11 +29,8 @@ func (s BaremetalHostSelector) ByName(name string) BaremetalHostSelector {
 }
 
 // ByNamespace allows to select hosts based on their namespace
-func (s BaremetalHostSelector) ByNamespace(name, namespace string) BaremetalHostSelector {
-	s.PhaseSelector = PhaseSelector{
-		Name:      name,
-		Namespace: namespace,
-	}
+func (s BaremetalHostSelector) ByNamespace(namespace string) BaremetalHostSelector {
+	s.Namespace = namespace
 	return s
 }
 
