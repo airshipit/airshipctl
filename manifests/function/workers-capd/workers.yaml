@@ -1,25 +1,22 @@
----
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
 kind: DockerMachineTemplate
 metadata:
   name: "target-cluster-md-0"
+  namespace: default
 spec:
   template:
-    spec:
-      extraMounts:
-        - containerPath: "/var/run/docker.sock"
-          hostPath: "/var/run/docker.sock"
+    spec: {}
 ---
 apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
 kind: KubeadmConfigTemplate
 metadata:
   name: "target-cluster-md-0"
+  namespace: default
 spec:
   template:
     spec:
       joinConfiguration:
         nodeRegistration:
-          criSocket: /var/run/containerd/containerd.sock
           kubeletExtraArgs: {eviction-hard: 'nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%'}
 ---
 apiVersion: cluster.x-k8s.io/v1alpha3
@@ -32,18 +29,17 @@ spec:
   selector:
     matchLabels:
   template:
-    metadata:
-      labels:
-        "nodepool": "pool1"
     spec:
       clusterName: "target-cluster"
-      version: "v1.18.6"
+      version:  "v1.18.6"
       bootstrap:
         configRef:
           name: "target-cluster-md-0"
+          namespace: default
           apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
           kind: KubeadmConfigTemplate
       infrastructureRef:
         name: "target-cluster-md-0"
+        namespace: default
         apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
         kind: DockerMachineTemplate
