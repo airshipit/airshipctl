@@ -29,7 +29,6 @@ type ClusterMap interface {
 	ParentCluster(string) (string, error)
 	AllClusters() []string
 	DynamicKubeConfig(string) bool
-	ClusterNamespace(string) (string, error)
 	ClusterKubeconfigContext(string) (string, error)
 	ClusterAPIRef(string) (ClusterAPIRef, error)
 }
@@ -105,12 +104,6 @@ func (cm clusterMap) ClusterAPIRef(clusterName string) (ClusterAPIRef, error) {
 		Name:      name,
 		Namespace: namespace,
 	}, nil
-}
-
-// ClusterNamespace a namespace for given cluster
-// TODO implement how to get namespace for cluster
-func (cm clusterMap) ClusterNamespace(clusterName string) (string, error) {
-	return "default", nil
 }
 
 // ClusterKubeconfigContext returns name of the context in kubeconfig corresponding to a given cluster
