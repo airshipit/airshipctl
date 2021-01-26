@@ -19,15 +19,15 @@ import (
 	"fmt"
 	"text/template"
 
-	sprig "github.com/Masterminds/sprig/v3"
-	"github.com/lucasjones/reggen"
-
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/kustomize/kyaml/kio"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
-	"opendev.org/airship/airshipctl/pkg/fs"
+
+	sprig "github.com/Masterminds/sprig/v3"
+
+	extlib "opendev.org/airship/airshipctl/pkg/document/plugin/templater/extlib"
 )
 
 var _ kio.Filter = &plugin{}
@@ -48,14 +48,24 @@ func New(obj map[string]interface{}) (kio.Filter, error) {
 	}, nil
 }
 
+func funcMapAppend(fma, fmb template.FuncMap) template.FuncMap {
+	for k, v := range fmb {
+		_, ok := fma[k]
+		if ok {
+			panic(fmt.Errorf("Trying to redefine function %s that already exists", k))
+		}
+		fma[k] = v
+	}
+	return fma
+}
+
 func (t *plugin) Filter(items []*yaml.RNode) ([]*yaml.RNode, error) {
-	docfs := fs.NewDocumentFs()
 	out := &bytes.Buffer{}
-	funcMap := sprig.TxtFuncMap()
-	funcMap["toUint32"] = func(i int) uint32 { return uint32(i) }
-	funcMap["toYaml"] = toYaml
-	funcMap["regexGen"] = regexGen
-	funcMap["fileExists"] = docfs.Exists
+
+	funcMap := template.FuncMap{}
+	funcMap = funcMapAppend(funcMap, sprig.TxtFuncMap())
+	funcMap = funcMapAppend(funcMap, extlib.GenericFuncMap())
+
 	tmpl, err := template.New("tmpl").Funcs(funcMap).Parse(t.Template)
 	if err != nil {
 		return nil, err
@@ -78,29 +88,4 @@ func (t *plugin) Filter(items []*yaml.RNode) ([]*yaml.RNode, error) {
 		return nil, fmt.Errorf("Output conversion error")
 	}
 	return append(items, res.Nodes...), nil
-}
-
-// Generate Regex
-func regexGen(regex string, limit int) string {
-	if limit <= 0 {
-		panic("Limit cannot be less than or equal to 0")
-	}
-	str, err := reggen.Generate(regex, limit)
-	if err != nil {
-		panic(err)
-	}
-	return str
-}
-
-// Render input yaml as output yaml
-// This function is from the Helm project:
-// https://github.com/helm/helm
-// Copyright The Helm Authors
-func toYaml(v interface{}) string {
-	data, err := yaml.Marshal(v)
-	if err != nil {
-		// Swallow errors inside of a template.
-		return ""
-	}
-	return string(data)
 }
