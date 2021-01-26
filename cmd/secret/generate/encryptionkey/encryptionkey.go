@@ -52,7 +52,7 @@ func NewGenerateEncryptionKeyCommand() *cobra.Command {
 		Example: cmdExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if cmd.Flags().Changed("limit") && !cmd.Flags().Changed("regex") {
-				return fmt.Errorf("Required Regex flag with limit option")
+				return fmt.Errorf("required Regex flag with limit option")
 			}
 			if cmd.Flags().Changed("regex") && cmd.Flags().Changed("limit") {
 				return errors.ErrNotImplemented{What: "Regex support not implemented yet!"}

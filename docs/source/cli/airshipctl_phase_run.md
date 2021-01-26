@@ -25,6 +25,7 @@ airshipctl phase run ephemeral-control-plane
       --dry-run                 simulate phase execution
   -h, --help                    help for run
       --kubeconfig string       Path to kubeconfig associated with site being managed
+      --progress                show progress
       --wait-timeout duration   wait timeout
 ```
 

@@ -75,7 +75,7 @@ func (t *plugin) Filter(items []*yaml.RNode) ([]*yaml.RNode, error) {
 
 	res, ok := p.Outputs[0].(*kio.PackageBuffer)
 	if !ok {
-		return nil, fmt.Errorf("Output conversion error")
+		return nil, fmt.Errorf("output conversion error")
 	}
 	return append(items, res.Nodes...), nil
 }

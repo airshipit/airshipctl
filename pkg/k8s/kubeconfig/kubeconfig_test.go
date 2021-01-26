@@ -83,9 +83,9 @@ users:
 )
 
 var (
-	errTempFile            = fmt.Errorf("TempFile Error")
-	errSourceFunc          = fmt.Errorf("Source func error")
-	errWriter              = fmt.Errorf("Writer error")
+	errTempFile            = fmt.Errorf("tempFile Error")
+	errSourceFunc          = fmt.Errorf("source func error")
+	errWriter              = fmt.Errorf("writer error")
 	testValidKubeconfigAPI = &v1alpha1.KubeConfig{
 		Config: v1.Config{
 			CurrentContext: "test",

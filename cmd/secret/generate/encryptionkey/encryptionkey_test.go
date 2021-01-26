@@ -32,7 +32,7 @@ func TestGenerateEncryptionKey(t *testing.T) {
 		{
 			Name:    "generate-encryptionkey-cmd-error",
 			CmdLine: "--limit 10",
-			Error:   fmt.Errorf("Required Regex flag with limit option"),
+			Error:   fmt.Errorf("required Regex flag with limit option"),
 			Cmd:     encryptionkey.NewGenerateEncryptionKeyCommand(),
 		},
 	}
