@@ -236,3 +236,13 @@ config:
     kind: GenericContainer
     name: encrypter
   documentEntryPoint: target/generator
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: remotedirect-ephemeral
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: BaremetalManager
+    name: RemoteDirectEphemeral
