@@ -204,19 +204,19 @@ Make sure the following conditions are met:
 5. Execute the following scripts one by one
     1. ./tools/gate/00_setup.sh
     2. ./tools/gate/10_build_gate.sh
-    3. sudo ./tools/deployment/01_install_kubectl.sh
-    4. sudo ./tools/deployment/02_install_clusterctl.sh
-    5. sudo ./tools/deployment/22_test_configs.sh
-    6. sudo ./tools/deployment/23_pull_documents.sh
-    7. sudo ./tools/deployment/24_build_ephemeral_iso.sh
-    8. sudo ./tools/deployment/25_deploy_ephemeral_node.sh
-    9. sudo ./tools/deployment/26_deploy_metal3_capi_ephemeral_node.sh
-    10. sudo ./tools/deployment/30_deploy_controlplane.sh
-    11. sudo ./tools/deployment/31_deploy_initinfra_target_node.sh
-    12. sudo ./tools/deployment/32_cluster_init_target_node.sh
-    13. sudo ./tools/deployment/33_cluster_move_target_node.sh
-    14. sudo ./tools/deployment/34_deploy_worker_node.sh
-    15. sudo ./tools/deployment/35_deploy_workload.sh
+    3. sudo -E ./tools/deployment/01_install_kubectl.sh
+    4. sudo -E ./tools/deployment/02_install_clusterctl.sh
+    5. sudo -E ./tools/deployment/22_test_configs.sh
+    6. sudo -E ./tools/deployment/23_pull_documents.sh
+    7. sudo -E ./tools/deployment/24_build_ephemeral_iso.sh
+    8. sudo -E ./tools/deployment/25_deploy_ephemeral_node.sh
+    9. sudo -E ./tools/deployment/26_deploy_metal3_capi_ephemeral_node.sh
+    10. sudo -E ./tools/deployment/30_deploy_controlplane.sh
+    11. sudo -E ./tools/deployment/31_deploy_initinfra_target_node.sh
+    12. sudo -E ./tools/deployment/32_cluster_init_target_node.sh
+    13. sudo -E ./tools/deployment/33_cluster_move_target_node.sh
+    14. sudo -E ./tools/deployment/34_deploy_worker_node.sh
+    15. sudo -E ./tools/deployment/35_deploy_workload.sh
 
 6. How to verify the ephemeral cluster and target cluster is deployed successfully
     Validate Ephemeral Cluster is Operational:
