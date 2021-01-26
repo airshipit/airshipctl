@@ -2,5 +2,6 @@
 set -xe
 
 #Copy files to shared mount
+mkdir -p /shared/html/images/
 cp -f /ipa-ubuntu-master* /shared/html/images/
 chmod 777 -R /shared/html/images/
