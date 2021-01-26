@@ -29,6 +29,7 @@ const (
 	Isogen           = "isogen"
 	GenericContainer = "generic-container"
 	Ephemeral        = "ephemeral"
+	BMHManager       = "BaremetalManager"
 )
 
 // RegisterExecutor adds executor to phase executor registry
@@ -53,6 +54,9 @@ func RegisterExecutor(executorName string, registry map[schema.GroupVersionKind]
 	case Ephemeral:
 		gvks, _, err = airshipv1.Scheme.ObjectKinds(airshipv1.DefaultBootConfiguration())
 		execObj = NewEphemeralExecutor
+	case BMHManager:
+		gvks, _, err = airshipv1.Scheme.ObjectKinds(&airshipv1.BaremetalManager{})
+		execObj = NewBaremetalExecutor
 	default:
 		return ErrUnknownExecutorName{ExecutorName: executorName}
 	}

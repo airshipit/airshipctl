@@ -18,14 +18,16 @@ import (
 	"fmt"
 )
 
-// ErrUnknownExecutorAction is returned for unknown action parameter
-// in clusterctl configuration document
+// ErrUnknownExecutorAction is returned when unknown action or operation is requested
+// from one of the executors.
 type ErrUnknownExecutorAction struct {
-	Action string
+	Action       string
+	ExecutorName string
 }
 
 func (e ErrUnknownExecutorAction) Error() string {
-	return fmt.Sprintf("unknown action type '%s'", e.Action)
+	return fmt.Sprintf("unknown action type '%s' was requested from executor '%s'",
+		e.Action, e.ExecutorName)
 }
 
 // ErrIsogenNilBundle is returned when isogen executor is not provided with bundle

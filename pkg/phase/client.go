@@ -39,7 +39,7 @@ func DefaultExecutorRegistry() map[schema.GroupVersionKind]ifc.ExecutorFactory {
 	execMap := make(map[schema.GroupVersionKind]ifc.ExecutorFactory)
 
 	for _, execName := range []string{executors.Clusterctl, executors.KubernetesApply,
-		executors.Isogen, executors.GenericContainer, executors.Ephemeral} {
+		executors.Isogen, executors.GenericContainer, executors.Ephemeral, executors.BMHManager} {
 		if err := executors.RegisterExecutor(execName, execMap); err != nil {
 			log.Fatal(ErrExecutorRegistration{ExecutorName: execName, Err: err})
 		}

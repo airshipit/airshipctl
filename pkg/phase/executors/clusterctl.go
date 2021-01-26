@@ -67,7 +67,7 @@ func (c *ClusterctlExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 	case airshipv1.Init:
 		c.init(opts, evtCh)
 	default:
-		handleError(evtCh, ErrUnknownExecutorAction{Action: string(c.options.Action)})
+		handleError(evtCh, ErrUnknownExecutorAction{Action: string(c.options.Action), ExecutorName: "clusterctl"})
 	}
 }
 

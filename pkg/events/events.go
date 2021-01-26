@@ -40,8 +40,10 @@ const (
 	IsogenType
 	// BootstrapType event emitted by Bootstrap executor
 	BootstrapType
-	//GenericContainerType event emitted by GenericContainer
+	// GenericContainerType event emitted by GenericContainer
 	GenericContainerType
+	// BaremetalManagerEventType event emitted by BaremetalManager
+	BaremetalManagerEventType
 )
 
 // Event holds all possible events that can be produced by airship
@@ -55,6 +57,7 @@ type Event struct {
 	IsogenEvent           IsogenEvent
 	BootstrapEvent        BootstrapEvent
 	GenericContainerEvent GenericContainerEvent
+	BaremetalManagerEvent BaremetalManagerEvent
 }
 
 //GenericEvent generalized type for custom events
@@ -258,5 +261,31 @@ type GenericContainerEvent struct {
 func (e Event) WithGenericContainerEvent(concreteEvent GenericContainerEvent) Event {
 	e.Type = GenericContainerType
 	e.GenericContainerEvent = concreteEvent
+	return e
+}
+
+// BaremetalManagerStep indicates what operation baremetal manager is currently peforming
+// Note that this is not baremetal
+type BaremetalManagerStep int
+
+const (
+	// BaremetalManagerStart operation
+	BaremetalManagerStart BaremetalManagerStep = iota
+	// BaremetalManagerComplete operation
+	BaremetalManagerComplete
+)
+
+// BaremetalManagerEvent event emitted by BaremetalManager
+type BaremetalManagerEvent struct {
+	Step BaremetalManagerStep
+	// HostOperation indicates which operation is performed against BMH Host
+	HostOperation string
+	Message       string
+}
+
+// WithBaremetalManagerEvent sets type and actual bootstrap event
+func (e Event) WithBaremetalManagerEvent(concreteEvent BaremetalManagerEvent) Event {
+	e.Type = BaremetalManagerEventType
+	e.BaremetalManagerEvent = concreteEvent
 	return e
 }

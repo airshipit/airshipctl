@@ -96,7 +96,7 @@ func TestExecutorRun(t *testing.T) {
 			cfgDoc:     executorDoc(t, fmt.Sprintf(executorConfigTmpl, "someAction")),
 			bundlePath: "testdata/executor_init",
 			expectedEvt: []events.Event{
-				wrapError(executors.ErrUnknownExecutorAction{Action: "someAction"}),
+				wrapError(executors.ErrUnknownExecutorAction{Action: "someAction", ExecutorName: "clusterctl"}),
 			},
 			clusterMap: clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
 		},
