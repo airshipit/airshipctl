@@ -26,7 +26,7 @@ hosts:
     node02:
       bootMode: UEFI
       macAddress: 52:54:00:b6:ed:02
-      bmcAddress: redfish+https://localhost:8443/redfish/v1/Systems/air-ephemeral
+      bmcAddress: redfish+https://10.23.25.1:8443/redfish/v1/Systems/air-ephemeral
       bmcUsername: username
       bmcPassword: password
       disableCertificateVerification: false
