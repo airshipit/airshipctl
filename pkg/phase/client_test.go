@@ -123,7 +123,7 @@ func TestPhaseRun(t *testing.T) {
 			client := phase.NewClient(helper, phase.InjectRegistry(tt.registryFunc))
 			require.NotNil(t, client)
 			p, err := client.PhaseByID(tt.phaseID)
-			require.NotNil(t, client)
+			require.NoError(t, err)
 			err = p.Run(ifc.RunOptions{DryRun: true})
 			if tt.errContains != "" {
 				require.Error(t, err)
@@ -223,7 +223,7 @@ func TestBundleFactoryExecutor(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, helper)
 
-	fakeRegistry := func() map[schema.GroupVersionKind]ifc.ExecutorFactory {
+	fakeReg := func() map[schema.GroupVersionKind]ifc.ExecutorFactory {
 		validBundleFactory := schema.GroupVersionKind{
 			Group:   "airshipit.org",
 			Version: "v1alpha1",
@@ -245,7 +245,7 @@ func TestBundleFactoryExecutor(t *testing.T) {
 			invalidBundleFactory: bundleCheckFunc,
 		}
 	}
-	c := phase.NewClient(helper, phase.InjectRegistry(fakeRegistry))
+	c := phase.NewClient(helper, phase.InjectRegistry(fakeReg))
 	p, err := c.PhaseByID(ifc.ID{Name: "capi_init"})
 	require.NoError(t, err)
 	_, err = p.Executor()
@@ -255,6 +255,50 @@ func TestBundleFactoryExecutor(t *testing.T) {
 	_, err = p.Executor()
 	assert.Error(t, err)
 	assert.Equal(t, phase.ErrDocumentEntrypointNotDefined{PhaseName: "no_entry_point"}, err)
+}
+
+func TestPlanRun(t *testing.T) {
+	testCases := []struct {
+		name         string
+		errContains  string
+		planID       ifc.ID
+		configFunc   func(t *testing.T) *config.Config
+		registryFunc phase.ExecutorRegistry
+	}{
+		{
+			name:         "Success fake executor",
+			configFunc:   testConfig,
+			planID:       ifc.ID{Name: "init"},
+			registryFunc: fakeRegistry,
+		},
+		{
+			name:         "Error executor doc doesn't exist",
+			configFunc:   testConfig,
+			planID:       ifc.ID{Name: "some_plan"},
+			registryFunc: fakeRegistry,
+			errContains:  "found no documents",
+		},
+	}
+	for _, tc := range testCases {
+		tt := tc
+		t.Run(tt.name, func(t *testing.T) {
+			conf := tt.configFunc(t)
+			helper, err := phase.NewHelper(conf)
+			require.NoError(t, err)
+			require.NotNil(t, helper)
+			client := phase.NewClient(helper, phase.InjectRegistry(tt.registryFunc))
+			require.NotNil(t, client)
+			p, err := client.PlanByID(tt.planID)
+			require.NoError(t, err)
+			err = p.Run(ifc.RunOptions{DryRun: true})
+			if tt.errContains != "" {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errContains)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
 }
 
 func fakeExecFactory(config ifc.ExecutorConfig) (ifc.Executor, error) {

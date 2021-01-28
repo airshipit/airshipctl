@@ -90,13 +90,18 @@ func (helper *Helper) Phase(phaseID ifc.ID) (*v1alpha1.Phase, error) {
 }
 
 // Plan returns plan associated with a manifest
-func (helper *Helper) Plan() (*v1alpha1.PhasePlan, error) {
+func (helper *Helper) Plan(planID ifc.ID) (*v1alpha1.PhasePlan, error) {
 	bundle, err := document.NewBundleByPath(helper.phaseBundleRoot)
 	if err != nil {
 		return nil, err
 	}
 
-	plan := &v1alpha1.PhasePlan{}
+	plan := &v1alpha1.PhasePlan{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      planID.Name,
+			Namespace: planID.Namespace,
+		},
+	}
 	selector, err := document.NewSelector().ByObject(plan, v1alpha1.Scheme)
 	if err != nil {
 		return nil, err

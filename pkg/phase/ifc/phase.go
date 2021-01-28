@@ -31,6 +31,12 @@ type Phase interface {
 	Render(io.Writer, bool, RenderOptions) error
 }
 
+// Plan provides a way to interact with phase plans
+type Plan interface {
+	Validate() error
+	Run(RunOptions) error
+}
+
 // ID uniquely identifies the phase
 type ID struct {
 	Name      string
@@ -40,6 +46,7 @@ type ID struct {
 // Client is a phase client that can be used by command line or ui packages
 type Client interface {
 	PhaseByID(ID) (Phase, error)
+	PlanByID(ID) (Plan, error)
 	PhaseByAPIObj(*v1alpha1.Phase) (Phase, error)
 	ClusterMap() (clustermap.ClusterMap, error)
 }

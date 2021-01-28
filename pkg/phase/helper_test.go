@@ -104,6 +104,7 @@ func TestHelperPhase(t *testing.T) {
 }
 
 func TestHelperPlan(t *testing.T) {
+	testPlanName := "phasePlan"
 	testCases := []struct {
 		name         string
 		errContains  string
@@ -119,28 +120,23 @@ func TestHelperPlan(t *testing.T) {
 					APIVersion: "airshipit.org/v1alpha1",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "phasePlan",
+					Name: testPlanName,
 				},
-				PhaseGroups: []airshipv1.PhaseGroup{
+				Phases: []airshipv1.PhaseStep{
 					{
-						Name: "group1",
-						Phases: []airshipv1.PhaseGroupStep{
-							{
-								Name: "isogen",
-							},
-							{
-								Name: "remotedirect",
-							},
-							{
-								Name: "initinfra",
-							},
-							{
-								Name: "some_phase",
-							},
-							{
-								Name: "capi_init",
-							},
-						},
+						Name: "isogen",
+					},
+					{
+						Name: "remotedirect",
+					},
+					{
+						Name: "initinfra",
+					},
+					{
+						Name: "some_phase",
+					},
+					{
+						Name: "capi_init",
 					},
 				},
 			},
@@ -172,7 +168,7 @@ func TestHelperPlan(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, helper)
 
-			actualPlan, actualErr := helper.Plan()
+			actualPlan, actualErr := helper.Plan(ifc.ID{Name: testPlanName})
 			if tt.errContains != "" {
 				require.Error(t, actualErr)
 				assert.Contains(t, actualErr.Error(), tt.errContains)
@@ -244,7 +240,7 @@ func TestHelperListPlans(t *testing.T) {
 	}{
 		{
 			name:        "Success plan list",
-			expectedLen: 1,
+			expectedLen: 3,
 			config:      testConfig,
 		},
 		{

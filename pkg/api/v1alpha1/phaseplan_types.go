@@ -24,18 +24,11 @@ import (
 type PhasePlan struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Description       string       `json:"description,omitempty"`
-	PhaseGroups       []PhaseGroup `json:"phaseGroups,omitempty"`
+	Description       string      `json:"description,omitempty"`
+	Phases            []PhaseStep `json:"phases,omitempty"`
 }
 
-// PhaseGroup represents set of phases (i.e. steps) executed sequentially.
-// Phase groups are executed simultaneously
-type PhaseGroup struct {
-	Name   string           `json:"name,omitempty"`
-	Phases []PhaseGroupStep `json:"phases,omitempty"`
-}
-
-// PhaseGroupStep represents phase (or step) within phase group
-type PhaseGroupStep struct {
+// PhaseStep represents phase (or step) within a phase plan
+type PhaseStep struct {
 	Name string `json:"name,omitempty"`
 }

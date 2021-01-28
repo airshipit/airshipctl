@@ -293,3 +293,77 @@ func TestPlanListCommand(t *testing.T) {
 		})
 	}
 }
+
+func TestPlanRunCommand(t *testing.T) {
+	testErr := fmt.Errorf(testFactoryErr)
+	testCases := []struct {
+		name        string
+		factory     config.Factory
+		expectedErr string
+	}{
+		{
+			name: "Error config factory",
+			factory: func() (*config.Config, error) {
+				return nil, testErr
+			},
+			expectedErr: testFactoryErr,
+		},
+		{
+			name: "Error new helper",
+			factory: func() (*config.Config, error) {
+				return &config.Config{
+					CurrentContext: "does not exist",
+					Contexts:       make(map[string]*config.Context),
+				}, nil
+			},
+			expectedErr: "Missing configuration: Context with name 'does not exist'",
+		},
+		{
+			name: "Error phase by id",
+			factory: func() (*config.Config, error) {
+				conf := config.NewConfig()
+				conf.Manifests = map[string]*config.Manifest{
+					"manifest": {
+						MetadataPath:        "metadata.yaml",
+						TargetPath:          "testdata",
+						PhaseRepositoryName: config.DefaultTestPhaseRepo,
+						Repositories: map[string]*config.Repository{
+							config.DefaultTestPhaseRepo: {
+								URLString: "",
+							},
+						},
+					},
+				}
+				conf.CurrentContext = "context"
+				conf.Contexts = map[string]*config.Context{
+					"context": {
+						Manifest: "manifest",
+					},
+				}
+				return conf, nil
+			},
+			expectedErr: `Error events received on channel, errors are:
+[document filtered by selector [Group="airshipit.org", Version="v1alpha1", Kind="KubeConfig"] found no documents]`,
+		},
+	}
+	for _, tc := range testCases {
+		tt := tc
+		t.Run(tt.name, func(t *testing.T) {
+			cmd := phase.PlanRunCommand{
+				Options: phase.PlanRunFlags{
+					GenericRunFlags: phase.GenericRunFlags{
+						DryRun: true,
+					},
+				},
+				Factory: tt.factory,
+			}
+			err := cmd.RunE()
+			if tt.expectedErr != "" {
+				require.Error(t, err)
+				assert.Equal(t, tt.expectedErr, err.Error())
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}

@@ -14,7 +14,10 @@ airshipctl plan run PLAN_NAME [flags]
 ### Options
 
 ```
-  -h, --help   help for run
+      --dry-run                 simulate phase execution
+  -h, --help                    help for run
+      --kubeconfig string       Path to kubeconfig associated with site being managed
+      --wait-timeout duration   wait timeout
 ```
 
 ### Options inherited from parent commands

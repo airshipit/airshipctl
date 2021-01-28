@@ -2,11 +2,23 @@ apiVersion: airshipit.org/v1alpha1
 kind: PhasePlan
 metadata:
   name: phasePlan
-phaseGroups:
-  - name: group1
-    phases:
-      - name: isogen
-      - name: remotedirect
-      - name: initinfra
-      - name: some_phase
-      - name: capi_init
+phases:
+  - name: isogen
+  - name: remotedirect
+  - name: initinfra
+  - name: some_phase
+  - name: capi_init
+---
+apiVersion: airshipit.org/v1alpha1
+kind: PhasePlan
+metadata:
+  name: init
+phases:
+  - name: capi_init
+---
+apiVersion: airshipit.org/v1alpha1
+kind: PhasePlan
+metadata:
+  name: some_plan
+phases:
+  - name: some_phase
