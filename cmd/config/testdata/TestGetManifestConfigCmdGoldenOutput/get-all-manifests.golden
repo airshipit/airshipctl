@@ -1,11 +1,14 @@
+inventoryRepositoryName: ""
 metadataPath: ""
 phaseRepositoryName: bar_phase_repo
 targetPath: bar_target_path
 
+inventoryRepositoryName: ""
 metadataPath: ""
 phaseRepositoryName: baz_phase_repo
 targetPath: baz_target_path
 
+inventoryRepositoryName: ""
 metadataPath: ""
 phaseRepositoryName: foo_phase_repo
 targetPath: foo_target_path

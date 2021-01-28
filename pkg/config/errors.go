@@ -83,10 +83,11 @@ func (e ErrRepositoryNotFound) Error() string {
 // ErrMissingRepositoryName is returned if repository name is empty
 // when using in set-manifest
 type ErrMissingRepositoryName struct {
+	RepoType string
 }
 
 func (e ErrMissingRepositoryName) Error() string {
-	return "Missing repository name."
+	return fmt.Sprintf("Missing '%s' repository name.", e.RepoType)
 }
 
 // ErrMissingRepoURL is returned if repository is empty

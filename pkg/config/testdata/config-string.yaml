@@ -17,6 +17,7 @@ managementConfiguration:
     type: redfish
 manifests:
   dummy_manifest:
+    inventoryRepositoryName: primary
     metadataPath: metadata.yaml
     phaseRepositoryName: primary
     repositories:

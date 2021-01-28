@@ -47,9 +47,10 @@ func NewConfig() *Config {
 						},
 					},
 				},
-				TargetPath:          "/tmp/" + AirshipDefaultManifest,
-				PhaseRepositoryName: DefaultTestPhaseRepo,
-				MetadataPath:        DefaultManifestMetadataFile,
+				TargetPath:              "/tmp/" + AirshipDefaultManifest,
+				PhaseRepositoryName:     DefaultTestPhaseRepo,
+				InventoryRepositoryName: DefaultTestPhaseRepo,
+				MetadataPath:            DefaultManifestMetadataFile,
 			},
 		},
 	}
@@ -64,10 +65,11 @@ func NewContext() *Context {
 // object with non-nil maps
 func NewManifest() *Manifest {
 	return &Manifest{
-		PhaseRepositoryName: DefaultTestPhaseRepo,
-		TargetPath:          DefaultTargetPath,
-		Repositories:        map[string]*Repository{DefaultTestPhaseRepo: NewRepository()},
-		MetadataPath:        DefaultManifestMetadataFile,
+		InventoryRepositoryName: DefaultTestPhaseRepo,
+		PhaseRepositoryName:     DefaultTestPhaseRepo,
+		TargetPath:              DefaultTargetPath,
+		Repositories:            map[string]*Repository{DefaultTestPhaseRepo: NewRepository()},
+		MetadataPath:            DefaultManifestMetadataFile,
 	}
 }
 

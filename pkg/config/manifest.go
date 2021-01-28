@@ -22,6 +22,10 @@ type Manifest struct {
 	// PhaseRepositoryName is a name of the repo, that contains site/<site-name> directory
 	// and is a starting point for building document bundle
 	PhaseRepositoryName string `json:"phaseRepositoryName"`
+	// InventoryRepositoryName is a name of the repo contains inventory objects
+	// to be used mostly with baremetal deployments
+	// If not defined PhaseRepositoryName will be used to locate inventory
+	InventoryRepositoryName string `json:"inventoryRepositoryName"`
 	// ExtraRepositories is the map of extra repositories addressable by a name
 	Repositories map[string]*Repository `json:"repositories,omitempty"`
 	// TargetPath Local Target path for working or home directory for all Manifest Cloned/Returned/Generated

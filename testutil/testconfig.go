@@ -69,6 +69,7 @@ func DummyManifest() *config.Manifest {
 	// Repositories is the map of repository addressable by a name
 	m.Repositories = map[string]*config.Repository{"primary": DummyRepository()}
 	m.PhaseRepositoryName = "primary"
+	m.InventoryRepositoryName = "primary"
 	m.MetadataPath = "metadata.yaml"
 	m.TargetPath = "/var/tmp/"
 	return m

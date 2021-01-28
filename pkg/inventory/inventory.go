@@ -54,7 +54,7 @@ func (i Invetnory) BaremetalInventory() (ifc.BaremetalInventory, error) {
 		return nil, err
 	}
 
-	phaseDir, err := cfg.CurrentContextPhaseRepositoryDir()
+	phaseDir, err := cfg.CurrentContextInventoryRepositoryName()
 	if err != nil {
 		return nil, err
 	}
