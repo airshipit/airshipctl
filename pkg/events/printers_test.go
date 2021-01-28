@@ -43,9 +43,9 @@ func TestPrintEvent(t *testing.T) {
 		{
 			name:          "Fail on formatter type",
 			formatterType: events.YAMLPrinter,
-			errString:     "Error on write",
+			errString:     "error on write",
 			writer: fakeWriter{
-				writeErr: fmt.Errorf("Error on write"),
+				writeErr: fmt.Errorf("error on write"),
 			},
 		},
 	}
