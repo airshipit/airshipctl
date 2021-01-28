@@ -13,3 +13,5 @@ namespace: metal3
 
 patchesStrategicMerge:
 - ironic_toleration_patch.yaml
+- ironic_nodeselector_patch.yaml
+- operator_nodeselector_patch.yaml
