@@ -18,16 +18,17 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/inventory"
 )
 
 // NewPowerStatusCommand provides a command to retrieve the power status of a baremetal host.
-func NewPowerStatusCommand(cfgFactory config.Factory, options *CommonOptions) *cobra.Command {
+func NewPowerStatusCommand(cfgFactory config.Factory, options *inventory.CommandOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "powerstatus",
 		Short: "Retrieve the power status of a baremetal host",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return performAction(cfgFactory, options, powerStatusAction, cmd.OutOrStdout())
+			return options.PowerStatus(cmd.OutOrStdout())
 		},
 	}
 

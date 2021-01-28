@@ -18,20 +18,21 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/inventory"
 )
 
 // NewRemoteDirectCommand provides a command with the capability to perform remote direct operations.
-func NewRemoteDirectCommand(cfgFactory config.Factory, options *CommonOptions) *cobra.Command {
+func NewRemoteDirectCommand(cfgFactory config.Factory, options *inventory.CommandOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "remotedirect",
 		Short: "Bootstrap the ephemeral host",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			options.phase = config.BootstrapPhase
-			options.labels = document.EphemeralHostSelector
-			return performAction(cfgFactory, options, remoteDirectAction, cmd.OutOrStdout())
+			return options.RemoteDirect()
 		},
 	}
+	initFlags(options, cmd)
+
+	cmd.Flags().StringVar(&options.IsoURL, "iso-url", "", "specify iso url for host to boot from")
 
 	return cmd
 }

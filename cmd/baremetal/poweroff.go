@@ -18,16 +18,18 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/inventory"
+	"opendev.org/airship/airshipctl/pkg/inventory/ifc"
 )
 
 // NewPowerOffCommand provides a command to shutdown a remote host.
-func NewPowerOffCommand(cfgFactory config.Factory, options *CommonOptions) *cobra.Command {
+func NewPowerOffCommand(cfgFactory config.Factory, options *inventory.CommandOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "poweroff",
 		Short: "Shutdown a baremetal host",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return performAction(cfgFactory, options, powerOffAction, cmd.OutOrStdout())
+			return options.BMHAction(ifc.BaremetalOperationPowerOff)
 		},
 	}
 

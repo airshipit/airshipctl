@@ -13,10 +13,11 @@ airshipctl baremetal ejectmedia [flags]
 ### Options
 
 ```
-  -h, --help            help for ejectmedia
-  -l, --labels string   Label(s) to filter desired baremetal host documents
-  -n, --name string     Name to filter desired baremetal host document
-      --phase string    airshipctl phase that contains the desired baremetal host document(s) (default "bootstrap-iso")
+  -h, --help               help for ejectmedia
+  -l, --labels string      Label(s) to filter desired baremetal host documents
+      --name string        Name to filter desired baremetal host document
+  -n, --namespace string   airshipctl phase that contains the desired baremetal host document(s)
+      --timeout duration   timeout on baremetal action (default 10m0s)
 ```
 
 ### Options inherited from parent commands

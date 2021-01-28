@@ -15,7 +15,6 @@
 set -xe
 
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
-NODENAME="node01"
 export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
 
 echo "Deploy calico using tigera operator"
