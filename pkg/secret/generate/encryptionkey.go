@@ -54,7 +54,7 @@ func NewEncryptionKeyEngine(src rand.Source) *EncryptionKeyEngine {
 		src = &Source{}
 	}
 	return &EncryptionKeyEngine{
-		rng:  rand.New(src),
+		rng:  rand.New(src), //nolint:gosec
 		pool: pool,
 	}
 }
