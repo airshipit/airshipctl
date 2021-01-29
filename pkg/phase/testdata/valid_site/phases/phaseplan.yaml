@@ -22,3 +22,17 @@ metadata:
   name: some_plan
 phases:
   - name: some_phase
+---
+apiVersion: airshipit.org/v1alpha1
+kind: PhasePlan
+metadata:
+  name: plan_invalid_phase
+phases:
+  - name: no_entry_point
+---
+apiVersion: airshipit.org/v1alpha1
+kind: PhasePlan
+metadata:
+  name: phase_not_exist
+phases:
+  - name: non_existent_name
