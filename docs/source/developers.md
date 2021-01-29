@@ -205,10 +205,10 @@ Make sure the following conditions are met:
     1. ./tools/gate/00_setup.sh
     2. ./tools/gate/10_build_gate.sh
     3. sudo -E ./tools/deployment/01_install_kubectl.sh
-    4. sudo -E ./tools/deployment/02_install_clusterctl.sh
+    4. sudo -E ./tools/deployment/21_systemwide_executable.sh
     5. sudo -E ./tools/deployment/22_test_configs.sh
     6. sudo -E ./tools/deployment/23_pull_documents.sh
-    7. sudo -E ./tools/deployment/24_build_ephemeral_iso.sh
+    7. sudo -E ./tools/deployment/24_build_images.sh
     8. sudo -E ./tools/deployment/25_deploy_ephemeral_node.sh
     9. sudo -E ./tools/deployment/26_deploy_capi_ephemeral_node.sh
     10. sudo -E ./tools/deployment/30_deploy_controlplane.sh
