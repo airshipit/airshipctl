@@ -43,3 +43,4 @@
     src: "{{ runtime_logs_dir }}"
     dest: "{{ zuul.executor.log_root }}/{{ inventory_hostname }}"
     mode: pull
+  tags: [zuul]
