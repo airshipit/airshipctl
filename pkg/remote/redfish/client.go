@@ -275,8 +275,13 @@ func (c *Client) SystemPowerStatus(ctx context.Context) (power.Status, error) {
 
 // RemoteDirect implements remote direct interface
 func (c *Client) RemoteDirect(ctx context.Context, isoURL string) error {
+	return RemoteDirect(ctx, isoURL, c.redfishURL, c)
+}
+
+// RemoteDirect allows to perform remotedirect
+func RemoteDirect(ctx context.Context, isoURL, redfishURL string, c ifc.Client) error {
 	log.Debugf("Bootstrapping ephemeral host with ID '%s' and BMC Address '%s'.", c.NodeID(),
-		c.redfishURL)
+		redfishURL)
 
 	powerStatus, err := c.SystemPowerStatus(ctx)
 	if err != nil {

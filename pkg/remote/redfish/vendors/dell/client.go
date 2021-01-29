@@ -51,8 +51,9 @@ const (
 // Client is a wrapper around the standard airshipctl Redfish client. This allows vendor specific Redfish clients to
 // override methods without duplicating the entire client.
 type Client struct {
-	username string
-	password string
+	username   string
+	password   string
+	redfishURL string
 	redfish.Client
 	RedfishAPI redfishAPI.RedfishAPI
 	RedfishCFG *redfishClient.Configuration
@@ -127,6 +128,11 @@ func (c *Client) SetBootSourceByType(ctx context.Context) error {
 	return nil
 }
 
+// RemoteDirect implements remote direct interface
+func (c *Client) RemoteDirect(ctx context.Context, isoURL string) error {
+	return redfish.RemoteDirect(ctx, isoURL, c.redfishURL, c)
+}
+
 // newClient returns a client with the capability to make Redfish requests.
 func newClient(redfishURL string,
 	insecure bool,
@@ -141,7 +147,7 @@ func newClient(redfishURL string,
 		return nil, err
 	}
 
-	c := &Client{username, password, *genericClient, genericClient.RedfishAPI, genericClient.RedfishCFG}
+	c := &Client{username, password, redfishURL, *genericClient, genericClient.RedfishAPI, genericClient.RedfishCFG}
 
 	return c, nil
 }
