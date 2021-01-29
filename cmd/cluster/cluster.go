@@ -38,8 +38,6 @@ func NewClusterCommand(cfgFactory config.Factory) *cobra.Command {
 		Long:  clusterLong[1:],
 	}
 
-	clusterRootCmd.AddCommand(NewInitCommand(cfgFactory))
-	clusterRootCmd.AddCommand(NewMoveCommand(cfgFactory))
 	clusterRootCmd.AddCommand(NewStatusCommand(cfgFactory))
 	clusterRootCmd.AddCommand(resetsatoken.NewResetCommand(cfgFactory))
 	clusterRootCmd.AddCommand(checkexpiration.NewCheckCommand(cfgFactory))
