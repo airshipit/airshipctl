@@ -12,13 +12,84 @@
 
 name: release
 
+# Expects git tags in the following formats:
+#   airshipctl: v1.2.3 (no prefix)
+#   krm functions: <quay image name>-v1.2.3 e.g. replacement-transformer-v1.2.3
 on:
   push:
     tags:
-      - 'v*'
+      - '*'
 
 jobs:
-  release:
+  # Parses git tags to determine quay image name and semver version and publishes
+  # corresponding image tags in quay for the full semver version as well as major
+  # and minor versions if not a prerelease.
+  release-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Calculate semver tags
+        id: semver_tags
+        run: |
+          set -x
+          set -e
+
+          TAG=$(echo "${TAG_REF}" | sed -e 's|refs/tags/||')
+          for i in '' replacement-transformer- templater-
+          do
+            if [[ "$TAG" =~ ^($i)?v?(([0-9]+)\.([0-9]+)\.([0-9]+)(-[a-zA-Z]+(\.[0-9]+)?)?)$ ]]
+            then
+              if [[ -z ${BASH_REMATCH[1]} ]]
+              then
+                IMG=airshipctl
+              else
+                IMG=${i%-}
+              fi
+              TAGS="${BASH_REMATCH[2]}"
+              # Prereleases don't count as major and minor
+              if [[ -z ${BASH_REMATCH[6]} ]]
+              then
+                MINOR_TAG="${BASH_REMATCH[3]}.${BASH_REMATCH[4]}"
+                MAJOR_TAG="${BASH_REMATCH[3]}"
+                TAGS="$TAGS $MINOR_TAG $MAJOR_TAG"
+              fi
+              echo ::set-output name=IMG::$IMG
+              echo ::set-output name=TAGS::$TAGS
+              exit 0
+            fi
+          done
+          echo No valid semver tag found
+          exit 1
+        env:
+          TAG_REF: ${{ github.ref }}
+      - name: Login to image registry
+        uses: docker/login-action@v1
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+      - name: Publish semver image tags
+        run: |
+          set -x
+          set -e
+
+          SOURCE_TAG=$IMG:$SOURCE
+          docker pull $SOURCE_TAG
+          for i in $TARGETS
+          do
+            TARGET_TAG=$IMG:$i
+            docker tag $SOURCE_TAG $TARGET_TAG
+            docker push $TARGET_TAG
+          done
+        env:
+          IMG: ${{ format('quay.io/airshipit/{0}', steps.semver_tags.outputs.IMG) }}
+          SOURCE: ${{ github.sha }}
+          TARGETS: ${{ steps.semver_tags.outputs.TAGS }}
+
+  release-github:
+    # Only create github releases for airshipctl (unprefixed semver tag), not krm functions.
+    if: ${{ startsWith(github.ref, 'v') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
