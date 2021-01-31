@@ -15,11 +15,14 @@
 package executors
 
 import (
+	"bytes"
 	"io"
+	"strings"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
+	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
@@ -162,8 +165,44 @@ func (c *ClusterctlExecutor) Validate() error {
 }
 
 // Render executor documents
-func (c *ClusterctlExecutor) Render(w io.Writer, _ ifc.RenderOptions) error {
-	// will be implemented later
-	_, err := w.Write([]byte{})
-	return err
+func (c *ClusterctlExecutor) Render(w io.Writer, ro ifc.RenderOptions) error {
+	dataAll := bytes.NewBuffer([]byte{})
+	typeMap := map[string][]string{
+		string(client.BootstrapProviderType):      c.options.InitOptions.BootstrapProviders,
+		string(client.ControlPlaneProviderType):   c.options.InitOptions.ControlPlaneProviders,
+		string(client.InfrastructureProviderType): c.options.InitOptions.InfrastructureProviders,
+		string(client.CoreProviderType): (map[bool][]string{true: {c.options.InitOptions.CoreProvider},
+			false: {}})[c.options.InitOptions.CoreProvider != ""],
+	}
+	for prvType, prvList := range typeMap {
+		for _, prv := range prvList {
+			res := strings.Split(prv, ":")
+			if len(res) != 2 {
+				return ErrUnableParseProvider{
+					Provider:     prv,
+					ProviderType: prvType,
+				}
+			}
+			data, err := c.Interface.Render(client.RenderOptions{
+				ProviderName:    res[0],
+				ProviderVersion: res[1],
+				ProviderType:    prvType,
+			})
+			if err != nil {
+				return err
+			}
+			dataAll.Write(data)
+			dataAll.Write([]byte("\n---\n"))
+		}
+	}
+
+	bundle, err := document.NewBundleFromBytes(dataAll.Bytes())
+	if err != nil {
+		return err
+	}
+	filtered, err := bundle.SelectBundle(ro.FilterSelector)
+	if err != nil {
+		return err
+	}
+	return filtered.Write(w)
 }

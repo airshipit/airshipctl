@@ -47,3 +47,13 @@ type ErrUnknownExecutorName struct {
 func (e ErrUnknownExecutorName) Error() string {
 	return fmt.Sprintf("unknown executor name '%s'", e.ExecutorName)
 }
+
+// ErrUnableParseProvider is returned when it's impossible to parse provider's name and version
+type ErrUnableParseProvider struct {
+	Provider     string
+	ProviderType string
+}
+
+func (e ErrUnableParseProvider) Error() string {
+	return fmt.Sprintf("unable to parse name and version of '%s' type, '%s' provider", e.ProviderType, e.Provider)
+}
