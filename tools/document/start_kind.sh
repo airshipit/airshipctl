@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e
+set -xe
 # This starts up a kubernetes cluster which is sufficient for
 # assisting with tasks like `kubectl apply --dry-run` style validation
 # Usage

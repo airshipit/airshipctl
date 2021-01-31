@@ -8,6 +8,7 @@ phases:
   - name: initinfra-networking-ephemeral
   - name: clusterctl-init-ephemeral
   - name: controlplane-ephemeral
+  - name: clusterctl-init-target
   - name: initinfra-target
   - name: initinfra-networking-target
   - name: workers-target

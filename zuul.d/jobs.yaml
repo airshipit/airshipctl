@@ -80,8 +80,9 @@
       gate_scripts:
         - ./tools/deployment/01_install_kubectl.sh
         - ./tools/deployment/21_systemwide_executable.sh
+        - ./tools/deployment/22_test_configs.sh
         - ./tools/validate_docs
-    voting: false
+    voting: true
 
 - job:
     name: airship-airshipctl-functional-existing-k8s

@@ -1,3 +1,4 @@
 resources:
   - metadata.yaml
+patchesStrategicMerge:
   - capg-resources.yaml
