@@ -24,6 +24,11 @@ import (
 	"sigs.k8s.io/kustomize/kyaml/kio"
 	"sigs.k8s.io/yaml"
 
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/base64"
+	"encoding/pem"
+
 	"opendev.org/airship/airshipctl/pkg/document/plugin/templater"
 )
 
@@ -211,5 +216,69 @@ NoFileExists: false
 		err = kio.ByteWriter{Writer: buf}.Write(nodes)
 		require.NoError(t, err)
 		assert.Equal(t, tc.expectedOut, buf.String())
+	}
+}
+
+func TestGenSignedCertEx(t *testing.T) {
+	testCases := []struct {
+		cfg             string
+		expectedSubject pkix.Name
+	}{
+		{
+			cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: Templater
+metadata:
+  name: notImportantHere
+values:
+  name: test
+  regex: "^[a-z]{5,10}$"
+  limit: 0
+template: |
+  {{- $targetClusterCa:=genCAEx "Kubernetes API" 3650 }}
+  {{- $targetKubeconfigCert:= genSignedCertEx "/CN=admin/O=system:masters" nil nil 365 $targetClusterCa }}
+  cert: {{ $targetKubeconfigCert.Cert|b64enc|quote }}
+`,
+			expectedSubject: pkix.Name{
+				CommonName: `admin`,
+				Organization: []string{
+					`system:masters`,
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		cfg := make(map[string]interface{})
+		err := yaml.Unmarshal([]byte(tc.cfg), &cfg)
+		require.NoError(t, err)
+		plugin, err := templater.New(cfg)
+		require.NoError(t, err)
+		buf := &bytes.Buffer{}
+		nodes, err := plugin.Filter(nil)
+		require.NoError(t, err)
+		err = kio.ByteWriter{Writer: buf}.Write(nodes)
+		require.NoError(t, err)
+
+		res := make(map[string]string)
+		err = yaml.Unmarshal(buf.Bytes(), &res)
+		require.NoError(t, err)
+
+		key, err := base64.StdEncoding.DecodeString(res["cert"])
+		require.NoError(t, err)
+
+		der, _ := pem.Decode(key)
+		if der == nil {
+			t.Errorf("failed to find PEM block")
+			return
+		}
+
+		cert, err := x509.ParseCertificate(der.Bytes)
+		if err != nil {
+			t.Errorf("failed to parse: %s", err)
+			return
+		}
+		cert.Subject.Names = nil
+		assert.Equal(t, tc.expectedSubject, cert.Subject)
 	}
 }
