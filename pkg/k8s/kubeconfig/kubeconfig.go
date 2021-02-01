@@ -26,6 +26,11 @@ import (
 	"opendev.org/airship/airshipctl/pkg/fs"
 )
 
+const (
+	// KubeconfigPrefix is a prefix that is added when writing temporary kubeconfig files
+	KubeconfigPrefix = "kubeconfig-"
+)
+
 // Interface provides a uniform way to interact with kubeconfig file
 type Interface interface {
 	// GetFile returns path to kubeconfig file and a function to remove it
@@ -43,8 +48,9 @@ type Interface interface {
 var _ Interface = &kubeConfig{}
 
 type kubeConfig struct {
-	path     string
-	dumpRoot string
+	path      string
+	dumpRoot  string
+	savedByes []byte
 
 	fileSystem fs.FileSystem
 	sourceFunc KubeSourceFunc
@@ -104,6 +110,9 @@ func FromSecret(c client.Interface, o *client.GetKubeconfigOptions) KubeSourceFu
 // FromFile returns KubeSource type, uses path to kubeconfig on FS as source to construct kubeconfig object
 func FromFile(path string, fSys fs.FileSystem) KubeSourceFunc {
 	return func() ([]byte, error) {
+		if fSys == nil {
+			fSys = fs.NewDocumentFs()
+		}
 		return fSys.ReadFile(path)
 	}
 }
@@ -160,7 +169,7 @@ func InjectFilePath(path string, fSys fs.FileSystem) Option {
 }
 
 func (k *kubeConfig) WriteFile(path string) (err error) {
-	data, err := k.sourceFunc()
+	data, err := k.bytes()
 	if err != nil {
 		return err
 	}
@@ -168,7 +177,7 @@ func (k *kubeConfig) WriteFile(path string) (err error) {
 }
 
 func (k *kubeConfig) Write(w io.Writer) (err error) {
-	data, err := k.sourceFunc()
+	data, err := k.bytes()
 	if err != nil {
 		return err
 	}
@@ -178,11 +187,11 @@ func (k *kubeConfig) Write(w io.Writer) (err error) {
 
 // WriteTempFile implements kubeconfig Interface
 func (k *kubeConfig) WriteTempFile(root string) (string, Cleanup, error) {
-	data, err := k.sourceFunc()
+	data, err := k.bytes()
 	if err != nil {
 		return "", nil, err
 	}
-	file, err := k.fileSystem.TempFile(root, "kubeconfig-")
+	file, err := k.fileSystem.TempFile(root, KubeconfigPrefix)
 	if err != nil {
 		return "", nil, err
 	}
@@ -195,6 +204,14 @@ func (k *kubeConfig) WriteTempFile(root string) (string, Cleanup, error) {
 		return "", nil, err
 	}
 	return fName, cleanup(fName, k.fileSystem), nil
+}
+
+func (k *kubeConfig) bytes() ([]byte, error) {
+	var err error
+	if len(k.savedByes) == 0 {
+		k.savedByes, err = k.sourceFunc()
+	}
+	return k.savedByes, err
 }
 
 // GetFile checks if path to kubeconfig is already set and returns it no cleanup is necessary,

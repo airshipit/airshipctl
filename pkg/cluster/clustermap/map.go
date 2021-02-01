@@ -116,7 +116,7 @@ func (cm clusterMap) ClusterKubeconfigContext(clusterName string) (string, error
 
 	kubeContext := cluster.KubeconfigContext
 	// if kubeContext is still empty, set it to clusterName
-	if kubeContext == "" {
+	if cluster.KubeconfigContext == "" {
 		kubeContext = clusterName
 	}
 
