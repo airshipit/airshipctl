@@ -23,6 +23,8 @@ import (
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/inventory"
+	inventoryifc "opendev.org/airship/airshipctl/pkg/inventory/ifc"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	"opendev.org/airship/airshipctl/pkg/util"
 )
@@ -34,7 +36,9 @@ type Helper struct {
 	targetPath              string
 	phaseRepoDir            string
 	phaseEntryPointBasePath string
-	metadata                *config.Metadata
+
+	inventory inventoryifc.Inventory
+	metadata  *config.Metadata
 }
 
 // NewHelper constructs metadata interface based on config
@@ -58,6 +62,7 @@ func NewHelper(cfg *config.Config) (ifc.Helper, error) {
 	helper.inventoryRoot = filepath.Join(helper.targetPath, helper.phaseRepoDir, helper.metadata.Inventory.Path)
 	helper.phaseEntryPointBasePath = filepath.Join(helper.targetPath, helper.phaseRepoDir,
 		helper.metadata.PhaseMeta.DocEntryPointPrefix)
+	helper.inventory = inventory.NewInventory(func() (*config.Config, error) { return cfg, nil })
 	return helper, nil
 }
 
@@ -267,4 +272,9 @@ func (helper *Helper) PhaseEntryPointBasePath() string {
 // TODO add creation of WorkDir if it doesn't exist
 func (helper *Helper) WorkDir() (string, error) {
 	return filepath.Join(util.UserHomeDir(), config.AirshipConfigDir), nil
+}
+
+// Inventory return inventory interface
+func (helper *Helper) Inventory() (inventoryifc.Inventory, error) {
+	return helper.inventory, nil
 }

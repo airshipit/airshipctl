@@ -510,6 +510,15 @@ func TestHelperWorkdir(t *testing.T) {
 	assert.Greater(t, len(workDir), 0)
 }
 
+func TestHelperInventory(t *testing.T) {
+	helper, err := phase.NewHelper(testConfig(t))
+	require.NoError(t, err)
+	require.NotNil(t, helper)
+	inv, err := helper.Inventory()
+	assert.NoError(t, err)
+	assert.NotNil(t, inv)
+}
+
 func testConfig(t *testing.T) *config.Config {
 	t.Helper()
 	confString := `apiVersion: airshipit.org/v1alpha1
