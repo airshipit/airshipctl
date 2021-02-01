@@ -17,36 +17,66 @@ package cluster
 import (
 	"github.com/spf13/cobra"
 
-	"opendev.org/airship/airshipctl/pkg/errors"
+	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
+	clusterctlcmd "opendev.org/airship/airshipctl/pkg/clusterctl/cmd"
+	"opendev.org/airship/airshipctl/pkg/config"
 )
 
 const (
 	getKubeconfigLong = `
-Retrieve cluster kubeconfig and save it to file or stdout.
+Retrieve cluster kubeconfig and print it to stdout
 `
 	getKubeconfigExample = `
-# Retrieve target-cluster kubeconfig and print it to stdout
-airshipctl cluster get-kubeconfig target-cluster
+# Retrieve target-cluster kubeconfig
+airshipctl cluster get-kubeconfig target-cluster --kubeconfig /tmp/kubeconfig
 `
 )
 
 // NewGetKubeconfigCommand creates a command which retrieves cluster kubeconfig
-func NewGetKubeconfigCommand() *cobra.Command {
+func NewGetKubeconfigCommand(cfgFactory config.Factory) *cobra.Command {
+	o := &client.GetKubeconfigOptions{}
 	cmd := &cobra.Command{
 		Use:     "get-kubeconfig [cluster_name]",
 		Short:   "Retrieve kubeconfig for a desired cluster",
 		Long:    getKubeconfigLong[1:],
 		Example: getKubeconfigExample[1:],
 		Args:    cobra.ExactArgs(1),
-		RunE:    getKubeconfigRunE(),
+		RunE:    getKubeconfigRunE(cfgFactory, o),
 	}
+
+	initFlags(o, cmd)
 
 	return cmd
 }
 
+func initFlags(o *client.GetKubeconfigOptions, cmd *cobra.Command) {
+	flags := cmd.Flags()
+
+	flags.StringVar(
+		&o.ParentKubeconfigPath,
+		"kubeconfig",
+		"",
+		"path to kubeconfig associated with parental cluster")
+
+	flags.StringVarP(
+		&o.ManagedClusterNamespace,
+		"namespace",
+		"n",
+		"default",
+		"namespace where cluster is located, if not specified default one will be used")
+
+	flags.StringVar(
+		&o.ParentKubeconfigContext,
+		"context",
+		"",
+		"specify context within the kubeconfig file")
+}
+
 // getKubeconfigRunE returns a function to cobra command to be executed in runtime
-func getKubeconfigRunE() func(cmd *cobra.Command, args []string) error {
+func getKubeconfigRunE(cfgFactory config.Factory, o *client.GetKubeconfigOptions) func(
+	cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		return errors.ErrNotImplemented{What: "cluster get-kubeconfig is not implemented yet"}
+		o.ManagedClusterName = args[0]
+		return clusterctlcmd.GetKubeconfig(cfgFactory, o, cmd.OutOrStdout())
 	}
 }

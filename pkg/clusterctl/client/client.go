@@ -30,7 +30,7 @@ var _ Interface = &Client{}
 type Interface interface {
 	Init(kubeconfigPath, kubeconfigContext string) error
 	Move(fromKubeconfigPath, fromKubeconfigContext, toKubeconfigPath, toKubeconfigContext, namespace string) error
-	GetKubeconfig(options GetKubeconfigOptions) (string, error)
+	GetKubeconfig(options *GetKubeconfigOptions) (string, error)
 }
 
 // Client Implements interface to Clusterctl
@@ -124,7 +124,7 @@ func newClusterctlClient(root string, options *airshipv1.Clusterctl) (clusterctl
 }
 
 // GetKubeconfig is a wrapper for related cluster-api function
-func (c *Client) GetKubeconfig(options GetKubeconfigOptions) (string, error) {
+func (c *Client) GetKubeconfig(options *GetKubeconfigOptions) (string, error) {
 	return c.clusterctlClient.GetKubeconfig(clusterctlclient.GetKubeconfigOptions{
 		Kubeconfig: clusterctlclient.Kubeconfig{
 			Path:    options.ParentKubeconfigPath,

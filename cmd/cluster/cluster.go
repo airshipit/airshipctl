@@ -43,7 +43,7 @@ func NewClusterCommand(cfgFactory config.Factory) *cobra.Command {
 	clusterRootCmd.AddCommand(NewStatusCommand(cfgFactory))
 	clusterRootCmd.AddCommand(resetsatoken.NewResetCommand(cfgFactory))
 	clusterRootCmd.AddCommand(checkexpiration.NewCheckCommand(cfgFactory))
-	clusterRootCmd.AddCommand(NewGetKubeconfigCommand())
+	clusterRootCmd.AddCommand(NewGetKubeconfigCommand(cfgFactory))
 
 	return clusterRootCmd
 }
