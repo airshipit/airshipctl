@@ -27,8 +27,8 @@ import (
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
-// BaremetalManagerExectuor is abstraction built on top of baremetal commands of airshipctl
-type BaremetalManagerExectuor struct {
+// BaremetalManagerExecutor is abstraction built on top of baremetal commands of airshipctl
+type BaremetalManagerExecutor struct {
 	inventory inventoryifc.Inventory
 	options   *airshipv1.BaremetalManager
 }
@@ -43,14 +43,14 @@ func NewBaremetalExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 	if err := cfg.ExecutorDocument.ToAPIObject(options, airshipv1.Scheme); err != nil {
 		return nil, err
 	}
-	return &BaremetalManagerExectuor{
+	return &BaremetalManagerExecutor{
 		inventory: inv,
 		options:   options,
 	}, nil
 }
 
-// Run runs baremetal operations as exectuor
-func (e *BaremetalManagerExectuor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
+// Run runs baremetal operations as executor
+func (e *BaremetalManagerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 	defer close(evtCh)
 	commandOptions := toCommandOptions(e.inventory, e.options.Spec, opts)
 
@@ -90,12 +90,12 @@ func (e *BaremetalManagerExectuor) Run(evtCh chan events.Event, opts ifc.RunOpti
 }
 
 // Validate executor configuration and documents
-func (e *BaremetalManagerExectuor) Validate() error {
+func (e *BaremetalManagerExecutor) Validate() error {
 	_, err := e.validate()
 	return err
 }
 
-func (e *BaremetalManagerExectuor) validate() (inventoryifc.BaremetalOperation, error) {
+func (e *BaremetalManagerExecutor) validate() (inventoryifc.BaremetalOperation, error) {
 	var result inventoryifc.BaremetalOperation
 	var err error
 	switch e.options.Spec.Operation {
@@ -117,7 +117,7 @@ func (e *BaremetalManagerExectuor) validate() (inventoryifc.BaremetalOperation, 
 }
 
 // Render baremetal hosts
-func (e *BaremetalManagerExectuor) Render(w io.Writer, _ ifc.RenderOptions) error {
+func (e *BaremetalManagerExecutor) Render(w io.Writer, _ ifc.RenderOptions) error {
 	// add printing of baremetal hosts here
 	_, err := w.Write([]byte{})
 	return err
