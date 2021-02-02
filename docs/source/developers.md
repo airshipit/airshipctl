@@ -210,7 +210,7 @@ Make sure the following conditions are met:
     6. sudo -E ./tools/deployment/23_pull_documents.sh
     7. sudo -E ./tools/deployment/24_build_ephemeral_iso.sh
     8. sudo -E ./tools/deployment/25_deploy_ephemeral_node.sh
-    9. sudo -E ./tools/deployment/26_deploy_metal3_capi_ephemeral_node.sh
+    9. sudo -E ./tools/deployment/26_deploy_capi_ephemeral_node.sh
     10. sudo -E ./tools/deployment/30_deploy_controlplane.sh
     11. sudo -E ./tools/deployment/31_deploy_initinfra_target_node.sh
     12. sudo -E ./tools/deployment/32_cluster_init_target_node.sh

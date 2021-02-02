@@ -131,7 +131,7 @@
         - ./tools/deployment/23_pull_documents.sh
         - ./tools/deployment/24_build_images.sh
         - ./tools/deployment/25_deploy_ephemeral_node.sh
-        - ./tools/deployment/26_deploy_metal3_capi_ephemeral_node.sh
+        - ./tools/deployment/26_deploy_capi_ephemeral_node.sh
         - ./tools/deployment/30_deploy_controlplane.sh
         - ./tools/deployment/31_deploy_initinfra_target_node.sh
         - ./tools/deployment/32_cluster_init_target_node.sh
@@ -181,6 +181,7 @@
         - ./tools/deployment/provider_common/04_install_yq.sh
         - CLUSTER=ephemeral-cluster KIND_CONFIG=./tools/deployment/templates/kind-cluster-with-extramounts ./tools/document/start_kind.sh
         - AIRSHIP_CONFIG_METADATA_PATH=manifests/site/docker-test-site/metadata.yaml SITE=docker-test-site EXTERNAL_KUBECONFIG="true" ./tools/deployment/22_test_configs.sh
+        - ./tools/deployment/23_pull_documents.sh
         - PROVIDER=default SITE=docker-test-site ./tools/deployment/26_deploy_capi_ephemeral_node.sh
         - CONTROLPLANE_COUNT=1 SITE=docker-test-site ./tools/deployment/provider_common/30_deploy_controlplane.sh
         - KUBECONFIG=/tmp/target-cluster.kubeconfig ./tools/deployment/provider_common/32_cluster_init_target_node.sh
