@@ -126,10 +126,13 @@
     vars:
       site_name: test-site
       gate_scripts:
+        - ./tools/deployment/provider_common/03_install_pip.sh
+        - ./tools/deployment/provider_common/04_install_yq.sh
         - ./tools/deployment/01_install_kubectl.sh
         # 21_systemwide_executable.sh is run in the build-gate pre-run above
         - ./tools/deployment/22_test_configs.sh
         - ./tools/deployment/23_pull_documents.sh
+        - ./tools/deployment/23_generate_secrets.sh
         - ./tools/deployment/24_build_images.sh
         - ./tools/deployment/25_deploy_ephemeral_node.sh
         - ./tools/deployment/26_deploy_capi_ephemeral_node.sh

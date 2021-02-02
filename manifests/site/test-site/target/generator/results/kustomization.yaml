@@ -2,4 +2,4 @@ resources:
   - generated/secrets.yaml
 
 transformers:
-  - decrypt-secrets.yaml
+  - decrypt-secrets
