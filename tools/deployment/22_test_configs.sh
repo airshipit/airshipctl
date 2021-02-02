@@ -38,11 +38,24 @@ export AIRSHIP_CONFIG_PHASE_REPO_BRANCH=${BRANCH:-"master"}
 export AIRSHIP_CONFIG_PHASE_REPO_URL=${AIRSHIP_CONFIG_PHASE_REPO_URL:-"https://review.opendev.org/airship/airshipctl"}
 export AIRSHIP_CONFIG_PHASE_REPO_NAME=${AIRSHIP_CONFIG_PHASE_REPO_NAME:-"airshipctl"}
 export AIRSHIP_CONFIG_MANIFEST_DIRECTORY=${AIRSHIP_CONFIG_MANIFEST_DIRECTORY:-"/tmp/airship"}
+export EPHEMERAL_CONFIG_CA_DATA=$(cat tools/deployment/certificates/ephemeral_config_ca_data| base64 -w0)
+export EPHEMERAL_IP=${EPHEMERAL_IP:-"10.23.25.101"}
+export EPHEMERAL_CONFIG_CLIENT_CERT_DATA=$(cat tools/deployment/certificates/ephemeral_config_client_cert_data| base64 -w0)
+export EPHEMERAL_CONFIG_CLIENT_KEY_DATA=$(cat tools/deployment/certificates/ephemeral_config_client_key_data| base64 -w0)
+export TARGET_IP=${TARGET_IP:-"10.23.25.102"}
+export TARGET_CONFIG_CA_DATA=$(cat tools/deployment/certificates/target_config_ca_data| base64 -w0)
+export TARGET_CONFIG_CLIENT_CERT_DATA=$(cat tools/deployment/certificates/target_config_client_cert_data| base64 -w0)
+export TARGET_CONFIG_CLIENT_KEY_DATA=$(cat tools/deployment/certificates/target_config_client_key_data| base64 -w0)
 export SITE=${SITE:-"test-site"}
+export EXTERNAL_KUBECONFIG=${EXTERNAL_KUBECONFIG:-""}
 
 # Remove the contents of the .airship folder, preserving the kustomize plugin directory
 rm -rf $HOME/.airship/config
 mkdir -p $HOME/.airship
 
-echo "Generate ~/.airship/config"
+echo "Generate ~/.airship/config and ~/.airship/kubeconfig"
 envsubst <"${AIRSHIPCTL_WS}/tools/deployment/templates/airshipconfig_template" > ~/.airship/config
+
+if [[ -z "$EXTERNAL_KUBECONFIG" ]]; then
+   envsubst <"${AIRSHIPCTL_WS}/tools/deployment/templates/kubeconfig_template" > ~/.airship/kubeconfig
+fi

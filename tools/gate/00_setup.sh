@@ -36,11 +36,11 @@ sudo apt update
 sudo DEBIAN_FRONTEND=noninteractive apt -y install software-properties-common python3-pip
 sudo DEBIAN_FRONTEND=noninteractive apt -y --no-install-recommends install docker.io make
 
-PACKAGES="yq ansible netaddr"
+ANSIBLE_PACKAGES="ansible netaddr"
 if [[ -z "${http_proxy}" ]]; then
-  sudo pip3 install $PACKAGES
+  sudo pip3 install $ANSIBLE_PACKAGES
 else
-  sudo pip3 --proxy "${http_proxy}" install $PACKAGES
+  sudo pip3 --proxy "${http_proxy}" install $ANSIBLE_PACKAGES
 fi
 
 echo "primary ansible_host=localhost ansible_connection=local ansible_python_interpreter=/usr/bin/python3" > "$ANSIBLE_HOSTS"

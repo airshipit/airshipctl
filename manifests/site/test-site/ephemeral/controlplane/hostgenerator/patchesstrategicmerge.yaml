@@ -43,5 +43,5 @@ patches: |-
   apiVersion: airshipit.org/v1alpha1
   kind: VariableCatalogue
   metadata:
-    name: generated-secrets
+    name: password-secret
   $patch: delete

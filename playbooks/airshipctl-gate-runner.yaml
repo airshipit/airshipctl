@@ -15,7 +15,6 @@
     - vars/test-config.yaml
   environment:
     SOPS_IMPORT_PGP: "{{ airship_config_pgp }}"
-    SOPS_PGP_FP: "{{ airship_config_pgp_fp }}"
   tasks:
     - name: "set default gate scripts"
       set_fact:
@@ -24,7 +23,6 @@
           - ./tools/deployment/21_systemwide_executable.sh
           - ./tools/deployment/22_test_configs.sh
           - ./tools/deployment/23_pull_documents.sh
-          - ./tools/deployment/23_generate_secrets.sh
           - ./tools/deployment/24_build_images.sh
           - ./tools/deployment/25_deploy_ephemeral_node.sh
           - ./tools/deployment/26_deploy_metal3_capi_ephemeral_node.sh

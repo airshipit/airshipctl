@@ -4,4 +4,3 @@ resources:
   - versions.yaml
   - k8scontrol-env-vars.yaml
   - networking.yaml
-  - cluster.yaml
