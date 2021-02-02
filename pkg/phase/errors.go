@@ -63,3 +63,22 @@ func (e ErrExecutorRefNotDefined) Error() string {
 		e.PhaseName,
 		e.PhaseNamespace)
 }
+
+// ErrUknownRenderSource returned when render command source doesn't match any known types
+type ErrUknownRenderSource struct {
+	Source string
+}
+
+func (e ErrUknownRenderSource) Error() string {
+	return fmt.Sprintf("wrong render source '%s' specified must be one of %s, %s, %s",
+		e.Source, RenderSourceConfig, RenderSourceExecutor, RenderSourceExecutor)
+}
+
+// ErrRenderPhaseNameNotSpecified returned when render command is called with either phase or
+// executor source and phase name is not specified
+type ErrRenderPhaseNameNotSpecified struct{}
+
+func (e ErrRenderPhaseNameNotSpecified) Error() string {
+	return fmt.Sprintf("must specify phase name when using '%s' or '%s' as source",
+		RenderSourceExecutor, RenderSourcePhase)
+}

@@ -17,7 +17,10 @@ package phase_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"opendev.org/airship/airshipctl/cmd/phase"
+	pkgphase "opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
@@ -31,5 +34,34 @@ func TestRender(t *testing.T) {
 	}
 	for _, tt := range tests {
 		testutil.RunTest(t, tt)
+	}
+}
+
+func TestRenderArgs(t *testing.T) {
+	tests := []struct {
+		name        string
+		args        []string
+		expectedErr error
+	}{
+		{
+			name:        "error 2 args",
+			args:        []string{"my-phase", "accidental"},
+			expectedErr: &phase.ErrRenderTooManyArgs{Count: 2},
+		},
+		{
+			name: "success",
+			args: []string{"my-phase"},
+		},
+		{
+			name: "success no args",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			err := phase.RenderArgs(&pkgphase.RenderCommand{})(phase.NewRenderCommand(nil), tt.args)
+			assert.Equal(t, tt.expectedErr, err)
+		})
 	}
 }
