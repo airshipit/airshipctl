@@ -244,3 +244,33 @@ func (c *PlanRunCommand) RunE() error {
 	}
 	return plan.Run(ifc.RunOptions{DryRun: c.Options.DryRun, Timeout: c.Options.Timeout, Progress: c.Options.Progress})
 }
+
+// ClusterListCommand options for cluster list command
+type ClusterListCommand struct {
+	Factory config.Factory
+	Writer  io.Writer
+}
+
+// RunE executes cluster list command
+func (c *ClusterListCommand) RunE() error {
+	cfg, err := c.Factory()
+	if err != nil {
+		return err
+	}
+	helper, err := NewHelper(cfg)
+	if err != nil {
+		return err
+	}
+	clusterMap, err := helper.ClusterMap()
+	if err != nil {
+		return err
+	}
+
+	clusterList := clusterMap.AllClusters()
+	for _, clusterName := range clusterList {
+		if _, err := c.Writer.Write([]byte(clusterName + "\n")); err != nil {
+			return err
+		}
+	}
+	return nil
+}

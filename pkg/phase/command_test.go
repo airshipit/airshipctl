@@ -28,9 +28,10 @@ import (
 )
 
 const (
-	testFactoryErr   = "test config error"
-	testNewHelperErr = "Missing configuration"
-	testNoBundlePath = "no such file or directory"
+	testFactoryErr        = "test config error"
+	testNewHelperErr      = "Missing configuration"
+	testNoBundlePath      = "no such file or directory"
+	defaultCurrentContext = "context"
 )
 
 func TestRunCommand(t *testing.T) {
@@ -73,7 +74,7 @@ func TestRunCommand(t *testing.T) {
 						},
 					},
 				}
-				conf.CurrentContext = "context"
+				conf.CurrentContext = defaultCurrentContext
 				conf.Contexts = map[string]*config.Context{
 					"context": {
 						Manifest: "manifest",
@@ -143,7 +144,7 @@ func TestListCommand(t *testing.T) {
 						},
 					},
 				}
-				conf.CurrentContext = "context"
+				conf.CurrentContext = defaultCurrentContext
 				conf.Contexts = map[string]*config.Context{
 					"context": {
 						Manifest: "manifest",
@@ -211,7 +212,7 @@ func TestTreeCommand(t *testing.T) {
 						},
 					},
 				}
-				conf.CurrentContext = "context"
+				conf.CurrentContext = defaultCurrentContext
 				conf.Contexts = map[string]*config.Context{
 					"context": {
 						Manifest: "manifest",
@@ -334,7 +335,7 @@ func TestPlanRunCommand(t *testing.T) {
 						},
 					},
 				}
-				conf.CurrentContext = "context"
+				conf.CurrentContext = defaultCurrentContext
 				conf.Contexts = map[string]*config.Context{
 					"context": {
 						Manifest: "manifest",
@@ -356,6 +357,75 @@ func TestPlanRunCommand(t *testing.T) {
 					},
 				},
 				Factory: tt.factory,
+			}
+			err := cmd.RunE()
+			if tt.expectedErr != "" {
+				require.Error(t, err)
+				assert.Equal(t, tt.expectedErr, err.Error())
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestClusterListCommand_RunE(t *testing.T) {
+	testErr := fmt.Errorf(testFactoryErr)
+	testCases := []struct {
+		name        string
+		factory     config.Factory
+		expectedErr string
+	}{
+		{
+			name: "Error config factory",
+			factory: func() (*config.Config, error) {
+				return nil, testErr
+			},
+			expectedErr: testFactoryErr,
+		},
+		{
+			name: "Error new helper",
+			factory: func() (*config.Config, error) {
+				return &config.Config{
+					CurrentContext: "does not exist",
+					Contexts:       make(map[string]*config.Context),
+				}, nil
+			},
+			expectedErr: "Missing configuration: Context with name 'does not exist'",
+		},
+		{
+			name: "No error",
+			factory: func() (*config.Config, error) {
+				conf := config.NewConfig()
+				conf.Manifests = map[string]*config.Manifest{
+					"manifest": {
+						MetadataPath:        "metadata.yaml",
+						TargetPath:          "testdata",
+						PhaseRepositoryName: config.DefaultTestPhaseRepo,
+						Repositories: map[string]*config.Repository{
+							config.DefaultTestPhaseRepo: {
+								URLString: "",
+							},
+						},
+					},
+				}
+				conf.CurrentContext = defaultCurrentContext
+				conf.Contexts = map[string]*config.Context{
+					"context": {
+						Manifest: "manifest",
+					},
+				}
+				return conf, nil
+			},
+			expectedErr: "",
+		},
+	}
+	for _, tc := range testCases {
+		tt := tc
+		t.Run(tt.name, func(t *testing.T) {
+			cmd := phase.ClusterListCommand{
+				Factory: tt.factory,
+				Writer:  bytes.NewBuffer(nil),
 			}
 			err := cmd.RunE()
 			if tt.expectedErr != "" {
