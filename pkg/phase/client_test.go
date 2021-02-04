@@ -208,6 +208,10 @@ func TestPhaseValidate(t *testing.T) {
 	}
 }
 
+func (e fakeExecutor) Status() (ifc.ExecutorStatus, error) {
+	return ifc.ExecutorStatus{}, nil
+}
+
 // TODO develop tests, when we add phase object validation
 func TestClientByAPIObj(t *testing.T) {
 	helper, err := phase.NewHelper(testConfig(t))

@@ -199,3 +199,8 @@ func (c *ContainerExecutor) setConfig() error {
 	}
 	return nil
 }
+
+// Status returns the status of the given phase
+func (c *ContainerExecutor) Status() (ifc.ExecutorStatus, error) {
+	return ifc.ExecutorStatus{}, errors.ErrNotImplemented{What: GenericContainer}
+}

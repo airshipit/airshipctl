@@ -140,3 +140,8 @@ func (c *EphemeralExecutor) Render(w io.Writer, _ ifc.RenderOptions) error {
 	log.Print("Ephemeral Executor Render() will be implemented later.")
 	return nil
 }
+
+// Status returns the status of the given phase
+func (c *EphemeralExecutor) Status() (ifc.ExecutorStatus, error) {
+	return ifc.ExecutorStatus{}, errors.ErrNotImplemented{What: Ephemeral}
+}
