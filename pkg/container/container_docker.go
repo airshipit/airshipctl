@@ -169,23 +169,24 @@ func (c *DockerContainer) getCmd(cmd []string) ([]string, error) {
 }
 
 // getConfig creates configuration structures for Docker API client.
-func (c *DockerContainer) getConfig(
-	cmd []string,
-	volumeMounts []string,
-	envVars []string,
-) (container.Config, container.HostConfig) {
+func (c *DockerContainer) getConfig(opts RunCommandOptions) (container.Config, container.HostConfig, error) {
+	cmd, err := c.getCmd(opts.Cmd)
+	if err != nil {
+		return container.Config{}, container.HostConfig{}, err
+	}
 	cCfg := container.Config{
 		Image:       c.imageURL,
 		Cmd:         cmd,
 		AttachStdin: true,
 		OpenStdin:   true,
-		Env:         envVars,
+		Env:         opts.EnvVars,
 		Tty:         true,
 	}
 	hCfg := container.HostConfig{
-		Binds: volumeMounts,
+		Binds:      opts.VolumeMounts,
+		Privileged: opts.Privileged,
 	}
-	return cCfg, hCfg
+	return cCfg, hCfg, nil
 }
 
 // getImageID return ID of container image specified by URL. Method executes
@@ -241,13 +242,11 @@ func (c *DockerContainer) ImagePull() error {
 
 // RunCommand executes specified command in Docker container. Method handles
 // container STDIN and volume binds
-func (c *DockerContainer) RunCommand(opts RunCommandOptions) error {
-	realCmd, err := c.getCmd(opts.Cmd)
+func (c *DockerContainer) RunCommand(opts RunCommandOptions) (err error) {
+	containerConfig, hostConfig, err := c.getConfig(opts)
 	if err != nil {
 		return err
 	}
-
-	containerConfig, hostConfig := c.getConfig(realCmd, opts.VolumeMounts, opts.EnvVars)
 	resp, err := c.dockerClient.ContainerCreate(
 		c.ctx,
 		&containerConfig,
