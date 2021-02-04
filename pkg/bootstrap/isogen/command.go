@@ -134,7 +134,7 @@ func (opts BootstrapIsoOptions) CreateBootstrapIso() error {
 		fmt.Sprintf("NO_PROXY=%s", os.Getenv("NO_PROXY")),
 	}
 
-	err = opts.Builder.RunCommand([]string{}, nil, vols, envVars)
+	err = opts.Builder.RunCommand(container.RunCommandOptions{EnvVars: envVars, VolumeMounts: vols})
 	if err != nil {
 		return err
 	}

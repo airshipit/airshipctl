@@ -268,7 +268,9 @@ func TestImagePull(t *testing.T) {
 
 func TestGetId(t *testing.T) {
 	cnt := getDockerContainerMock(mockDockerClient{})
-	err := cnt.RunCommand([]string{"testCmd"}, nil, nil, []string{})
+	err := cnt.RunCommand(RunCommandOptions{
+		Cmd: []string{"testCmd"},
+	})
 	require.NoError(t, err)
 	actualID := cnt.GetID()
 
@@ -419,7 +421,11 @@ func TestRunCommand(t *testing.T) {
 	}
 	for _, tt := range tests {
 		cnt := getDockerContainerMock(tt.mockDockerClient)
-		actualErr := cnt.RunCommand(tt.cmd, tt.containerInput, tt.volumeMounts, []string{})
+		actualErr := cnt.RunCommand(RunCommandOptions{
+			Input:        tt.containerInput,
+			Cmd:          tt.cmd,
+			VolumeMounts: tt.volumeMounts,
+		})
 		assert.Equal(t, tt.expectedRunErr, actualErr)
 		actualErr = cnt.WaitUntilFinished()
 		assert.Equal(t, tt.expectedWaitErr, actualErr)
@@ -461,7 +467,11 @@ func TestRunCommandOutput(t *testing.T) {
 	}
 	for _, tt := range tests {
 		cnt := getDockerContainerMock(tt.mockDockerClient)
-		actualErr := cnt.RunCommand(tt.cmd, tt.containerInput, tt.volumeMounts, []string{})
+		actualErr := cnt.RunCommand(RunCommandOptions{
+			Input:        tt.containerInput,
+			Cmd:          tt.cmd,
+			VolumeMounts: tt.volumeMounts,
+		})
 		assert.Equal(t, tt.expectedErr, actualErr)
 		actualRes, actualErr := cnt.GetContainerLogs()
 		require.NoError(t, actualErr)

@@ -35,12 +35,20 @@ type State struct {
 // defines methods that must be implemented for CRE (e.g. docker, containerd or CRI-O)
 type Container interface {
 	ImagePull() error
-	RunCommand([]string, io.Reader, []string, []string) error
+	RunCommand(RunCommandOptions) error
 	GetContainerLogs() (io.ReadCloser, error)
 	InspectContainer() (State, error)
 	WaitUntilFinished() error
 	RmContainer() error
 	GetID() string
+}
+
+// RunCommandOptions options for RunCommand
+type RunCommandOptions struct {
+	Cmd          []string
+	EnvVars      []string
+	VolumeMounts []string
+	Input        io.Reader
 }
 
 // NewContainer returns instance of Container interface implemented by particular driver

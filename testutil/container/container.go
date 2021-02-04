@@ -37,7 +37,7 @@ func (mc *MockContainer) ImagePull() error {
 }
 
 // RunCommand Container interface implementation for unit test purposes
-func (mc *MockContainer) RunCommand([]string, io.Reader, []string, []string) error {
+func (mc *MockContainer) RunCommand(container.RunCommandOptions) error {
 	return mc.MockRunCommand()
 }
 
