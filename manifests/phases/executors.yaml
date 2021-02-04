@@ -169,3 +169,17 @@ bootstrapContainer:
   image: quay.io/airshipit/capo-ephemeral:latest
   volume: /tmp:/kube
   saveKubeconfigFileName: capo.kubeconfig
+---
+apiVersion: airshipit.org/v1alpha1
+kind: BaremetalManager
+metadata:
+  name: RemoteDirectEphemeral
+  labels:
+    airshipit.org/deploy-k8s: "false"
+spec:
+  operation: remote-direct
+  hostSelector:
+    name: REPLACE_ME
+  operationOptions:
+    remoteDirect:
+      isoURL: REPLACE_ME

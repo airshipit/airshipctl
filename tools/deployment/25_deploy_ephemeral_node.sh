@@ -18,14 +18,9 @@ set -xe
 export TIMEOUT=${TIMEOUT:-3600}
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
 export KUBECONFIG_EPHEMERAL_CONTEXT=${KUBECONFIG_EPHEMERAL_CONTEXT:-"ephemeral-cluster"}
-export EPHEMERAL_NODE=${EPHEMERAL_NODE:-"node02"}
-export ISO_URL=${ISO_URL:-"http://localhost:8099/ephemeral.iso"}
 
 echo "Deploy ephemeral node using redfish with iso"
-airshipctl baremetal remotedirect \
-  --iso-url $ISO_URL \
-  --name $EPHEMERAL_NODE \
-  --debug
+airshipctl phase run remotedirect-ephemeral --debug
 
 echo "Wait for apiserver to become available"
 N=0
