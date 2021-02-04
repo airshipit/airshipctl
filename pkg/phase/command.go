@@ -76,8 +76,10 @@ func (c *RunCommand) RunE() error {
 
 // ListCommand phase list command
 type ListCommand struct {
-	Factory config.Factory
-	Writer  io.Writer
+	Factory     config.Factory
+	Writer      io.Writer
+	ClusterName string
+	PlanID      ifc.ID
 }
 
 // RunE runs a phase plan command
@@ -92,7 +94,8 @@ func (c *ListCommand) RunE() error {
 		return err
 	}
 
-	phases, err := helper.ListPhases()
+	o := ifc.ListPhaseOptions{ClusterName: c.ClusterName, PlanID: c.PlanID}
+	phases, err := helper.ListPhases(o)
 	if err != nil {
 		return err
 	}

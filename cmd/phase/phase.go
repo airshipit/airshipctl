@@ -36,7 +36,7 @@ func NewPhaseCommand(cfgFactory config.Factory) *cobra.Command {
 	}
 
 	phaseRootCmd.AddCommand(NewRenderCommand(cfgFactory))
-	phaseRootCmd.AddCommand(NewPlanCommand(cfgFactory))
+	phaseRootCmd.AddCommand(NewListCommand(cfgFactory))
 	phaseRootCmd.AddCommand(NewRunCommand(cfgFactory))
 	phaseRootCmd.AddCommand(NewTreeCommand(cfgFactory))
 

@@ -186,6 +186,7 @@ func TestHelperListPhases(t *testing.T) {
 		errContains string
 		phaseLen    int
 		config      func(t *testing.T) *config.Config
+		options     ifc.ListPhaseOptions
 	}{
 		{
 			name:     "Success phase list",
@@ -210,6 +211,25 @@ func TestHelperListPhases(t *testing.T) {
 			},
 			phaseLen: 0,
 		},
+		{
+			name: "Success with cluster name and phase plan",
+			config: func(t *testing.T) *config.Config {
+				conf := testConfig(t)
+				return conf
+			},
+			options:  ifc.ListPhaseOptions{ClusterName: "some_cluster", PlanID: ifc.ID{Name: "phasePlan"}},
+			phaseLen: 1,
+		},
+		{
+			name: "Invalid phase plan name",
+			config: func(t *testing.T) *config.Config {
+				conf := testConfig(t)
+				return conf
+			},
+			options:     ifc.ListPhaseOptions{PlanID: ifc.ID{Name: "NonExistentPlan"}},
+			phaseLen:    0,
+			errContains: "found no documents",
+		},
 	}
 
 	for _, test := range testCases {
@@ -219,7 +239,7 @@ func TestHelperListPhases(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, helper)
 
-			actualList, actualErr := helper.ListPhases()
+			actualList, actualErr := helper.ListPhases(tt.options)
 			if tt.errContains != "" {
 				require.Error(t, actualErr)
 				assert.Contains(t, actualErr.Error(), tt.errContains)
