@@ -533,7 +533,7 @@ kube-system   kube-scheduler-dtc-dtc-control-plane-p4fsx            1/1     Runn
 The command shown below can be used to delete the control plane, worker nodes and all
 associated cluster resources
 
-$ airshipctl phase render controlplane -k Cluster | kubectl delete -f -
+$ airshipctl phase render --phase-name controlplane -k Cluster | kubectl delete -f -
 
 ```
 cluster.cluster.x-k8s.io "dtc" deleted

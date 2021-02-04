@@ -27,9 +27,15 @@ const (
 # "service=tiller"
 airshipctl phase render initinfra -l app=helm,service=tiller
 
-# Get all documents containing labels "app=helm" and "service=tiller"
+# Get all phase documents containing labels "app=helm" and "service=tiller"
 # and kind 'Deployment'
 airshipctl phase render initinfra -l app=helm,service=tiller -k Deployment
+
+# Get all documents from config bundle
+airshipctl phase render --source config
+
+# Get all documents executor rendered documents for a phase
+airshipctl phase render initinfra --source executor
 `
 )
 
@@ -40,9 +46,9 @@ func NewRenderCommand(cfgFactory config.Factory) *cobra.Command {
 		Use:     "render PHASE_NAME",
 		Short:   "Render phase documents from model",
 		Example: renderExample,
-		Args:    cobra.ExactArgs(1),
+		Args:    RenderArgs(filterOptions),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return filterOptions.RunE(cfgFactory, args[0], cmd.OutOrStdout())
+			return filterOptions.RunE(cfgFactory, cmd.OutOrStdout())
 		},
 	}
 
@@ -81,12 +87,27 @@ func addRenderFlags(filterOptions *phase.RenderCommand, cmd *cobra.Command) {
 		"k",
 		"",
 		"filter documents by Kinds")
-	flags.BoolVarP(
-		&filterOptions.Executor,
-		"executor",
-		"e",
-		false,
-		"if set to true rendering will be performed by executor "+
-			"otherwise phase entrypoint will be rendered by kustomize, if entrypoint is not specified "+
-			"error will be returned")
+
+	flags.StringVarP(
+		&filterOptions.Source,
+		"source",
+		"s",
+		phase.RenderSourcePhase,
+		"phase: phase entrypoint will be rendered by kustomize, if entrypoint is not specified "+
+			"error will be returned\n"+
+			"executor: rendering will be performed by executor if the phase\n"+
+			"config: this will render bundle containing phase and executor documents")
+}
+
+// RenderArgs returns an error if there are not exactly n args.
+func RenderArgs(opts *phase.RenderCommand) cobra.PositionalArgs {
+	return func(cmd *cobra.Command, args []string) error {
+		if len(args) > 1 {
+			return &ErrRenderTooManyArgs{Count: len(args)}
+		}
+		if len(args) == 1 {
+			opts.PhaseID.Name = args[0]
+		}
+		return nil
+	}
 }

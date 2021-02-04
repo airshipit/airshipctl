@@ -23,6 +23,18 @@ import (
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
+const (
+	// RenderSourceConfig will render a bundle that comes from site metadata file
+	// and contains phase and executor docs
+	RenderSourceConfig = "config"
+
+	// RenderSourceExecutor indicates that rendering will be delegated to phase executor
+	RenderSourceExecutor = "executor"
+
+	// RenderSourcePhase the source will use kustomize root at phase entry point
+	RenderSourcePhase = "phase"
+)
+
 // RenderCommand holds filters for selector
 type RenderCommand struct {
 	// Label filters documents by label string
@@ -33,12 +45,19 @@ type RenderCommand struct {
 	APIVersion string
 	// Kind filters documents by document kind
 	Kind string
-	// Executor identifies if executor should perform rendering
-	Executor bool
+	// Source identifies source of the bundle, these can be [phase|config|executor]
+	// phase the source will use kustomize root at phase entry point
+	// config will render a bundle that comes from site metadata file, and contains phase and executor docs
+	// executor means that rendering will be delegated to phase executor
+	Source  string
+	PhaseID ifc.ID
 }
 
 // RunE prints out filtered documents
-func (fo *RenderCommand) RunE(cfgFactory config.Factory, phaseName string, out io.Writer) error {
+func (fo *RenderCommand) RunE(cfgFactory config.Factory, out io.Writer) error {
+	if err := fo.Validate(); err != nil {
+		return err
+	}
 	cfg, err := cfgFactory()
 	if err != nil {
 		return err
@@ -49,8 +68,12 @@ func (fo *RenderCommand) RunE(cfgFactory config.Factory, phaseName string, out i
 		return err
 	}
 
+	if fo.Source == RenderSourceConfig {
+		return renderConfigBundle(out, helper)
+	}
+
 	client := NewClient(helper)
-	phase, err := client.PhaseByID(ifc.ID{Name: phaseName})
+	phase, err := client.PhaseByID(fo.PhaseID)
 	if err != nil {
 		return err
 	}
@@ -64,5 +87,32 @@ func (fo *RenderCommand) RunE(cfgFactory config.Factory, phaseName string, out i
 	}
 
 	sel := document.NewSelector().ByLabel(fo.Label).ByAnnotation(fo.Annotation).ByGvk(group, version, fo.Kind)
-	return phase.Render(out, fo.Executor, ifc.RenderOptions{FilterSelector: sel})
+	var executorRender bool
+	if fo.Source == RenderSourceExecutor {
+		executorRender = true
+	}
+	return phase.Render(out, executorRender, ifc.RenderOptions{FilterSelector: sel})
+}
+
+func renderConfigBundle(out io.Writer, h ifc.Helper) error {
+	bundle, err := document.NewBundleByPath(h.PhaseBundleRoot())
+	if err != nil {
+		return err
+	}
+	return bundle.Write(out)
+}
+
+// Validate checks if command options are valid
+func (fo *RenderCommand) Validate() (err error) {
+	switch fo.Source {
+	case RenderSourceConfig:
+		// do nothing, source config doesnt need any parameters
+	case RenderSourceExecutor, RenderSourcePhase:
+		if fo.PhaseID.Name == "" {
+			err = ErrRenderPhaseNameNotSpecified{}
+		}
+	default:
+		err = ErrUknownRenderSource{Source: fo.Source}
+	}
+	return err
 }

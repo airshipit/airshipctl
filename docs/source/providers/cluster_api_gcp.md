@@ -458,7 +458,7 @@ If you would like to delete the cluster run the below commands. This will delete
 the control plane, workers, machine health check and all other resources
 associated with the cluster on gcp.
 
-$ airshipctl phase render controlplane -k Cluster
+$ airshipctl phase render --phase-name controlplane -k Cluster
 
 ```
 ---
@@ -483,7 +483,7 @@ spec:
 ...
 ```
 
-$ airshipctl phase render controlplane -k Cluster | kubectl delete -f -
+$ airshipctl phase render --phase-name controlplane -k Cluster | kubectl delete -f -
 
 ```
 cluster.cluster.x-k8s.io "gtc" deleted

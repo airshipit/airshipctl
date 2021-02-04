@@ -26,6 +26,7 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/phase"
+	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
@@ -43,13 +44,19 @@ func TestRender(t *testing.T) {
 	fixturePath := "phase"
 	tests := []struct {
 		name       string
-		settings   *phase.RenderCommand
 		expResFile string
 		expErr     error
+
+		settings *phase.RenderCommand
 	}{
 		{
-			name:       "No Filters",
-			settings:   &phase.RenderCommand{},
+			name: "No Filters",
+			settings: &phase.RenderCommand{
+				Source: phase.RenderSourcePhase,
+				PhaseID: ifc.ID{
+					Name: fixturePath,
+				},
+			},
 			expResFile: "noFilter.yaml",
 			expErr:     nil,
 		},
@@ -60,6 +67,10 @@ func TestRender(t *testing.T) {
 				Annotation: "airshipit.org/clustertype=ephemeral",
 				APIVersion: "metal3.io/v1alpha1",
 				Kind:       "BareMetalHost",
+				Source:     phase.RenderSourcePhase,
+				PhaseID: ifc.ID{
+					Name: fixturePath,
+				},
 			},
 			expResFile: "allFilters.yaml",
 			expErr:     nil,
@@ -67,7 +78,11 @@ func TestRender(t *testing.T) {
 		{
 			name: "Multiple Labels",
 			settings: &phase.RenderCommand{
-				Label: "airshipit.org/deploy-k8s=false, airshipit.org/ephemeral-node=true",
+				Label:  "airshipit.org/deploy-k8s=false, airshipit.org/ephemeral-node=true",
+				Source: phase.RenderSourcePhase,
+				PhaseID: ifc.ID{
+					Name: fixturePath,
+				},
 			},
 			expResFile: "multiLabels.yaml",
 			expErr:     nil,
@@ -75,19 +90,38 @@ func TestRender(t *testing.T) {
 		{
 			name: "Malformed Label",
 			settings: &phase.RenderCommand{
-				Label: "app=(",
+				Label:  "app=(",
+				Source: phase.RenderSourcePhase,
+				PhaseID: ifc.ID{
+					Name: fixturePath,
+				},
 			},
-			expResFile: "",
-			expErr:     fmt.Errorf("unable to parse requirement: found '(', expected: identifier"),
+			expErr: fmt.Errorf("unable to parse requirement: found '(', expected: identifier"),
 		},
 		{
 			name: "Malformed Label",
 			settings: &phase.RenderCommand{
-				Label:    "app=(",
-				Executor: true,
+				Label:  "app=(",
+				Source: phase.RenderSourceExecutor,
+				PhaseID: ifc.ID{
+					Name: fixturePath,
+				},
 			},
-			expResFile: "",
-			expErr:     fmt.Errorf("unable to parse requirement: found '(', expected: identifier"),
+			expErr: fmt.Errorf("unable to parse requirement: found '(', expected: identifier"),
+		},
+		{
+			name: "source doesn't exist",
+			settings: &phase.RenderCommand{
+				Source: "unknown",
+			},
+			expErr: phase.ErrUknownRenderSource{Source: "unknown"},
+		},
+		{
+			name: "phase name not specified",
+			settings: &phase.RenderCommand{
+				Source: phase.RenderSourcePhase,
+			},
+			expErr: phase.ErrRenderPhaseNameNotSpecified{},
 		},
 	}
 
@@ -103,9 +137,31 @@ func TestRender(t *testing.T) {
 			out := &bytes.Buffer{}
 			err = tt.settings.RunE(func() (*config.Config, error) {
 				return rs, nil
-			}, fixturePath, out)
+			}, out)
 			assert.Equal(t, tt.expErr, err)
 			assert.Equal(t, expectedOut, out.Bytes())
 		})
 	}
+}
+
+func TestRenderConfigBundle(t *testing.T) {
+	rs := testutil.DummyConfig()
+	dummyManifest := rs.Manifests["dummy_manifest"]
+	dummyManifest.TargetPath = "testdata"
+	dummyManifest.PhaseRepositoryName = config.DefaultTestPhaseRepo
+	dummyManifest.Repositories = map[string]*config.Repository{
+		config.DefaultTestPhaseRepo: {},
+	}
+	dummyManifest.MetadataPath = "metadata.yaml"
+	buf := bytes.NewBuffer([]byte{})
+	settings := &phase.RenderCommand{
+		Source: phase.RenderSourceConfig,
+	}
+	err := settings.RunE(func() (*config.Config, error) {
+		return rs, nil
+	}, buf)
+	assert.NoError(t, err)
+	// check that it contains phases and cluster map
+	assert.Contains(t, buf.String(), "kind: Phase")
+	assert.Contains(t, buf.String(), "kind: ClusterMap")
 }
