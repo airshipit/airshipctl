@@ -43,6 +43,11 @@ spec:
           - 1.pool.ntp.org
           - 2.pool.ntp.org
           - 3.pool.ntp.org
+    users:
+    - name: deployer
+      sshAuthorizedKeys:
+      - REPLACE_HOST_SSH_KEY
+      sudo: ALL=(ALL) NOPASSWD:ALL
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
 kind: Metal3MachineTemplate

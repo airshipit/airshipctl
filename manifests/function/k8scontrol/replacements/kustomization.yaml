@@ -3,5 +3,6 @@ kind: Kustomization
 resources:
   - versions.yaml
   - k8scontrol-env-vars.yaml
+  - generated-secrets.yaml
   - networking.yaml
   - cluster.yaml
