@@ -96,7 +96,7 @@ type AirshipContainerSpec struct {
 	Cmd []string `json:"cmd,omitempty"`
 
 	// Privileged identifies if the container is to be run in a Privileged mode
-	Privileged bool `json:"pivileged,omitempty"`
+	Privileged bool `json:"privileged,omitempty"`
 }
 
 // KRMContainerSpec defines a spec for running a function as a container
