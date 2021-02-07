@@ -286,6 +286,7 @@ func TestRunCommand(t *testing.T) {
 		cmd              []string
 		containerInput   io.Reader
 		volumeMounts     []string
+		mounts           []Mount
 		debug            bool
 		mockDockerClient mockDockerClient
 		expectedRunErr   error
@@ -329,7 +330,15 @@ func TestRunCommand(t *testing.T) {
 					return conn, nil
 				},
 			},
-			expectedRunErr:  nil,
+			expectedRunErr: nil,
+			mounts: []Mount{
+				{
+					ReadOnly: true,
+					Type:     "bind",
+					Dst:      "/dev/vda0",
+					Src:      "/dev/vd3",
+				},
+			},
 			expectedWaitErr: nil,
 			assertF:         func(t *testing.T) {},
 		},
@@ -422,9 +431,10 @@ func TestRunCommand(t *testing.T) {
 	for _, tt := range tests {
 		cnt := getDockerContainerMock(tt.mockDockerClient)
 		actualErr := cnt.RunCommand(RunCommandOptions{
-			Input:        tt.containerInput,
-			Cmd:          tt.cmd,
-			VolumeMounts: tt.volumeMounts,
+			Input:  tt.containerInput,
+			Cmd:    tt.cmd,
+			Binds:  tt.volumeMounts,
+			Mounts: tt.mounts,
 		})
 		assert.Equal(t, tt.expectedRunErr, actualErr)
 		actualErr = cnt.WaitUntilFinished()
@@ -468,12 +478,12 @@ func TestRunCommandOutput(t *testing.T) {
 	for _, tt := range tests {
 		cnt := getDockerContainerMock(tt.mockDockerClient)
 		actualErr := cnt.RunCommand(RunCommandOptions{
-			Input:        tt.containerInput,
-			Cmd:          tt.cmd,
-			VolumeMounts: tt.volumeMounts,
+			Input: tt.containerInput,
+			Cmd:   tt.cmd,
+			Binds: tt.volumeMounts,
 		})
 		assert.Equal(t, tt.expectedErr, actualErr)
-		actualRes, actualErr := cnt.GetContainerLogs()
+		actualRes, actualErr := cnt.GetContainerLogs(GetLogOptions{Stdout: true, Follow: true})
 		require.NoError(t, actualErr)
 
 		var actualResBytes []byte

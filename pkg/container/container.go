@@ -19,6 +19,11 @@ import (
 	"io"
 )
 
+const (
+	// ContainerDriverDocker indicates that docker driver should be used in container constructor
+	ContainerDriverDocker = "docker"
+)
+
 // Status type provides container status
 type Status string
 
@@ -36,7 +41,7 @@ type State struct {
 type Container interface {
 	ImagePull() error
 	RunCommand(RunCommandOptions) error
-	GetContainerLogs() (io.ReadCloser, error)
+	GetContainerLogs(GetLogOptions) (io.ReadCloser, error)
 	InspectContainer() (State, error)
 	WaitUntilFinished() error
 	RmContainer() error
@@ -45,13 +50,31 @@ type Container interface {
 
 // RunCommandOptions options for RunCommand
 type RunCommandOptions struct {
-	Privileged bool
+	Privileged  bool
+	HostNewtork bool
 
-	Cmd          []string
-	EnvVars      []string
-	VolumeMounts []string
+	Cmd     []string
+	EnvVars []string
+	Binds   []string
 
-	Input io.Reader
+	Mounts []Mount
+	Input  io.Reader
+}
+
+// Mount describes mount settings
+type Mount struct {
+	ReadOnly bool
+	Type     string
+	Dst      string
+	Src      string
+}
+
+// GetLogOptions options for getting logs
+// If both Stderr and Stdout are specified the logs will contain both stderr and stdout
+type GetLogOptions struct {
+	Stderr bool
+	Stdout bool
+	Follow bool
 }
 
 // NewContainer returns instance of Container interface implemented by particular driver
@@ -63,7 +86,7 @@ func NewContainer(ctx context.Context, driver string, url string) (Container, er
 	switch driver {
 	case "":
 		return nil, ErrNoContainerDriver{}
-	case "docker":
+	case ContainerDriverDocker:
 		cli, err := NewDockerClient(ctx)
 		if err != nil {
 			return nil, err
