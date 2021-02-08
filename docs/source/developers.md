@@ -207,18 +207,12 @@ Make sure the following conditions are met:
    ```
 6. Execute the following scripts one by one
     1. ./tools/gate/10_build_gate.sh
+    1. ./tools/gate/20_run_gate_runner.sh
+
+   Note: instead of running `./tools/gate/20_run_gate_runner.sh` it's possible to run its steps one-by-one, from `playbooks/airshipctl-gate-runner.yaml`, e.g.:
     1. sudo -E ./tools/deployment/01_install_kubectl.sh
     1. sudo -E ./tools/deployment/22_test_configs.sh
-    1. sudo -E ./tools/deployment/23_pull_documents.sh
-    1. sudo -E ./tools/deployment/24_build_images.sh
-    1. sudo -E ./tools/deployment/25_deploy_ephemeral_node.sh
-    1. sudo -E ./tools/deployment/26_deploy_capi_ephemeral_node.sh
-    1. sudo -E ./tools/deployment/30_deploy_controlplane.sh
-    1. sudo -E ./tools/deployment/31_deploy_initinfra_target_node.sh
-    1. sudo -E ./tools/deployment/32_cluster_init_target_node.sh
-    1. sudo -E ./tools/deployment/33_cluster_move_target_node.sh
-    1. sudo -E ./tools/deployment/34_deploy_worker_node.sh
-    1. sudo -E ./tools/deployment/35_deploy_workload.sh
+    1. ...
 
 7. How to verify the ephemeral cluster and target cluster is deployed successfully
     Validate Ephemeral Cluster is Operational:
