@@ -241,18 +241,13 @@ func (c *DockerContainer) ImagePull() error {
 
 // RunCommand executes specified command in Docker container. Method handles
 // container STDIN and volume binds
-func (c *DockerContainer) RunCommand(
-	cmd []string,
-	containerInput io.Reader,
-	volumeMounts []string,
-	envVars []string,
-) error {
-	realCmd, err := c.getCmd(cmd)
+func (c *DockerContainer) RunCommand(opts RunCommandOptions) error {
+	realCmd, err := c.getCmd(opts.Cmd)
 	if err != nil {
 		return err
 	}
 
-	containerConfig, hostConfig := c.getConfig(realCmd, volumeMounts, envVars)
+	containerConfig, hostConfig := c.getConfig(realCmd, opts.VolumeMounts, opts.EnvVars)
 	resp, err := c.dockerClient.ContainerCreate(
 		c.ctx,
 		&containerConfig,
@@ -266,7 +261,7 @@ func (c *DockerContainer) RunCommand(
 
 	c.id = resp.ID
 
-	if containerInput != nil {
+	if opts.Input != nil {
 		conn, attachErr := c.dockerClient.ContainerAttach(c.ctx, c.id, types.ContainerAttachOptions{
 			Stream: true,
 			Stdin:  true,
@@ -274,7 +269,7 @@ func (c *DockerContainer) RunCommand(
 		if attachErr != nil {
 			return attachErr
 		}
-		if _, err = io.Copy(conn.Conn, containerInput); err != nil {
+		if _, err = io.Copy(conn.Conn, opts.Input); err != nil {
 			return err
 		}
 	}

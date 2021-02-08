@@ -197,7 +197,7 @@ func (options *BootstrapContainerOptions) CreateBootstrapContainer() error {
 		fmt.Sprintf("%s=%s", envBootstrapVolume, containerVolMount),
 	}
 
-	err := options.Container.RunCommand([]string{}, nil, vols, envVars)
+	err := options.Container.RunCommand(container.RunCommandOptions{EnvVars: envVars, VolumeMounts: vols})
 	if err != nil {
 		return err
 	}
