@@ -29,7 +29,9 @@ import (
 func TestDefaultManifestFactory(t *testing.T) {
 	bundle, err := document.NewBundleByPath("testdata/source_bundle")
 	require.NoError(t, err)
-	reader := DefaultManifestReaderFactory(false, bundle, FactoryFromKubeConfig("testdata/kubeconfig.yaml", ""))
+	mapper, err := FactoryFromKubeConfig("testdata/kubeconfig.yaml", "").ToRESTMapper()
+	require.NoError(t, err)
+	reader := DefaultManifestReaderFactory(false, bundle, mapper)
 	require.NotNil(t, reader)
 }
 
@@ -64,22 +66,23 @@ func TestManifestBundleReader(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			reader := NewManifestBundleReader(false, bundle, FactoryFromKubeConfig("testdata/kubeconfig.yaml", ""))
+			mapper, err := FactoryFromKubeConfig("testdata/kubeconfig.yaml", "").ToRESTMapper()
+			require.NoError(t, err)
+			reader := NewManifestBundleReader(false, bundle, mapper)
 			if tt.reader != nil {
 				reader.StreamReader.Reader = tt.reader
 			}
 			if tt.writer != nil {
 				reader.writer = tt.writer
 			}
-			infos, err := reader.Read()
+			objects, err := reader.Read()
 			if tt.errString != "" {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), tt.errString)
 			} else {
 				require.NoError(t, err)
-				require.Len(t, infos, 1)
-				obj := infos[0].Object
-				gvk := obj.GetObjectKind().GroupVersionKind()
+				require.Len(t, objects, 1)
+				gvk := objects[0].GetObjectKind().GroupVersionKind()
 				assert.Equal(t, gvk, schema.GroupVersionKind{
 					Kind:    "ReplicationController",
 					Group:   "",
