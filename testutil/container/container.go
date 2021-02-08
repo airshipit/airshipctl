@@ -31,6 +31,8 @@ type MockContainer struct {
 	MockInspectContainer  func() (container.State, error)
 }
 
+var _ container.Container = &MockContainer{}
+
 // ImagePull Container interface implementation for unit test purposes
 func (mc *MockContainer) ImagePull() error {
 	return mc.MockImagePull()

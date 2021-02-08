@@ -54,13 +54,13 @@ metadata:
   name: encrypter
   labels:
     airshipit.org/deploy-k8s: "false"
-kustomizeSinkOutputDir: "target/generator/results/generated"
 spec:
-  container:
-    image: quay.io/aodinokov/sops:v0.0.3
-    envs:
-    - SOPS_IMPORT_PGP
-    - SOPS_PGP_FP
+  type: krm
+  sinkOutputDir: "target/generator/results/generated"
+  image: quay.io/aodinokov/sops:v0.0.3
+  envVars:
+  - SOPS_IMPORT_PGP
+  - SOPS_PGP_FP
 config: |
   apiVersion: v1
   kind: ConfigMap
@@ -183,3 +183,4 @@ spec:
   operationOptions:
     remoteDirect:
       isoURL: REPLACE_ME
+---

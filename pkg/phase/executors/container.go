@@ -17,17 +17,11 @@ package executors
 import (
 	"bytes"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 
-	"sigs.k8s.io/kustomize/kyaml/fn/runtime/runtimeutil"
-	"sigs.k8s.io/kustomize/kyaml/kio"
-	"sigs.k8s.io/kustomize/kyaml/runfn"
-	kyaml "sigs.k8s.io/kustomize/kyaml/yaml"
-	"sigs.k8s.io/yaml"
-
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
@@ -38,40 +32,42 @@ var _ ifc.Executor = &ContainerExecutor{}
 
 // ContainerExecutor contains resources for generic container executor
 type ContainerExecutor struct {
-	PhaseEntryPointBasePath string
-	ExecutorBundle          document.Bundle
-	ExecutorDocument        document.Document
+	ResultsDir string
 
-	ContConf   *v1alpha1.GenericContainer
-	RunFns     runfn.RunFns
-	TargetPath string
+	Container        *v1alpha1.GenericContainer
+	ClientFunc       container.ClientV1Alpha1FactoryFunc
+	ExecutorBundle   document.Bundle
+	ExecutorDocument document.Document
 }
 
 // NewContainerExecutor creates instance of phase executor
 func NewContainerExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
+	// TODO add logic that checks if the path was not defined, and if so, we are fine
+	// and bundle should be either nil or empty, consider ContinueOnEmptyInput option to container client
 	bundle, err := cfg.BundleFactory()
 	if err != nil {
 		return nil, err
 	}
 
-	apiObj := &v1alpha1.GenericContainer{
-		Spec: runtimeutil.FunctionSpec{},
-	}
+	apiObj := v1alpha1.DefaultGenericContainer()
 	err = cfg.ExecutorDocument.ToAPIObject(apiObj, v1alpha1.Scheme)
 	if err != nil {
 		return nil, err
 	}
 
-	return &ContainerExecutor{
-		PhaseEntryPointBasePath: cfg.Helper.PhaseEntryPointBasePath(),
-		ExecutorBundle:          bundle,
-		ExecutorDocument:        cfg.ExecutorDocument,
+	var resultsDir string
+	if apiObj.Spec.SinkOutputDir != "" {
+		resultsDir = filepath.Join(cfg.Helper.PhaseEntryPointBasePath(), apiObj.Spec.SinkOutputDir)
+	}
 
-		ContConf: apiObj,
-		RunFns: runfn.RunFns{
-			Functions: []*kyaml.RNode{},
-		},
-		TargetPath: cfg.Helper.TargetPath(),
+	return &ContainerExecutor{
+		ResultsDir:       resultsDir,
+		ExecutorBundle:   bundle,
+		ExecutorDocument: cfg.ExecutorDocument,
+		// TODO extend tests with proper client, make it interface
+		ClientFunc: container.NewClientV1Alpha1,
+
+		Container: apiObj,
 	}, nil
 }
 
@@ -84,8 +80,22 @@ func (c *ContainerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 		Message:   "starting generic container",
 	})
 
+	input, err := bundleReader(c.ExecutorBundle)
+	if err != nil {
+		// TODO move bundleFactory here, and make sure that if executorDoc is not defined, we dont fail
+		handleError(evtCh, err)
+		return
+	}
+
+	// TODO this logic is redundant in executor package, move it to pkg/container
+	var output io.Writer
+	if c.ResultsDir == "" {
+		// set output only if the output if resulting directory is not defined
+		output = os.Stdout
+	}
+
+	// TODO check the executor type  when dryrun is set
 	if opts.DryRun {
-		log.Print("generic container will be executed")
 		evtCh <- events.NewEvent().WithGenericContainerEvent(events.GenericContainerEvent{
 			Operation: events.GenericContainerStop,
 			Message:   "DryRun execution finished",
@@ -93,36 +103,10 @@ func (c *ContainerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 		return
 	}
 
-	if err := c.SetInput(); err != nil {
+	err = c.ClientFunc(c.ResultsDir, input, output, c.Container).Run()
+	if err != nil {
 		handleError(evtCh, err)
 		return
-	}
-
-	if err := c.PrepareFunctions(); err != nil {
-		handleError(evtCh, err)
-		return
-	}
-
-	c.SetMounts()
-
-	var fnsOutputBuffer bytes.Buffer
-
-	if c.ContConf.KustomizeSinkOutputDir != "" {
-		c.RunFns.Output = &fnsOutputBuffer
-	} else {
-		c.RunFns.Output = os.Stdout
-	}
-
-	if err := c.RunFns.Execute(); err != nil {
-		handleError(evtCh, err)
-		return
-	}
-
-	if c.ContConf.KustomizeSinkOutputDir != "" {
-		if err := c.WriteKustomizeSink(&fnsOutputBuffer); err != nil {
-			handleError(evtCh, err)
-			return
-		}
 	}
 
 	evtCh <- events.NewEvent().WithGenericContainerEvent(events.GenericContainerEvent{
@@ -131,61 +115,10 @@ func (c *ContainerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 	})
 }
 
-// SetInput sets input for function
-func (c *ContainerExecutor) SetInput() error {
+// bundleReader sets input for function
+func bundleReader(bundle document.Bundle) (io.Reader, error) {
 	buf := &bytes.Buffer{}
-	err := c.ExecutorBundle.Write(buf)
-	if err != nil {
-		return err
-	}
-
-	c.RunFns.Input = buf
-	return nil
-}
-
-// PrepareFunctions prepares data for function
-func (c *ContainerExecutor) PrepareFunctions() error {
-	rnode, err := kyaml.Parse(c.ContConf.Config)
-	if err != nil {
-		return err
-	}
-	// Transform GenericContainer.Spec to annotation,
-	// because we need to specify runFns config in annotation
-	spec, err := yaml.Marshal(c.ContConf.Spec)
-	if err != nil {
-		return err
-	}
-	annotation := kyaml.SetAnnotation(runtimeutil.FunctionAnnotationKey, string(spec))
-	_, err = annotation.Filter(rnode)
-	if err != nil {
-		return err
-	}
-
-	c.RunFns.Functions = append(c.RunFns.Functions, rnode)
-
-	return nil
-}
-
-// SetMounts allows to set relative path for storage mounts to prevent security issues
-func (c *ContainerExecutor) SetMounts() {
-	if len(c.ContConf.Spec.Container.StorageMounts) == 0 {
-		return
-	}
-	storageMounts := c.ContConf.Spec.Container.StorageMounts
-	for i, mount := range storageMounts {
-		storageMounts[i].Src = filepath.Join(c.TargetPath, mount.Src)
-	}
-	c.RunFns.StorageMounts = storageMounts
-}
-
-// WriteKustomizeSink writes output to kustomize sink
-func (c *ContainerExecutor) WriteKustomizeSink(fnsOutputBuffer *bytes.Buffer) error {
-	outputDirPath := filepath.Join(c.PhaseEntryPointBasePath, c.ContConf.KustomizeSinkOutputDir)
-	sinkOutputs := []kio.Writer{&kio.LocalPackageWriter{PackagePath: outputDirPath}}
-	err := kio.Pipeline{
-		Inputs:  []kio.Reader{&kio.ByteReader{Reader: fnsOutputBuffer}},
-		Outputs: sinkOutputs}.Execute()
-	return err
+	return buf, bundle.Write(buf)
 }
 
 // Validate executor configuration and documents
