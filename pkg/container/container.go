@@ -45,10 +45,13 @@ type Container interface {
 
 // RunCommandOptions options for RunCommand
 type RunCommandOptions struct {
+	Privileged bool
+
 	Cmd          []string
 	EnvVars      []string
 	VolumeMounts []string
-	Input        io.Reader
+
+	Input io.Reader
 }
 
 // NewContainer returns instance of Container interface implemented by particular driver
