@@ -16,10 +16,13 @@ package container
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"io/ioutil"
 	"testing"
 
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -92,14 +95,116 @@ func TestGenericContainer(t *testing.T) {
 			outputPath:  "directory doesn't exist",
 		},
 		{
+			name:       "error output directory does not exist",
+			outputPath: "doesn't exist",
+			containerAPI: &v1alpha1.GenericContainer{
+				Spec: v1alpha1.GenericContainerSpec{
+					Type:  v1alpha1.GenericContainerTypeAirship,
+					Image: "some image",
+					StorageMounts: []v1alpha1.StorageMount{
+						{
+							MountType: "bind",
+							Src:       "test",
+							DstPath:   "/mount",
+						},
+					},
+				},
+				Config: `kind: ConfigMap`,
+			},
+			expectedErr: "no such file or directory",
+			execFunc: func(ctx context.Context, driver, url string) (Container, error) {
+				return getDockerContainerMock(mockDockerClient{
+					containerAttach: func() (types.HijackedResponse, error) {
+						conn := types.HijackedResponse{
+							Conn: mockConn{WData: make([]byte, len([]byte("foo: bar")))},
+						}
+						return conn, nil
+					},
+					imageList: func() ([]types.ImageSummary, error) {
+						return []types.ImageSummary{{ID: "imgid"}}, nil
+					},
+					imageInspectWithRaw: func() (types.ImageInspect, []byte, error) {
+						return types.ImageInspect{
+							Config: &container.Config{
+								Cmd: []string{"testCmd"},
+							},
+						}, nil, nil
+					},
+				}), nil
+			},
+		},
+		{
+			name: "basic success airship container",
+			containerAPI: &v1alpha1.GenericContainer{
+				Spec: v1alpha1.GenericContainerSpec{
+					Type:  v1alpha1.GenericContainerTypeAirship,
+					Image: "some image",
+					StorageMounts: []v1alpha1.StorageMount{
+						{
+							MountType: "bind",
+							Src:       "test",
+							DstPath:   "/mount",
+						},
+					},
+				},
+				Config: `kind: ConfigMap`,
+			},
+			execFunc: func(ctx context.Context, driver, url string) (Container, error) {
+				return getDockerContainerMock(mockDockerClient{
+					containerAttach: func() (types.HijackedResponse, error) {
+						conn := types.HijackedResponse{
+							Conn: mockConn{WData: make([]byte, len([]byte("foo: bar")))},
+						}
+						return conn, nil
+					},
+					imageList: func() ([]types.ImageSummary, error) {
+						return []types.ImageSummary{{ID: "imgid"}}, nil
+					},
+					imageInspectWithRaw: func() (types.ImageInspect, []byte, error) {
+						return types.ImageInspect{
+							Config: &container.Config{
+								Cmd: []string{"testCmd"},
+							},
+						}, nil, nil
+					},
+				}), nil
+			},
+		},
+		{
 			name: "basic success airship success written to provided output Writer",
 			containerAPI: &v1alpha1.GenericContainer{
 				Spec: v1alpha1.GenericContainerSpec{
-					Type: v1alpha1.GenericContainerTypeAirship,
+					Type:  v1alpha1.GenericContainerTypeAirship,
+					Image: "some image",
+					StorageMounts: []v1alpha1.StorageMount{
+						{
+							MountType: "bind",
+							Src:       "test",
+							DstPath:   "/mount",
+						},
+					},
 				},
+				Config: `kind: ConfigMap`,
 			},
-			output:      ioutil.Discard,
-			expectedErr: "airship generic container type",
+			execFunc: func(ctx context.Context, driver, url string) (Container, error) {
+				return getDockerContainerMock(mockDockerClient{
+					containerAttach: func() (types.HijackedResponse, error) {
+						conn := types.HijackedResponse{
+							Conn: mockConn{WData: make([]byte, len([]byte("foo: bar")))},
+						}
+						return conn, nil
+					},
+					imageList: func() ([]types.ImageSummary, error) {
+						return []types.ImageSummary{{ID: "imgid"}}, nil
+					},
+					imageInspectWithRaw: func() (types.ImageInspect, []byte, error) {
+						return types.ImageInspect{
+							Config: &container.Config{},
+						}, nil, nil
+					},
+				}), nil
+			},
+			output: ioutil.Discard,
 		},
 	}
 
