@@ -3,6 +3,3 @@ kind: Kustomization
 
 generators:
   - hostgenerator
-
-patchesStrategicMerge:
-  - ephemeral-patch.yaml
