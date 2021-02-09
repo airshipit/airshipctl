@@ -157,6 +157,9 @@ func (c *clientV1Alpha1) runAirship() error {
 		c.conf.Spec.Image,
 		c.conf.Spec.Airship.Cmd)
 
+	// write logs asynchronously while waiting for for container to finish
+	go writeLogs(cont)
+
 	err = cont.WaitUntilFinished()
 	if err != nil {
 		return err
@@ -168,20 +171,8 @@ func (c *clientV1Alpha1) runAirship() error {
 	}
 	defer rOut.Close()
 
-	rErr, err := cont.GetContainerLogs(GetLogOptions{Stderr: true})
-	if err != nil {
-		return err
-	}
-	defer rOut.Close()
-
 	parsedOut := dlog.NewReader(rOut)
-	parsedErr := dlog.NewReader(rErr)
 
-	// write container stderr to airship log output
-	_, err = io.Copy(log.Writer(), parsedErr)
-	if err != nil {
-		return err
-	}
 	return writeSink(c.resultsDir, parsedOut, c.output)
 }
 
@@ -222,6 +213,22 @@ func (c *clientV1Alpha1) runKRM() error {
 	fns.Functions = []*kyaml.RNode{function}
 
 	return fns.Execute()
+}
+
+func writeLogs(cont Container) {
+	stderr, err := cont.GetContainerLogs(GetLogOptions{
+		Stderr: true,
+		Follow: true})
+	if err != nil {
+		log.Fatalf("received an error trying to attach to container to retrieve logs %e", err)
+		return
+	}
+	defer stderr.Close()
+	parsedStdErr := dlog.NewReader(stderr)
+	_, err = io.Copy(log.Writer(), parsedStdErr)
+	if err != nil {
+		log.Fatalf("received an error while copying logs from container %e", err)
+	}
 }
 
 // writeSink output to directory on filesystem sink
