@@ -16,7 +16,16 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/kustomize/kyaml/fn/runtime/runtimeutil"
+)
+
+const (
+	// GenericContainerAirshipDockerDriver is the driver name supported by airship container interface
+	// we dont use strong type here for now, to avoid converting to string in the implementation
+	GenericContainerAirshipDockerDriver = "docker"
+	// GenericContainerTypeAirship specifies that airship type container will be used
+	GenericContainerTypeAirship GenericContainerType = "airship"
+	// GenericContainerTypeKrm specifies that kustomize krm function will be used
+	GenericContainerTypeKrm GenericContainerType = "krm"
 )
 
 // +kubebuilder:object:root=true
@@ -25,48 +34,88 @@ import (
 type GenericContainer struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	// Executor will write output using kustomize sink if this parameter is specified.
-	// Else it will write output to STDOUT.
-	// This path relative to current site root.
-	KustomizeSinkOutputDir string `json:"kustomizeSinkOutputDir,omitempty"`
-	// Settings for for a container
-	Spec runtimeutil.FunctionSpec `json:"spec,omitempty"`
+
+	// Holds container configuration
+	Spec GenericContainerSpec `json:"spec,omitempty"`
+
 	// Config for the RunFns function in a custom format
 	Config string `json:"config,omitempty"`
 }
 
-// DefaultGenericContainer can be used to safely unmarshal GenericContainer object without nil pointers
-func DefaultGenericContainer() *GenericContainer {
-	return &GenericContainer{
-		Spec: runtimeutil.FunctionSpec{},
-	}
+// GenericContainerType specify type of the container, there are currently two types:
+// airship - airship will run the container
+// krm - kustomize krm function will run the container
+type GenericContainerType string
+
+// GenericContainerSpec container configuration
+type GenericContainerSpec struct {
+	// Supported types are "airship" and "krm"
+	Type GenericContainerType `json:"type,omitempty"`
+
+	// Ariship container spec
+	Airship AirshipContainerSpec `json:"airship,omitempty"`
+
+	// KRM container function spec
+	KRM KRMContainerSpec `json:"krm,omitempty"`
+
+	// Executor will write output using kustomize sink if this parameter is specified.
+	// Else it will write output to STDOUT.
+	// This path relative to current site root.
+	SinkOutputDir string `json:"sinkOutputDir,omitempty"`
+
+	// HostNetwork defines network specific configuration
+	HostNetwork bool `json:"hostNetwork,omitempty" yaml:"network,omitempty"`
+
+	// Image is the container image to run
+	Image string `json:"image,omitempty" yaml:"image,omitempty"`
+
+	// EnvVars is a slice of env string that will be exposed to container
+	// ["MY_VAR=my-value, "MY_VAR1=my-value1"]
+	// if passed in format ["MY_ENV"] this env variable will be exported the container
+	EnvVars []string `json:"envVars,omitempty"`
+
+	// Mounts are the storage or directories to mount into the container
+	StorageMounts []StorageMount `json:"mounts,omitempty" yaml:"mounts,omitempty"`
 }
 
-// DeepCopyInto is copying the receiver, writing into out. in must be non-nil.
-func (in *GenericContainer) DeepCopyInto(out *GenericContainer) {
-	*out = *in
-	out.TypeMeta = in.TypeMeta
-	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+// AirshipContainerSpec airship container settings
+type AirshipContainerSpec struct {
 
-	out.Spec = in.Spec
-	out.Spec.Container = in.Spec.Container
-	out.Spec.Container.Network = in.Spec.Container.Network
-	if in.Spec.Container.StorageMounts != nil {
-		in, out := &in.Spec.Container.StorageMounts, &out.Spec.Container.StorageMounts
-		*out = make([]runtimeutil.StorageMount, len(*in))
-		copy(*out, *in)
-	}
-	if in.Spec.Container.Env != nil {
-		in, out := &in.Spec.Container.Env, &out.Spec.Container.Env
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
+	// ContainerRuntime currently supported and default runtime is "docker"
+	ContainerRuntime string `json:"containerRuntime,omitempty"`
 
-	out.Spec.Starlark = in.Spec.Starlark
-	out.Spec.Exec = in.Spec.Exec
-	if in.Spec.StorageMounts != nil {
-		in, out := &in.Spec.StorageMounts, &out.Spec.StorageMounts
-		*out = make([]runtimeutil.StorageMount, len(*in))
-		copy(*out, *in)
-	}
+	// Cmd to run inside the container, `["/my-command", "arg"]`
+	Cmd []string `json:"cmd,omitempty"`
+
+	// Privileged identifies if the container is to be run in a Privileged mode
+	Privileged bool `json:"pivileged,omitempty"`
+}
+
+// KRMContainerSpec defines a spec for running a function as a container
+// empty for now since it has no extra fields from AirshipContainerSpec
+type KRMContainerSpec struct{}
+
+// StorageMount represents a container's mounted storage option(s)
+// copy from https://github.com/kubernetes-sigs/kustomize to avoid imports in this package
+type StorageMount struct {
+	// Type of mount e.g. bind mount, local volume, etc.
+	MountType string `json:"type,omitempty" yaml:"type,omitempty"`
+
+	// Source for the storage to be mounted.
+	// For named volumes, this is the name of the volume.
+	// For anonymous volumes, this field is omitted (empty string).
+	// For bind mounts, this is the path to the file or directory on the host.
+	Src string `json:"src,omitempty" yaml:"src,omitempty"`
+
+	// The path where the file or directory is mounted in the container.
+	DstPath string `json:"dst,omitempty" yaml:"dst,omitempty"`
+
+	// Mount in ReadWrite mode if it's explicitly configured
+	// See https://docs.docker.com/storage/bind-mounts/#use-a-read-only-bind-mount
+	ReadWriteMode bool `json:"rw,omitempty" yaml:"rw,omitempty"`
+}
+
+// DefaultGenericContainer can be used to safely unmarshal GenericContainer object without nil pointers
+func DefaultGenericContainer() *GenericContainer {
+	return &GenericContainer{}
 }
