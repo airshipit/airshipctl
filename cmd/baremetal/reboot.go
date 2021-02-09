@@ -15,6 +15,8 @@ Licensed under the Apache License, Version 2.0 (the "License");
 package baremetal
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
@@ -22,18 +24,32 @@ import (
 	"opendev.org/airship/airshipctl/pkg/inventory/ifc"
 )
 
+var (
+	rebootCommand = "reboot"
+
+	rebootLong = fmt.Sprintf(`
+Reboot baremetal hosts
+%s
+`, selectorsDescription)
+
+	rebootExample = fmt.Sprintf(bmhActionExampleTempalte, rebootCommand)
+)
+
 // NewRebootCommand provides a command with the capability to reboot baremetal hosts.
 func NewRebootCommand(cfgFactory config.Factory, options *inventory.CommandOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "reboot",
-		Short: "Reboot a host",
-		Args:  cobra.NoArgs,
+		Use:     rebootCommand,
+		Long:    rebootLong[1:],
+		Short:   "Reboot a hosts",
+		Example: rebootExample[1:],
+		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return options.BMHAction(ifc.BaremetalOperationReboot)
 		},
 	}
 
 	initFlags(options, cmd)
+	initAllFlag(options, cmd)
 
 	return cmd
 }

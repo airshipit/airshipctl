@@ -15,6 +15,8 @@
 package baremetal
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
@@ -22,18 +24,32 @@ import (
 	"opendev.org/airship/airshipctl/pkg/inventory/ifc"
 )
 
+var (
+	ejectMediaCommand = "ejectmedia"
+
+	ejectMediaLong = fmt.Sprintf(`
+Eject media attached to a baremetal hosts
+%s
+`, selectorsDescription)
+
+	ejectMediaExample = fmt.Sprintf(bmhActionExampleTempalte, ejectMediaCommand)
+)
+
 // NewEjectMediaCommand provides a command to eject media attached to a baremetal host.
 func NewEjectMediaCommand(cfgFactory config.Factory, options *inventory.CommandOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "ejectmedia",
-		Short: "Eject media attached to a baremetal host",
-		Args:  cobra.NoArgs,
+		Use:     ejectMediaCommand,
+		Short:   "Eject media attached to a baremetal hosts",
+		Long:    ejectMediaLong[1:],
+		Example: ejectMediaExample[1:],
+		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return options.BMHAction(ifc.BaremetalOperationEjectVirtualMedia)
 		},
 	}
 
 	initFlags(options, cmd)
+	initAllFlag(options, cmd)
 
 	return cmd
 }

@@ -1,9 +1,27 @@
-Shutdown a baremetal host
+Power off baremetal hosts
+The command will target baremetal hosts from airship inventory kustomize root
+based on the --name, --namespace and --labels flags provided. If no flags are
+provided airshipctl will try to select all baremetal hosts in the inventory
 
 Usage:
   poweroff [flags]
 
+Examples:
+Perform action against hosts with name rdm9r3s3 in all namespaces where the host is found
+# airshipctl baremetal poweroff --name rdm9r3s3
+
+Perform action against hosts with name rdm9r3s3 in namespace metal3
+# airshipctl baremetal poweroff --name rdm9r3s3 --namespace metal3
+
+Perform action against all hosts defined in inventory
+# airshipctl baremetal poweroff --all
+
+Perform action against hosts with a label 'foo=bar'
+# airshipctl baremetal poweroff --labels "foo=bar"
+
+
 Flags:
+      --all                specify this to target all hosts in the inventory
   -h, --help               help for poweroff
   -l, --labels string      Label(s) to filter desired baremetal host documents
       --name string        Name to filter desired baremetal host document

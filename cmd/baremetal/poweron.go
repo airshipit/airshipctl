@@ -15,6 +15,8 @@ Licensed under the Apache License, Version 2.0 (the "License");
 package baremetal
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
@@ -22,18 +24,32 @@ import (
 	"opendev.org/airship/airshipctl/pkg/inventory/ifc"
 )
 
+var (
+	powerOnCommand = "poweron"
+
+	powerOnLong = fmt.Sprintf(`
+Power on baremetal hosts
+%s
+`, selectorsDescription)
+
+	powerOnExample = fmt.Sprintf(bmhActionExampleTempalte, powerOnCommand)
+)
+
 // NewPowerOnCommand provides a command with the capability to power on baremetal hosts.
 func NewPowerOnCommand(cfgFactory config.Factory, options *inventory.CommandOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "poweron",
-		Short: "Power on a host",
-		Args:  cobra.NoArgs,
+		Use:     powerOnCommand,
+		Short:   "Power on a hosts",
+		Long:    powerOnLong[1:],
+		Example: powerOnExample[1:],
+		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return options.BMHAction(ifc.BaremetalOperationPowerOn)
 		},
 	}
 
 	initFlags(options, cmd)
+	initAllFlag(options, cmd)
 
 	return cmd
 }
