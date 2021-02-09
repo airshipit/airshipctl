@@ -15,18 +15,24 @@
 package container
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
+	"os"
+	"strings"
 
+	// TODO this small library needs to be moved to airshipctl and extended
+	// with splitting streams into Stderr and Stdout
+	"github.com/ahmetb/dlog"
 	"sigs.k8s.io/kustomize/kyaml/fn/runtime/runtimeutil"
+	"sigs.k8s.io/kustomize/kyaml/kio"
 	"sigs.k8s.io/kustomize/kyaml/runfn"
 	kyaml "sigs.k8s.io/kustomize/kyaml/yaml"
 	"sigs.k8s.io/yaml"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
-
-	"opendev.org/airship/airshipctl/pkg/errors"
+	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 // ClientV1Alpha1 provides airship generic container API
@@ -73,12 +79,110 @@ func (c *clientV1Alpha1) Run() error {
 	// set default runtime
 	switch c.conf.Spec.Type {
 	case v1alpha1.GenericContainerTypeAirship, "":
-		return errors.ErrNotImplemented{What: "airship generic container type"}
+		return c.runAirship()
 	case v1alpha1.GenericContainerTypeKrm:
 		return c.runKRM()
 	default:
 		return fmt.Errorf("uknown generic container type %s", c.conf.Spec.Type)
 	}
+}
+
+func (c *clientV1Alpha1) runAirship() error {
+	if c.conf.Spec.Airship.ContainerRuntime == "" {
+		c.conf.Spec.Airship.ContainerRuntime = ContainerDriverDocker
+	}
+
+	var cont Container
+	if c.containerFunc == nil {
+		c.containerFunc = NewContainer
+	}
+
+	cont, err := c.containerFunc(
+		context.Background(),
+		c.conf.Spec.Airship.ContainerRuntime,
+		c.conf.Spec.Image)
+	if err != nil {
+		return err
+	}
+
+	// this will split the env vars into the ones to be exported and the ones that have values
+	contEnv := runtimeutil.NewContainerEnvFromStringSlice(c.conf.Spec.EnvVars)
+
+	envs := []string{}
+	for _, key := range contEnv.VarsToExport {
+		envs = append(envs, strings.Join([]string{key, os.Getenv(key)}, "="))
+	}
+
+	for key, value := range contEnv.EnvVars {
+		envs = append(envs, strings.Join([]string{key, value}, "="))
+	}
+
+	node, err := kyaml.Parse(c.conf.Config)
+	if err != nil {
+		return err
+	}
+
+	decoratedInput := bytes.NewBuffer([]byte{})
+	pipeline := &kio.Pipeline{
+		Inputs: []kio.Reader{&kio.ByteReader{Reader: c.input}},
+		Outputs: []kio.Writer{kio.ByteWriter{
+			Writer:                decoratedInput,
+			KeepReaderAnnotations: true,
+			WrappingKind:          kio.ResourceListKind,
+			WrappingAPIVersion:    kio.ResourceListAPIVersion,
+			FunctionConfig:        node,
+		}},
+	}
+
+	err = pipeline.Execute()
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Starting container with image: '%s', cmd: '%s'",
+		c.conf.Spec.Image,
+		c.conf.Spec.Airship.Cmd)
+	err = cont.RunCommand(RunCommandOptions{
+		Privileged: c.conf.Spec.Airship.Privileged,
+		Cmd:        c.conf.Spec.Airship.Cmd,
+		Mounts:     convertDockerMount(c.conf.Spec.StorageMounts),
+		EnvVars:    envs,
+		Input:      decoratedInput,
+	})
+	if err != nil {
+		return err
+	}
+
+	log.Debugf("Waiting for container run to finish, image: '%s', cmd: '%s'",
+		c.conf.Spec.Image,
+		c.conf.Spec.Airship.Cmd)
+
+	err = cont.WaitUntilFinished()
+	if err != nil {
+		return err
+	}
+
+	rOut, err := cont.GetContainerLogs(GetLogOptions{Stdout: true})
+	if err != nil {
+		return err
+	}
+	defer rOut.Close()
+
+	rErr, err := cont.GetContainerLogs(GetLogOptions{Stderr: true})
+	if err != nil {
+		return err
+	}
+	defer rOut.Close()
+
+	parsedOut := dlog.NewReader(rOut)
+	parsedErr := dlog.NewReader(rErr)
+
+	// write container stderr to airship log output
+	_, err = io.Copy(log.Writer(), parsedErr)
+	if err != nil {
+		return err
+	}
+	return writeSink(c.resultsDir, parsedOut, c.output)
 }
 
 func (c *clientV1Alpha1) runKRM() error {
@@ -120,6 +224,24 @@ func (c *clientV1Alpha1) runKRM() error {
 	return fns.Execute()
 }
 
+// writeSink output to directory on filesystem sink
+func writeSink(path string, rc io.Reader, out io.Writer) error {
+	inputs := []kio.Reader{&kio.ByteReader{Reader: rc}}
+	var outputs []kio.Writer
+	switch {
+	case out == nil && path != "":
+		log.Debugf("writing container output to files in directory %s", path)
+		outputs = []kio.Writer{&kio.LocalPackageWriter{PackagePath: path}}
+	case out != nil:
+		log.Debugf("writing container output to provided writer")
+		outputs = []kio.Writer{&kio.ByteWriter{Writer: out}}
+	default:
+		log.Debugf("writing container output to stdout")
+		outputs = []kio.Writer{&kio.ByteWriter{Writer: os.Stdout}}
+	}
+	return kio.Pipeline{Inputs: inputs, Outputs: outputs}.Execute()
+}
+
 func convertKRMMount(airMounts []v1alpha1.StorageMount) (fnsMounts []runtimeutil.StorageMount) {
 	for _, mount := range airMounts {
 		fnsMounts = append(fnsMounts, runtimeutil.StorageMount{
@@ -130,4 +252,19 @@ func convertKRMMount(airMounts []v1alpha1.StorageMount) (fnsMounts []runtimeutil
 		})
 	}
 	return fnsMounts
+}
+
+func convertDockerMount(airMounts []v1alpha1.StorageMount) (mounts []Mount) {
+	for _, mount := range airMounts {
+		mnt := Mount{
+			Type: mount.MountType,
+			Src:  mount.Src,
+			Dst:  mount.DstPath,
+		}
+		if !mount.ReadWriteMode {
+			mnt.ReadOnly = true
+		}
+		mounts = append(mounts, mnt)
+	}
+	return mounts
 }

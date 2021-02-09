@@ -6,6 +6,8 @@ require (
 	github.com/Azure/go-autorest/autorest v0.11.7 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.0
 	github.com/Microsoft/go-winio v0.4.14 // indirect
+	github.com/ahmetalpbalkan/dlog v0.0.0-20170105205344-4fb5f8204f26 // indirect
+	github.com/ahmetb/dlog v0.0.0-20170105205344-4fb5f8204f26
 	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1 // indirect
 	github.com/containerd/containerd v1.4.1 // indirect
 	github.com/docker/docker v1.4.2-0.20200203170920-46ec8731fbce
