@@ -26,10 +26,10 @@ iso_list=$(sudo virsh vol-list --pool default | awk '{print $1}'| grep -i 'ubunt
 vm_list=$(sudo virsh list --all | grep -E $vm_types | awk '{print $2}')
 net_list=$(sudo virsh net-list --all | awk '{print $1}'| grep -i air)
 
-for vm in $vm_list; do sudo virsh destroy $vm; sudo virsh undefine $vm --nvram --remove-all-storage; done
 for vol in $vol_list; do sudo virsh vol-delete $vol --pool airship; done
 for iso in $iso_list; do sudo virsh vol-delete $iso --pool default; done
 for net in $net_list; do sudo virsh net-destroy $net; sudo virsh net-undefine $net; done
+for vm in $vm_list; do sudo virsh destroy $vm; sudo virsh undefine $vm --nvram --remove-all-storage; done
 
 # TODO (raliev) the following commands can be overwritten in this way once we have proper label on all related containers/images
 # docker rmi -f $(docker ls -q --all --filter "label=org.opencontainers.image.authors=airship-discuss@lists.airshipit.org, irc://#airshipit@freenode")
