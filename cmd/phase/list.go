@@ -29,8 +29,8 @@ are executed in parallel.
 `
 )
 
-// NewPlanCommand creates a command which prints available phases
-func NewPlanCommand(cfgFactory config.Factory) *cobra.Command {
+// NewListCommand creates a command which prints available phases
+func NewListCommand(cfgFactory config.Factory) *cobra.Command {
 	p := &phase.ListCommand{Factory: cfgFactory}
 
 	planCmd := &cobra.Command{
@@ -42,5 +42,24 @@ func NewPlanCommand(cfgFactory config.Factory) *cobra.Command {
 			return p.RunE()
 		},
 	}
+	addListFlags(p, planCmd)
 	return planCmd
+}
+
+// addListFlags adds flags for phase list sub-command
+func addListFlags(options *phase.ListCommand, cmd *cobra.Command) {
+	flags := cmd.Flags()
+
+	flags.StringVarP(
+		&options.ClusterName,
+		"cluster-name",
+		"c",
+		"",
+		"filter documents by cluster name")
+
+	flags.StringVar(
+		&options.PlanID.Name,
+		"plan",
+		"",
+		"Plan name of a plan")
 }

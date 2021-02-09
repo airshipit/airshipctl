@@ -29,7 +29,7 @@ type Helper interface {
 	WorkDir() (string, error)
 	Phase(phaseID ID) (*v1alpha1.Phase, error)
 	Plan(planID ID) (*v1alpha1.PhasePlan, error)
-	ListPhases() ([]*v1alpha1.Phase, error)
+	ListPhases(o ListPhaseOptions) ([]*v1alpha1.Phase, error)
 	ListPlans() ([]*v1alpha1.PhasePlan, error)
 	ClusterMapAPIobj() (*v1alpha1.ClusterMap, error)
 	ClusterMap() (clustermap.ClusterMap, error)

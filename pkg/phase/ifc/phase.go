@@ -43,6 +43,12 @@ type ID struct {
 	Namespace string
 }
 
+// ListPhaseOptions is used to filter phases
+type ListPhaseOptions struct {
+	ClusterName string
+	PlanID      ID
+}
+
 // Client is a phase client that can be used by command line or ui packages
 type Client interface {
 	PhaseByID(ID) (Phase, error)

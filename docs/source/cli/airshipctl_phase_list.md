@@ -16,7 +16,9 @@ airshipctl phase list [flags]
 ### Options
 
 ```
-  -h, --help   help for list
+  -c, --cluster-name string   filter documents by cluster name
+  -h, --help                  help for list
+      --plan string           Plan name of a plan
 ```
 
 ### Options inherited from parent commands

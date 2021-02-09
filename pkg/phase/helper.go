@@ -15,6 +15,7 @@
 package phase
 
 import (
+	"errors"
 	"path/filepath"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,6 +26,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/inventory"
 	inventoryifc "opendev.org/airship/airshipctl/pkg/inventory/ifc"
+	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	"opendev.org/airship/airshipctl/pkg/util"
 )
@@ -124,7 +126,7 @@ func (helper *Helper) Plan(planID ifc.ID) (*v1alpha1.PhasePlan, error) {
 }
 
 // ListPhases returns all phases associated with manifest
-func (helper *Helper) ListPhases() ([]*v1alpha1.Phase, error) {
+func (helper *Helper) ListPhases(o ifc.ListPhaseOptions) ([]*v1alpha1.Phase, error) {
 	bundle, err := document.NewBundleByPath(helper.phaseBundleRoot)
 	if err != nil {
 		return nil, err
@@ -136,12 +138,32 @@ func (helper *Helper) ListPhases() ([]*v1alpha1.Phase, error) {
 		return nil, err
 	}
 
-	docs, err := bundle.Select(selector)
+	bundle, err = bundle.SelectBundle(selector)
 	if err != nil {
 		return nil, err
 	}
 
-	phases := []*v1alpha1.Phase{}
+	if o.ClusterName != "" {
+		if bundle, err = bundle.SelectByFieldValue("metadata.clusterName", func(v interface{}) bool {
+			if field, ok := v.(string); ok {
+				return field == o.ClusterName
+			}
+			return false
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	var docs []document.Document
+	if o.PlanID.Name != "" {
+		if docs, err = helper.getDocsByPhasePlan(o.PlanID, bundle); err != nil {
+			return nil, err
+		}
+	} else if docs, err = bundle.GetAllDocuments(); err != nil {
+		return nil, err
+	}
+
+	phases := make([]*v1alpha1.Phase, 0)
 	for _, doc := range docs {
 		p := v1alpha1.DefaultPhase()
 		if err = doc.ToAPIObject(p, v1alpha1.Scheme); err != nil {
@@ -150,6 +172,37 @@ func (helper *Helper) ListPhases() ([]*v1alpha1.Phase, error) {
 		phases = append(phases, p)
 	}
 	return phases, nil
+}
+
+func (helper *Helper) getDocsByPhasePlan(planID ifc.ID, bundle document.Bundle) ([]document.Document, error) {
+	docs := make([]document.Document, 0)
+	plan, filterErr := helper.Plan(planID)
+	if filterErr != nil {
+		return nil, filterErr
+	}
+	for _, phaseStep := range plan.Phases {
+		p := &v1alpha1.Phase{
+			ObjectMeta: v1.ObjectMeta{
+				Name: phaseStep.Name,
+			},
+		}
+		selector, filterErr := document.NewSelector().ByObject(p, v1alpha1.Scheme)
+		if filterErr != nil {
+			return nil, filterErr
+		}
+
+		doc, filterErr := bundle.SelectOne(selector)
+		if filterErr != nil {
+			if errors.As(filterErr, &document.ErrDocNotFound{}) {
+				log.Debug(filterErr.Error())
+				continue
+			}
+			return nil, filterErr
+		}
+
+		docs = append(docs, doc)
+	}
+	return docs, nil
 }
 
 // ListPlans returns all phases associated with manifest

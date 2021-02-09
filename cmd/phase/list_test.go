@@ -26,7 +26,7 @@ func TestNewPlanCommand(t *testing.T) {
 		{
 			Name:    "phase-plan-cmd-with-help",
 			CmdLine: "--help",
-			Cmd:     phase.NewPlanCommand(nil),
+			Cmd:     phase.NewListCommand(nil),
 		},
 	}
 	for _, testcase := range tests {
