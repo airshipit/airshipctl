@@ -24,6 +24,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 
@@ -174,17 +175,35 @@ func (c *DockerContainer) getConfig(opts RunCommandOptions) (container.Config, c
 	if err != nil {
 		return container.Config{}, container.HostConfig{}, err
 	}
+
+	mounts := []mount.Mount{}
+	for _, mnt := range opts.Mounts {
+		mounts = append(mounts, mount.Mount{
+			Type:     mount.Type(mnt.Type),
+			Source:   mnt.Src,
+			Target:   mnt.Dst,
+			ReadOnly: mnt.ReadOnly,
+		})
+	}
+
 	cCfg := container.Config{
-		Image:       c.imageURL,
-		Cmd:         cmd,
-		AttachStdin: true,
-		OpenStdin:   true,
-		Env:         opts.EnvVars,
-		Tty:         true,
+		Image: c.imageURL,
+		Cmd:   cmd,
+
+		AttachStdin:  true,
+		StdinOnce:    true,
+		OpenStdin:    true,
+		AttachStderr: true,
+		AttachStdout: true,
+		Env:          opts.EnvVars,
 	}
 	hCfg := container.HostConfig{
-		Binds:      opts.VolumeMounts,
+		Binds:      opts.Binds,
+		Mounts:     mounts,
 		Privileged: opts.Privileged,
+	}
+	if opts.HostNewtork {
+		hCfg.NetworkMode = "host"
 	}
 	return cCfg, hCfg, nil
 }
@@ -268,6 +287,8 @@ func (c *DockerContainer) RunCommand(opts RunCommandOptions) (err error) {
 		if attachErr != nil {
 			return attachErr
 		}
+		defer conn.Close()
+
 		if _, err = io.Copy(conn.Conn, opts.Input); err != nil {
 			return err
 		}
@@ -282,8 +303,12 @@ func (c *DockerContainer) RunCommand(opts RunCommandOptions) (err error) {
 }
 
 // GetContainerLogs returns logs from the container as io.ReadCloser
-func (c *DockerContainer) GetContainerLogs() (io.ReadCloser, error) {
-	return c.dockerClient.ContainerLogs(c.ctx, c.id, types.ContainerLogsOptions{ShowStdout: true, Follow: true})
+func (c *DockerContainer) GetContainerLogs(opts GetLogOptions) (io.ReadCloser, error) {
+	return c.dockerClient.ContainerLogs(c.ctx, c.id, types.ContainerLogsOptions{
+		ShowStderr: opts.Stderr,
+		Follow:     opts.Follow,
+		ShowStdout: opts.Stdout,
+	})
 }
 
 // RmContainer kills and removes a container from the docker host.

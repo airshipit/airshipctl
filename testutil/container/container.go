@@ -42,7 +42,7 @@ func (mc *MockContainer) RunCommand(container.RunCommandOptions) error {
 }
 
 // GetContainerLogs Container interface implementation for unit test purposes
-func (mc *MockContainer) GetContainerLogs() (io.ReadCloser, error) {
+func (mc *MockContainer) GetContainerLogs(container.GetLogOptions) (io.ReadCloser, error) {
 	return mc.MockGetContainerLogs()
 }
 

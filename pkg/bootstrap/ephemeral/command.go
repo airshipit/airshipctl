@@ -123,7 +123,7 @@ func (options *BootstrapContainerOptions) GetContainerStatus() (container.Status
 	var exitCode int
 	exitCode = state.ExitCode
 	if exitCode > 0 {
-		reader, err := options.Container.GetContainerLogs()
+		reader, err := options.Container.GetContainerLogs(container.GetLogOptions{Stderr: true, Follow: true})
 		if err != nil {
 			log.Printf("Error while trying to retrieve the container logs")
 			return BootNullString, err
@@ -197,7 +197,7 @@ func (options *BootstrapContainerOptions) CreateBootstrapContainer() error {
 		fmt.Sprintf("%s=%s", envBootstrapVolume, containerVolMount),
 	}
 
-	err := options.Container.RunCommand(container.RunCommandOptions{EnvVars: envVars, VolumeMounts: vols})
+	err := options.Container.RunCommand(container.RunCommandOptions{EnvVars: envVars, Binds: vols})
 	if err != nil {
 		return err
 	}

@@ -134,7 +134,7 @@ func (opts BootstrapIsoOptions) CreateBootstrapIso() error {
 		fmt.Sprintf("NO_PROXY=%s", os.Getenv("NO_PROXY")),
 	}
 
-	err = opts.Builder.RunCommand(container.RunCommandOptions{EnvVars: envVars, VolumeMounts: vols})
+	err = opts.Builder.RunCommand(container.RunCommandOptions{EnvVars: envVars, Binds: vols})
 	if err != nil {
 		return err
 	}
@@ -143,7 +143,7 @@ func (opts BootstrapIsoOptions) CreateBootstrapIso() error {
 
 	if log.DebugEnabled() {
 		var cLogs io.ReadCloser
-		cLogs, err = opts.Builder.GetContainerLogs()
+		cLogs, err = opts.Builder.GetContainerLogs(container.GetLogOptions{Stderr: true, Follow: true})
 		if err != nil {
 			log.Printf("failed to read container logs %s", err)
 		} else {
