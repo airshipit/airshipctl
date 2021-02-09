@@ -18,6 +18,7 @@ import (
 	"io"
 	"strings"
 
+	kustfs "sigs.k8s.io/kustomize/api/filesys"
 	"sigs.k8s.io/kustomize/api/k8sdeps/kunstruct"
 	"sigs.k8s.io/kustomize/api/krusty"
 	"sigs.k8s.io/kustomize/api/resmap"
@@ -68,6 +69,21 @@ func NewBundleByPath(rootPath string) (Bundle, error) {
 	return NewBundle(fs.NewDocumentFs(), rootPath)
 }
 
+// NewBundleFromBytes is a function which builds new document.Bundle from raw []bytes
+func NewBundleFromBytes(data []byte) (Bundle, error) {
+	fSys := fs.Fs{
+		FileSystem: kustfs.MakeFsInMemory(),
+	}
+	if err := fSys.WriteFile("/kustomization.yaml", []byte(`resources:
+- data.yaml`)); err != nil {
+		return nil, err
+	}
+	if err := fSys.WriteFile("/data.yaml", data); err != nil {
+		return nil, err
+	}
+	return NewBundle(fSys, "/")
+}
+
 // NewBundle is a convenience function to create a new bundle
 // Over time, it will evolve to support allowing more control
 // for kustomize plugins
@@ -101,7 +117,7 @@ func NewBundle(fSys fs.FileSystem, kustomizePath string) (Bundle, error) {
 	kustomizer := krusty.MakeKustomizer(fSys, &o)
 	m, err := kustomizer.Run(kustomizePath)
 	if err != nil {
-		return bundle, err
+		return nil, err
 	}
 	err = bundle.SetKustomizeResourceMap(m)
 	return bundle, err

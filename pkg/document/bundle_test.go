@@ -32,6 +32,32 @@ func TestNewBundle(t *testing.T) {
 	require.NotNil(bundle)
 }
 
+func TestNewBundleFromBytes(t *testing.T) {
+	require := require.New(t)
+	assert := assert.New(t)
+
+	bundle, err := document.NewBundleFromBytes([]byte(`apiVersion: v1
+kind: Test
+metadata:
+ name: test
+ labels:
+   app: test-label`))
+	require.NoError(err)
+	require.NotNil(bundle)
+
+	docs, err := bundle.GetAllDocuments()
+	require.NoError(err)
+	assert.NotEmpty(docs)
+
+	doc, err := bundle.SelectOne(document.NewSelector().ByKind("Test").ByName("test"))
+	require.NoError(err)
+	assert.NotNil(doc)
+
+	doc, err = bundle.SelectOne(document.NewSelector().ByKind("Test").ByLabel("app"))
+	require.NoError(err)
+	assert.NotNil(doc)
+}
+
 func TestBundleDocumentFiltering(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
