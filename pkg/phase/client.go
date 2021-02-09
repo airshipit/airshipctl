@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	cctlclient "opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
@@ -89,12 +90,22 @@ func (p *phase) Executor() (ifc.Executor, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	cctlClient, err := cctlclient.NewClient(
+		p.helper.PhaseBundleRoot(),
+		log.DebugEnabled(),
+		v1alpha1.DefaultClusterctl())
+	if err != nil {
+		return nil, err
+	}
+
 	kubeconf := kubeconfig.NewBuilder().
 		WithBundle(p.helper.PhaseBundleRoot()).
 		WithClusterMap(cMap).
 		WithClusterName(p.apiObj.ClusterName).
 		WithPath(p.kubeconfig).
 		WithTempRoot(wd).
+		WithClusterctClient(cctlClient).
 		Build()
 
 	return executorFactory(
