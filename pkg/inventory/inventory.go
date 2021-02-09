@@ -23,22 +23,22 @@ import (
 	"opendev.org/airship/airshipctl/pkg/inventory/ifc"
 )
 
-var _ ifc.Inventory = Invetnory{}
+var _ ifc.Inventory = Inventory{}
 
-// Invetnory implementation of the interface
-type Invetnory struct {
+// Inventory implementation of the interface
+type Inventory struct {
 	config.Factory
 }
 
 // NewInventory inventory constructor
 func NewInventory(f config.Factory) ifc.Inventory {
-	return Invetnory{
+	return Inventory{
 		Factory: f,
 	}
 }
 
 // BaremetalInventory implementation of the interface
-func (i Invetnory) BaremetalInventory() (ifc.BaremetalInventory, error) {
+func (i Inventory) BaremetalInventory() (ifc.BaremetalInventory, error) {
 	cfg, err := i.Factory()
 	if err != nil {
 		return nil, err
