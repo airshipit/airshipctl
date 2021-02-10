@@ -16,14 +16,14 @@ set -xe
 
 # The root of the manifest structure to be validated.
 # This corresponds to the targetPath in an airshipctl config
-: ${MANIFEST_ROOT:="$(dirname "${PWD}")"}
+: ${MANIFEST_ROOT:="$(basename "${PWD}")/manifests"}
 # The location of sites whose manifests should be validated.
 # This are relative to MANIFEST_ROOT above
 : ${SITE_ROOT:="$(basename "${PWD}")/manifests/site"}
 
 : ${SITE:="test-workload"}
 : ${CONTEXT:="kind-airship"}
-: ${KUBECONFIG:="${HOME}/.airship/kubeconfig"}
+: ${AIRSHIPKUBECONFIG:="${HOME}/.airship/kubeconfig"}
 
 : ${KUBECTL:="/usr/local/bin/kubectl"}
 TMP=$(mktemp -d)
@@ -31,25 +31,25 @@ TMP=$(mktemp -d)
 # Use the local project airshipctl binary as the default if it exists,
 # otherwise use the one on the PATH
 if [ -f "bin/airshipctl" ]; then
-    AIRSHIPCTL_DEFAULT="bin/airshipctl"
+  AIRSHIPCTL_DEFAULT="bin/airshipctl"
 else
-    AIRSHIPCTL_DEFAULT="$(which airshipctl)"
+  AIRSHIPCTL_DEFAULT="$(which airshipctl)"
 fi
 
 : ${AIRSHIPCONFIG:="${TMP}/config"}
-: ${AIRSHIPKUBECONFIG:="${TMP}/kubeconfig"}
+: ${KUBECONFIG:="${TMP}/kubeconfig"}
 : ${AIRSHIPCTL:="${AIRSHIPCTL_DEFAULT}"}
-ACTL="${AIRSHIPCTL} --airshipconf ${AIRSHIPCONFIG} --kubeconfig ${AIRSHIPKUBECONFIG}"
+ACTL="${AIRSHIPCTL} --airshipconf ${AIRSHIPCONFIG} --kubeconfig ${KUBECONFIG}"
 
 export KUBECONFIG
 
 # TODO: use `airshipctl config` to do this once all the needed knobs are exposed
 # The non-default parts are to set the targetPath appropriately,
 # and to craft up cluster/contexts to avoid the need for automatic kubectl reconciliation
-function generate_airshipconf {
-    cluster=$1
+function generate_airshipconf() {
+  cluster=$1
 
-    cat <<EOL > ${AIRSHIPCONFIG}
+  cat <<EOL >${AIRSHIPCONFIG}
 apiVersion: airshipit.org/v1alpha1
 contexts:
   ${CONTEXT}_${cluster}:
@@ -74,55 +74,59 @@ manifests:
           commitHash: ""
           force: false
           tag: ""
-        url: https://opendev.org/airship/treasuremap
+        url: https://review.opendev.org/airship/airshipctl
     targetPath: ${MANIFEST_ROOT}
+    metadataPath: manifests/site/${SITE}/metadata.yaml
 EOL
 }
 
 function cleanup() {
-    ${KIND} delete cluster --name airship
-    rm -rf ${TMP}
+  ${KIND} delete cluster --name $CLUSTER
+  rm -rf ${TMP}
 }
 trap cleanup EXIT
 
-# Loop over all cluster types and phases for the given site
-for cluster in ephemeral target; do
-    if [[ -d "${MANIFEST_ROOT}/${SITE_ROOT}/${SITE}/${cluster}" ]]; then
-        echo -e "\n**** Rendering phases for cluster: ${cluster}"
-        # Start a fresh, empty kind cluster for validating documents
-        ./tools/document/start_kind.sh
+generate_airshipconf "default"
 
-        # Since we'll be mucking with the kubeconfig - make a copy of it and muck with the copy
-        cp ${KUBECONFIG} ${AIRSHIPKUBECONFIG}
-        # This is a big hack to work around kubeconfig reconciliation
-        # change the cluster name (as well as context and user) to avoid kubeconfig reconciliation
-        sed -i "s/${CONTEXT}/${CONTEXT}_${cluster}/" ${AIRSHIPKUBECONFIG}
-        generate_airshipconf ${cluster}
+phase_plans=$(airshipctl --airshipconf ${AIRSHIPCONFIG} plan list | grep "PhasePlan" | awk -F '/' '{print $2}' | awk '{print $1}')
+for plan in $phase_plans; do
 
-        # A sequential list of potential phases.  A fancier attempt at this has been
-        # removed since it was choking in certain cases and got to be more trouble than was worth.
-        # This should be removed once we have a phase map that is smarter.
-        # In the meantime, as new phases are added, please add them here as well.
-        phases="initinfra-ephemeral controlplane-ephemeral initinfra-target workers-target"
+  cluster_list=$(airshipctl --airshipconf ${AIRSHIPCONFIG} cluster list)
+  # Loop over all cluster types and phases for the given site
+  for cluster in $cluster_list; do
+    echo -e "\n**** Rendering phases for cluster: ${cluster}"
 
-        for phase in $phases; do
-            # Guard against bootstrap or initinfra being missing, which could be the case for some configs
-            if [ -d "${MANIFEST_ROOT}/${SITE_ROOT}/${SITE}/${cluster}/${phase}" ]; then
-                echo -e "\n*** Rendering ${cluster}/${phase}"
+    # Since we'll be mucking with the kubeconfig - make a copy of it and muck with the copy
+    cp ${AIRSHIPKUBECONFIG} ${KUBECONFIG}
+    export CLUSTER="${cluster}"
 
-                # step 1: actually apply all crds in the phase
-                # TODO: will need to loop through phases in order, eventually
-                # e.g., load CRDs from initinfra first, so they're present when validating later phases
-                ${AIRSHIPCTL} --airshipconf ${AIRSHIPCONFIG} phase render ${phase} -k CustomResourceDefinition > ${TMP}/${phase}-crds.yaml
-                if [ -s ${TMP}/${phase}-crds.yaml ]; then
-                    ${KUBECTL} --context ${CONTEXT} --kubeconfig ${KUBECONFIG} apply -f ${TMP}/${phase}-crds.yaml
-                fi
+    # Start a fresh, empty kind cluster for validating documents
+    ./tools/document/start_kind.sh
 
-                # step 2: dry-run the entire phase
-                ${ACTL} phase run --dry-run ${phase}
-            fi
-        done
+    generate_airshipconf ${cluster}
 
-        ${KIND} delete cluster --name airship
-    fi
+    # A sequential list of potential phases.  A fancier attempt at this has been
+    # removed since it was choking in certain cases and got to be more trouble than was worth.
+    # This should be removed once we have a phase map that is smarter.
+    # In the meantime, as new phases are added, please add them here as well.
+    phases=$(airshipctl --airshipconf ${AIRSHIPCONFIG} phase list --plan $plan -c $cluster | grep Phase | awk -F '/' '{print $2}' || true)
+
+    for phase in $phases; do
+      # Guard against bootstrap or initinfra being missing, which could be the case for some configs
+      echo -e "\n*** Rendering ${cluster}/${phase}"
+
+      # step 1: actually apply all crds in the phase
+      # TODO: will need to loop through phases in order, eventually
+      # e.g., load CRDs from initinfra first, so they're present when validating later phases
+      ${AIRSHIPCTL} --airshipconf ${AIRSHIPCONFIG} phase render ${phase} -s executor -k CustomResourceDefinition >${TMP}/${phase}-crds.yaml
+      if [ -s ${TMP}/${phase}-crds.yaml ]; then
+        ${KUBECTL} --context ${CLUSTER} --kubeconfig ${KUBECONFIG} apply -f ${TMP}/${phase}-crds.yaml
+      fi
+
+      # step 2: dry-run the entire phase
+      ${ACTL} phase run --dry-run ${phase}
+    done
+
+    ${KIND} delete cluster --name $CLUSTER
+  done
 done

@@ -15,7 +15,7 @@
 # This downloads kind, puts it in a temp directory, and prints the directory
 set -e
 
-: ${KIND_URL:="https://kind.sigs.k8s.io/dl/v0.8.1/kind-$(uname)-amd64"}
+: ${KIND_URL:="https://kind.sigs.k8s.io/dl/v0.10.0/kind-$(uname)-amd64"}
 TMP=$(mktemp -d)
 KIND="${TMP}/kind"
 

@@ -7,7 +7,8 @@ bases:
 - crd
 - webhook # Disable this if you're not using the webhook functionality.
 - default
-- data
+# needs to be disabled since env variables aren't imported properly
+#- data
 
 # Enable this when conversion webhooks are implemented
 #patchesJson6902:
