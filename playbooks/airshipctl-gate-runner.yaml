@@ -15,7 +15,7 @@
     - vars/test-config.yaml
   environment:
     SOPS_IMPORT_PGP: "{{ airship_config_pgp }}"
-    SOPS_PGP_FP: "FBC7B9E2A4F9289AC0C1D4843D16CEE4A27381B4"
+    SOPS_PGP_FP: "{{ airship_config_pgp_fp }}"
     AZURE_SUBSCRIPTION_ID_B64: "UGxlYXNlLCBwcm92aWRlIHlvdXIgQXp1cmUgc3Vic2NyaXB0aW9uIGlkIGhlcmUK"
     AZURE_TENANT_ID_B64: "UGxlYXNlLCBwcm92aWRlIHlvdXIgQXp1cmUgdGVuYW50IGlkIGhlcmUK"
     AZURE_CLIENT_ID_B64: "UGxlYXNlLCBwcm92aWRlIHlvdXIgQXp1cmUgc2VydmljZSBwcmluY2lwYWwgaWQgaGVyZQo="
@@ -35,6 +35,7 @@
           - ./tools/deployment/21_systemwide_executable.sh
           - ./tools/deployment/22_test_configs.sh
           - ./tools/deployment/23_pull_documents.sh
+          - ./tools/deployment/23_generate_secrets.sh
           - ./tools/deployment/24_build_images.sh
           - ./tools/deployment/25_deploy_ephemeral_node.sh
           - ./tools/deployment/26_deploy_capi_ephemeral_node.sh
