@@ -9,6 +9,7 @@ Available Commands:
   get-kubeconfig               Retrieve kubeconfig for a desired cluster
   help                         Help about any command
   init                         Deploy cluster-api provider components
+  list                         Retrieve the list of defined clusters
   move                         Move Cluster API objects, provider specific objects and all dependencies to the target cluster
   rotate-sa-token              Rotate tokens of Service Accounts
   status                       Retrieve statuses of deployed cluster components

@@ -1,0 +1,12 @@
+Retrieve the list of defined clusters
+
+Usage:
+  list [flags]
+
+Examples:
+# Retrieve cluster list
+airshipctl cluster list --airshipconf /tmp/airconfig
+
+
+Flags:
+  -h, --help   help for list
