@@ -16,6 +16,7 @@ package executors
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"strings"
 
@@ -147,16 +148,25 @@ func (c *ClusterctlExecutor) init(opts ifc.RunOptions, evtCh chan events.Event) 
 		return
 	}
 
+	eventMsg := "clusterctl init completed successfully"
+
 	// Use cluster name as context in kubeconfig file
 	err = c.Init(kubeConfigFile, context)
-	if err != nil {
+	if err != nil && isAlreadyExistsError(err) {
+		// log the already existed/initialized error as warning and continue
+		eventMsg = fmt.Sprintf("WARNING: clusterctl is already initialized, received an error :  %s", err.Error())
+	} else if err != nil {
 		handleError(evtCh, err)
 		return
 	}
 	evtCh <- events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
 		Operation: events.ClusterctlInitEnd,
-		Message:   "clusterctl init completed successfully",
+		Message:   eventMsg,
 	})
+}
+
+func isAlreadyExistsError(err error) bool {
+	return strings.Contains(err.Error(), "there is already an instance")
 }
 
 // Validate executor configuration and documents
