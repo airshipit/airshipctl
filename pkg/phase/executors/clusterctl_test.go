@@ -44,7 +44,7 @@ metadata:
   name: clusterctl-v1
 action: %s
 init-options:
-  core-provider: "cluster-api:v0.3.3"
+  core-provider: "cluster-api:v0.3.2"
   kubeConfigRef:
     apiVersion: airshipit.org/v1alpha1
     kind: KubeConfig
@@ -53,7 +53,19 @@ providers:
   - name: "cluster-api"
     type: "CoreProvider"
     versions:
-      v0.3.3: manifests/function/capi/v0.3.3`
+      v0.3.2: functions/capi/infrastructure/v0.3.2`
+
+	renderedDocs = `---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    cluster.x-k8s.io/provider: cluster-api
+    clusterctl.cluster.x-k8s.io: ""
+    control-plane: controller-manager
+  name: version-two
+...
+`
 )
 
 func TestNewExecutor(t *testing.T) {
@@ -202,6 +214,6 @@ func TestExecutorRender(t *testing.T) {
 	require.NoError(t, err)
 	actualOut := &bytes.Buffer{}
 	actualErr := executor.Render(actualOut, ifc.RenderOptions{})
-	assert.Len(t, actualOut.Bytes(), 0)
+	assert.Equal(t, renderedDocs, actualOut.String())
 	assert.NoError(t, actualErr)
 }

@@ -15,8 +15,11 @@
 package client
 
 import (
+	"sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
 	clusterctlclient "sigs.k8s.io/cluster-api/cmd/clusterctl/client"
 	clusterctlconfig "sigs.k8s.io/cluster-api/cmd/clusterctl/client/config"
+	"sigs.k8s.io/cluster-api/cmd/clusterctl/client/repository"
+	"sigs.k8s.io/cluster-api/cmd/clusterctl/client/yamlprocessor"
 	clog "sigs.k8s.io/cluster-api/cmd/clusterctl/log"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
@@ -26,11 +29,23 @@ import (
 
 var _ Interface = &Client{}
 
+const (
+	// BootstrapProviderType is a local copy of appropriate type from cluster-api
+	BootstrapProviderType = v1alpha3.BootstrapProviderType
+	// CoreProviderType is a local copy of appropriate type from cluster-api
+	CoreProviderType = v1alpha3.CoreProviderType
+	// ControlPlaneProviderType is a local copy of appropriate type from cluster-api
+	ControlPlaneProviderType = v1alpha3.ControlPlaneProviderType
+	// InfrastructureProviderType is a local copy of appropriate type from cluster-api
+	InfrastructureProviderType = v1alpha3.InfrastructureProviderType
+)
+
 // Interface is abstraction to Clusterctl
 type Interface interface {
 	Init(kubeconfigPath, kubeconfigContext string) error
 	Move(fromKubeconfigPath, fromKubeconfigContext, toKubeconfigPath, toKubeconfigContext, namespace string) error
 	GetKubeconfig(options *GetKubeconfigOptions) (string, error)
+	Render(options RenderOptions) ([]byte, error)
 }
 
 // Client Implements interface to Clusterctl
@@ -38,6 +53,14 @@ type Client struct {
 	clusterctlClient clusterctlclient.Client
 	initOptions      clusterctlclient.InitOptions
 	moveOptions      clusterctlclient.MoveOptions
+	repoFactory      RepositoryFactory
+}
+
+// RenderOptions is used to get providers from RepoFactory for Render method
+type RenderOptions struct {
+	ProviderName    string
+	ProviderVersion string
+	ProviderType    string
 }
 
 // GetKubeconfigOptions carries all the options to retrieve kubeconfig from parent cluster
@@ -69,11 +92,11 @@ func NewClient(root string, debug bool, options *airshipv1.Clusterctl) (Interfac
 			ControlPlaneProviders:   initOptions.ControlPlaneProviders,
 		}
 	}
-	cclient, err := newClusterctlClient(root, options)
+	cclient, rf, err := newClusterctlClient(root, options)
 	if err != nil {
 		return nil, err
 	}
-	return &Client{clusterctlClient: cclient, initOptions: cio}, nil
+	return &Client{clusterctlClient: cclient, initOptions: cio, repoFactory: rf}, nil
 }
 
 // Init implements interface to Clusterctl
@@ -90,10 +113,6 @@ func (c *Client) Init(kubeconfigPath, kubeconfigContext string) error {
 // newConfig returns clusterctl config client
 func newConfig(options *airshipv1.Clusterctl, root string) (clusterctlconfig.Client, error) {
 	for _, provider := range options.Providers {
-		// this is a workaround as clusterctl validates if URL is empty, even though it is not
-		// used anywhere outside repository factory which we override
-		// TODO (kkalynovskyi) we need to create issue for this in clusterctl, and remove URL
-		// validation and move it to be an error during repository interface initialization
 		if !provider.IsClusterctlRepository {
 			provider.URL = root
 		}
@@ -105,11 +124,13 @@ func newConfig(options *airshipv1.Clusterctl, root string) (clusterctlconfig.Cli
 	return clusterctlconfig.New("", clusterctlconfig.InjectReader(reader))
 }
 
-func newClusterctlClient(root string, options *airshipv1.Clusterctl) (clusterctlclient.Client, error) {
+func newClusterctlClient(root string, options *airshipv1.Clusterctl) (clusterctlclient.Client,
+	RepositoryFactory, error) {
 	cconf, err := newConfig(options, root)
 	if err != nil {
-		return nil, err
+		return nil, RepositoryFactory{}, err
 	}
+
 	rf := RepositoryFactory{
 		Options:      options,
 		ConfigClient: cconf,
@@ -120,7 +141,32 @@ func newClusterctlClient(root string, options *airshipv1.Clusterctl) (clusterctl
 	orf := clusterctlclient.InjectRepositoryFactory(rf.ClientRepositoryFactory())
 	// options cluster client factory
 	occf := clusterctlclient.InjectClusterClientFactory(rf.ClusterClientFactory())
-	return clusterctlclient.New("", ocf, orf, occf)
+	client, err := clusterctlclient.New("", ocf, orf, occf)
+	return client, rf, err
+}
+
+// Render returns requested components as yaml
+func (c *Client) Render(renderOptions RenderOptions) ([]byte, error) {
+	provider, err := c.repoFactory.ConfigClient.Providers().Get(renderOptions.ProviderName,
+		v1alpha3.ProviderType(renderOptions.ProviderType))
+	if err != nil {
+		return nil, err
+	}
+
+	crf := c.repoFactory.ClientRepositoryFactory()
+	repoClient, err := crf(clusterctlclient.RepositoryClientFactoryInput{
+		Provider:  provider,
+		Processor: yamlprocessor.NewSimpleProcessor(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	components, err := repoClient.Components().Get(repository.ComponentsOptions{Version: renderOptions.ProviderVersion})
+	if err != nil {
+		return nil, err
+	}
+	return components.Yaml()
 }
 
 // GetKubeconfig is a wrapper for related cluster-api function
