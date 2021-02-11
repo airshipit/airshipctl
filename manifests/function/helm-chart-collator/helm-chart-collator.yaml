@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: collator
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helm-chart-collator
+  namespace: collator
+spec:
+  selector:
+    matchLabels:
+      app: helm-chart-collator
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: helm-chart-collator
+    spec:
+      containers:
+      - name: helm-chart-collator
+        image: quay.io/airshipit/helm-chart-collator:latest
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: helm-chart-collator
+  name: helm-chart-collator
+  namespace: collator
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: helm-chart-collator
+  type: ClusterIP
