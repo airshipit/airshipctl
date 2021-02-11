@@ -31,12 +31,12 @@ import (
 func TestCommandOptions(t *testing.T) {
 	t.Run("error BMHAction bmh inventory", func(t *testing.T) {
 		inv := &mockinventory.MockInventory{}
-		expetedErr := fmt.Errorf("bmh inventory error")
-		inv.On("BaremetalInventory").Once().Return(nil, expetedErr)
+		expectedErr := fmt.Errorf("bmh inventory error")
+		inv.On("BaremetalInventory").Once().Return(nil, expectedErr)
 
 		co := inventory.NewOptions(inv)
 		actualErr := co.BMHAction(ifc.BaremetalOperationPowerOn)
-		assert.Equal(t, expetedErr, actualErr)
+		assert.Equal(t, expectedErr, actualErr)
 	})
 
 	t.Run("success BMHAction", func(t *testing.T) {
@@ -52,9 +52,9 @@ func TestCommandOptions(t *testing.T) {
 	})
 
 	t.Run("error PowerStatus SelectOne", func(t *testing.T) {
-		expetedErr := fmt.Errorf("SelectOne inventory error")
+		expectedErr := fmt.Errorf("SelectOne inventory error")
 		bmhInv := &mockinventory.MockBMHInventory{}
-		bmhInv.On("SelectOne").Once().Return(nil, expetedErr)
+		bmhInv.On("SelectOne").Once().Return(nil, expectedErr)
 
 		inv := &mockinventory.MockInventory{}
 		inv.On("BaremetalInventory").Once().Return(bmhInv, nil)
@@ -62,27 +62,27 @@ func TestCommandOptions(t *testing.T) {
 		co := inventory.NewOptions(inv)
 		buf := bytes.NewBuffer([]byte{})
 		actualErr := co.PowerStatus(buf)
-		assert.Equal(t, expetedErr, actualErr)
+		assert.Equal(t, expectedErr, actualErr)
 		assert.Len(t, buf.Bytes(), 0)
 	})
 
 	t.Run("error PowerStatus BMHInventory", func(t *testing.T) {
 		inv := &mockinventory.MockInventory{}
 
-		expetedErr := fmt.Errorf("bmh inventory error")
-		inv.On("BaremetalInventory").Once().Return(nil, expetedErr)
+		expectedErr := fmt.Errorf("bmh inventory error")
+		inv.On("BaremetalInventory").Once().Return(nil, expectedErr)
 
 		co := inventory.NewOptions(inv)
 		buf := bytes.NewBuffer([]byte{})
 		actualErr := co.PowerStatus(buf)
-		assert.Equal(t, expetedErr, actualErr)
+		assert.Equal(t, expectedErr, actualErr)
 		assert.Len(t, buf.Bytes(), 0)
 	})
 
 	t.Run("error PowerStatus SystemPowerStatus", func(t *testing.T) {
-		expetedErr := fmt.Errorf("SystemPowerStatus error")
+		expectedErr := fmt.Errorf("SystemPowerStatus error")
 		host := &redfishutils.MockClient{}
-		host.On("SystemPowerStatus").Once().Return(power.StatusUnknown, expetedErr)
+		host.On("SystemPowerStatus").Once().Return(power.StatusUnknown, expectedErr)
 
 		bmhInv := &mockinventory.MockBMHInventory{}
 		bmhInv.On("SelectOne").Once().Return(host, nil)
@@ -93,7 +93,7 @@ func TestCommandOptions(t *testing.T) {
 		co := inventory.NewOptions(inv)
 		buf := bytes.NewBuffer([]byte{})
 		actualErr := co.PowerStatus(buf)
-		assert.Equal(t, expetedErr, actualErr)
+		assert.Equal(t, expectedErr, actualErr)
 		assert.Len(t, buf.Bytes(), 0)
 	})
 
@@ -152,11 +152,11 @@ func TestCommandOptions(t *testing.T) {
 	t.Run("error RemoteDirect BMHInventory", func(t *testing.T) {
 		inv := &mockinventory.MockInventory{}
 
-		expetedErr := fmt.Errorf("bmh inventory error")
-		inv.On("BaremetalInventory").Once().Return(nil, expetedErr)
+		expectedErr := fmt.Errorf("bmh inventory error")
+		inv.On("BaremetalInventory").Once().Return(nil, expectedErr)
 
 		co := inventory.NewOptions(inv)
 		actualErr := co.RemoteDirect()
-		assert.Equal(t, expetedErr, actualErr)
+		assert.Equal(t, expectedErr, actualErr)
 	})
 }

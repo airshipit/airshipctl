@@ -32,19 +32,19 @@ type CommandOptions struct {
 	IsoURL    string
 	Timeout   time.Duration
 
-	Invetnory ifc.Inventory
+	Inventory ifc.Inventory
 }
 
 // NewOptions options constructor
 func NewOptions(i ifc.Inventory) *CommandOptions {
 	return &CommandOptions{
-		Invetnory: i,
+		Inventory: i,
 	}
 }
 
 // BMHAction performs an action against BaremetalHost objects
 func (o *CommandOptions) BMHAction(op ifc.BaremetalOperation) error {
-	bmhInventory, err := o.Invetnory.BaremetalInventory()
+	bmhInventory, err := o.Inventory.BaremetalInventory()
 	if err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func (o *CommandOptions) PowerStatus(w io.Writer) error {
 }
 
 func (o *CommandOptions) getHost() (remoteifc.Client, error) {
-	bmhInventory, err := o.Invetnory.BaremetalInventory()
+	bmhInventory, err := o.Inventory.BaremetalInventory()
 	if err != nil {
 		return nil, err
 	}

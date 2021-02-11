@@ -132,7 +132,7 @@ func toCommandOptions(i inventoryifc.Inventory,
 	}
 
 	return &inventory.CommandOptions{
-		Invetnory: i,
+		Inventory: i,
 		IsoURL:    spec.OperationOptions.RemoteDirect.ISOURL,
 		Labels:    spec.HostSelector.LabelSelector,
 		Name:      spec.HostSelector.Name,
