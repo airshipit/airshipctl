@@ -27,6 +27,14 @@ const (
 	GenericContainerTypeAirship GenericContainerType = "airship"
 	// GenericContainerTypeKrm specifies that kustomize krm function will be used
 	GenericContainerTypeKrm GenericContainerType = "krm"
+	// KubeConfigEnvKey uses as a key for kubeconfig env variable
+	KubeConfigEnvKey = "KUBECONFIG"
+	// KubeConfigPath is a path for mounted kubeconfig inside container
+	KubeConfigPath = "/kubeconfig"
+	// KubeConfigEnvKeyContext uses as a key for kubectl context env variable
+	KubeConfigEnvKeyContext = "KCTL_CONTEXT"
+	// KubeConfigEnv uses as a kubeconfig env variable
+	KubeConfigEnv = KubeConfigEnvKey + "=" + KubeConfigPath
 )
 
 // +kubebuilder:object:root=true
