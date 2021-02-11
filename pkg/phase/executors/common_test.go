@@ -29,6 +29,10 @@ import (
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
+const (
+	defaultMetadataPath = "metadata.yaml"
+)
+
 func TestRegisterExecutor(t *testing.T) {
 	testCases := []struct {
 		name         string
@@ -100,11 +104,11 @@ func TestRegisterExecutor(t *testing.T) {
 	}
 }
 
-func makeDefaultHelper(t *testing.T, targetPath string) ifc.Helper {
+func makeDefaultHelper(t *testing.T, targetPath, metaPath string) ifc.Helper {
 	t.Helper()
 	cfg := config.NewConfig()
 	cfg.Manifests[config.AirshipDefaultManifest].TargetPath = targetPath
-	cfg.Manifests[config.AirshipDefaultManifest].MetadataPath = "metadata.yaml"
+	cfg.Manifests[config.AirshipDefaultManifest].MetadataPath = metaPath
 	cfg.Manifests[config.AirshipDefaultManifest].Repositories[config.DefaultTestPhaseRepo].URLString = ""
 	cfg.SetLoadedConfigPath(".")
 	helper, err := phase.NewHelper(cfg)

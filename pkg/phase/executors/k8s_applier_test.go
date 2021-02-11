@@ -94,7 +94,7 @@ func TestNewKubeApplierExecutor(t *testing.T) {
 			name:          "valid executor",
 			cfgDoc:        ValidExecutorDoc,
 			kubeconf:      testKubeconfig(testValidKubeconfig),
-			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata"),
+			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata", defaultMetadataPath),
 			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
 		},
 		{
@@ -107,7 +107,7 @@ metadata:
   labels:
     cli-utils.sigs.k8s.io/inventory-id: "some id"`,
 			expectedErr:   "wrong config document",
-			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata"),
+			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata", defaultMetadataPath),
 			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
 		},
 
@@ -116,7 +116,7 @@ metadata:
 			cfgDoc:        ValidExecutorDoc,
 			expectedErr:   "no such file or directory",
 			kubeconf:      testKubeconfig(testValidKubeconfig),
-			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata"),
+			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata", defaultMetadataPath),
 			bundleFactory: testBundleFactory("does not exist"),
 		},
 	}
@@ -165,7 +165,7 @@ func TestKubeApplierExecutorRun(t *testing.T) {
 		{
 			name:          "cant read kubeconfig error",
 			containsErr:   "no such file or directory",
-			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata"),
+			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata", defaultMetadataPath),
 			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
 			kubeconf:      testKubeconfig(`invalid kubeconfig`),
 			execDoc:       executorDoc(t, ValidExecutorDocNamespaced),
@@ -179,7 +179,7 @@ func TestKubeApplierExecutorRun(t *testing.T) {
 		{
 			name:          "error cluster not defined",
 			containsErr:   "cluster  is not defined in in cluster map",
-			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata"),
+			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata", defaultMetadataPath),
 			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
 			kubeconf:      testKubeconfig(testValidKubeconfig),
 			execDoc:       executorDoc(t, ValidExecutorDocNamespaced),

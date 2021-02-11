@@ -18,6 +18,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	v1 "k8s.io/api/core/v1"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/container"
@@ -52,6 +53,7 @@ const (
     data:
       cmd: encrypt
       unencrypted-regex: '^(kind|apiVersion|group|metadata)$'`
+
 	singleExecutorBundlePath = "../../container/testdata/single"
 )
 
@@ -63,7 +65,7 @@ func TestNewContainerExecutor(t *testing.T) {
 		e, err := executors.NewContainerExecutor(ifc.ExecutorConfig{
 			ExecutorDocument: execDoc,
 			BundleFactory:    testBundleFactory(singleExecutorBundlePath),
-			Helper:           makeDefaultHelper(t, "../../container/testdata"),
+			Helper:           makeDefaultHelper(t, "../../container/testdata", "metadata.yaml"),
 		})
 		assert.NoError(t, err)
 		assert.NotNil(t, e)
@@ -75,7 +77,7 @@ func TestNewContainerExecutor(t *testing.T) {
 			BundleFactory: func() (document.Bundle, error) {
 				return nil, fmt.Errorf("bundle error")
 			},
-			Helper: makeDefaultHelper(t, "../../container/testdata"),
+			Helper: makeDefaultHelper(t, "../../container/testdata", "metadata.yaml"),
 		})
 		assert.Error(t, err)
 		assert.Nil(t, e)
@@ -84,9 +86,11 @@ func TestNewContainerExecutor(t *testing.T) {
 
 func TestGenericContainer(t *testing.T) {
 	tests := []struct {
-		name        string
-		outputPath  string
-		expectedErr string
+		name         string
+		outputPath   string
+		expectedErr  string
+		targetPath   string
+		resultConfig string
 
 		containerAPI   *v1alpha1.GenericContainer
 		executorConfig ifc.ExecutorConfig
@@ -102,6 +106,7 @@ func TestGenericContainer(t *testing.T) {
 				},
 			},
 			clientFunc: container.NewClientV1Alpha1,
+			targetPath: singleExecutorBundlePath,
 		},
 		{
 			name: "error kyaml cant parse config",
@@ -114,11 +119,47 @@ func TestGenericContainer(t *testing.T) {
 			runOptions:  ifc.RunOptions{},
 			expectedErr: "wrong Node Kind",
 			clientFunc:  container.NewClientV1Alpha1,
+			targetPath:  singleExecutorBundlePath,
+		},
+		{
+			name: "error no object referenced in config",
+			containerAPI: &v1alpha1.GenericContainer{
+				ConfigRef: &v1.ObjectReference{
+					Kind: "no such kind",
+					Name: "no such name",
+				},
+			},
+			runOptions:  ifc.RunOptions{DryRun: true},
+			expectedErr: "found no documents",
+			targetPath:  singleExecutorBundlePath,
 		},
 		{
 			name:         "success dry run",
 			containerAPI: &v1alpha1.GenericContainer{},
 			runOptions:   ifc.RunOptions{DryRun: true},
+			targetPath:   singleExecutorBundlePath,
+		},
+		{
+			name: "success referenced config present",
+			containerAPI: &v1alpha1.GenericContainer{
+				ConfigRef: &v1.ObjectReference{
+					Kind:       "Secret",
+					Name:       "test-script",
+					APIVersion: "v1",
+				},
+			},
+			runOptions: ifc.RunOptions{DryRun: true},
+			targetPath: singleExecutorBundlePath,
+			resultConfig: `apiVersion: v1
+kind: Secret
+metadata:
+  name: test-script
+stringData:
+  script.sh: |
+    #!/bin/sh
+    echo WORKS! $var >&2
+type: Opaque
+`,
 		},
 	}
 
@@ -132,6 +173,7 @@ func TestGenericContainer(t *testing.T) {
 				ExecutorBundle: b,
 				Container:      tt.containerAPI,
 				ClientFunc:     tt.clientFunc,
+				Helper:         makeDefaultHelper(t, tt.targetPath, "../metadata.yaml"),
 			}
 
 			ch := make(chan events.Event)
@@ -152,6 +194,7 @@ func TestGenericContainer(t *testing.T) {
 				assert.NoError(t, e.ErrorEvent.Error)
 				assert.Equal(t, e.Type, events.GenericContainerType)
 				assert.Equal(t, e.GenericContainerEvent.Operation, events.GenericContainerStop)
+				assert.Equal(t, tt.resultConfig, container.Container.Config)
 			}
 		})
 	}

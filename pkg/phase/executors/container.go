@@ -25,6 +25,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
+	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
@@ -38,6 +39,7 @@ type ContainerExecutor struct {
 	ClientFunc       container.ClientV1Alpha1FactoryFunc
 	ExecutorBundle   document.Bundle
 	ExecutorDocument document.Document
+	Helper           ifc.Helper
 }
 
 // NewContainerExecutor creates instance of phase executor
@@ -66,8 +68,8 @@ func NewContainerExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 		ExecutorDocument: cfg.ExecutorDocument,
 		// TODO extend tests with proper client, make it interface
 		ClientFunc: container.NewClientV1Alpha1,
-
-		Container: apiObj,
+		Helper:     cfg.Helper,
+		Container:  apiObj,
 	}, nil
 }
 
@@ -92,6 +94,10 @@ func (c *ContainerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 	if c.ResultsDir == "" {
 		// set output only if the output if resulting directory is not defined
 		output = os.Stdout
+	}
+	if err = c.setConfig(); err != nil {
+		handleError(evtCh, err)
+		return
 	}
 
 	// TODO check the executor type  when dryrun is set
@@ -129,4 +135,31 @@ func (c *ContainerExecutor) Validate() error {
 // Render executor documents
 func (c *ContainerExecutor) Render(_ io.Writer, _ ifc.RenderOptions) error {
 	return errors.ErrNotImplemented{}
+}
+
+func (c *ContainerExecutor) setConfig() error {
+	if c.Container.ConfigRef != nil {
+		log.Printf("Config reference is specified, looking for the object in config ref: '%v'", c.Container.ConfigRef)
+		log.Printf("using bundle root %s", c.Helper.PhaseBundleRoot())
+		bundle, err := document.NewBundleByPath(c.Helper.PhaseBundleRoot())
+		if err != nil {
+			return err
+		}
+		gvk := c.Container.ConfigRef.GroupVersionKind()
+		selector := document.NewSelector().
+			ByName(c.Container.ConfigRef.Name).
+			ByNamespace(c.Container.ConfigRef.Namespace).
+			ByGvk(gvk.Group, gvk.Version, gvk.Kind)
+		doc, err := bundle.SelectOne(selector)
+		if err != nil {
+			return err
+		}
+		config, err := doc.AsYAML()
+		if err != nil {
+			return err
+		}
+		c.Container.Config = string(config)
+		return nil
+	}
+	return nil
 }
