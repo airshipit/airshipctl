@@ -147,9 +147,16 @@ func (d *Factory) GetInt64(path string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+	// TODO: kyaml implementation (which we now use) of ifc.KunstructuredFactory uses strconv.Atoi
+	// to decode integer values, so it is always int not int64.
 	result, ok := val.(int64)
 	if !ok {
-		return 0, ErrBadValueFormat{Value: path, Expected: "int64", Actual: fmt.Sprintf("%T", val)}
+		// Let's try to cast it to int and convert to int64
+		iresult, iok := val.(int)
+		if !iok {
+			return 0, ErrBadValueFormat{Value: path, Expected: "int64", Actual: fmt.Sprintf("%T", val)}
+		}
+		return int64(iresult), nil
 	}
 	return result, nil
 }

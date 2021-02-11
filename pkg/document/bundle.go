@@ -108,6 +108,7 @@ func NewBundle(fSys fs.FileSystem, kustomizePath string) (Bundle, error) {
 		DoLegacyResourceSort: true, // Default and what we want
 		LoadRestrictions:     options.LoadRestrictions,
 		DoPrune:              false, // Default
+		UseKyaml:             true,  // Default
 		PluginConfig: &types.PluginConfig{
 			PluginRestrictions: types.PluginRestrictionsNone,
 			BpLoadingOptions:   types.BploUseStaticallyLinked,
