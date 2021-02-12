@@ -13,3 +13,16 @@
 # limitations under the License.
 
 set -xe
+
+echo "Generating secrets using airshipctl"
+airshipctl phase run secret-generate
+
+export AIRSHIP_CONFIG_MANIFEST_DIRECTORY=${AIRSHIP_CONFIG_MANIFEST_DIRECTORY:-"/tmp/airship"}
+export AIRSHIP_CONFIG_PHASE_REPO_URL=${AIRSHIP_CONFIG_PHASE_REPO_URL:-"https://review.opendev.org/airship/airshipctl"}
+export EXTERNAL_KUBECONFIG=${EXTERNAL_KUBECONFIG:-""}
+
+echo "Generating ~/.airship/kubeconfig"
+if [[ -z "$EXTERNAL_KUBECONFIG" ]]; then
+   # TODO: use airshipctl cluster get-kubeconfig command when it's implemented
+   KUSTOMIZE_PLUGIN_HOME=./ kustomize build --enable_alpha_plugins "${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})/manifests/site/test-site/kubeconfig/" | yq '.config' --yaml-output > ~/.airship/kubeconfig
+fi

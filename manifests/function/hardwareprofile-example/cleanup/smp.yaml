@@ -1,0 +1,11 @@
+apiVersion: builtin
+kind: PatchStrategicMergeTransformer
+metadata:
+  name: smp-hwparofile
+patches: |-
+  ---
+  apiVersion: airshipit.org/v1alpha1
+  kind: VariableCatalogue
+  metadata:
+    name: hardwareprofile-example
+  $patch: delete
