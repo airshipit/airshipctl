@@ -15,6 +15,7 @@
 package v1alpha1
 
 import (
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -38,8 +39,15 @@ type GenericContainer struct {
 	// Holds container configuration
 	Spec GenericContainerSpec `json:"spec,omitempty"`
 
-	// Config for the RunFns function in a custom format
+	// Config will be passed to stdin of the container togather with other objects
+	// more information on easy ways to consume the config can be found here
+	// https://googlecontainertools.github.io/kpt/guides/producer/functions/golang/
 	Config string `json:"config,omitempty"`
+	// Reference is a reference to a configuration object, that must reside in the same
+	// bundle as this GenericContainer object, if specified, Config string will be
+	// ignored and referenced object in ConfigRef will be used into the Config string
+	// instead and passed further into the container stdin
+	ConfigRef *v1.ObjectReference `json:"configRef,omitempty"`
 }
 
 // GenericContainerType specify type of the container, there are currently two types:

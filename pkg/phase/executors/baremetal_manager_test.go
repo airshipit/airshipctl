@@ -50,7 +50,7 @@ func TestNewBMHExecutor(t *testing.T) {
 		executor, err := executors.NewBaremetalExecutor(ifc.ExecutorConfig{
 			ExecutorDocument: execDoc,
 			BundleFactory:    testBundleFactory(singleExecutorBundlePath),
-			Helper:           makeDefaultHelper(t, "../testdata"),
+			Helper:           makeDefaultHelper(t, "../testdata", defaultMetadataPath),
 		})
 		assert.NoError(t, err)
 		assert.NotNil(t, executor)
@@ -64,7 +64,7 @@ func TestNewBMHExecutor(t *testing.T) {
 		executor, actualErr := executors.NewBaremetalExecutor(ifc.ExecutorConfig{
 			ExecutorDocument: execDoc,
 			BundleFactory:    testBundleFactory(singleExecutorBundlePath),
-			Helper:           makeDefaultHelper(t, "../testdata"),
+			Helper:           makeDefaultHelper(t, "../testdata", defaultMetadataPath),
 		})
 		assert.Equal(t, exepectedErr, actualErr)
 		assert.Nil(t, executor)
@@ -121,7 +121,7 @@ func TestBMHExecutorRun(t *testing.T) {
 			executor, err := executors.NewBaremetalExecutor(ifc.ExecutorConfig{
 				ExecutorDocument: tt.execDoc,
 				BundleFactory:    testBundleFactory(singleExecutorBundlePath),
-				Helper:           makeDefaultHelper(t, "../testdata/"),
+				Helper:           makeDefaultHelper(t, "../testdata/", defaultMetadataPath),
 			})
 			require.NoError(t, err)
 			require.NotNil(t, executor)
@@ -180,7 +180,7 @@ func TestBMHValidate(t *testing.T) {
 			executor, err := executors.NewBaremetalExecutor(ifc.ExecutorConfig{
 				ExecutorDocument: tt.execDoc,
 				BundleFactory:    testBundleFactory(singleExecutorBundlePath),
-				Helper:           makeDefaultHelper(t, "../testdata/"),
+				Helper:           makeDefaultHelper(t, "../testdata/", defaultMetadataPath),
 			})
 			require.NoError(t, err)
 			require.NotNil(t, executor)
@@ -202,7 +202,7 @@ func TestBMHManagerRender(t *testing.T) {
 	executor, err := executors.NewBaremetalExecutor(ifc.ExecutorConfig{
 		ExecutorDocument: execDoc,
 		BundleFactory:    testBundleFactory(singleExecutorBundlePath),
-		Helper:           makeDefaultHelper(t, "../testdata"),
+		Helper:           makeDefaultHelper(t, "../testdata", defaultMetadataPath),
 	})
 	require.NoError(t, err)
 	require.NotNil(t, executor)
