@@ -8,6 +8,13 @@ metadata:
     config.kubernetes.io/function: |-
       container:
         image: quay.io/airshipit/templater:latest
+        envs:
+          - HTTP_PROXY
+          - HTTPS_PROXY
+          - http_proxy
+          - https_proxy
+          - NO_PROXY
+          - no_proxy
 template: |
   ---
   apiVersion: airshipit.org/v1alpha1
