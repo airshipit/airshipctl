@@ -89,7 +89,7 @@ jobs:
 
   release-github:
     # Only create github releases for airshipctl (unprefixed semver tag), not krm functions.
-    if: ${{ startsWith(github.ref, 'v') }}
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
