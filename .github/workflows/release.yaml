@@ -108,13 +108,14 @@ jobs:
         env:
           TAGS: ${{ github.ref }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.13.x
+      - name: Generate binaries and create github release
+        uses: goreleaser/goreleaser-action@v1
+        with:
+          version: latest
+          args: release --release-notes=release-notes.md --skip-validate --debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          body_path: release-notes.md
-          draft: true
