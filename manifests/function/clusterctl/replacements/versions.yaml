@@ -11,9 +11,9 @@ replacements:
 # Replace capm3 versions
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.capm3.manager}"
+    fieldref: "{.spec.capi_images.capm3.manager}"
   target:
     objref:
       kind: Clusterctl
@@ -21,9 +21,9 @@ replacements:
     fieldrefs: ["{.images.infrastructure-metal3/cluster-api-provider-metal3}"]
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.capm3.auth_proxy}"
+    fieldref: "{.spec.capi_images.capm3.auth_proxy}"
   target:
     objref:
       kind: Clusterctl
@@ -32,9 +32,9 @@ replacements:
 # Replace cacpk versions
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.cacpk.manager}"
+    fieldref: "{.spec.capi_images.cacpk.manager}"
   target:
     objref:
       kind: Clusterctl
@@ -42,9 +42,9 @@ replacements:
     fieldrefs: ["{.images.control-plane-kubeadm/kubeadm-control-plane-controller}"]
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.cacpk.auth_proxy}"
+    fieldref: "{.spec.capi_images.cacpk.auth_proxy}"
   target:
     objref:
       kind: Clusterctl
@@ -53,9 +53,9 @@ replacements:
 # Replace cabpk versions
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.cabpk.manager}"
+    fieldref: "{.spec.capi_images.cabpk.manager}"
   target:
     objref:
       kind: Clusterctl
@@ -63,9 +63,9 @@ replacements:
     fieldrefs: ["{.images.bootstrap-kubeadm/kubeadm-bootstrap-controller}"]
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.cabpk.auth_proxy}"
+    fieldref: "{.spec.capi_images.cabpk.auth_proxy}"
   target:
     objref:
       kind: Clusterctl
@@ -74,9 +74,9 @@ replacements:
 # Replace capd versions
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.capd.manager}"
+    fieldref: "{.spec.capi_images.capd.manager}"
   target:
     objref:
       kind: Clusterctl
@@ -84,9 +84,9 @@ replacements:
     fieldrefs: ["{.images.infrastructure-docker/capd-manager}"]
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.capd.auth_proxy}"
+    fieldref: "{.spec.capi_images.capd.auth_proxy}"
   target:
     objref:
       kind: Clusterctl
@@ -95,9 +95,9 @@ replacements:
 # Replace capo versions
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.capo.manager}"
+    fieldref: "{.spec.capi_images.capo.manager}"
   target:
     objref:
       kind: Clusterctl
@@ -105,9 +105,9 @@ replacements:
     fieldrefs: ["{.images.infrastructure-openstack/capi-openstack-controller-amd64}"]
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.capo.auth_proxy}"
+    fieldref: "{.spec.capi_images.capo.auth_proxy}"
   target:
     objref:
       kind: Clusterctl
@@ -116,9 +116,9 @@ replacements:
 # Replace capg versions
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.capg.manager}"
+    fieldref: "{.spec.capi_images.capg.manager}"
   target:
     objref:
       kind: Clusterctl
@@ -126,9 +126,9 @@ replacements:
     fieldrefs: ["{.images.infrastructure-gcp/cluster-api-gcp-controller}"]
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.capg.auth_proxy}"
+    fieldref: "{.spec.capi_images.capg.auth_proxy}"
   target:
     objref:
       kind: Clusterctl
@@ -137,9 +137,9 @@ replacements:
 # Replace capi versions
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.capi.manager}"
+    fieldref: "{.spec.capi_images.capi.manager}"
   target:
     objref:
       kind: Clusterctl
@@ -147,9 +147,9 @@ replacements:
     fieldrefs: ["{.images.cluster-api/cluster-api-controller}"]
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.capi.auth_proxy}"
+    fieldref: "{.spec.capi_images.capi.auth_proxy}"
   target:
     objref:
       kind: Clusterctl
@@ -159,9 +159,9 @@ replacements:
 # Replace capz versions
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.capz.manager}"
+    fieldref: "{.spec.capi_images.capz.manager}"
   target:
     objref:
       kind: Clusterctl
@@ -169,9 +169,9 @@ replacements:
     fieldrefs: ["{.images.infrastructure-azure/cluster-api-azure-controller}"]
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.capz.auth_proxy}"
+    fieldref: "{.spec.capi_images.capz.auth_proxy}"
   target:
     objref:
       kind: Clusterctl
@@ -181,8 +181,9 @@ replacements:
 # Replace the cert-manager image repository in the Clusterctl
 - source:
     objref:
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.cert-manager.repository}"
+    fieldref: "{.spec.capi_images.cert-manager.repository}"
   target:
     objref:
       kind: Clusterctl

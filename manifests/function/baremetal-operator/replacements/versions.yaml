@@ -12,8 +12,9 @@ replacements:
 # Container versions for the ironic Deployment
 - source:
     objref:
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.baremetal_operator.ironic.init_bootstrap}"
+    fieldref: "{.spec.images.baremetal_operator.ironic.init_bootstrap.image}"
   target:
     objref:
       kind: Deployment
@@ -21,8 +22,9 @@ replacements:
     fieldrefs: ["{.spec.template.spec.initContainers[?(.name == 'init-bootstrap')].image}"]
 - source:
     objref:
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.baremetal_operator.ironic.init_images}"
+    fieldref: "{.spec.images.baremetal_operator.ironic.init_images.image}"
   target:
     objref:
       kind: Deployment
@@ -30,8 +32,9 @@ replacements:
     fieldrefs: ["{.spec.template.spec.initContainers[?(.name == 'init-images')].image}"]
 - source:
     objref:
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.baremetal_operator.ironic.dnsmasq}"
+    fieldref: "{.spec.images.baremetal_operator.ironic.dnsmasq.image}"
   target:
     objref:
       kind: Deployment
@@ -39,8 +42,9 @@ replacements:
     fieldrefs: ["{.spec.template.spec.containers[?(.name == 'dnsmasq')].image}"]
 - source:
     objref:
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.baremetal_operator.ironic.httpd}"
+    fieldref: "{.spec.images.baremetal_operator.ironic.httpd.image}"
   target:
     objref:
       kind: Deployment
@@ -48,8 +52,9 @@ replacements:
     fieldrefs: ["{.spec.template.spec.containers[?(.name == 'httpd')].image}"]
 - source:
     objref:
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.baremetal_operator.ironic.ironic}"
+    fieldref: "{.spec.images.baremetal_operator.ironic.ironic.image}"
   target:
     objref:
       kind: Deployment
@@ -57,8 +62,9 @@ replacements:
     fieldrefs: ["{.spec.template.spec.containers[?(.name == 'ironic')].image}"]
 - source:
     objref:
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.baremetal_operator.ironic.ironic_inspector}"
+    fieldref: "{.spec.images.baremetal_operator.ironic.ironic_inspector.image}"
   target:
     objref:
       kind: Deployment
@@ -67,8 +73,9 @@ replacements:
 # Container versions for the metal3-baremetal-operator Deployment
 - source:
     objref:
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.baremetal_operator.metal3_baremetal_operator.baremetal_operator}"
+    fieldref: "{.spec.images.baremetal_operator.metal3_baremetal_operator.baremetal_operator.image}"
   target:
     objref:
       kind: Deployment
@@ -76,8 +83,9 @@ replacements:
     fieldrefs: ["{.spec.template.spec.containers[?(.name == 'baremetal-operator')].image}"]
 - source:
     objref:
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.baremetal_operator.metal3_baremetal_operator.ironic_proxy}"
+    fieldref: "{.spec.images.baremetal_operator.metal3_baremetal_operator.ironic_proxy.image}"
   target:
     objref:
       kind: Deployment
@@ -85,8 +93,9 @@ replacements:
     fieldrefs: ["{.spec.template.spec.containers[?(.name == 'ironic-proxy')].image}"]
 - source:
     objref:
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.images.baremetal_operator.metal3_baremetal_operator.ironic_inspector_proxy}"
+    fieldref: "{.spec.images.baremetal_operator.metal3_baremetal_operator.ironic_inspector_proxy.image}"
   target:
     objref:
       kind: Deployment

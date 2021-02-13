@@ -23,7 +23,7 @@ patches: |-
   $patch: delete
   ---
   apiVersion: airshipit.org/v1alpha1
-  kind: VariableCatalogue
+  kind: VersionsCatalogue
   metadata:
     name: versions-airshipctl
   $patch: delete

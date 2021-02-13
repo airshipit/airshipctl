@@ -13,9 +13,13 @@ patched at the composite, type, or site level to reconfigure the versions.
 
 The versions info falls under these keys:
 
-* charts: Helm chart locations and versions
+* helm_repositories: Helm chart locations
+
+* charts: Helm chart names and versions
 
 * files: image file (etc) locations and versions
+
+* capi_images: cluster-api container image registries and versions
 
 * images: container image registries and versions
 

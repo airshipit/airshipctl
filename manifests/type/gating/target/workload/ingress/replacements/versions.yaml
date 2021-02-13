@@ -9,9 +9,9 @@ metadata:
 replacements:
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: helm_repositories.ingress-nginx.url
+    fieldref: spec.helm_repositories.ingress-nginx.url
   target:
     objref:
       kind: HelmRepository
@@ -19,9 +19,9 @@ replacements:
     fieldrefs: ["spec.url"]
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: charts.ingress-nginx.chart
+    fieldref: spec.charts.ingress-nginx.chart
   target:
     objref:
       kind: HelmRelease
@@ -29,9 +29,9 @@ replacements:
     fieldrefs: ["spec.chart.spec.chart"]
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: charts.ingress-nginx.version
+    fieldref: spec.charts.ingress-nginx.version
   target:
     objref:
       kind: HelmRelease
