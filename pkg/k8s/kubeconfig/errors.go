@@ -14,10 +14,23 @@
 
 package kubeconfig
 
+import "fmt"
+
 // ErrKubeConfigPathEmpty returned when kubeconfig path is not specified
 type ErrKubeConfigPathEmpty struct {
 }
 
 func (e *ErrKubeConfigPathEmpty) Error() string {
 	return "kubeconfig path is not defined"
+}
+
+// ErrClusterctlKubeconfigWrongContextsCount is returned when clusterctl client returns
+// multiple or no contexts in kubeconfig for the child cluster
+type ErrClusterctlKubeconfigWrongContextsCount struct {
+	ContextCount int
+}
+
+func (e *ErrClusterctlKubeconfigWrongContextsCount) Error() string {
+	return fmt.Sprintf("clusterctl client returned '%d' contexts in kubeconfig "+
+		"context count must exactly one", e.ContextCount)
 }
