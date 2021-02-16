@@ -35,6 +35,7 @@ airshipctl phase render initinfra --source executor
 ```
   -a, --annotation string   filter documents by Annotations
   -g, --apiversion string   filter documents by API version
+  -d, --decrypt             ensure that decryption of encrypted documents has finished successfully
   -h, --help                help for render
   -k, --kind string         filter documents by Kinds
   -l, --label string        filter documents by Labels
