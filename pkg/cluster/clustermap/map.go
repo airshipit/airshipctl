@@ -15,11 +15,21 @@
 package clustermap
 
 import (
+	"fmt"
+	"io"
+	"os"
+	"text/tabwriter"
+
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 )
 
 // DefaultClusterAPIObjNamespace is a default namespace used for cluster-api cluster object
 const DefaultClusterAPIObjNamespace = "default"
+
+// WriteOptions has format in which we want to print the output(table/yaml/cluster name)
+type WriteOptions struct {
+	Format string
+}
 
 // ClusterMap interface that allows to list all clusters, find its parent, namespace,
 // check if dynamic kubeconfig is enabled.
@@ -29,6 +39,7 @@ type ClusterMap interface {
 	AllClusters() []string
 	ClusterKubeconfigContext(string) (string, error)
 	Sources(string) ([]v1alpha1.KubeconfigSource, error)
+	Write(io.Writer, WriteOptions) error
 }
 
 // clusterMap allows to view clusters and relationship between them
@@ -81,4 +92,29 @@ func (cm clusterMap) Sources(clusterName string) ([]v1alpha1.KubeconfigSource, e
 		return nil, ErrClusterNotInMap{Child: clusterName, Map: cm.apiMap}
 	}
 	return cluster.Sources, nil
+}
+
+// Write prints the cluster list in table/name output format
+func (cm clusterMap) Write(writer io.Writer, wo WriteOptions) error {
+	if wo.Format == "table" {
+		w := tabwriter.NewWriter(os.Stdout, 20, 8, 1, ' ', 0)
+		fmt.Fprintf(w, "NAME\tKUBECONFIG CONTEXT\tPARENT CLUSTER\n")
+		for clustername, cluster := range cm.apiMap.Map {
+			kubeconfig, err := cm.ClusterKubeconfigContext(clustername)
+			if err != nil {
+				return err
+			}
+			fmt.Fprintf(w, "%s\t%s\t%s\n",
+				clustername, kubeconfig, cluster.Parent)
+		}
+		w.Flush()
+	} else if wo.Format == "name" {
+		clusterList := cm.AllClusters()
+		for _, clusterName := range clusterList {
+			if _, err := writer.Write([]byte(clusterName + "\n")); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }

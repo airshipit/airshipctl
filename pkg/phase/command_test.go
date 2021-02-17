@@ -456,6 +456,7 @@ func TestClusterListCommand_RunE(t *testing.T) {
 		name        string
 		factory     config.Factory
 		expectedErr string
+		Format      string
 	}{
 		{
 			name: "Error config factory",
@@ -463,6 +464,7 @@ func TestClusterListCommand_RunE(t *testing.T) {
 				return nil, testErr
 			},
 			expectedErr: testFactoryErr,
+			Format:      "name",
 		},
 		{
 			name: "Error new helper",
@@ -473,9 +475,11 @@ func TestClusterListCommand_RunE(t *testing.T) {
 				}, nil
 			},
 			expectedErr: "missing configuration: context with name 'does not exist'",
+			Format:      "name",
 		},
 		{
-			name: "No error",
+			name:   "No error",
+			Format: "name",
 			factory: func() (*config.Config, error) {
 				conf := config.NewConfig()
 				conf.Manifests = map[string]*config.Manifest{
@@ -506,6 +510,7 @@ func TestClusterListCommand_RunE(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := phase.ClusterListCommand{
 				Factory: tt.factory,
+				Format:  tt.Format,
 				Writer:  bytes.NewBuffer(nil),
 			}
 			err := cmd.RunE()

@@ -69,3 +69,12 @@ type ErrInvalidPhase struct {
 func (e ErrInvalidPhase) Error() string {
 	return fmt.Sprintf("invalid phase: %s", e.Reason)
 }
+
+// ErrInvalidOutputFormat is called when the user provides format other than name/table
+type ErrInvalidOutputFormat struct {
+	RequestedFormat string
+}
+
+func (e ErrInvalidOutputFormat) Error() string {
+	return fmt.Sprintf("invalid output format specified %s. Allowed values are table|name", e.RequestedFormat)
+}
