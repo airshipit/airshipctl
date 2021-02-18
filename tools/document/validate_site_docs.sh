@@ -20,7 +20,7 @@ set -xe
 # The location of sites whose manifests should be validated.
 # This are relative to MANIFEST_ROOT above
 : ${SITE_ROOT:="$(basename "${PWD}")/manifests/site"}
-
+: ${MANIFEST_REPO_URL:="https://review.opendev.org/airship/airshipctl"}
 : ${SITE:="test-workload"}
 : ${CONTEXT:="kind-airship"}
 : ${AIRSHIPKUBECONFIG:="${HOME}/.airship/kubeconfig"}
@@ -74,7 +74,7 @@ manifests:
           commitHash: ""
           force: false
           tag: ""
-        url: https://review.opendev.org/airship/airshipctl
+        url: ${MANIFEST_REPO_URL}
     targetPath: ${MANIFEST_ROOT}
     metadataPath: manifests/site/${SITE}/metadata.yaml
 EOL
