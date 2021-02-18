@@ -1,6 +1,7 @@
-# Airshipctl and Cluster API GCP Integration
+# Airshipctl and Cluster API GCP Provider Integration
 
 ## Overview
+
 Airshipctl and cluster api gcp integration facilitates usage of `airshipctl` to
 create cluster api management and workload clusters using `gcp as infrastructure
 provider`.
@@ -8,6 +9,7 @@ provider`.
 ![Machines](https://i.imgur.com/UfxDtNO.jpg)
 
 ## Workflow
+
 A simple workflow that can be tested, involves the following
 operations:
 
@@ -18,13 +20,14 @@ components**
 
 **Create a workload cluster, with control plane and worker nodes**
 
-> airshipctl phase run controlplane-target
+> airshipctl phase run controlplane-ephemeral
 
 > airshipctl phase run workers-target
 
 ## GCP Prerequisites
 
 ### Create Service Account
+
 To create and manager clusters, this infrastructure providers uses a service
 account to authenticate with GCP's APIs. From your cloud console, follow [these
 instructions](https://cloud.google.com/iam/docs/creating-managing-service-accounts#creating)
@@ -35,6 +38,7 @@ packer, and build the CAPI compliant vm image.
 ### Build Cluster API Compliant VM Image
 
 #### Install Ansible
+
 Start by launching cloud shell.
 
 $ export GCP_PROJECT_ID=<project-id>
@@ -63,13 +67,15 @@ $ git clone https://sigs.k8s.io/image-builder.git
 
 $ cd image-builder/images/capi/
 
-$ make build-gce-default
+$ make build-gce-ubuntu-1804
 
-$ gcloud compute images list --project ${GCP_PROJECT_ID} --no-standard-images
+List the image
+
+$ gcloud compute images list --project ${GCP_PROJECT_ID} --no-standard-images --filter="family:capi-ubuntu-1804-k8s"
 
 ```
-NAME                                         PROJECT                FAMILY                      DEPRECATED  STATUS
-cluster-api-ubuntu-1804-v1-16-14-1599066516  virtual-anchor-281401  capi-ubuntu-1804-k8s-v1-16              READY
+NAME                                         PROJECT      FAMILY                      DEPRECATED  STATUS
+cluster-api-ubuntu-1804-v1-17-11-1607489276  airship-gcp  capi-ubuntu-1804-k8s-v1-17              READY
 ```
 
 ### Create Cloud NAT Router
@@ -83,17 +89,12 @@ balancer, you can create a Cloud NAT in the region you'd like your Kubernetes
 cluster to live in by following [these
 instructions](https://cloud.google.com/nat/docs/using-nat#specify_ip_addresses_for_nat).
 
-For reference, use the below images. You can create 2 cloud NAT routers for
-region us-west1 and us-east1
+Below cloud NAT router is created in `us-east1` region.
 
-![us-west1](https://i.imgur.com/Q5DRxtV.jpg)
-
-![us-east1](https://i.imgur.com/94qeAch.jpg)
-
-![nat-routers](https://i.imgur.com/wbeBSyF.jpg)
-
+![nat-router](https://i.imgur.com/TKO6xSE.png)
 
 ## Other Common Pre-requisites
+
 These prerequistes are required on the VM  that will be used to create workload
 cluster on gcp
 
@@ -116,75 +117,102 @@ initialized with cluster API and Cluster API gcp provider components.
 
 $ export KIND_EXPERIMENTAL_DOCKER_NETWORK=bridge
 
-$ kind create cluster --name capi-gcp
+$ export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
+
+$ kind create cluster --name ephemeral-cluster --wait 200s
+
 ```
-Creating cluster "capi-gcp" ...
+Creating cluster "ephemeral-cluster" ...
 WARNING: Overriding docker network due to KIND_EXPERIMENTAL_DOCKER_NETWORK
 WARNING: Here be dragons! This is not supported currently.
- ✓ Ensuring node image (kindest/node:v1.18.2) 🖼
+ ✓ Ensuring node image (kindest/node:v1.19.1) 🖼
  ✓ Preparing nodes 📦
  ✓ Writing configuration 📜
  ✓ Starting control-plane 🕹️
  ✓ Installing CNI 🔌
  ✓ Installing StorageClass 💾
-Set kubectl context to "kind-capi-gcp"
+ ✓ Waiting ≤ 3m20s for control-plane = Ready ⏳
+ • Ready after 1m3s 💚
+Set kubectl context to "kind-ephemeral-cluster"
 You can now use your cluster with:
 
-kubectl cluster-info --context kind-capi-gcp
+kubectl cluster-info --context kind-ephemeral-cluster
+
+Thanks for using kind! 😊
 ```
 
 $ kubectl get pods -A
 
 ```
-NAMESPACE            NAME                                             READY   STATUS    RESTARTS   AGE
-kube-system          coredns-66bff467f8-kmg7c                         1/1     Running   0          82s
-kube-system          coredns-66bff467f8-lg8qc                         1/1     Running   0          82s
-kube-system          etcd-capi-gcp-control-plane                      1/1     Running   0          91s
-kube-system          kindnet-dzp8v                                    1/1     Running   0          82s
-kube-system          kube-apiserver-capi-gcp-control-plane            1/1     Running   0          91s
-kube-system          kube-controller-manager-capi-gcp-control-plane   1/1     Running   0          90s
-kube-system          kube-proxy-zvdh8                                 1/1     Running   0          82s
-kube-system          kube-scheduler-capi-gcp-control-plane            1/1     Running   0          83s
-local-path-storage   local-path-provisioner-bd4bb6b75-6drnt           1/1     Running   0          82s
+NAMESPACE            NAME                                                      READY   STATUS    RESTARTS   AGE
+kube-system          coredns-f9fd979d6-g8wrd                                   1/1     Running   0          3m22s
+kube-system          coredns-f9fd979d6-wrc5r                                   1/1     Running   0          3m22s
+kube-system          etcd-ephemeral-cluster-control-plane                      1/1     Running   0          3m32s
+kube-system          kindnet-p8bx7                                             1/1     Running   0          3m22s
+kube-system          kube-apiserver-ephemeral-cluster-control-plane            1/1     Running   0          3m32s
+kube-system          kube-controller-manager-ephemeral-cluster-control-plane   1/1     Running   0          3m32s
+kube-system          kube-proxy-zl7jg                                          1/1     Running   0          3m22s
+kube-system          kube-scheduler-ephemeral-cluster-control-plane            1/1     Running   0          3m32s
+local-path-storage   local-path-provisioner-78776bfc44-q7gtr                   1/1     Running   0          3m22s
 ```
 
 ## Create airshipctl configuration files
 
-$ mkdir ~/.airship
+Create airshipctl configuration to use `gcp-test-site`.
 
-$ airshipctl config init
-
-Run the below command to configure gcp manifest, and add it to airship config
+$ cat ~/.airship/config
 
 ```
-$ airshipctl config set-manifest gcp_manifest --repo primary \
---url https://opendev.org/airship/airshipctl --branch master \
---primary --sub-path manifests/site/gcp-test-site --target-path /tmp/airship
+apiVersion: airshipit.org/v1alpha1
+contexts:
+  default:
+    contextKubeconf: ""
+    managementConfiguration: default
+    manifest: default
+  ephemeral-cluster:
+    contextKubeconf: ephemeral-cluster
+    managementConfiguration: ""
+    manifest: gcp_manifest
+currentContext: ephemeral-cluster
+encryptionConfigs: null
+kind: Config
+managementConfiguration:
+  default:
+    systemActionRetries: 30
+    systemRebootDelay: 30
+    type: redfish
+manifests:
+  default:
+    metadataPath: manifests/site/test-site/metadata.yaml
+    phaseRepositoryName: primary
+    repositories:
+      primary:
+        checkout:
+          branch: master
+          commitHash: ""
+          force: false
+          tag: ""
+        url: https://opendev.org/airship/treasuremap
+    targetPath: /tmp/default
+  gcp_manifest:
+    metadataPath: manifests/site/gcp-test-site/metadata.yaml
+    phaseRepositoryName: primary
+    repositories:
+      primary:
+        checkout:
+          branch: master
+          commitHash: ""
+          force: false
+          tag: ""
+        url: https://opendev.org/airship/airshipctl
+    targetPath: /tmp/airship
+permissions:
+  DirectoryPermission: 488
+  FilePermission: 416
 ```
 
-$ airshipctl config set-context kind-capi-gcp --manifest gcp_manifest
-
-```
-Context "kind-capi-gcp" modified.
-```
-$ cp ~/.kube/config ~/.airship/kubeconfig
-
-$ airshipctl config get-context
-
-```
-Context: kind-capi-gcp
-contextKubeconf: kind-capi-gcp_target
-manifest: gcp_manifest
-
-LocationOfOrigin: /home/rishabh/.airship/kubeconfig
-cluster: kind-capi-gcp_target
-user: kind-capi-gcp
-```
-$ airshipctl config use-context kind-capi-gcp
-
-```
-Manifest "gcp_manifest" created.
-```
+$ kubectl config set-context ephemeral-cluster --cluster kind-ephemeral-cluster --user kind-ephemeral-cluster
+Context "ephemeral-cluster" modified.
 
 $ airshipctl document pull --debug
 
@@ -195,111 +223,41 @@ $ airshipctl document pull --debug
 [airshipctl] 2020/08/12 14:07:13 Attempting to clone the repository airshipctl from https://review.opendev.org/airship/airshipctl
 [airshipctl] 2020/08/12 14:07:23 Attempting to checkout the repository airshipctl from branch refs/heads/master
 ```
-$ airshipctl config set-manifest gcp_manifest --target-path /tmp/airship/airshipctl
 
-## Configure gcp site variables
+### Configure Environment Variables
 
-`configure project_id`
+For GCP provider, following envs should be set with correct values as per the google cloud project.
 
-$ cat /tmp/airship/airshipctl/manifests/site/gcp-test-site/target/controlplane/project_name.json
+All values should be in Base64 encoded format.
 
-```
-[
-  { "op": "replace","path": "/spec/project","value": "<project_id>"}
-]
-```
+Replace these values with specific configuration and credential as per your google cloud project configuration.
 
-Include gcp variables in clusterctl.yaml
+```bash
+$cat gcp_env
 
-The original values for the below variables are as follows:
-```
-GCP_CONTROL_PLANE_MACHINE_TYPE="n1-standard-4"
-GCP_NODE_MACHINE_TYPE="n1-standard-4"
-GCP_REGION="us-west1"
-GCP_NETWORK_NAME="default"
-
-GCP_PROJECT="<your_project_id>"
-GCP_CREDENTIALS="$( cat ~/</path/to/serviceaccount-key.json>)"
+GCP_CONTROL_PLANE_MACHINE_TYPE="bjEtc3RhbmRhcmQtNA=="
+GCP_NODE_MACHINE_TYPE="bjEtc3RhbmRhcmQtNA=="
+GCP_REGION="dXMtZWFzdDE="
+GCP_NETWORK_NAME="ZGVmYXVsdA=="
+GCP_PROJECT="YWlyc2hpcC1nY3A="
+GCP_B64ENCODED_CREDENTIALS="base64 encoded value of </path/to/serviceaccount-key.json>"
 ```
 
-Edit `airshipctl/manifests/site/gcp-test-site/shared/clusterctl/clusterctl.yaml`
-to include gcp variables and their values in base64 encoded format. Use
-https://www.base64decode.org/ if required.
+Export all the envs
+$ export $(cat gcp_env)
 
-To get the GCP_CREDENTIALS in base64 format, use the below command.
+## Initialize `ephemeral-cluster` with `capi` and `capg` components
 
-$ export GCP_B64ENCODED_CREDENTIALS=$( cat ~/</path/to/serviceaccount-key.json> | base64 | tr -d '\n' )
-
-$ echo $GCP_B64ENCODED_CREDENTIALS
-
-The below shown `clusterctl.yaml`, has encoded the values for all variables except
-GCP_PROJECT and GCP_CREDENTIALS. You can use the base64 encoded values for
-GCP_PROJECT and GCP_CREDENTIALS based on your project.
-
-The other remaining variables in the `clusterctl.yaml` are base64 encoded.
-Their original values is as follows:
+$ airshipctl phase run clusterctl-init-ephemeral --debug --kubeconfig ~/.airship/kubeconfig
 
 ```
-GCP_CONTROL_PLANE_MACHINE_TYPE="n1-standard-4"
-GCP_NODE_MACHINE_TYPE="n1-standard-4"
-GCP_REGION="us-west1"
-GCP_NETWORK_NAME="default"
-```
-
-$ cat /tmp/airship/airshipctl/manifests/site/gcp-test-site/shared/clusterctl/clusterctl.yaml
-
-```
-apiVersion: airshipit.org/v1alpha1
-kind: Clusterctl
-metadata:
-  labels:
-    airshipit.org/deploy-k8s: "false"
-  name: clusterctl-v1
-init-options:
-  core-provider: "cluster-api:v0.3.3"
-  bootstrap-providers:
-    - "kubeadm:v0.3.3"
-  infrastructure-providers:
-    - "gcp:v0.3.0"
-  control-plane-providers:
-    - "kubeadm:v0.3.3"
-providers:
-  - name: "gcp"
-    type: "InfrastructureProvider"
-    variable-substitution: true
-    versions:
-      v0.3.0: manifests/function/capg/v0.3.0
-  - name: "kubeadm"
-    type: "BootstrapProvider"
-    versions:
-      v0.3.3: manifests/function/cabpk/v0.3.3
-  - name: "cluster-api"
-    type: "CoreProvider"
-    versions:
-      v0.3.3: manifests/function/capi/v0.3.3
-  - name: "kubeadm"
-    type: "ControlPlaneProvider"
-    versions:
-      v0.3.3: manifests/function/cacpk/v0.3.3
-additional-vars:
-  GCP_CONTROL_PLANE_MACHINE_TYPE: "bjEtc3RhbmRhcmQtNA=="
-  GCP_NODE_MACHINE_TYPE: "bjEtc3RhbmRhcmQtNA=="
-  GCP_PROJECT: "<B64ENCODED_GCP_PROJECT_ID>"
-  GCP_REGION: "dXMtd2VzdDE="
-  GCP_NETWORK_NAME: "ZGVmYXVsdA=="
-  GCP_B64ENCODED_CREDENTIALS: "<GCP_B64ENCODED_CREDENTIALS>"
-```
-
-## Initialize Management Cluster
-
-$ airshipctl phase run clusterctl-init-ephemeral
-
-```
-[airshipctl] 2020/09/02 11:14:15 Verifying that variable GCP_REGION is allowed to be appended
-[airshipctl] 2020/09/02 11:14:15 Verifying that variable GCP_B64ENCODED_CREDENTIALS is allowed to be appended
-[airshipctl] 2020/09/02 11:14:15 Verifying that variable GCP_CONTROL_PLANE_MACHINE_TYPE is allowed to be appended
-[airshipctl] 2020/09/02 11:14:15 Verifying that variable GCP_NETWORK_NAME is allowed to be appended
-[airshipctl] 2020/09/02 11:14:15 Verifying that variable GCP_NODE_MACHINE_TYPE is allowed to be appended
+[airshipctl] 2021/02/17 20:29:26 opendev.org/airship/airshipctl@/pkg/clusterctl/implementations/reader.go:109: Verifying that variable CONTAINER_CAPD_AUTH_PROXY is allowed to be appended
+[airshipctl] 2021/02/17 20:29:26 opendev.org/airship/airshipctl@/pkg/clusterctl/implementations/reader.go:109: Verifying that variable CONTAINER_CAPD_MANAGER is allowed to be appended
+[airshipctl] 2021/02/17 20:29:26 opendev.org/airship/airshipctl@/pkg/clusterctl/implementations/reader.go:109: Verifying that variable CONTAINER_CAPO_AUTH_PROXY is allowed to be appended
+[airshipctl] 2021/02/17 20:29:26 opendev.org/airship/airshipctl@/pkg/clusterctl/implementations/reader.go:109: Verifying that variable CONTAINER_CAPO_MANAGER is allowed to be appended
+[airshipctl] 2021/02/17 20:29:26 opendev.org/airship/airshipctl@/pkg/clusterctl/implementations/reader.go:109: Verifying that variable CONTAINER_CAPZ_AUTH_PROXY is allowed to be appended
+[airshipctl] 2021/02/17 20:29:26 opendev.org/airship/airshipctl@/pkg/clusterctl/implementations/reader.go:109: Verifying that variable CONTAINER_CAPZ_MANAGER is allowed to be appended
+[airshipctl] 2021/02/17 20:29:26 opendev.org/airship/airshipctl@/pkg/clusterctl/client/client.go:81: Starting cluster-api initiation
 .
 .
 .
@@ -307,191 +265,310 @@ Patching Secret="capg-manager-bootstrap-credentials" Namespace="capg-system"
 Creating Service="capg-controller-manager-metrics-service" Namespace="capg-system"
 Creating Deployment="capg-controller-manager" Namespace="capg-system"
 Creating inventory entry Provider="infrastructure-gcp" Version="v0.3.0" TargetNamespace="capg-system"
+{"Message":"clusterctl init completed successfully","Operation":"ClusterctlInitEnd","Timestamp":"2021-02-17T20:31:10.081293629Z","Type":"ClusterctlEvent"}
 ```
 
 $ kubectl get pods -A
 ```
 NAMESPACE                           NAME                                                             READY   STATUS    RESTARTS   AGE
-capg-system                         capg-controller-manager-b8655ddb4-swwzk                          2/2     Running   0          54s
-capi-kubeadm-bootstrap-system       capi-kubeadm-bootstrap-controller-manager-66c6b6857b-22hg4       2/2     Running   0          73s
-capi-kubeadm-control-plane-system   capi-kubeadm-control-plane-controller-manager-688f7ccc56-7g676   2/2     Running   0          65s
-capi-system                         capi-controller-manager-549c757797-6vscq                         2/2     Running   0          84s
-capi-webhook-system                 capg-controller-manager-d5f85c48d-74gj6                          2/2     Running   0          61s
-capi-webhook-system                 capi-controller-manager-5f8fc485bb-stflj                         2/2     Running   0          88s
-capi-webhook-system                 capi-kubeadm-bootstrap-controller-manager-6b645d9d4c-2crk7       2/2     Running   0          81s
-capi-webhook-system                 capi-kubeadm-control-plane-controller-manager-65dbd6f999-cghmx   2/2     Running   0          70s
-cert-manager                        cert-manager-77d8f4d85f-cqp7m                                    1/1     Running   0          115s
-cert-manager                        cert-manager-cainjector-75f88c9f56-qh9m8                         1/1     Running   0          115s
-cert-manager                        cert-manager-webhook-56669d7fcb-6zddl                            1/1     Running   0          115s
-kube-system                         coredns-66bff467f8-kmg7c                                         1/1     Running   0          3m55s
-kube-system                         coredns-66bff467f8-lg8qc                                         1/1     Running   0          3m55s
-kube-system                         etcd-capi-gcp-control-plane                                      1/1     Running   0          4m4s
-kube-system                         kindnet-dzp8v                                                    1/1     Running   0          3m55s
-kube-system                         kube-apiserver-capi-gcp-control-plane                            1/1     Running   0          4m4s
-kube-system                         kube-controller-manager-capi-gcp-control-plane                   1/1     Running   0          4m3s
-kube-system                         kube-proxy-zvdh8                                                 1/1     Running   0          3m55s
-kube-system                         kube-scheduler-capi-gcp-control-plane                            1/1     Running   0          3m56s
-local-path-storage                  local-path-provisioner-bd4bb6b75-6drnt                           1/1     Running   0          3m55s
+NAMESPACE                           NAME                                                             READY   STATUS    RESTARTS   AGE
+capg-system                         capg-controller-manager-696f4fb4f-vbr8k                          2/2     Running   0          92s
+capi-kubeadm-bootstrap-system       capi-kubeadm-bootstrap-controller-manager-6f669ccd7c-d59t9       2/2     Running   0          110s
+capi-kubeadm-control-plane-system   capi-kubeadm-control-plane-controller-manager-5c95f59c5c-ptc2j   2/2     Running   0          104s
+capi-system                         capi-controller-manager-5f677d7d65-xp6gj                         2/2     Running   0          2m3s
+capi-webhook-system                 capg-controller-manager-6798d58795-5scrs                         2/2     Running   0          95s
+capi-webhook-system                 capi-controller-manager-745689557d-8mqhq                         2/2     Running   0          2m6s
+capi-webhook-system                 capi-kubeadm-bootstrap-controller-manager-6949f44db8-lc8lk       2/2     Running   0          118s
+capi-webhook-system                 capi-kubeadm-control-plane-controller-manager-7b6c4bf48d-997p9   2/2     Running   0          109s
+cert-manager                        cert-manager-cainjector-fc6c787db-49jjz                          1/1     Running   0          2m30s
+cert-manager                        cert-manager-d994d94d7-7lmgz                                     1/1     Running   0          2m30s
+cert-manager                        cert-manager-webhook-845d9df8bf-nl8qd                            1/1     Running   0          2m30s
+kube-system                         coredns-f9fd979d6-g8wrd                                          1/1     Running   0          74m
+kube-system                         coredns-f9fd979d6-wrc5r                                          1/1     Running   0          74m
+kube-system                         etcd-ephemeral-cluster-control-plane                             1/1     Running   0          75m
+kube-system                         kindnet-p8bx7                                                    1/1     Running   0          74m
+kube-system                         kube-apiserver-ephemeral-cluster-control-plane                   1/1     Running   0          75m
+kube-system                         kube-controller-manager-ephemeral-cluster-control-plane          1/1     Running   0          75m
+kube-system                         kube-proxy-zl7jg                                                 1/1     Running   0          74m
+kube-system                         kube-scheduler-ephemeral-cluster-control-plane                   1/1     Running   0          75m
+local-path-storage                  local-path-provisioner-78776bfc44-q7gtr                          1/1     Running   0          74m
 ```
 
-## Create control plane and worker nodes
+## Deploy control plane nodes in the `target-cluster`
 
-$ airshipctl phase run controlplane-target --debug
-```
-[airshipctl] 2020/09/02 11:21:08 building bundle from kustomize path /tmp/airship/airshipctl/manifests/site/gcp-test-site/target/controlplane
-[airshipctl] 2020/09/02 11:21:08 Applying bundle, inventory id: kind-capi-gcp-target-controlplane
-[airshipctl] 2020/09/02 11:21:08 Inventory Object config Map not found, auto generating Invetory object
-[airshipctl] 2020/09/02 11:21:08 Injecting Invetory Object: {"apiVersion":"v1","kind":"ConfigMap","metadata":{"creationTimestamp":null,"labels":{"cli-utils.sigs.k8s.io/inventory-id":"kind-capi-gcp-target-controlplane"},"name":"airshipit-kind-capi-gcp-target-controlplane","namespace":"airshipit"}}{nsfx:false,beh:unspecified} into bundle
-[airshipctl] 2020/09/02 11:21:08 Making sure that inventory object namespace airshipit exists
-configmap/airshipit-kind-capi-gcp-target-controlplane-5ab3466f created
-cluster.cluster.x-k8s.io/gtc created
-kubeadmcontrolplane.controlplane.cluster.x-k8s.io/gtc-control-plane created
-gcpcluster.infrastructure.cluster.x-k8s.io/gtc created
-gcpmachinetemplate.infrastructure.cluster.x-k8s.io/gtc-control-plane created
-5 resource(s) applied. 5 created, 0 unchanged, 0 configured
-kubeadmcontrolplane.controlplane.cluster.x-k8s.io/gtc-control-plane is NotFound: Resource not found
-gcpcluster.infrastructure.cluster.x-k8s.io/gtc is NotFound: Resource not found
-gcpmachinetemplate.infrastructure.cluster.x-k8s.io/gtc-control-plane is NotFound: Resource not found
-configmap/airshipit-kind-capi-gcp-target-controlplane-5ab3466f is NotFound: Resource not found
-cluster.cluster.x-k8s.io/gtc is NotFound: Resource not found
-configmap/airshipit-kind-capi-gcp-target-controlplane-5ab3466f is Current: Resource is always ready
-cluster.cluster.x-k8s.io/gtc is Current: Resource is current
-kubeadmcontrolplane.controlplane.cluster.x-k8s.io/gtc-control-plane is Current: Resource is current
-gcpcluster.infrastructure.cluster.x-k8s.io/gtc is Current: Resource is current
-gcpmachinetemplate.infrastructure.cluster.x-k8s.io/gtc-control-plane is Current: Resource is current
-all resources has reached the Current status
-```
-$ airshipctl phase run workers-target --debug
-```
-[airshipctl] 2020/09/02 11:21:20 building bundle from kustomize path /tmp/airship/airshipctl/manifests/site/gcp-test-site/target/workers
-[airshipctl] 2020/09/02 11:21:20 Applying bundle, inventory id: kind-capi-gcp-target-workers
-[airshipctl] 2020/09/02 11:21:20 Inventory Object config Map not found, auto generating Invetory object
-[airshipctl] 2020/09/02 11:21:20 Injecting Invetory Object: {"apiVersion":"v1","kind":"ConfigMap","metadata":{"creationTimestamp":null,"labels":{"cli-utils.sigs.k8s.io/inventory-id":"kind-capi-gcp-target-workers"},"name":"airshipit-kind-capi-gcp-target-workers","namespace":"airshipit"}}{nsfx:false,beh:unspecified} into bundle
-[airshipctl] 2020/09/02 11:21:20 Making sure that inventory object namespace airshipit exists
-configmap/airshipit-kind-capi-gcp-target-workers-1a36e40a created
-kubeadmconfigtemplate.bootstrap.cluster.x-k8s.io/gtc-md-0 created
-machinedeployment.cluster.x-k8s.io/gtc-md-0 created
-gcpmachinetemplate.infrastructure.cluster.x-k8s.io/gtc-md-0 created
+$ airshipctl phase run controlplane-ephemeral --debug --kubeconfig ~/.airship/kubeconfig
+
+```bash
+
+[airshipctl] 2021/02/17 20:34:30 opendev.org/airship/airshipctl@/pkg/phase/executors/k8s_applier.go:130: Getting kubeconfig context name from cluster map
+[airshipctl] 2021/02/17 20:34:30 opendev.org/airship/airshipctl@/pkg/phase/executors/k8s_applier.go:135: Getting kubeconfig file information from kubeconfig provider
+[airshipctl] 2021/02/17 20:34:30 opendev.org/airship/airshipctl@/pkg/phase/executors/k8s_applier.go:140: Filtering out documents that shouldn't be applied to kubernetes from document bundle
+[airshipctl] 2021/02/17 20:34:30 opendev.org/airship/airshipctl@/pkg/phase/executors/k8s_applier.go:148: Using kubeconfig at '/home/stack/.airship/kubeconfig' and context 'ephemeral-cluster'
+[airshipctl] 2021/02/17 20:34:30 opendev.org/airship/airshipctl@/pkg/phase/executors/k8s_applier.go:119: WaitTimeout: 33m20s
+[airshipctl] 2021/02/17 20:34:30 opendev.org/airship/airshipctl@/pkg/k8s/applier/applier.go:76: Getting infos for bundle, inventory id is controlplane-ephemeral
+[airshipctl] 2021/02/17 20:34:30 opendev.org/airship/airshipctl@/pkg/k8s/applier/applier.go:106: Inventory Object config Map not found, auto generating Inventory object
+[airshipctl] 2021/02/17 20:34:30 opendev.org/airship/airshipctl@/pkg/k8s/applier/applier.go:113: Injecting Inventory Object: {"apiVersion":"v1","kind":"ConfigMap","metadata":{"creationTimestamp":null,"labels":{"cli-utils.sigs.k8s.io/inventory-id":"controlplane-ephemeral"},"name":"airshipit-controlplane-ephemeral","namespace":"airshipit"}}{nsfx:false,beh:unspecified} into bundle
+[airshipctl] 2021/02/17 20:34:30 opendev.org/airship/airshipctl@/pkg/k8s/applier/applier.go:119: Making sure that inventory object namespace airshipit exists
+cluster.cluster.x-k8s.io/target-cluster created
+gcpcluster.infrastructure.cluster.x-k8s.io/target-cluster created
+gcpmachinetemplate.infrastructure.cluster.x-k8s.io/target-cluster-control-plane created
+kubeadmcontrolplane.controlplane.cluster.x-k8s.io/target-cluster-control-plane created
 4 resource(s) applied. 4 created, 0 unchanged, 0 configured
-configmap/airshipit-kind-capi-gcp-target-workers-1a36e40a is NotFound: Resource not found
-kubeadmconfigtemplate.bootstrap.cluster.x-k8s.io/gtc-md-0 is NotFound: Resource not found
-machinedeployment.cluster.x-k8s.io/gtc-md-0 is NotFound: Resource not found
-gcpmachinetemplate.infrastructure.cluster.x-k8s.io/gtc-md-0 is NotFound: Resource not found
-configmap/airshipit-kind-capi-gcp-target-workers-1a36e40a is Current: Resource is always ready
-kubeadmconfigtemplate.bootstrap.cluster.x-k8s.io/gtc-md-0 is Current: Resource is current
-machinedeployment.cluster.x-k8s.io/gtc-md-0 is Current: Resource is current
-gcpmachinetemplate.infrastructure.cluster.x-k8s.io/gtc-md-0 is Current: Resource is current
-```
-
-$ kubectl get pods -A
-```
-NAMESPACE                           NAME                                                             READY   STATUS    RESTARTS   AGE
-capg-system                         capg-controller-manager-b8655ddb4-swwzk                          2/2     Running   0          6m9s
-capi-kubeadm-bootstrap-system       capi-kubeadm-bootstrap-controller-manager-66c6b6857b-22hg4       2/2     Running   0          6m28s
-capi-kubeadm-control-plane-system   capi-kubeadm-control-plane-controller-manager-688f7ccc56-7g676   2/2     Running   0          6m20s
-capi-system                         capi-controller-manager-549c757797-6vscq                         2/2     Running   0          6m39s
-capi-webhook-system                 capg-controller-manager-d5f85c48d-74gj6                          2/2     Running   0          6m16s
-capi-webhook-system                 capi-controller-manager-5f8fc485bb-stflj                         2/2     Running   0          6m43s
-capi-webhook-system                 capi-kubeadm-bootstrap-controller-manager-6b645d9d4c-2crk7       2/2     Running   0          6m36s
-capi-webhook-system                 capi-kubeadm-control-plane-controller-manager-65dbd6f999-cghmx   2/2     Running   0          6m25s
-cert-manager                        cert-manager-77d8f4d85f-cqp7m                                    1/1     Running   0          7m10s
-cert-manager                        cert-manager-cainjector-75f88c9f56-qh9m8                         1/1     Running   0          7m10s
-cert-manager                        cert-manager-webhook-56669d7fcb-6zddl                            1/1     Running   0          7m10s
-kube-system                         coredns-66bff467f8-kmg7c                                         1/1     Running   0          9m10s
-kube-system                         coredns-66bff467f8-lg8qc                                         1/1     Running   0          9m10s
-kube-system                         etcd-capi-gcp-control-plane                                      1/1     Running   0          9m19s
-kube-system                         kindnet-dzp8v                                                    1/1     Running   0          9m10s
-kube-system                         kube-apiserver-capi-gcp-control-plane                            1/1     Running   0          9m19s
-kube-system                         kube-controller-manager-capi-gcp-control-plane                   1/1     Running   0          9m18s
-kube-system                         kube-proxy-zvdh8                                                 1/1     Running   0          9m10s
-kube-system                         kube-scheduler-capi-gcp-control-plane                            1/1     Running   0          9m11s
-local-path-storage                  local-path-provisioner-bd4bb6b75-6drnt                           1/1     Running   0          9m10s
+cluster.cluster.x-k8s.io/target-cluster is NotFound: Resource not found
+gcpcluster.infrastructure.cluster.x-k8s.io/target-cluster is NotFound: Resource not found
+gcpmachinetemplate.infrastructure.cluster.x-k8s.io/target-cluster-control-plane is NotFound: Resource not found
+kubeadmcontrolplane.controlplane.cluster.x-k8s.io/target-cluster-control-plane is NotFound: Resource not found
+cluster.cluster.x-k8s.io/target-cluster is InProgress:
+gcpcluster.infrastructure.cluster.x-k8s.io/target-cluster is Current: Resource is current
+gcpmachinetemplate.infrastructure.cluster.x-k8s.io/target-cluster-control-plane is Current: Resource is current
+kubeadmcontrolplane.controlplane.cluster.x-k8s.io/target-cluster-control-plane is Current: Resource is current
+cluster.cluster.x-k8s.io/target-cluster is InProgress:
+gcpcluster.infrastructure.cluster.x-k8s.io/target-cluster is Current: Resource is current
+kubeadmcontrolplane.controlplane.cluster.x-k8s.io/target-cluster-control-plane is InProgress:
+cluster.cluster.x-k8s.io/target-cluster is InProgress: 0 of 1 completed
+kubeadmcontrolplane.controlplane.cluster.x-k8s.io/target-cluster-control-plane is InProgress: 0 of 1 completed
+cluster.cluster.x-k8s.io/target-cluster is InProgress:
+kubeadmcontrolplane.controlplane.cluster.x-k8s.io/target-cluster-control-plane is InProgress:
+cluster.cluster.x-k8s.io/target-cluster is Current: Resource is Ready
+kubeadmcontrolplane.controlplane.cluster.x-k8s.io/target-cluster-control-plane is Current: Resource is Ready
+all resources has reached the Current status
 ```
 
 To check logs run the below command
 
-$ kubectl logs capg-controller-manager-b8655ddb4-swwzk -n capg-system --all-containers=true -f
-
-```
-I0902 18:15:30.884391       1 main.go:213] Generating self signed cert as no cert is provided
-I0902 18:15:35.135060       1 main.go:243] Starting TCP socket on 0.0.0.0:8443
-I0902 18:15:35.175185       1 main.go:250] Listening securely on 0.0.0.0:8443
-I0902 18:15:51.111202       1 listener.go:44] controller-runtime/metrics "msg"="metrics server is starting to listen"  "addr"="127.0.0.1:8080"
-I0902 18:15:51.113054       1 main.go:205] setup "msg"="starting manager"
-I0902 18:15:51.113917       1 leaderelection.go:242] attempting to acquire leader lease  capg-system/controller-leader-election-capg...
-I0902 18:15:51.114691       1 internal.go:356] controller-runtime/manager "msg"="starting metrics server"  "path"="/metrics"
-I0902 18:15:51.142032       1 leaderelection.go:252] successfully acquired lease capg-system/controller-leader-election-capg
-I0902 18:15:51.145165       1 controller.go:164] controller-runtime/controller "msg"="Starting EventSource"  "c
-```
+$  kubectl logs capg-controller-manager-696f4fb4f-vbr8k -n capg-system --all-containers=true -f --kubeconfig ~/.airship/kubeconfig
 
 $ kubectl get machines
-```
-NAME                        PROVIDERID                                                       PHASE
-gtc-control-plane-cxcd4     gce://virtual-anchor-281401/us-west1-a/gtc-control-plane-vmplz   Running
-gtc-md-0-6cf7474cff-zpbxv   gce://virtual-anchor-281401/us-west1-a/gtc-md-0-7mccx            Running
+
+```bash
+NAME                                 PROVIDERID                                                        PHASE
+target-cluster-control-plane-pbf4n   gce://airship-gcp/us-east1-b/target-cluster-control-plane-qkgtx   Running
 ```
 
-$ kubectl --namespace=default get secret/gtc-kubeconfig -o jsonpath={.data.value} | base64 --decode > ./gtc.kubeconfig
+## Deploy Calico cni in the `target-cluster`
 
-$ kubectl get pods -A --kubeconfig ~/gtc.kubeconfig
+```bash
+$ kubectl --namespace=default get secret/target-cluster-kubeconfig -o jsonpath={.data.value} | base64 --decode > ./target-cluster.kubeconfig
 
+$ kubectl --namespace=default get secret/target-cluster-kubeconfig -o jsonpath={.data.value} | base64 --decode > ./target-cluster.kubeconfig
+
+$ kubectl get nodes --kubeconfig target-cluster.kubeconfig
+NAME                                 STATUS     ROLES    AGE     VERSION
+target-cluster-control-plane-qkgtx   NotReady   master   5h53m   v1.17.11
 ```
-NAMESPACE     NAME                                              READY   STATUS    RESTARTS   AGE
-kube-system   calico-kube-controllers-6d4fbb6df9-8lf4f          1/1     Running   0          5m18s
-kube-system   calico-node-6lmqw                                 1/1     Running   0          73s
-kube-system   calico-node-qtgzj                                 1/1     Running   1          5m18s
-kube-system   coredns-5644d7b6d9-dqd75                          1/1     Running   0          5m18s
-kube-system   coredns-5644d7b6d9-ls2q9                          1/1     Running   0          5m18s
-kube-system   etcd-gtc-control-plane-vmplz                      1/1     Running   0          4m53s
-kube-system   kube-apiserver-gtc-control-plane-vmplz            1/1     Running   0          4m42s
-kube-system   kube-controller-manager-gtc-control-plane-vmplz   1/1     Running   0          4m59s
-kube-system   kube-proxy-6hk8c                                  1/1     Running   0          5m18s
-kube-system   kube-proxy-b8mqw                                  1/1     Running   0          73s
-kube-system   kube-scheduler-gtc-control-plane-vmplz            1/1     Running   0          4m47s
+
+Create target-cluster context
+
+```bash
+$ kubectl config set-context target-cluster --user target-cluster-admin --cluster target-cluster --kubeconfig target-cluster.kubeconfig
+Context "target-cluster" created.
+```
+
+Deploy calico cni using `initinfra-networking` phase
+
+```bash
+$ airshipctl phase run initinfra-networking-target --kubeconfig target-cluster.kubeconfig
+namespace/cert-manager created
+namespace/tigera-operator created
+customresourcedefinition.apiextensions.k8s.io/bgpconfigurations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/bgppeers.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/blockaffinities.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/certificaterequests.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/certificates.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/challenges.acme.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/clusterinformations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/clusterissuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/felixconfigurations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/globalnetworkpolicies.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/globalnetworksets.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/hostendpoints.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/installations.operator.tigera.io created
+customresourcedefinition.apiextensions.k8s.io/ipamblocks.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipamconfigs.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipamhandles.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ippools.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/issuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/kubecontrollersconfigurations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/networkpolicies.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/networksets.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/orders.acme.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/tigerastatuses.operator.tigera.io created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+serviceaccount/cert-manager created
+serviceaccount/cert-manager-cainjector created
+serviceaccount/cert-manager-webhook created
+serviceaccount/tigera-operator created
+podsecuritypolicy.policy/tigera-operator created
+role.rbac.authorization.k8s.io/cert-manager-webhook:dynamic-serving created
+role.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+role.rbac.authorization.k8s.io/cert-manager:leaderelection created
+clusterrole.rbac.authorization.k8s.io/cert-manager-cainjector created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrole.rbac.authorization.k8s.io/cert-manager-edit created
+clusterrole.rbac.authorization.k8s.io/cert-manager-view created
+clusterrole.rbac.authorization.k8s.io/tigera-operator created
+rolebinding.rbac.authorization.k8s.io/cert-manager-webhook:dynamic-serving created
+rolebinding.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+rolebinding.rbac.authorization.k8s.io/cert-manager:leaderelection created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-cainjector created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrolebinding.rbac.authorization.k8s.io/tigera-operator created
+service/cert-manager created
+service/cert-manager-webhook created
+deployment.apps/cert-manager created
+deployment.apps/cert-manager-cainjector created
+deployment.apps/cert-manager-webhook created
+deployment.apps/tigera-operator created
+installation.operator.tigera.io/default created
+validatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+63 resource(s) applied. 63 created, 0 unchanged, 0 configured
+```
+
+Check on control plane node status
+
+$ kubectl get nodes --kubeconfig target-cluster.kubeconfig
+NAME                                 STATUS   ROLES    AGE     VERSION
+target-cluster-control-plane-qkgtx   Ready    master   5h59m   v1.17.11
+
+Check all pods including calico pods
+
+```bash
+$ kubectl get po -A --kubeconfig target-cluster.kubeconfig
+NAMESPACE         NAME                                                         READY   STATUS    RESTARTS   AGE
+calico-system     calico-kube-controllers-55cc6844cb-h4gzh                     1/1     Running   0          2m11s
+calico-system     calico-node-qdjsm                                            1/1     Running   1          2m11s
+calico-system     calico-typha-667c57fb6b-kjpfz                                1/1     Running   0          2m12s
+cert-manager      cert-manager-cainjector-55d9fb4b8-fk5z8                      1/1     Running   0          2m18s
+cert-manager      cert-manager-dfbc75865-mfjz9                                 1/1     Running   0          2m18s
+cert-manager      cert-manager-webhook-66fc9cf7c-fbgx4                         1/1     Running   0          2m18s
+kube-system       coredns-6955765f44-pl4zv                                     1/1     Running   0          6h
+kube-system       coredns-6955765f44-wwkxt                                     1/1     Running   0          6h
+kube-system       etcd-target-cluster-control-plane-qkgtx                      1/1     Running   0          6h
+kube-system       kube-apiserver-target-cluster-control-plane-qkgtx            1/1     Running   0          6h
+kube-system       kube-controller-manager-target-cluster-control-plane-qkgtx   1/1     Running   0          6h
+kube-system       kube-proxy-cfn6x                                             1/1     Running   0          6h
+kube-system       kube-scheduler-target-cluster-control-plane-qkgtx            1/1     Running   0          6h
+tigera-operator   tigera-operator-8dc4c7cb6-h9wbj                              1/1     Running   0          2m18s
+```
+
+## Initialize the `target-cluster` with `capi` and `capg` infrastructure provider components
+
+```bash
+$  kubectl taint node target-cluster-control-plane-bd6gq node-role.kubernetes.io/master- --kubeconfig target-cluster.kubeconfig --request-timeout 10s
+node/target-cluster-control-plane-qkgtx untainted
+
+$ airshipctl phase run clusterctl-init-target --debug --kubeconfig target-cluster.kubeconfig
+
+$ kubectl get pods -A --kubeconfig target-cluster.kubeconfig
+NAMESPACE                           NAME                                                             READY   STATUS    RESTARTS   AGE
+calico-system                       calico-kube-controllers-55cc6844cb-h4gzh                         1/1     Running   0          10m
+calico-system                       calico-node-qdjsm                                                1/1     Running   1          10m
+calico-system                       calico-typha-667c57fb6b-kjpfz                                    1/1     Running   0          10m
+capg-system                         capg-controller-manager-69c6c9f5d6-wc7mw                         2/2     Running   0          2m39s
+capi-kubeadm-bootstrap-system       capi-kubeadm-bootstrap-controller-manager-58bc7fcf9b-v9w24       2/2     Running   0          2m46s
+capi-kubeadm-control-plane-system   capi-kubeadm-control-plane-controller-manager-867bc8f784-4t7ck   2/2     Running   0          2m42s
+capi-system                         capi-controller-manager-78b7d8b9b8-69nwp                         2/2     Running   0          2m51s
+capi-webhook-system                 capg-controller-manager-55bb898db6-g6nlw                         2/2     Running   0          2m41s
+capi-webhook-system                 capi-controller-manager-7b7c9f89d9-5nh75                         2/2     Running   0          2m53s
+capi-webhook-system                 capi-kubeadm-bootstrap-controller-manager-699b84775f-prwn5       2/2     Running   0          2m49s
+capi-webhook-system                 capi-kubeadm-control-plane-controller-manager-b8b48d45f-bcvq4    2/2     Running   0          2m45s
+cert-manager                        cert-manager-cainjector-55d9fb4b8-fk5z8                          1/1     Running   0          10m
+cert-manager                        cert-manager-dfbc75865-mfjz9                                     1/1     Running   0          10m
+cert-manager                        cert-manager-webhook-66fc9cf7c-fbgx4                             1/1     Running   0          10m
+kube-system                         coredns-6955765f44-pl4zv                                         1/1     Running   0          6h9m
+kube-system                         coredns-6955765f44-wwkxt                                         1/1     Running   0          6h9m
+kube-system                         etcd-target-cluster-control-plane-qkgtx                          1/1     Running   0          6h9m
+kube-system                         kube-apiserver-target-cluster-control-plane-qkgtx                1/1     Running   0          6h9m
+kube-system                         kube-controller-manager-target-cluster-control-plane-qkgtx       1/1     Running   0          6h9m
+kube-system                         kube-proxy-cfn6x                                                 1/1     Running   0          6h9m
+kube-system                         kube-scheduler-target-cluster-control-plane-qkgtx                1/1     Running   0          6h9m
+tigera-operator                     tigera-operator-8dc4c7cb6-h9wbj                                  1/1     Running   0          10m
+```
+
+## Perform cluster move operation
+
+```bash
+$ KUBECONFIG=~/.airship/kubeconfig:target-cluster.kubeconfig kubectl config view --merge --flatten > ~/ephemeral_and_target.kubeconfig
+
+$ airshipctl phase run clusterctl-move --kubeconfig ~/ephemeral_and_target.kubeconfig
+[airshipctl] 2021/02/18 02:50:32 command 'clusterctl move' is going to be executed
+{"Message":"starting clusterctl move executor","Operation":"ClusterctlMoveStart","Timestamp":"2021-02-18T02:50:32.758374205Z","Type":"ClusterctlEvent"}
+{"Message":"clusterctl move completed successfully","Operation":"ClusterctlMoveEnd","Timestamp":"2021-02-18T02:50:36.823224336Z","Type":"ClusterctlEvent"}
+```
+
+Check that machines have moved
+
+```bash
+
+$ kubectl get machines --kubeconfig ~/.airship/kubeconfig
+No resources found in default namespace.
+
+$ kubectl get machines --kubeconfig ~/target-cluster.kubeconfig
+NAME                                 PROVIDERID                                                        PHASE
+target-cluster-control-plane-pbf4n   gce://airship-gcp/us-east1-b/target-cluster-control-plane-qkgtx   Provisioned
+```
+
+## Deploy worker machines in the `target-cluster`
+
+```bash
+
+$ airshipctl phase run workers-target --debug --kubeconfig ~/target-cluster.kubeconfig
+[airshipctl] 2021/02/18 02:56:22 opendev.org/airship/airshipctl@/pkg/phase/executors/k8s_applier.go:130: Getting kubeconfig context name from cluster map
+[airshipctl] 2021/02/18 02:56:22 opendev.org/airship/airshipctl@/pkg/phase/executors/k8s_applier.go:135: Getting kubeconfig file information from kubeconfig provider
+[airshipctl] 2021/02/18 02:56:22 opendev.org/airship/airshipctl@/pkg/phase/executors/k8s_applier.go:140: Filtering out documents that shouldn't be applied to kubernetes from document bundle
+[airshipctl] 2021/02/18 02:56:22 opendev.org/airship/airshipctl@/pkg/phase/executors/k8s_applier.go:148: Using kubeconfig at '/home/stack/target-cluster.kubeconfig' and context 'target-cluster'
+[airshipctl] 2021/02/18 02:56:22 opendev.org/airship/airshipctl@/pkg/phase/executors/k8s_applier.go:119: WaitTimeout: 33m20s
+[airshipctl] 2021/02/18 02:56:22 opendev.org/airship/airshipctl@/pkg/k8s/applier/applier.go:76: Getting infos for bundle, inventory id is workers-target
+[airshipctl] 2021/02/18 02:56:22 opendev.org/airship/airshipctl@/pkg/k8s/applier/applier.go:106: Inventory Object config Map not found, auto generating Inventory object
+[airshipctl] 2021/02/18 02:56:22 opendev.org/airship/airshipctl@/pkg/k8s/applier/applier.go:113: Injecting Inventory Object: {"apiVersion":"v1","kind":"ConfigMap","metadata":{"creationTimestamp":null,"labels":{"cli-utils.sigs.k8s.io/inventory-id":"workers-target"},"name":"airshipit-workers-target","namespace":"airshipit"}}{nsfx:false,beh:unspecified} into bundle
+[airshipctl] 2021/02/18 02:56:22 opendev.org/airship/airshipctl@/pkg/k8s/applier/applier.go:119: Making sure that inventory object namespace airshipit exists
+gcpmachinetemplate.infrastructure.cluster.x-k8s.io/target-cluster-md-0 created
+kubeadmconfigtemplate.bootstrap.cluster.x-k8s.io/target-cluster-md-0 created
+machinedeployment.cluster.x-k8s.io/target-cluster-md-0 created
+3 resource(s) applied. 3 created, 0 unchanged, 0 configured
+gcpmachinetemplate.infrastructure.cluster.x-k8s.io/target-cluster-md-0 is NotFound: Resource not found
+kubeadmconfigtemplate.bootstrap.cluster.x-k8s.io/target-cluster-md-0 is NotFound: Resource not found
+machinedeployment.cluster.x-k8s.io/target-cluster-md-0 is NotFound: Resource not found
+gcpmachinetemplate.infrastructure.cluster.x-k8s.io/target-cluster-md-0 is Current: Resource is current
+kubeadmconfigtemplate.bootstrap.cluster.x-k8s.io/target-cluster-md-0 is Current: Resource is current
+machinedeployment.cluster.x-k8s.io/target-cluster-md-0 is Current: Resource is current
+all resources has reached the Current status
 ```
 
 Now, the control plane and worker node are created on google cloud.
 
-## Tear Down Clusters
+Check machine status
 
-If you would like to delete the cluster run the below commands. This will delete
-the control plane, workers, machine health check and all other resources
-associated with the cluster on gcp.
+$ kubectl get machines --kubeconfig ~/.airship/kubeconfig
+NAME                                   PROVIDERID                                                        PHASE
+target-cluster-control-plane-pbf4n     gce://airship-gcp/us-east1-b/target-cluster-control-plane-qkgtx   Running
+target-cluster-md-0-7bffdbfd9f-dqrf7   gce://airship-gcp/us-east1-b/target-cluster-md-0-7jtz5            Running
 
-$ airshipctl phase render --phase-name controlplane -k Cluster
+![Machines](https://i.imgur.com/XwAOoar.png)
 
-```
----
-apiVersion: cluster.x-k8s.io/v1alpha3
-kind: Cluster
-metadata:
-  name: gtc
-  namespace: default
-spec:
-  clusterNetwork:
-    pods:
-      cidrBlocks:
-      - 192.168.0.0/16
-  controlPlaneRef:
-    apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
-    kind: KubeadmControlPlane
-    name: gtc-control-plane
-  infrastructureRef:
-    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
-    kind: GCPCluster
-    name: gtc
-...
+## Tear Down Cluster
+
+```bash
+$ airshipctl phase render controlplane-ephemeral -k Cluster | kubectl
+--kubeconfig ~/target-cluster.kubeconfig delete -f -
+
+cluster.cluster.x-k8s.io "target-cluster" deleted
 ```
 
-$ airshipctl phase render --phase-name controlplane -k Cluster | kubectl delete -f -
+```bash
+$ kind delete clusters --all
 
-```
-cluster.cluster.x-k8s.io "gtc" deleted
-```
-
-$ kind delete cluster --name capi-gcp
-```
-Deleting cluster "capi-gcp" ...
+Deleted clusters: ["ephemeral-cluster"]
 ```
 
 ## Reference
@@ -619,32 +696,53 @@ airshipctl/manifests/function/workers-capg
 ├── kustomization.yaml
 └── workers.yaml
 ```
+
 ### Test Site Manifests
 
-#### gcp-test-site/shared
-airshipctl phase run clusterctl-init-ephemeral uses
-airshipctl/manifests/site/gcp-test-site/shared/clusterctl to initialize
-management cluster with defined provider components and version.
+The `gcp-test-site` contains ephemeral and target phase manifests.
 
-$ tree airshipctl/manifests/site/gcp-test-site/shared
-```
-airshipctl/manifests/site/gcp-test-site/shared
-└── clusterctl
-    ├── clusterctl.yaml
-    └── kustomization.yaml
+```bash
+$ tree gcp-test-site/
+gcp-test-site/
+├── ephemeral
+│   └── controlplane
+│       ├── kustomization.yaml
+│       ├── machine_count.json
+│       ├── machine_type.json
+│       ├── network_name.json
+│       ├── project_name.json
+│       └── region_name.json
+├── metadata.yaml
+├── phases
+│   ├── infrastructure-providers.json
+│   ├── kustomization.yaml
+│   └── plan.yaml
+└── target
+    ├── initinfra
+    │   └── kustomization.yaml
+    ├── initinfra-networking
+    │   └── kustomization.yaml
+    └── workers
+        ├── failure_domain.json
+        ├── kustomization.yaml
+        ├── machine_count.json
+        └── machine_type.json
+
+7 directories, 16 files
 ```
 
 #### gcp-test-site/target
-There are 3 phases currently available in gcp-test-site/target
+
+Following phases are available in the gcp test site phase definitions.
 
 |Phase Name | Purpose |
 |-----------|---------|
-| controlplane     | Patches templates in manifests/function/k8scontrol-capg |
-| workers          | Patches template in manifests/function/workers-capg |                                                     |
-| initinfra | Simply calls `gcp-test-site/shared/clusterctl` |
-
-Note: `airshipctl phase run clusterctl-init-ephemeral` initializes all the provider components
-including the gcp infrastructure provider component.
+| clusterctl-init-ephemeral | Initializes the ephemeral cluster with capi and capg components
+| controlplane-ephemeral     | Patches templates in manifests/function/k8scontrol-capg and deploys the control plane machines in the target cluster|
+| initinfra-networking-target | Deploys calico CNI in the target cluster
+| clusterctl-init-target | Initializes target cluster with capi and capg components
+| clusterctl-move | Moves management CRDs from ephemeral to target cluster
+| workers-target          | Patches template in manifests/function/workers-capg and deploys worker nodes in the target cluster|                                                     |
 
 #### Patch Merge Strategy
 
@@ -667,28 +765,36 @@ run workers-target` is executed.
 | workers/machine_type.json      | patches worker machine type in template function/workers-capg |
 | workers/failure_domain.json      | patches failure_domain in template function/workers-capg |
 
+$ tree airshipctl/manifests/site/gcp-test-site/ephemeral/
+gcp-test-site/ephemeral/
+└── controlplane
+    ├── kustomization.yaml
+    ├── machine_count.json
+    ├── machine_type.json
+    ├── network_name.json
+    ├── project_name.json
+    └── region_name.json
+
+
 $ tree airshipctl/manifests/site/gcp-test-site/target/
 
-```
+```bash
 airshipctl/manifests/site/gcp-test-site/target/
-├── controlplane
-│   ├── kustomization.yaml
-│   ├── machine_count.json
-│   ├── machine_type.json
-│   ├── network_name.json
-│   ├── project_name.json
-│   └── region_name.json
+gcp-test-site/target/
 ├── initinfra
-│   └── kustomization.yaml
+│   └── kustomization.yaml
+├── initinfra-networking
+│   └── kustomization.yaml
 └── workers
     ├── failure_domain.json
     ├── kustomization.yaml
     ├── machine_count.json
     └── machine_type.json
 
-3 directories, 11 files
+3 directories, 6 files
 
 ```
+
 ### Software Version Information
 
 All the instructions provided in the document have been tested using the
@@ -737,8 +843,8 @@ Server: Docker Engine - Community
 
 $ kind version
 
-```
-kind v0.8.1 go1.14.2 linux/amd64
+```bash
+kind v0.9.0 go1.15.2 linux/amd64
 ```
 
 #### Kubectl
