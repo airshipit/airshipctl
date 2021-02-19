@@ -10,7 +10,7 @@ metadata:
 hosts:
   m3:
     node01:
-      bootMode: UEFI
+      bootMode: legacy
       macAddress: 52:54:00:b6:ed:31
       bmcAddress: redfish+http://10.23.25.1:8000/redfish/v1/Systems/air-target-1
       bmcUsername: root
@@ -24,7 +24,7 @@ hosts:
         pxe: 52:54:00:b6:ed:31
       hardwareProfile: default # defined in the hostgenerator-m3 function
     node02:
-      bootMode: UEFI
+      bootMode: legacy
       macAddress: 52:54:00:b6:ed:02
       bmcAddress: redfish+https://10.23.25.1:8443/redfish/v1/Systems/air-ephemeral
       bmcUsername: username
@@ -38,7 +38,7 @@ hosts:
         pxe: 52:54:00:b6:ed:02
       hardwareProfile: example # defined in the hardwareprofile-example function
     node03:
-      bootMode: UEFI
+      bootMode: legacy
       macAddress: 52:54:00:b6:ed:23
       bmcAddress: redfish+http://10.23.25.1:8000/redfish/v1/Systems/air-worker-1
       bmcUsername: username

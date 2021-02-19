@@ -6,5 +6,5 @@ spec:
   template:
     spec:
       image:
-        url: http://10.23.24.1:8099/target-image.qcow2
-        checksum: http://10.23.24.1:8099/target-image.qcow2.md5sum
+        url: http://10.23.24.102:80/images/data-plane.qcow2
+        checksum: http://10.23.24.102:80/images/data-plane.qcow2.md5sum

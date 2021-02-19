@@ -14,9 +14,7 @@
 
 set -ex
 
-TARGET_IMAGE_DIR="/srv/images"
 EPHEMERAL_DOMAIN_NAME="air-ephemeral"
-TARGET_IMAGE_URL="https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img"
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
 export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
 
@@ -30,22 +28,6 @@ do
     grep -v Target |
     xargs -I{} sudo virsh change-media $vm {} --eject || :
 done
-
-echo "Download target image"
-DOWNLOAD="200"
-if [ -e ${TARGET_IMAGE_DIR}/target-image.qcow2 ]
-then
-    MTIME=$(date -d @$(stat -c %Y ${TARGET_IMAGE_DIR}/target-image.qcow2) +"%a, %d %b %Y %T %Z")
-    DOWNLOAD=$(curl -sSLI \
-        --write-out '%{http_code}' \
-        -H "If-Modified-Since: ${MTIME}" \
-        ${TARGET_IMAGE_URL} | tail -1)
-fi
-if [ "${DOWNLOAD}" != "304" ]
-then
-    curl -sSLo ${TARGET_IMAGE_DIR}/target-image.qcow2 ${TARGET_IMAGE_URL}
-fi
-md5sum /srv/images/target-image.qcow2 | cut -d ' ' -f 1 > ${TARGET_IMAGE_DIR}/target-image.qcow2.md5sum
 
 echo "Create target k8s cluster resources"
 airshipctl phase run controlplane-ephemeral --debug
