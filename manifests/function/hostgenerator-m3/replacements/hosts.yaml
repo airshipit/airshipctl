@@ -29,9 +29,9 @@ replacements:
     fieldrefs: ["{.values.hostsToGenerate}"]
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: NetworkCatalogue
       name: networking
-    fieldref: "{.commonHostNetworking}"
+    fieldref: "{.spec.commonHostNetworking}"
   target:
     objref:
       kind: Templater

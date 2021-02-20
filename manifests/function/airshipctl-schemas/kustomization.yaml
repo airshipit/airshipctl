@@ -1,2 +1,3 @@
 resources:
   - versions-catalogue.yaml
+  - network-catalogue.yaml

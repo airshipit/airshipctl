@@ -1,0 +1,121 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: networkcatalogues.airshipit.org
+spec:
+  group: airshipit.org
+  names:
+    kind: NetworkCatalogue
+    plural: networkcatalogues
+    singular: networkcatalogue
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              commonHostNetworking:
+                type: object
+                properties:
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        type:
+                          type: string
+                        mtu:
+                          type: string
+                  networks:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        type:
+                          type: string
+                        link:
+                          type: string
+                        netmask:
+                          type: string
+                          oneOf:
+                            - format: ipv4
+                            - format: ipv6
+                        routes:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              network:
+                                type: string
+                                oneOf:
+                                  - format: ipv4
+                                  - format: ipv6
+                              netmask:
+                                type: string
+                                oneOf:
+                                  - format: ipv4
+                                  - format: ipv6
+                              gateway:
+                                type: string
+                                oneOf:
+                                  - format: ipv4
+                                  - format: ipv6
+                  services:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        address:
+                          type: string
+                          oneOf:
+                            - format: ipv4
+                            - format: ipv6
+                        type:
+                          type: string
+              kubernetes:
+                type: object
+                properties:
+                  serviceCidr:
+                    type: string
+                    format: cidr
+                  podCidr:
+                    type: string
+                    format: cidr
+                  controlPlaneEndpoint:
+                    type: object
+                    properties:
+                      host:
+                        type: string
+                        oneOf:
+                          - format: ipv4
+                          - format: ipv6
+                      port:
+                        type: integer
+                        maximum: 65535
+                  apiserverCertSANs:
+                    type: string
+              ironic:
+                type: object
+                properties:
+                  provisioningInterface:
+                    type: string
+                  provisioningIp:
+                    type: string
+                    oneOf:
+                      - format: ipv4
+                      - format: ipv6
+                  dhcpRange:
+                    # TODO(mfuller): should this be enforced with a pattern?
+                    type: string
