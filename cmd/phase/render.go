@@ -97,6 +97,12 @@ func addRenderFlags(filterOptions *phase.RenderCommand, cmd *cobra.Command) {
 			"error will be returned\n"+
 			"executor: rendering will be performed by executor if the phase\n"+
 			"config: this will render bundle containing phase and executor documents")
+	flags.BoolVarP(
+		&filterOptions.FailOnDecryptionError,
+		"decrypt",
+		"d",
+		false,
+		"ensure that decryption of encrypted documents has finished successfully")
 }
 
 // RenderArgs returns an error if there are not exactly n args.

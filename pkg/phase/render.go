@@ -16,6 +16,7 @@ package phase
 
 import (
 	"io"
+	"os"
 	"strings"
 
 	"opendev.org/airship/airshipctl/pkg/config"
@@ -49,8 +50,11 @@ type RenderCommand struct {
 	// phase the source will use kustomize root at phase entry point
 	// config will render a bundle that comes from site metadata file, and contains phase and executor docs
 	// executor means that rendering will be delegated to phase executor
-	Source  string
-	PhaseID ifc.ID
+	Source string
+	// FailOnDecryptionError makes sure that encrypted documents are getting decrypted by avoiding setting
+	// env variable TOLERATE_DECRYPTION_FAILURES=true
+	FailOnDecryptionError bool
+	PhaseID               ifc.ID
 }
 
 // RunE prints out filtered documents
@@ -58,6 +62,11 @@ func (fo *RenderCommand) RunE(cfgFactory config.Factory, out io.Writer) error {
 	if err := fo.Validate(); err != nil {
 		return err
 	}
+
+	if !fo.FailOnDecryptionError {
+		os.Setenv("TOLERATE_DECRYPTION_FAILURES", "true")
+	}
+
 	cfg, err := cfgFactory()
 	if err != nil {
 		return err
