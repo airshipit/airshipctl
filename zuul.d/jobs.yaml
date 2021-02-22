@@ -70,7 +70,7 @@
 
 - job:
     name: airship-airshipctl-validate-site-docs
-    timeout: 3600
+    timeout: 5400
     pre-run:
       - playbooks/airship-airshipctl-deploy-docker.yaml
     run: playbooks/airshipctl-gate-runner.yaml
