@@ -25,6 +25,6 @@ PLAYBOOK_CONFIG=${PLAYBOOK_CONFIG:-"${TMP_DIR}/config.yaml"}
 export AIRSHIPCTL_WS=${AIRSHIPCTL_WS:-$PWD}
 export AIRSHIP_CONFIG_PHASE_REPO_URL=${AIRSHIP_CONFIG_PHASE_REPO_URL:-$PWD}
 
-sudo --preserve-env=AIRSHIPCTL_WS ANSIBLE_STDOUT_CALLBACK=debug ansible-playbook -i "$ANSIBLE_HOSTS" \
+sudo -E --preserve-env=AIRSHIPCTL_WS ANSIBLE_STDOUT_CALLBACK=debug ansible-playbook -i "$ANSIBLE_HOSTS" \
 	playbooks/airshipctl-gate-runner.yaml \
 	-e @"$PLAYBOOK_CONFIG" -v
