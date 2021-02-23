@@ -40,9 +40,7 @@
 
   - name: Install sushy-tools
     pip:
-      # TODO (dukov) Replace this with upstream sushy-tools once
-      # https://storyboard.openstack.org/#!/story/2007689 has fixed
-      name: git+https://github.com/dukov/sushy-tools.git@0.9.1
+      name: sushy-tools
       executable: pip3
 
   - name: Create a used wsgi will run with
