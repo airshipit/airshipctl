@@ -96,8 +96,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Download release notes utility
         run: |
-          sudo chown -R $(whoami) /usr/local/lib/node_modules
-          npm install github-release-notes -g
+          sudo npm install github-release-notes -g
       - name: Generate release notes
         run: |
           gren changelog --override --generate \
