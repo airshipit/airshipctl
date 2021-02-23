@@ -18,7 +18,6 @@ replacements:
       kind: KubeadmConfigTemplate
       name: worker-1
     fieldrefs:
-      - "spec.template.spec.preKubeadmCommands%REPLACEMENT_HTTP_PROXY%"
       - "spec.template.spec.files[path=/etc/systemd/system/docker.service.d/http-proxy.conf].content%REPLACEMENT_HTTP_PROXY%"
 - source:
     objref:
@@ -29,7 +28,6 @@ replacements:
       kind: KubeadmConfigTemplate
       name: worker-1
     fieldrefs:
-      - "spec.template.spec.preKubeadmCommands%REPLACEMENT_HTTPS_PROXY%"
       - "spec.template.spec.files[path=/etc/systemd/system/docker.service.d/http-proxy.conf].content%REPLACEMENT_HTTPS_PROXY%"
 - source:
     objref:
@@ -40,5 +38,4 @@ replacements:
       kind: KubeadmConfigTemplate
       name: worker-1
     fieldrefs:
-      - "spec.template.spec.preKubeadmCommands%REPLACEMENT_NO_PROXY%"
       - "spec.template.spec.files[path=/etc/systemd/system/docker.service.d/http-proxy.conf].content%REPLACEMENT_NO_PROXY%"
