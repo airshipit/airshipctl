@@ -90,16 +90,16 @@
             disk_format: qcow2
             ephemeral_disk_size: 20G
             ephemeral_vm_cfg: "{{ ephemeral_vm_cfg }}"
-            ephemeral_vm_memory_mb: 6124
+            ephemeral_vm_memory_mb: 6144
             ephemeral_vm_vcpus: 4
             target_disk_size: 20G
             target_vm_cfg: "{{ target_vm_cfg }}"
-            target_vm_memory_mb: 6124
+            target_vm_memory_mb: 7168
             target_vm_vcpus: 2
             target_vms_count: 1
             worker_disk_size: 20G
             worker_vm_cfg: "{{ worker_vm_cfg }}"
-            worker_vm_memory_mb: 6124
+            worker_vm_memory_mb: 7168
             worker_vm_vcpus: 2
             worker_vms_count: 1
         airship_gate_file_exchanger:

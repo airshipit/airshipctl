@@ -59,6 +59,16 @@ spec:
             - name: ironic-entrypoints
               mountPath: /bin/init-images
               subPath: init-images
+        - name: qcow-bundle
+          command:
+            - sh
+            - -c
+            - "cp /qcows/*.qcow2 /qcows/*.qcow2.md5sum /shared/html/images/"
+          image: "quay.io/airshipit/qcow-bundle:latest-ubuntu_focal"
+          imagePullPolicy: Always
+          volumeMounts:
+              - mountPath: "/shared"
+                name: ironic-storage
       containers:
         - name: dnsmasq
           image: "quay.io/metal3-io/ironic:latest"

@@ -12,50 +12,17 @@ spec:
             node-labels: 'metal3.io/uuid={{ ds.meta_data.uuid }},node-type=worker'
             provider-id: 'metal3://{{ ds.meta_data.uuid }}'
             feature-gates: "IPv6DualStack=true"
-      ntp:
-        enabled: true
-        servers:
-          - 135.188.34.124
-          - 135.38.244.16
-          - 135.188.34.84
+      files:
+        - path: "/etc/systemd/system/docker.service.d/http-proxy.conf"
+          content: |
+            [Service]
+            Environment="HTTP_PROXY=REPLACEMENT_HTTP_PROXY"
+            Environment="HTTPS_PROXY=REPLACEMENT_HTTPS_PROXY"
+            Environment="NO_PROXY=REPLACEMENT_NO_PROXY"
       preKubeadmCommands:
-        - echo 'root:r00tme' | chpasswd
-        - echo 'ubuntu:r00tme' | chpasswd
-        - |
-          cat <<EOF | tee /etc/sysctl.d/k8s.conf
-          net.bridge.bridge-nf-call-ip6tables = 1
-          net.bridge.bridge-nf-call-iptables = 1
-          EOF
-        - sysctl --system
-        - |
-          mkdir -p /etc/systemd/system/docker.service.d/
-          cat <<EOF | tee /etc/systemd/system/docker.service.d/http-proxy.conf
-          [Service]
-          Environment="HTTP_PROXY=REPLACEMENT_HTTP_PROXY"
-          Environment="HTTPS_PROXY=REPLACEMENT_HTTPS_PROXY"
-          Environment="NO_PROXY=REPLACEMENT_NO_PROXY"
-          EOF
-        - export HTTP_PROXY=REPLACEMENT_HTTP_PROXY
-        - export HTTPS_PROXY=REPLACEMENT_HTTPS_PROXY
-        - export http_proxy=${HTTP_PROXY}
-        - export https_proxy=${HTTPS_PROXY}
-        - export NO_PROXY=REPLACEMENT_NO_PROXY
-        - export no_proxy=${NO_PROXY}
-        - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-        - curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-        - add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-        - echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list
-        - apt-get update
-        - apt-get install -y
-            docker-ce="$(apt policy docker-ce  | grep 19.03.9 | sort | head -n 1 | tr -s " " | cut -d ' ' -f 2 )"
-            docker-ce-cli="$(apt policy docker-ce-cli  | grep 19.03.9 | sort | head -n 1 | tr -s " " | cut -d ' ' -f 2 )"
-            containerd.io
-        - swapoff -a
-        - apt-get install -y kubelet=1.18.6-00 kubeadm=1.18.6-00
-        - apt-mark hold kubelet kubeadm
-        - systemctl mask ntp
-        - systemctl enable --now systemd-timesyncd
-        - unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY no_proxy NO_PROXY
+        # Restart docker to apply any proxy settings
+        - export HOME=/root
+        - systemctl restart docker
       users:
         - name: deployer
           sshAuthorizedKeys:
