@@ -16,7 +16,9 @@
     kubectl --kubeconfig {{ kubeconfig }} config get-contexts -o name
   register: kctl_context_command
 
-- name: "Save kubeconfig contexts to list"
-  set_fact:
-    kctl_context_list: "{{ kctl_context_command.stdout.split('\n') }}"
+- name: "Save contexts for reachable clusters"
+  with_items: "{{ kctl_context_command.stdout.split('\n') }}"
+  loop_control:
+      loop_var: ctx_name
+  include_tasks: filter-contexts.yaml
 ...
