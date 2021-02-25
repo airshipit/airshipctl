@@ -76,9 +76,17 @@ func (fo *RenderCommand) RunE(cfgFactory config.Factory, out io.Writer) error {
 	if err != nil {
 		return err
 	}
+	groupVersion := strings.Split(fo.APIVersion, "/")
+	group := ""
+	version := groupVersion[0]
+	if len(groupVersion) > 1 {
+		group = groupVersion[0]
+		version = strings.Join(groupVersion[1:], "/")
+	}
+	sel := document.NewSelector().ByLabel(fo.Label).ByAnnotation(fo.Annotation).ByGvk(group, version, fo.Kind)
 
 	if fo.Source == RenderSourceConfig {
-		return renderConfigBundle(out, helper)
+		return renderConfigBundle(out, helper, sel)
 	}
 
 	client := NewClient(helper)
@@ -87,15 +95,6 @@ func (fo *RenderCommand) RunE(cfgFactory config.Factory, out io.Writer) error {
 		return err
 	}
 
-	groupVersion := strings.Split(fo.APIVersion, "/")
-	group := ""
-	version := groupVersion[0]
-	if len(groupVersion) > 1 {
-		group = groupVersion[0]
-		version = strings.Join(groupVersion[1:], "/")
-	}
-
-	sel := document.NewSelector().ByLabel(fo.Label).ByAnnotation(fo.Annotation).ByGvk(group, version, fo.Kind)
 	var executorRender bool
 	if fo.Source == RenderSourceExecutor {
 		executorRender = true
@@ -103,8 +102,13 @@ func (fo *RenderCommand) RunE(cfgFactory config.Factory, out io.Writer) error {
 	return phase.Render(out, executorRender, ifc.RenderOptions{FilterSelector: sel})
 }
 
-func renderConfigBundle(out io.Writer, h ifc.Helper) error {
+func renderConfigBundle(out io.Writer, h ifc.Helper, sel document.Selector) error {
 	bundle, err := document.NewBundleByPath(h.PhaseBundleRoot())
+	if err != nil {
+		return err
+	}
+
+	bundle, err = bundle.SelectBundle(sel)
 	if err != nil {
 		return err
 	}
