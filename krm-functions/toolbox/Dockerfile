@@ -5,7 +5,7 @@ RUN curl -L "https://storage.googleapis.com/kubernetes-release/release/$(curl -s
       -o /kubectl
 RUN chmod +x /kubectl
 
-FROM gcr.io/gcp-runtimes/go1-builder:1.13 as builder
+FROM gcr.io/gcp-runtimes/go1-builder:1.15 as builder
 ENV CGO_ENABLED=0
 WORKDIR /go/src/
 COPY krm-functions/toolbox/image/go.mod .
