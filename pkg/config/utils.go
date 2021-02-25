@@ -16,6 +16,8 @@ package config
 
 import (
 	"encoding/base64"
+
+	"opendev.org/airship/airshipctl/pkg/fs"
 )
 
 // NewConfig returns a newly initialized Config object
@@ -53,6 +55,7 @@ func NewConfig() *Config {
 				MetadataPath:            DefaultManifestMetadataFile,
 			},
 		},
+		fileSystem: fs.NewDocumentFs(),
 	}
 }
 

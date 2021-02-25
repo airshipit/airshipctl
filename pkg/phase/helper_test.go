@@ -555,9 +555,9 @@ manifests:
     metadataPath: valid_site/metadata.yaml
     repositories:
       primary:
-        url: "empty/filename/"
-`
-	conf := &config.Config{}
+        url: "empty/filename/"`
+
+	conf := config.NewConfig()
 	err := yaml.Unmarshal([]byte(confString), conf)
 	require.NoError(t, err)
 	return conf

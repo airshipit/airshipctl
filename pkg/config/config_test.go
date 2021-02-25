@@ -16,7 +16,9 @@ package config_test
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -96,19 +98,14 @@ func TestLoadConfig(t *testing.T) {
 }
 
 func TestPersistConfig(t *testing.T) {
-	conf, cleanup := testutil.InitConfig(t)
-	defer cleanup(t)
-
-	conf.SetLoadedConfigPath(conf.LoadedConfigPath() + ".new")
-
-	err := conf.PersistConfig(true)
+	testDir, err := ioutil.TempDir("", "airship-test")
 	require.NoError(t, err)
-
-	// Check that the files were created
-	assert.FileExists(t, conf.LoadedConfigPath())
-
-	err = conf.PersistConfig(false)
-	require.Error(t, err, config.ErrConfigFileExists{Path: conf.LoadedConfigPath()})
+	configPath := filepath.Join(testDir, "config")
+	err = config.CreateConfig(configPath, true)
+	require.NoError(t, err)
+	assert.FileExists(t, configPath)
+	err = os.RemoveAll(testDir)
+	require.NoError(t, err)
 }
 
 func TestEnsureComplete(t *testing.T) {
