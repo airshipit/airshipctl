@@ -11,6 +11,18 @@ config:
   pruneOptions:
     prune: false
 ---
+apiVersion: airshipit.org/v1alpha1
+kind: KubernetesApply
+metadata:
+  labels:
+    airshipit.org/deploy-k8s: "false"
+  name: kubernetes-apply-controlplane
+config:
+  waitOptions:
+    timeout: 3600
+  pruneOptions:
+    prune: false
+---
 # This is added to support phase with no-wait
 # When there is a wait, then it does status-check and fails
 # if the resource status(condition) is not met.

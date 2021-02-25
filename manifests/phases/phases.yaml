@@ -42,7 +42,7 @@ config:
   executorRef:
     apiVersion: airshipit.org/v1alpha1
     kind: KubernetesApply
-    name: kubernetes-apply
+    name: kubernetes-apply-controlplane
   documentEntryPoint: ephemeral/controlplane
 ---
 apiVersion: airshipit.org/v1alpha1
@@ -80,7 +80,7 @@ config:
   executorRef:
     apiVersion: airshipit.org/v1alpha1
     kind: KubernetesApply
-    name: kubernetes-apply
+    name: kubernetes-apply-controlplane
   documentEntryPoint: target/controlplane
 ---
 apiVersion: airshipit.org/v1alpha1

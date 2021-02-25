@@ -30,7 +30,7 @@ do
 done
 
 echo "Create target k8s cluster resources"
-airshipctl phase run controlplane-ephemeral --debug
+time airshipctl phase run controlplane-ephemeral --debug
 
 echo "List all nodes in target cluster"
 kubectl \
