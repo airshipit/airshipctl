@@ -18,6 +18,7 @@ set -xe
 export TIMEOUT=${TIMEOUT:-3600}
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
 export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
+WORKER_NODE="node03"
 
 echo "Stop ephemeral node"
 sudo virsh destroy air-ephemeral
@@ -25,7 +26,11 @@ sudo virsh destroy air-ephemeral
 node_timeout () {
     end=$(($(date +%s) + $TIMEOUT))
     while true; do
-        if (kubectl --request-timeout 20s --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get $1 node03 | grep -qw $2) ; then
+        if (kubectl --request-timeout 20s --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get $1 $WORKER_NODE | grep -qw $2) ; then
+            if [ "$1" = "node" ]; then
+              kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT label nodes $WORKER_NODE node-role.kubernetes.io/worker=""
+            fi
+
             echo -e "\nGet $1 status"
             kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get $1
             break
@@ -42,7 +47,7 @@ node_timeout () {
 }
 
 echo "Deploy worker node"
-airshipctl phase run  workers-target --debug
+airshipctl phase run workers-target --debug
 
 echo "Waiting $TIMEOUT seconds for bmh to be in ready state."
 node_timeout bmh ready
