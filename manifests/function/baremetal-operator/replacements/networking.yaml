@@ -39,3 +39,73 @@ replacements:
       kind: ConfigMap
       name: ironic-vars
     fieldrefs: ["data.DHCP_RANGE"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ironic.ironicAutomatedClean
+  target:
+    objref:
+      kind: ConfigMap
+      name: ironic-vars
+    fieldrefs: ["data.IRONIC_AUTOMATED_CLEAN"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ironic.httpPort
+  target:
+    objref:
+      kind: ConfigMap
+      name: ironic-vars
+    fieldrefs: ["data.HTTP_PORT"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ironic.ironicFastTrack
+  target:
+    objref:
+      kind: ConfigMap
+      name: ironic-vars
+    fieldrefs: ["data.IRONIC_FAST_TRACK"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ironic.deployKernelUrl
+  target:
+    objref:
+      kind: ConfigMap
+      name: ironic-vars
+    fieldrefs: ["data.DEPLOY_KERNEL_URL"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ironic.deployRamdiskUrl
+  target:
+    objref:
+      kind: ConfigMap
+      name: ironic-vars
+    fieldrefs: ["data.DEPLOY_RAMDISK_URL"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ironic.ironicEndpoint
+  target:
+    objref:
+      kind: ConfigMap
+      name: ironic-vars
+    fieldrefs: ["data.IRONIC_ENDPOINT"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ironic.ironicInspectorEndpoint
+  target:
+    objref:
+      kind: ConfigMap
+      name: ironic-vars
+    fieldrefs: ["data.IRONIC_INSPECTOR_ENDPOINT"]

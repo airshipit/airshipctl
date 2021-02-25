@@ -23,6 +23,13 @@ spec:
     provisioningInterface: "pxe"
     provisioningIp: "10.23.25.102"
     dhcpRange: "10.23.25.200,10.23.25.250"
+    ironicAutomatedClean: ""
+    httpPort: ""
+    ironicFastTrack: ""
+    deployKernelUrl: ""
+    deployRamdiskUrl: ""
+    ironicEndpoint: ""
+    ironicInspectorEndpoint: ""
 
   # This section is only relevant when using Metal3 BareMetalHosts, and
   # is consumed by the `hostgenerator-m3` function.
