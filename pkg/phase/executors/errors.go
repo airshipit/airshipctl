@@ -30,14 +30,6 @@ func (e ErrUnknownExecutorAction) Error() string {
 		e.Action, e.ExecutorName)
 }
 
-// ErrIsogenNilBundle is returned when isogen executor is not provided with bundle
-type ErrIsogenNilBundle struct {
-}
-
-func (e ErrIsogenNilBundle) Error() string {
-	return "Cannot build iso with empty bundle, no data source is available"
-}
-
 // ErrUnknownExecutorName is returned for unknown executor name parameter
 // received by RegisterExecutor function
 type ErrUnknownExecutorName struct {

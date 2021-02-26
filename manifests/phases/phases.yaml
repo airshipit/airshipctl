@@ -1,17 +1,6 @@
 apiVersion: airshipit.org/v1alpha1
 kind: Phase
 metadata:
-  name: bootstrap-iso
-config:
-  executorRef:
-    apiVersion: airshipit.org/v1alpha1
-    kind: IsoConfiguration
-    name: isogen
-  documentEntryPoint: ephemeral/bootstrap
----
-apiVersion: airshipit.org/v1alpha1
-kind: Phase
-metadata:
   name: initinfra-ephemeral
   clusterName: ephemeral-cluster
 config:

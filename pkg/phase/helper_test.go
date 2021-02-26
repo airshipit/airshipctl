@@ -124,9 +124,6 @@ func TestHelperPlan(t *testing.T) {
 				},
 				Phases: []airshipv1.PhaseStep{
 					{
-						Name: "isogen",
-					},
-					{
 						Name: "remotedirect",
 					},
 					{

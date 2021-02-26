@@ -3,7 +3,6 @@ kind: PhasePlan
 metadata:
   name: phasePlan
 phases:
-  - name: isogen
   - name: remotedirect
   - name: initinfra
   - name: some_phase
