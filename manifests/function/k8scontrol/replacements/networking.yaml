@@ -16,18 +16,18 @@ replacements:
 # Replace the pod & service networks
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: NetworkCatalogue
       name: networking
-    fieldref: kubernetes.serviceCidr
+    fieldref: spec.kubernetes.serviceCidr
   target:
     objref:
       kind: Cluster
     fieldrefs: ["spec.clusterNetwork.services.cidrBlocks.0"]
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: NetworkCatalogue
       name: networking
-    fieldref: kubernetes.podCidr
+    fieldref: spec.kubernetes.podCidr
   target:
     objref:
       kind: Cluster
@@ -36,9 +36,9 @@ replacements:
 # Replace the k8s controlplane host endpoint
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: NetworkCatalogue
       name: networking
-    fieldref: kubernetes.controlPlaneEndpoint
+    fieldref: spec.kubernetes.controlPlaneEndpoint
   target:
     objref:
       kind: Metal3Cluster

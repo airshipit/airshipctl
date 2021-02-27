@@ -11,9 +11,9 @@ replacements:
 # Replace the pod & service networks
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: NetworkCatalogue
       name: networking
-    fieldref: ironic.provisioningInterface
+    fieldref: spec.ironic.provisioningInterface
   target:
     objref:
       kind: ConfigMap
@@ -21,9 +21,9 @@ replacements:
     fieldrefs: ["data.PROVISIONING_INTERFACE"]
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: NetworkCatalogue
       name: networking
-    fieldref: ironic.provisioningIp
+    fieldref: spec.ironic.provisioningIp
   target:
     objref:
       kind: ConfigMap
@@ -31,9 +31,9 @@ replacements:
     fieldrefs: ["data.PROVISIONING_IP"]
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: NetworkCatalogue
       name: networking
-    fieldref: ironic.dhcpRange
+    fieldref: spec.ironic.dhcpRange
   target:
     objref:
       kind: ConfigMap
