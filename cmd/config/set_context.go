@@ -15,9 +15,8 @@ limitations under the License.
 package config
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 
 	"opendev.org/airship/airshipctl/pkg/config"
 )
@@ -37,6 +36,10 @@ airshipctl config set-context \
   --current \
   --manifest=exampleManifest
 `
+
+	setContextManifestFlag         = "manifest"
+	setContextManagementConfigFlag = "management-config"
+	setContextCurrentFlag          = "current"
 )
 
 // NewSetContextCommand creates a command for creating and modifying contexts
@@ -49,51 +52,60 @@ func NewSetContextCommand(cfgFactory config.Factory) *cobra.Command {
 		Long:    setContextLong[1:],
 		Example: setContextExample,
 		Args:    cobra.MaximumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			nFlags := cmd.Flags().NFlag()
-			if len(args) == 1 {
-				// context name is made optional with --current flag added
-				o.Name = args[0]
-			}
-			if o.Name != "" && nFlags == 0 {
-				fmt.Fprintf(cmd.OutOrStdout(), "Context %q not modified. No new options provided.\n", o.Name)
-				return nil
-			}
-
-			cfg, err := cfgFactory()
-			if err != nil {
-				return err
-			}
-			modified, err := config.RunSetContext(o, cfg, true)
-
-			if err != nil {
-				return err
-			}
-			if modified {
-				fmt.Fprintf(cmd.OutOrStdout(), "Context %q modified.\n", o.Name)
-			} else {
-				fmt.Fprintf(cmd.OutOrStdout(), "Context %q created.\n", o.Name)
-			}
-			return nil
-		},
+		RunE:    setContextRunE(cfgFactory, o),
 	}
 
-	addSetContextFlags(o, cmd)
+	addSetContextFlags(cmd, o)
 	return cmd
 }
 
-func addSetContextFlags(o *config.ContextOptions, cmd *cobra.Command) {
+func addSetContextFlags(cmd *cobra.Command, o *config.ContextOptions) {
 	flags := cmd.Flags()
 
 	flags.StringVar(
 		&o.Manifest,
-		"manifest",
+		setContextManifestFlag,
 		"",
 		"set the manifest for the specified context")
 
+	flags.StringVar(
+		&o.ManagementConfiguration,
+		setContextManagementConfigFlag,
+		"",
+		"set the management config for the specified context")
+
 	flags.BoolVar(
 		&o.Current,
-		"current",
+		setContextCurrentFlag,
 		false,
 		"update the current context")
+}
+
+func setContextRunE(cfgFactory config.Factory, o *config.ContextOptions) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		ctxName := ""
+		if len(args) == 1 {
+			ctxName = args[0]
+		}
+
+		// Go through all the flags that have been set
+		var opts []config.ContextOption
+		fn := func(flag *pflag.Flag) {
+			switch flag.Name {
+			case setContextManifestFlag:
+				opts = append(opts, config.SetContextManifest(o.Manifest))
+			case setContextManagementConfigFlag:
+				opts = append(opts, config.SetContextManagementConfig(o.ManagementConfiguration))
+			}
+		}
+		cmd.Flags().Visit(fn)
+
+		options := &config.RunSetContextOptions{
+			CfgFactory: cfgFactory,
+			CtxName:    ctxName,
+			Current:    o.Current,
+			Writer:     cmd.OutOrStdout(),
+		}
+		return options.RunSetContext(opts...)
+	}
 }

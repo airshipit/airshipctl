@@ -29,9 +29,10 @@ airshipctl config set-context \
 ### Options
 
 ```
-      --current           update the current context
-  -h, --help              help for set-context
-      --manifest string   set the manifest for the specified context
+      --current                    update the current context
+  -h, --help                       help for set-context
+      --management-config string   set the management config for the specified context
+      --manifest string            set the manifest for the specified context
 ```
 
 ### Options inherited from parent commands
