@@ -9,9 +9,9 @@ metadata:
 replacements:
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: images.flux.source_controller.manager
+    fieldref: spec.images.flux.source_controller.manager.image
   target:
     objref:
       kind: Deployment

@@ -11,8 +11,9 @@ replacements:
 # Replace the Kubernetes version in the KubeadmControlPlane
 - source:
     objref:
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.kubernetes}"
+    fieldref: "{.spec.kubernetes}"
   target:
     objref:
       kind: KubeadmControlPlane
@@ -21,8 +22,9 @@ replacements:
 # Replace the controlplane disk image in the Metal3MachineTemplate
 - source:
     objref:
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.files.k8scontrol.cluster_controlplane_image}"
+    fieldref: "{.spec.files.k8scontrol.cluster_controlplane_image}"
   target:
     objref:
       kind: Metal3MachineTemplate

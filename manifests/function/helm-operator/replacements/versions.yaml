@@ -9,9 +9,9 @@ metadata:
 replacements:
 - source:
     objref:
-      kind: VariableCatalogue
+      kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: images.helm_operator.helm_operator.helm_operator
+    fieldref: spec.images.helm_operator.helm_operator.helm_operator.image
   target:
     objref:
       kind: Deployment

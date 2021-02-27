@@ -1,116 +1,140 @@
 # The default versions catalogue for functions hosted in the airshipctl project.
 # These values can be overridden at the site, type, etc levels as appropriate.
 apiVersion: airshipit.org/v1alpha1
-kind: VariableCatalogue
+kind: VersionsCatalogue
 metadata:
   name: versions-airshipctl
   labels:
     airshipit.org/deploy-k8s: "false"
+spec:
+  helm_repositories:
+    ingress-nginx:
+      url: https://kubernetes.github.io/ingress-nginx
 
-helm_repositories:
-  ingress-nginx:
-    url: https://kubernetes.github.io/ingress-nginx
-charts:
-  ingress-nginx:
-    chart: ingress-nginx
-    version: 3.5.1
+  charts:
+    ingress-nginx:
+      chart: ingress-nginx
+      version: 3.5.1
 
-files:
-  k8scontrol:
-    cluster_controlplane_image:
-      url: https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img
-      checksum: 4a6909d1480ac30d676accd7b37ec711
+  files:
+    k8scontrol:
+      cluster_controlplane_image:
+        url: https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img
+        checksum: 4a6909d1480ac30d676accd7b37ec711
 
-images:
-  capm3: # Images specific to the camp3 function; etc.
-    manager:
-      repository: quay.io/metal3-io
-      tag: v0.3.2
-    auth_proxy:
-      repository: gcr.io/kubebuilder
-      tag: v0.4.0
-  cacpk:
-    manager:
-      repository: us.gcr.io/k8s-artifacts-prod/cluster-api
-      tag: v0.3.7
-    auth_proxy:
-       repository: gcr.io/kubebuilder
-       tag: v0.4.1
-  cabpk:
-    manager:
-      repository: us.gcr.io/k8s-artifacts-prod/cluster-api
-      tag: v0.3.7
-    auth_proxy:
-      repository: gcr.io/kubebuilder
-      tag: v0.4.1
-  capd:
-    manager:
-      repository: gcr.io/k8s-staging-cluster-api
-      tag: v20201019-v0.3.10-86-gc1647481f
-    auth_proxy:
-      repository: gcr.io/kubebuilder
-      tag: v0.4.0
-  capo:
-    manager:
-      repository: gcr.io/k8s-staging-capi-openstack
-      tag: v20200707-v0.3.1
-    auth_proxy:
-      repository: gcr.io/kubebuilder
-      tag: v0.4.1
-  capg:
-    manager:
-      repository: gcr.io/k8s-staging-cluster-api-gcp
-      tag: master
-    auth_proxy:
-      repository: gcr.io/kubebuilder
-      tag: v0.4.1
-  capi:
-    manager:
-      repository: us.gcr.io/k8s-artifacts-prod/cluster-api
-      tag: v0.3.7
-    auth_proxy:
-      repository: gcr.io/kubebuilder
-      tag: v0.4.1
-  capz:
-    manager:
-      repository: gcr.io/k8s-staging-cluster-api-azure
-      tag: v0.4.9
-    auth_proxy:
-      repository: gcr.io/kubebuilder
-      tag: v0.4.1
-  baremetal_operator:
-    ironic: # ironic Deployment
-      init_bootstrap: centos
-      init_images: quay.io/airshipit/ipa:latest
-      dnsmasq: quay.io/metal3-io/ironic:capm3-v0.4.0
-      httpd: quay.io/metal3-io/ironic:capm3-v0.4.0
-      ironic: quay.io/metal3-io/ironic:capm3-v0.4.0
-      ironic_inspector: quay.io/metal3-io/ironic-inspector:capm3-v0.4.0
-    metal3_baremetal_operator: # metal3-baremetal-operator Deployment
-      baremetal_operator: quay.io/metal3-io/baremetal-operator:capm3-v0.4.0
-      ironic_proxy: alpine/socat
-      ironic_inspector_proxy: alpine/socat
-  calico_v3:
-    node: # calico-node DaemonSet
-      upgrade_ipam: calico/cni:v3.15.1
-      install_cni: calico/cni:v3.15.1
-      flexvol_driver: calico/pod2daemon-flexvol:v3.15.1
-      calico_node: calico/node:v3.15.1
-    kube_controllers: # calico-kube-controllers Deployment
-      calico_kube_controllers: calico/kube-controllers:v3.15.1
-  hwcc:
-    manager: # controller-manager Deployment
-      manager: quay.io/hwcc/airship-hcc:v1
-      kube_rbac_proxy: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
-  helm_operator:
-    helm_operator: # helm-operator Deployment
-      helm_operator: docker.io/fluxcd/helm-operator:1.2.0
-  flux:
-    helm_controller: # helm-controller Deployment
-      manager: ghcr.io/fluxcd/helm-controller:v0.4.3
-    source_controller: # source-controller Deployment
-      manager: ghcr.io/fluxcd/source-controller:v0.5.3
-  cert-manager:
-    repository: "quay.io/jetstack"
+  capi_images:
+    capm3: # Images specific to the camp3 function; etc.
+      manager:
+        repository: quay.io/metal3-io
+        tag: v0.3.2
+      auth_proxy:
+        repository: gcr.io/kubebuilder
+        tag: v0.4.0
+    cacpk:
+      manager:
+        repository: us.gcr.io/k8s-artifacts-prod/cluster-api
+        tag: v0.3.7
+      auth_proxy:
+        repository: gcr.io/kubebuilder
+        tag: v0.4.1
+    cabpk:
+      manager:
+        repository: us.gcr.io/k8s-artifacts-prod/cluster-api
+        tag: v0.3.7
+      auth_proxy:
+        repository: gcr.io/kubebuilder
+        tag: v0.4.1
+    capd:
+      manager:
+        repository: gcr.io/k8s-staging-cluster-api
+        tag: v20201019-v0.3.10-86-gc1647481f
+      auth_proxy:
+        repository: gcr.io/kubebuilder
+        tag: v0.4.0
+    capo:
+      manager:
+        repository: gcr.io/k8s-staging-capi-openstack
+        tag: v20200707-v0.3.1
+      auth_proxy:
+        repository: gcr.io/kubebuilder
+        tag: v0.4.1
+    capg:
+      manager:
+        repository: gcr.io/k8s-staging-cluster-api-gcp
+        tag: master
+      auth_proxy:
+        repository: gcr.io/kubebuilder
+        tag: v0.4.1
+    capi:
+      manager:
+        repository: us.gcr.io/k8s-artifacts-prod/cluster-api
+        tag: v0.3.7
+      auth_proxy:
+        repository: gcr.io/kubebuilder
+        tag: v0.4.1
+    capz:
+      manager:
+        repository: gcr.io/k8s-staging-cluster-api-azure
+        tag: v0.4.9
+      auth_proxy:
+        repository: gcr.io/kubebuilder
+        tag: v0.4.1
 
-kubernetes: v1.18.6
+  images:
+    baremetal_operator:
+      ironic: # ironic Deployment
+        init_bootstrap:
+          image: centos
+        init_images:
+          image: quay.io/airshipit/ipa:latest
+        dnsmasq:
+          image: quay.io/metal3-io/ironic:capm3-v0.4.0
+        httpd:
+          image: quay.io/metal3-io/ironic:capm3-v0.4.0
+        ironic:
+          image: quay.io/metal3-io/ironic:capm3-v0.4.0
+        ironic_inspector:
+          image: quay.io/metal3-io/ironic-inspector:capm3-v0.4.0
+      metal3_baremetal_operator: # metal3-baremetal-operator Deployment
+        baremetal_operator:
+          image: quay.io/metal3-io/baremetal-operator:capm3-v0.4.0
+        ironic_proxy:
+          image: alpine/socat
+        ironic_inspector_proxy:
+          image: alpine/socat
+    calico_v3:
+      node: # calico-node DaemonSet
+        upgrade_ipam:
+          image: calico/cni:v3.15.1
+        install_cni:
+          image: calico/cni:v3.15.1
+        flexvol_driver:
+          image: calico/pod2daemon-flexvol:v3.15.1
+        calico_node:
+          image: calico/node:v3.15.1
+      kube_controllers: # calico-kube-controllers Deployment
+        calico_kube_controllers:
+          image: calico/kube-controllers:v3.15.1
+    hwcc:
+      manager: # controller-manager Deployment
+        manager:
+          image: quay.io/hwcc/airship-hcc:v1
+        kube_rbac_proxy:
+          image: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
+    helm_operator:
+      helm_operator: # helm-operator Deployment
+        helm_operator:
+          image: docker.io/fluxcd/helm-operator:1.2.0
+    flux:
+      helm_controller: # helm-controller Deployment
+        manager:
+          image: ghcr.io/fluxcd/helm-controller:v0.4.3
+      source_controller: # source-controller Deployment
+        manager:
+          image: ghcr.io/fluxcd/source-controller:v0.5.3
+    cert-manager:
+      cert-manager:
+        repository:
+          image: "quay.io/jetstack"
+
+  kubernetes: v1.18.6
