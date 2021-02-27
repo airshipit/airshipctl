@@ -119,3 +119,18 @@ spec:
                   dhcpRange:
                     # TODO(mfuller): should this be enforced with a pattern?
                     type: string
+                  ironicAutomatedClean:
+                    type: boolean
+                  httpPort:
+                    type: integer
+                    maximum: 65535
+                  ironicFastTrack:
+                    type: boolean
+                  deployKernelUrl:
+                    type: string
+                  deployRamdiskUrl:
+                    type: string
+                  ironicEndpoint:
+                    type: string
+                  ironicInspectorEndpoint:
+                    type: string
