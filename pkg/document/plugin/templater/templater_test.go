@@ -186,20 +186,6 @@ template: |
 				"at <regexGen .regex (.limit | int)>: error calling " +
 				"regexGen: error parsing regexp: missing closing ]: `[a-z`",
 		},
-		{
-			cfg: `
-apiVersion: airshipit.org/v1alpha1
-kind: Templater
-metadata:
-  name: notImportantHere
-template: |
-  FileExists: {{ fileExists "./templater.go" }}
-  NoFileExists: {{ fileExists "./templater1.go" }}
-`,
-			expectedOut: `FileExists: true
-NoFileExists: false
-`,
-		},
 	}
 
 	for _, tc := range testCases {
