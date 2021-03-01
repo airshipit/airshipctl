@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -xe
+set -e
 
 #Default wait timeout is 3600 seconds
 export TIMEOUT=${TIMEOUT:-3600}
