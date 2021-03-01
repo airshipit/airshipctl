@@ -7,7 +7,7 @@ spec:
   version: v1.18.6
   infrastructureTemplate:
     kind: Metal3MachineTemplate
-    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
     name: cluster-controlplane
   kubeadmConfigSpec:
     clusterConfiguration:
@@ -37,7 +37,7 @@ spec:
         kubeletExtraArgs:
           node-labels: 'metal3.io/uuid={{ ds.meta_data.uuid }}'
 ---
-apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
 kind: Metal3MachineTemplate
 metadata:
   name: cluster-controlplane

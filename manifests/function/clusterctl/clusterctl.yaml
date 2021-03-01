@@ -9,7 +9,7 @@ init-options:
   bootstrap-providers:
     - "kubeadm:v0.3.7"
   infrastructure-providers:
-    - "metal3:v0.3.2"
+    - "metal3:v0.4.0"
   control-plane-providers:
     - "kubeadm:v0.3.7"
 providers:
@@ -17,7 +17,7 @@ providers:
     type: "InfrastructureProvider"
     variable-substitution: true
     versions:
-      v0.3.2: airshipctl/manifests/function/capm3/v0.3.2
+      v0.4.0: airshipctl/manifests/function/capm3/v0.4.0
   - name: "kubeadm"
     type: "BootstrapProvider"
     variable-substitution: true
@@ -59,7 +59,7 @@ images:
     tag: "v0.4.1"
   infrastructure-metal3/cluster-api-provider-metal3:
     repository: "quay.io/metal3-io"
-    tag: "v0.3.2"
+    tag: "v0.4.0"
   infrastructure-metal3/kube-rbac-proxy:
     repository: "gcr.io/kubebuilder"
     tag: "v0.4.0"

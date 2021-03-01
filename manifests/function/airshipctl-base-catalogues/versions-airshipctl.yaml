@@ -26,7 +26,7 @@ spec:
     capm3: # Images specific to the camp3 function; etc.
       manager:
         repository: quay.io/metal3-io
-        tag: v0.3.2
+        tag: v0.4.0
       auth_proxy:
         repository: gcr.io/kubebuilder
         tag: v0.4.0
