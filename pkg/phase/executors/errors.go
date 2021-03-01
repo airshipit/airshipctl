@@ -57,3 +57,20 @@ type ErrUnableParseProvider struct {
 func (e ErrUnableParseProvider) Error() string {
 	return fmt.Sprintf("unable to parse name and version of '%s' type, '%s' provider", e.ProviderType, e.Provider)
 }
+
+// ErrNilExecutorDoc returned when the executor document is nil
+type ErrNilExecutorDoc struct {
+}
+
+func (e ErrNilExecutorDoc) Error() string {
+	return "executor document is nil"
+}
+
+// ErrInvalidPhase is returned if the phase is invalid
+type ErrInvalidPhase struct {
+	Reason string
+}
+
+func (e ErrInvalidPhase) Error() string {
+	return fmt.Sprintf("invalid phase: %s", e.Reason)
+}
