@@ -14,3 +14,14 @@ phases:
   - name: workers-target
   - name: workers-classification
   - name: workload-target
+
+---
+apiVersion: airshipit.org/v1alpha1
+kind: PhasePlan
+metadata:
+  name: iso
+description: "Runs phases to build iso image"
+phases:
+  - name: iso-cloud-init-data
+  - name: iso-build-image
+
