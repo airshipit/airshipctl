@@ -51,6 +51,7 @@ spec:
                 type: object
                 additionalProperties:
                   type: object
+                  required: [manager, auth_proxy]
                   properties:
                     manager:
                       type: object
@@ -60,6 +61,13 @@ spec:
                         tag:
                           type: string
                     auth_proxy:
+                      type: object
+                      properties:
+                        repository:
+                          type: string
+                        tag:
+                          type: string
+                    ipam-manager:
                       type: object
                       properties:
                         repository:
