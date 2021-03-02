@@ -22,7 +22,7 @@ sudo kill -9 $(lsof -t -i:8000 -i:8099)
 vm_types='ephemeral|target|worker'
 
 vol_list=$(sudo virsh vol-list --pool airship | grep -E $vm_types | awk '{print $1}')
-iso_list=$(sudo virsh vol-list --pool default | awk '{print $1}'| grep -i 'ubuntu.*\.img$')
+iso_list=$(sudo virsh vol-list --pool default | awk '{print $1}'| grep -i 'ephemeral.*\.img$')
 vm_list=$(sudo virsh list --all | grep -E $vm_types | awk '{print $2}')
 net_list=$(sudo virsh net-list --all | awk '{print $1}'| grep -i air)
 
