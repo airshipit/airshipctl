@@ -17,7 +17,7 @@
 - name: ensure directory for apache logs exists
   file:
     state: directory
-    path: "{{ apache_log_dir }}"
+    path: "{{ apache_log_dir }}/logs"
 
 - name: dump apache logs to directory
   shell: |-
@@ -32,7 +32,7 @@
   become: yes
 
 - name: copy logs
-  command: "cp -r /var/log/apache2 {{ apache_log_dir }}/logs"
+  shell: "cp /var/log/apache2/*.log {{ apache_log_dir }}/logs/"
   become: yes
 
 - name: Change ownership of the logs dir
