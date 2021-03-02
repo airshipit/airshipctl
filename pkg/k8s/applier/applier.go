@@ -23,13 +23,12 @@ import (
 	v1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/cli-runtime/pkg/resource"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 	cliapply "sigs.k8s.io/cli-utils/pkg/apply"
 	applyevent "sigs.k8s.io/cli-utils/pkg/apply/event"
 	"sigs.k8s.io/cli-utils/pkg/apply/poller"
 	clicommon "sigs.k8s.io/cli-utils/pkg/common"
-	"sigs.k8s.io/cli-utils/pkg/inventory"
 	"sigs.k8s.io/cli-utils/pkg/manifestreader"
 	"sigs.k8s.io/cli-utils/pkg/provider"
 	"sigs.k8s.io/yaml"
@@ -59,7 +58,7 @@ type ReaderFactory func(validate bool, bundle document.Bundle, factory cmdutil.F
 
 // NewApplier returns instance of Applier
 func NewApplier(eventCh chan events.Event, f cmdutil.Factory) *Applier {
-	cf := provider.NewProvider(f, inventory.WrapInventoryObj)
+	cf := provider.NewProvider(f)
 	return &Applier{
 		Factory:               f,
 		ManifestReaderFactory: utils.DefaultManifestReaderFactory,
@@ -74,14 +73,14 @@ func NewApplier(eventCh chan events.Event, f cmdutil.Factory) *Applier {
 func (a *Applier) ApplyBundle(bundle document.Bundle, ao ApplyOptions) {
 	defer close(a.eventChannel)
 	log.Debugf("Getting infos for bundle, inventory id is %s", ao.BundleName)
-	infos, err := a.getInfos(ao.BundleName, bundle, ao.DryRunStrategy)
+	objects, err := a.getObjects(ao.BundleName, bundle, ao.DryRunStrategy)
 	if err != nil {
 		handleError(a.eventChannel, err)
 		return
 	}
 
 	ctx := context.Background()
-	ch := a.Driver.Run(ctx, infos, cliApplyOptions(ao))
+	ch := a.Driver.Run(ctx, objects, cliApplyOptions(ao))
 	for e := range ch {
 		a.eventChannel <- events.Event{
 			Type:         events.ApplierType,
@@ -90,10 +89,10 @@ func (a *Applier) ApplyBundle(bundle document.Bundle, ao ApplyOptions) {
 	}
 }
 
-func (a *Applier) getInfos(
+func (a *Applier) getObjects(
 	bundleName string,
 	bundle document.Bundle,
-	dryRun clicommon.DryRunStrategy) ([]*resource.Info, error) {
+	dryRun clicommon.DryRunStrategy) ([]*unstructured.Unstructured, error) {
 	if bundle == nil {
 		return nil, ErrNilBundle{}
 	}
@@ -130,7 +129,11 @@ func (a *Applier) getInfos(
 	if err = a.Driver.Initialize(a.Poller); err != nil {
 		return nil, err
 	}
-	return a.ManifestReaderFactory(false, bundle, a.Factory).Read()
+	restMapper, err := a.Factory.ToRESTMapper()
+	if err != nil {
+		return nil, err
+	}
+	return a.ManifestReaderFactory(false, bundle, restMapper).Read()
 }
 
 func (a *Applier) ensureNamespaceExists(name string, dryRun clicommon.DryRunStrategy) error {
@@ -177,7 +180,7 @@ func cliApplyOptions(ao ApplyOptions) cliapply.Options {
 // Driver to cli-utils apply
 type Driver interface {
 	Initialize(p poller.Poller) error
-	Run(ctx context.Context, infos []*resource.Info, options cliapply.Options) <-chan applyevent.Event
+	Run(ctx context.Context, infos []*unstructured.Unstructured, options cliapply.Options) <-chan applyevent.Event
 }
 
 // Adaptor is implementation of driver interface
@@ -200,8 +203,9 @@ func (a *Adaptor) Initialize(p poller.Poller) error {
 }
 
 // Run perform apply operation
-func (a *Adaptor) Run(ctx context.Context, infos []*resource.Info, options cliapply.Options) <-chan applyevent.Event {
-	return a.CliUtilsApplier.Run(ctx, infos, options)
+func (a *Adaptor) Run(ctx context.Context, objects []*unstructured.Unstructured,
+	options cliapply.Options) <-chan applyevent.Event {
+	return a.CliUtilsApplier.Run(ctx, objects, options)
 }
 
 // NewInventoryDocument returns default config map with inventory Id to group up the objects

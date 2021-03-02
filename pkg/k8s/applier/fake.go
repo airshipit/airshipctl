@@ -17,8 +17,8 @@ package applier
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/cli-runtime/pkg/resource"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 	cliapply "sigs.k8s.io/cli-utils/pkg/apply"
 	applyevent "sigs.k8s.io/cli-utils/pkg/apply/event"
@@ -52,7 +52,7 @@ func (fa FakeAdaptor) Initialize(p poller.Poller) error {
 // Run implements driver
 func (fa FakeAdaptor) Run(
 	ctx context.Context,
-	infos []*resource.Info,
+	objects []*unstructured.Unstructured,
 	options cliapply.Options) <-chan applyevent.Event {
 	ch := make(chan applyevent.Event, len(fa.events))
 	defer close(ch)
@@ -96,7 +96,7 @@ type FakePoller struct {
 func (fp *FakePoller) Poll(ctx context.Context, ids []object.ObjMetadata, opts polling.Options) <-chan pollevent.Event {
 	events := []pollevent.Event{
 		{
-			EventType: pollevent.CompletedEvent,
+			EventType: pollevent.ResourceUpdateEvent,
 			Resource: &pollevent.ResourceStatus{
 				Identifier: object.ObjMetadata{
 					Name:      "test-rc",
@@ -109,7 +109,7 @@ func (fp *FakePoller) Poll(ctx context.Context, ids []object.ObjMetadata, opts p
 			},
 		},
 		{
-			EventType: pollevent.CompletedEvent,
+			EventType: pollevent.ResourceUpdateEvent,
 			Resource: &pollevent.ResourceStatus{
 				Identifier: object.ObjMetadata{
 					Name:      "airshipit-test-bundle-4bf1e4a",

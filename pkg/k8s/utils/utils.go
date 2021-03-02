@@ -19,9 +19,10 @@ import (
 	"io"
 	"os"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	"k8s.io/cli-runtime/pkg/resource"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 	"sigs.k8s.io/cli-utils/pkg/manifestreader"
 
@@ -50,25 +51,25 @@ func Streams() genericclioptions.IOStreams {
 type ManifestReaderFactory func(
 	validate bool,
 	bundle document.Bundle,
-	factory cmdutil.Factory) manifestreader.ManifestReader
+	mapper meta.RESTMapper) manifestreader.ManifestReader
 
 // DefaultManifestReaderFactory default factory function for manifestreader.ManifestReader
 var DefaultManifestReaderFactory ManifestReaderFactory = func(
 	validate bool,
 	bundle document.Bundle,
-	factory cmdutil.Factory) manifestreader.ManifestReader {
-	return NewManifestBundleReader(validate, bundle, factory)
+	mapper meta.RESTMapper) manifestreader.ManifestReader {
+	return NewManifestBundleReader(validate, bundle, mapper)
 }
 
 // NewManifestBundleReader returns implementation of manifestreader interface
 func NewManifestBundleReader(
 	validate bool,
 	bundle document.Bundle,
-	factory cmdutil.Factory) *ManifestBundleReader {
+	mapper meta.RESTMapper) *ManifestBundleReader {
 	opts := manifestreader.ReaderOptions{
+		Mapper:    mapper,
 		Validate:  validate,
 		Namespace: metav1.NamespaceDefault,
-		Factory:   factory,
 	}
 	buffer := bytes.NewBuffer([]byte{})
 	return &ManifestBundleReader{
@@ -90,10 +91,10 @@ type ManifestBundleReader struct {
 	writer       io.Writer
 }
 
-func (mbr *ManifestBundleReader) Read() ([]*resource.Info, error) {
+func (mbr *ManifestBundleReader) Read() ([]*unstructured.Unstructured, error) {
 	err := mbr.Bundle.Write(mbr.writer)
 	if err != nil {
-		return []*resource.Info{}, err
+		return nil, err
 	}
 	return mbr.StreamReader.Read()
 }
