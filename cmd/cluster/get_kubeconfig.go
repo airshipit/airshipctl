@@ -17,8 +17,7 @@ package cluster
 import (
 	"github.com/spf13/cobra"
 
-	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
-	clusterctlcmd "opendev.org/airship/airshipctl/pkg/clusterctl/cmd"
+	"opendev.org/airship/airshipctl/pkg/cluster"
 	"opendev.org/airship/airshipctl/pkg/config"
 )
 
@@ -28,55 +27,28 @@ Retrieve cluster kubeconfig and print it to stdout
 `
 	getKubeconfigExample = `
 # Retrieve target-cluster kubeconfig
-airshipctl cluster get-kubeconfig target-cluster --kubeconfig /tmp/kubeconfig
+airshipctl cluster get-kubeconfig target-cluster
 `
 )
 
 // NewGetKubeconfigCommand creates a command which retrieves cluster kubeconfig
 func NewGetKubeconfigCommand(cfgFactory config.Factory) *cobra.Command {
-	o := &client.GetKubeconfigOptions{}
 	cmd := &cobra.Command{
 		Use:     "get-kubeconfig [cluster_name]",
 		Short:   "Retrieve kubeconfig for a desired cluster",
 		Long:    getKubeconfigLong[1:],
 		Example: getKubeconfigExample[1:],
 		Args:    cobra.ExactArgs(1),
-		RunE:    getKubeconfigRunE(cfgFactory, o),
+		RunE:    getKubeconfigRunE(cfgFactory),
 	}
-
-	initFlags(o, cmd)
 
 	return cmd
 }
 
-func initFlags(o *client.GetKubeconfigOptions, cmd *cobra.Command) {
-	flags := cmd.Flags()
-
-	flags.StringVar(
-		&o.ParentKubeconfigPath,
-		"kubeconfig",
-		"",
-		"path to kubeconfig associated with parental cluster")
-
-	flags.StringVarP(
-		&o.ManagedClusterNamespace,
-		"namespace",
-		"n",
-		"default",
-		"namespace where cluster is located, if not specified default one will be used")
-
-	flags.StringVar(
-		&o.ParentKubeconfigContext,
-		"context",
-		"",
-		"specify context within the kubeconfig file")
-}
-
 // getKubeconfigRunE returns a function to cobra command to be executed in runtime
-func getKubeconfigRunE(cfgFactory config.Factory, o *client.GetKubeconfigOptions) func(
+func getKubeconfigRunE(cfgFactory config.Factory) func(
 	cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		o.ManagedClusterName = args[0]
-		return clusterctlcmd.GetKubeconfig(cfgFactory, o, cmd.OutOrStdout())
+		return cluster.GetKubeconfig(cfgFactory, args[0], cmd.OutOrStdout())
 	}
 }
