@@ -27,7 +27,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/document"
-	airerrors "opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
@@ -55,6 +54,40 @@ providers:
     versions:
       v0.3.2: functions/capi/infrastructure/v0.3.2`
 
+	executorConfigTmplGood = `
+apiVersion: airshipit.org/v1alpha1
+kind: Clusterctl
+metadata:
+  name: clusterctl-v1
+action: %s
+init-options:
+  core-provider: "cluster-api:v0.3.2"
+  kubeConfigRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: KubeConfig
+    name: sample-name
+  namespace: some-namespace
+move-options:
+  namespace: some-namespace
+providers:
+  - name: "cluster-api"
+    type: "CoreProvider"
+    versions:
+      v0.3.3: manifests/function/capi/v0.3.3`
+
+	executorConfigTmplBad = `
+apiVersion: airshipit.org/v1alpha1
+kind: Clusterctl
+metadata:
+  name: clusterctl-v1
+action: %s
+somefield: %s
+providers:
+  - name: "cluster-api"
+    type: "CoreProvider"
+    versions:
+      v0.3.2: functions/capi/infrastructure/v0.3.2`
+
 	renderedDocs = `---
 apiVersion: v1
 kind: Namespace
@@ -68,8 +101,8 @@ metadata:
 `
 )
 
-func TestNewExecutor(t *testing.T) {
-	sampleCfgDoc := executorDoc(t, fmt.Sprintf(executorConfigTmpl, "init"))
+func TestNewClusterctlExecutor(t *testing.T) {
+	sampleCfgDoc := executorDoc(t, fmt.Sprintf(executorConfigTmplGood, "init"))
 	testCases := []struct {
 		name        string
 		helper      ifc.Helper
@@ -92,7 +125,7 @@ func TestNewExecutor(t *testing.T) {
 	}
 }
 
-func TestExecutorRun(t *testing.T) {
+func TestClusterctlExecutorRun(t *testing.T) {
 	errTmpFile := errors.New("TmpFile error")
 
 	testCases := []struct {
@@ -105,7 +138,7 @@ func TestExecutorRun(t *testing.T) {
 	}{
 		{
 			name:       "Error unknown action",
-			cfgDoc:     executorDoc(t, fmt.Sprintf(executorConfigTmpl, "someAction")),
+			cfgDoc:     executorDoc(t, fmt.Sprintf(executorConfigTmplGood, "someAction")),
 			bundlePath: "testdata/executor_init",
 			expectedEvt: []events.Event{
 				wrapError(executors.ErrUnknownExecutorAction{Action: "someAction", ExecutorName: "clusterctl"}),
@@ -114,7 +147,7 @@ func TestExecutorRun(t *testing.T) {
 		},
 		{
 			name:   "Error temporary file",
-			cfgDoc: executorDoc(t, fmt.Sprintf(executorConfigTmpl, "init")),
+			cfgDoc: executorDoc(t, fmt.Sprintf(executorConfigTmplGood, "init")),
 			fs: testfs.MockFileSystem{
 				MockTempFile: func(string, string) (fs.File, error) {
 					return nil, errTmpFile
@@ -131,7 +164,7 @@ func TestExecutorRun(t *testing.T) {
 		},
 		{
 			name:   "Regular Run init",
-			cfgDoc: executorDoc(t, fmt.Sprintf(executorConfigTmpl, "init")),
+			cfgDoc: executorDoc(t, fmt.Sprintf(executorConfigTmplGood, "init")),
 			fs: testfs.MockFileSystem{
 				MockTempFile: func(string, string) (fs.File, error) {
 					return testfs.TestFile{
@@ -191,20 +224,71 @@ func TestExecutorRun(t *testing.T) {
 	}
 }
 
-func TestExecutorValidate(t *testing.T) {
-	sampleCfgDoc := executorDoc(t, fmt.Sprintf(executorConfigTmpl, "init"))
-	executor, err := executors.NewClusterctlExecutor(
-		ifc.ExecutorConfig{
-			ExecutorDocument: sampleCfgDoc,
-			Helper:           makeDefaultHelper(t, "../../clusterctl/client/testdata", defaultMetadataPath),
+func TestClusterctlExecutorValidate(t *testing.T) {
+	testCases := []struct {
+		name               string
+		actionType         string
+		bundlePath         string
+		executorConfigTmpl string
+		expectedErrString  string
+	}{
+		{
+			name:               "Success init action",
+			actionType:         "init",
+			executorConfigTmpl: executorConfigTmplGood,
+		},
+		{
+			name:               "Success move action",
+			actionType:         "move",
+			executorConfigTmpl: executorConfigTmplGood,
+		},
+		{
+			name:               "Error any other action",
+			actionType:         "any",
+			executorConfigTmpl: executorConfigTmplGood,
+			expectedErrString:  "unknown action type 'any'",
+		},
+		{
+			name:               "Error empty action",
+			actionType:         "",
+			executorConfigTmpl: executorConfigTmplGood,
+			expectedErrString:  "invalid phase: ClusterctlExecutor.Action is empty",
+		},
+		{
+			name:               "Error empty init option",
+			actionType:         "init",
+			executorConfigTmpl: executorConfigTmplBad,
+			expectedErrString:  "invalid phase: ClusterctlExecutor.InitOptions.CoreProvider is empty",
+		},
+		{
+			name:               "Error empty move option",
+			actionType:         "move",
+			executorConfigTmpl: executorConfigTmplBad,
+			expectedErrString:  "invalid phase: ClusterctlExecutor.MoveOptions.Namespace is empty",
+		},
+	}
+	for _, test := range testCases {
+		tt := test
+		t.Run(tt.name, func(t *testing.T) {
+			sampleCfgDoc := executorDoc(t, fmt.Sprintf(test.executorConfigTmpl, test.actionType, test.actionType))
+			executor, err := executors.NewClusterctlExecutor(
+				ifc.ExecutorConfig{
+					ExecutorDocument: sampleCfgDoc,
+					Helper:           makeDefaultHelper(t, "../../clusterctl/client/testdata", defaultMetadataPath),
+				})
+			require.NoError(t, err)
+			err = executor.Validate()
+			if test.expectedErrString != "" {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), test.expectedErrString)
+			} else {
+				require.NoError(t, err)
+			}
 		})
-	require.NoError(t, err)
-	expectedErr := airerrors.ErrNotImplemented{}
-	actualErr := executor.Validate()
-	assert.Equal(t, expectedErr, actualErr)
+	}
 }
 
-func TestExecutorRender(t *testing.T) {
+func TestClusterctlExecutorRender(t *testing.T) {
 	sampleCfgDoc := executorDoc(t, fmt.Sprintf(executorConfigTmpl, "init"))
 	executor, err := executors.NewClusterctlExecutor(
 		ifc.ExecutorConfig{

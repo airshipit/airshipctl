@@ -24,7 +24,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/errors"
+	airerrors "opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/log"
@@ -171,7 +171,22 @@ func isAlreadyExistsError(err error) bool {
 
 // Validate executor configuration and documents
 func (c *ClusterctlExecutor) Validate() error {
-	return errors.ErrNotImplemented{}
+	switch c.options.Action {
+	case "":
+		return airerrors.ErrInvalidPhase{Reason: "ClusterctlExecutor.Action is empty"}
+	case airshipv1.Init:
+		if c.options.InitOptions.CoreProvider == "" {
+			return airerrors.ErrInvalidPhase{Reason: "ClusterctlExecutor.InitOptions.CoreProvider is empty"}
+		}
+	case airshipv1.Move:
+		if c.options.MoveOptions.Namespace == "" {
+			return airerrors.ErrInvalidPhase{Reason: "ClusterctlExecutor.MoveOptions.Namespace is empty"}
+		}
+	default:
+		return ErrUnknownExecutorAction{Action: string(c.options.Action)}
+	}
+	// TODO: need to find if any other validation needs to be added
+	return nil
 }
 
 // Render executor documents
