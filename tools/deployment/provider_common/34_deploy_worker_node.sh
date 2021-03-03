@@ -15,7 +15,7 @@
 set -xe
 
 # Example Usage
-# TEST_SITE=docker-test-site \
+# SITE=docker-test-site \
 # WORKERS_COUNT=3 ./tools/deployment/provider_common/34_deploy_worker_node.sh
 
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
