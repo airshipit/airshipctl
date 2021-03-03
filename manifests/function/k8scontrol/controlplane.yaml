@@ -24,6 +24,7 @@ spec:
     preKubeadmCommands:
       # Restart docker to apply any proxy settings
       - export HOME=/root
+      - systemctl daemon-reload
       - systemctl restart docker
     initConfiguration:
       nodeRegistration:
