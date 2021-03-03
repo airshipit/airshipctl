@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/inventory"
 	"opendev.org/airship/airshipctl/pkg/inventory/ifc"
@@ -28,6 +29,8 @@ import (
 	"opendev.org/airship/airshipctl/testutil/redfishutils"
 )
 
+const testNode = "node-0"
+
 func TestCommandOptions(t *testing.T) {
 	t.Run("error BMHAction bmh inventory", func(t *testing.T) {
 		inv := &mockinventory.MockInventory{}
@@ -35,8 +38,29 @@ func TestCommandOptions(t *testing.T) {
 		inv.On("BaremetalInventory").Once().Return(nil, expectedErr)
 
 		co := inventory.NewOptions(inv)
+		co.All = true
 		actualErr := co.BMHAction(ifc.BaremetalOperationPowerOn)
 		assert.Equal(t, expectedErr, actualErr)
+	})
+
+	t.Run("error BMHAction invalid empty options", func(t *testing.T) {
+		inv := &mockinventory.MockInventory{}
+
+		co := inventory.NewOptions(inv)
+		err := co.BMHAction(ifc.BaremetalOperationPowerOn)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), (inventory.ErrInvalidOptions{}).Error())
+	})
+
+	t.Run("error BMHAction invalid both all and other selectors", func(t *testing.T) {
+		inv := &mockinventory.MockInventory{}
+
+		co := inventory.NewOptions(inv)
+		co.All = true
+		co.Labels = "foo=bar"
+		err := co.BMHAction(ifc.BaremetalOperationPowerOn)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), (inventory.ErrInvalidOptions{}).Error())
 	})
 
 	t.Run("success BMHAction", func(t *testing.T) {
@@ -47,6 +71,7 @@ func TestCommandOptions(t *testing.T) {
 		inv.On("BaremetalInventory").Once().Return(bmhInv, nil)
 
 		co := inventory.NewOptions(inv)
+		co.All = true
 		actualErr := co.BMHAction(ifc.BaremetalOperationPowerOn)
 		assert.Equal(t, nil, actualErr)
 	})
@@ -60,6 +85,7 @@ func TestCommandOptions(t *testing.T) {
 		inv.On("BaremetalInventory").Once().Return(bmhInv, nil)
 
 		co := inventory.NewOptions(inv)
+		co.Name = testNode
 		buf := bytes.NewBuffer([]byte{})
 		actualErr := co.PowerStatus(buf)
 		assert.Equal(t, expectedErr, actualErr)
@@ -73,6 +99,7 @@ func TestCommandOptions(t *testing.T) {
 		inv.On("BaremetalInventory").Once().Return(nil, expectedErr)
 
 		co := inventory.NewOptions(inv)
+		co.Name = testNode
 		buf := bytes.NewBuffer([]byte{})
 		actualErr := co.PowerStatus(buf)
 		assert.Equal(t, expectedErr, actualErr)
@@ -91,6 +118,7 @@ func TestCommandOptions(t *testing.T) {
 		inv.On("BaremetalInventory").Once().Return(bmhInv, nil)
 
 		co := inventory.NewOptions(inv)
+		co.Name = testNode
 		buf := bytes.NewBuffer([]byte{})
 		actualErr := co.PowerStatus(buf)
 		assert.Equal(t, expectedErr, actualErr)
@@ -110,6 +138,7 @@ func TestCommandOptions(t *testing.T) {
 		inv.On("BaremetalInventory").Once().Return(bmhInv, nil)
 
 		co := inventory.NewOptions(inv)
+		co.Name = testNode
 		buf := bytes.NewBuffer([]byte{})
 		actualErr := co.PowerStatus(buf)
 		assert.Equal(t, nil, actualErr)
@@ -128,6 +157,7 @@ func TestCommandOptions(t *testing.T) {
 		inv.On("BaremetalInventory").Once().Return(bmhInv, nil)
 
 		co := inventory.NewOptions(inv)
+		co.Name = testNode
 		co.IsoURL = "http://some-url"
 		actualErr := co.RemoteDirect()
 		assert.Equal(t, nil, actualErr)
@@ -144,6 +174,7 @@ func TestCommandOptions(t *testing.T) {
 		inv.On("BaremetalInventory").Once().Return(bmhInv, nil)
 
 		co := inventory.NewOptions(inv)
+		co.Name = testNode
 		actualErr := co.RemoteDirect()
 		// Simply check if error is returned in isoURL is not specified
 		assert.Error(t, actualErr)
@@ -156,7 +187,29 @@ func TestCommandOptions(t *testing.T) {
 		inv.On("BaremetalInventory").Once().Return(nil, expectedErr)
 
 		co := inventory.NewOptions(inv)
+		co.Name = testNode
 		actualErr := co.RemoteDirect()
 		assert.Equal(t, expectedErr, actualErr)
+	})
+
+	t.Run("error RemoteDirect invalid options", func(t *testing.T) {
+		inv := &mockinventory.MockInventory{}
+
+		co := inventory.NewOptions(inv)
+		err := co.RemoteDirect()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), (inventory.ErrInvalidOptions{}).Error())
+	})
+
+	t.Run("error RemoteDirect invalid options", func(t *testing.T) {
+		inv := &mockinventory.MockInventory{}
+
+		co := inventory.NewOptions(inv)
+		buf := bytes.NewBuffer([]byte{})
+		err := co.PowerStatus(buf)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), (inventory.ErrInvalidOptions{}).Error())
+		assert.Len(t, buf.Bytes(), 0)
 	})
 }

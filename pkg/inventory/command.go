@@ -26,6 +26,8 @@ import (
 
 // CommandOptions is used to store common variables from cmd flags for baremetal command group
 type CommandOptions struct {
+	All bool
+
 	Labels    string
 	Name      string
 	Namespace string
@@ -42,12 +44,34 @@ func NewOptions(i ifc.Inventory) *CommandOptions {
 	}
 }
 
+func (o *CommandOptions) validateBMHAction() error {
+	if o.Name == "" && o.Namespace == "" && o.Labels == "" && !o.All {
+		return ErrInvalidOptions{Message: `must provide atleast one of the following options: ` +
+			`'name', 'namespace', 'labels' or 'all'`}
+	} else if o.All && (o.Name != "" || o.Namespace != "" || o.Labels != "") {
+		return ErrInvalidOptions{Message: "option 'all' can not be combined with other host selector options"}
+	}
+	return nil
+}
+
+func (o *CommandOptions) validateSingleHostAction() error {
+	if o.Name == "" && o.Namespace == "" && o.Labels == "" {
+		return ErrInvalidOptions{Message: "No options are specified, must provide atleast 'name', 'namespace' or 'labels'"}
+	}
+	return nil
+}
+
 // BMHAction performs an action against BaremetalHost objects
 func (o *CommandOptions) BMHAction(op ifc.BaremetalOperation) error {
+	if err := o.validateBMHAction(); err != nil {
+		return err
+	}
+
 	bmhInventory, err := o.Inventory.BaremetalInventory()
 	if err != nil {
 		return err
 	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), o.Timeout)
 	defer cancel()
 	return bmhInventory.RunOperation(
@@ -59,6 +83,9 @@ func (o *CommandOptions) BMHAction(op ifc.BaremetalOperation) error {
 
 // RemoteDirect perform RemoteDirect operation against single host
 func (o *CommandOptions) RemoteDirect() error {
+	if err := o.validateSingleHostAction(); err != nil {
+		return err
+	}
 	host, err := o.getHost()
 	if err != nil {
 		return err
@@ -70,6 +97,9 @@ func (o *CommandOptions) RemoteDirect() error {
 
 // PowerStatus get power status of the single host
 func (o *CommandOptions) PowerStatus(w io.Writer) error {
+	if err := o.validateSingleHostAction(); err != nil {
+		return err
+	}
 	host, err := o.getHost()
 	if err != nil {
 		return err

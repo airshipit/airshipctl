@@ -15,6 +15,8 @@
 package baremetal
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
@@ -22,18 +24,32 @@ import (
 	"opendev.org/airship/airshipctl/pkg/inventory/ifc"
 )
 
+var (
+	powerOffCommand = "poweroff"
+
+	powerOffLong = fmt.Sprintf(`
+Power off baremetal hosts
+%s
+`, selectorsDescription)
+
+	powerOffExample = fmt.Sprintf(bmhActionExampleTempalte, powerOffCommand)
+)
+
 // NewPowerOffCommand provides a command to shutdown a remote host.
 func NewPowerOffCommand(cfgFactory config.Factory, options *inventory.CommandOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "poweroff",
-		Short: "Shutdown a baremetal host",
-		Args:  cobra.NoArgs,
+		Use:     powerOffCommand,
+		Short:   "Shutdown a baremetal hosts",
+		Long:    powerOffLong[1:],
+		Example: powerOffExample[1:],
+		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return options.BMHAction(ifc.BaremetalOperationPowerOff)
 		},
 	}
 
 	initFlags(options, cmd)
+	initAllFlag(options, cmd)
 
 	return cmd
 }

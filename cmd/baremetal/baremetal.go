@@ -15,6 +15,7 @@
 package baremetal
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -40,6 +41,29 @@ const (
 
 	flagTimeout            = "timeout"
 	flagTimeoutDescription = "timeout on baremetal action"
+
+	flagAll            = "all"
+	flagAllDescription = "specify this to target all hosts in the inventory"
+)
+
+var (
+	selectorsDescription = fmt.Sprintf(`The command will target baremetal hosts from airship inventory kustomize root
+based on the --%s, --%s and --%s flags provided. If no flags are
+provided airshipctl will try to select all baremetal hosts in the inventory`, flagName, flagNamespace, flagLabel)
+
+	bmhActionExampleTempalte = `
+Perform action against hosts with name rdm9r3s3 in all namespaces where the host is found
+# airshipctl baremetal %[1]s --name rdm9r3s3
+
+Perform action against hosts with name rdm9r3s3 in namespace metal3
+# airshipctl baremetal %[1]s --name rdm9r3s3 --namespace metal3
+
+Perform action against all hosts defined in inventory
+# airshipctl baremetal %[1]s --all
+
+Perform action against hosts with a label 'foo=bar'
+# airshipctl baremetal %[1]s --labels "foo=bar"
+`
 )
 
 // NewBaremetalCommand creates a new command for interacting with baremetal using airshipctl.
@@ -66,4 +90,8 @@ func initFlags(options *inventory.CommandOptions, cmd *cobra.Command) {
 	flags.StringVar(&options.Name, flagName, "", flagNameDescription)
 	flags.StringVarP(&options.Namespace, flagNamespace, flagNamespaceSort, "", flagNamespaceDescription)
 	flags.DurationVar(&options.Timeout, flagTimeout, 10*time.Minute, flagTimeoutDescription)
+}
+
+func initAllFlag(options *inventory.CommandOptions, cmd *cobra.Command) {
+	cmd.Flags().BoolVar(&options.All, flagAll, false, flagAllDescription)
 }
