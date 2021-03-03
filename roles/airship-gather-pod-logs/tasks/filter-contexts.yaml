@@ -11,14 +11,18 @@
 # limitations under the License.
 
 ---
-- name: "Save kubeconfig contexts"
+- name: "Try to reach {{ ctx_name }} cluster"
   shell: |-
-    kubectl --kubeconfig {{ kubeconfig }} config get-contexts -o name
-  register: kctl_context_command
+    kubectl --kubeconfig {{ kubeconfig }} --context {{ ctx_name }} get ns
+  register: reachable
+  ignore_errors: true
 
-- name: "Save contexts for reachable clusters"
-  with_items: "{{ kctl_context_command.stdout.split('\n') }}"
-  loop_control:
-      loop_var: ctx_name
-  include_tasks: filter-contexts.yaml
+- debug:
+    msg: "{{ ctx_name }} is not reachable and won't be used for pod logs gathering"
+  when: reachable.rc != 0
+
+- name: "Add {{ ctx_name }} to context list"
+  when: reachable.rc == 0
+  set_fact:
+      kctl_context_list: "{{ kctl_context_list | default([]) + [ ctx_name ] }}"
 ...
