@@ -1,0 +1,13 @@
+Command which would validate that the phase contains the required documents to run the phase.
+
+Usage:
+  validate PHASE_NAME [flags]
+
+Examples:
+
+# validate initinfra phase
+airshipctl phase validate initinfra
+
+
+Flags:
+  -h, --help   help for validate

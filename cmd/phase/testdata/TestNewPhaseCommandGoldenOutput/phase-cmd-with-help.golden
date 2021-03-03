@@ -10,6 +10,7 @@ Available Commands:
   render      Render phase documents from model
   run         Run phase
   tree        Tree view of kustomize entrypoints of phase
+  validate    Assert that a phase is valid
 
 Flags:
   -h, --help   help for phase
