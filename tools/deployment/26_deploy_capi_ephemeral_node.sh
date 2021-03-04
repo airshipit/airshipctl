@@ -26,9 +26,23 @@ if [ "$PROVIDER" = "metal3" ]; then
     echo "Wait for Calico to be deployed using tigera"
     kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT wait --all-namespaces --for=condition=Ready pods --all --timeout=1000s
 
-    # Skipping this check due a race condition till a work-around is identified.
-    #echo "Wait for Tigerastatus to be Available"
-    #kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT wait --for=condition=Available tigerastatus --all --timeout=1000s -A
+    echo "Wait for Established condition of tigerastatus(CRD) to be true for tigerastatus(CR) to show up"
+    kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT wait --for=condition=Established crd/tigerastatuses.operator.tigera.io --timeout=300s
+
+    # Wait till CR(tigerastatus) shows up to query
+    count=0
+    max_retry_attempts=150
+    until [[ $(kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT get tigerastatus 2>/dev/null) ]]; do
+      count=$((count + 1))
+      if [[ ${count} -eq "${max_retry_attempts}" ]]; then
+        echo ' Timed out waiting for tigerastatus'
+        exit 1
+      fi
+      sleep 2
+    done
+
+    # Wait till condition is available for tigerastatus
+    kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT wait --for=condition=Available tigerastatus --all --timeout=1000s
 
     echo "Deploy metal3.io components to ephemeral node"
     airshipctl phase run initinfra-ephemeral --debug
