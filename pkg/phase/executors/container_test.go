@@ -14,6 +14,7 @@ package executors_test
 
 import (
 	"fmt"
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -24,6 +25,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
+	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
@@ -174,6 +176,14 @@ type: Opaque
 				Container:      tt.containerAPI,
 				ClientFunc:     tt.clientFunc,
 				Helper:         makeDefaultHelper(t, tt.targetPath, "../metadata.yaml"),
+				Options: ifc.ExecutorConfig{
+					ClusterName: "testCluster",
+					KubeConfig: fakeKubeConfig{
+						getFile: func() (string, kubeconfig.Cleanup, error) {
+							return "testPath", func() {}, nil
+						},
+					},
+				},
 			}
 
 			ch := make(chan events.Event)
@@ -198,4 +208,61 @@ type: Opaque
 			}
 		})
 	}
+}
+
+func TestSetKubeConfig(t *testing.T) {
+	getFileErr := fmt.Errorf("failed to get file")
+	testCases := []struct {
+		name        string
+		opts        ifc.ExecutorConfig
+		expectedErr error
+	}{
+		{
+			name: "Set valid kubeconfig",
+			opts: ifc.ExecutorConfig{
+				ClusterName: "testCluster",
+				KubeConfig: fakeKubeConfig{
+					getFile: func() (string, kubeconfig.Cleanup, error) {
+						return "testPath", func() {}, nil
+					},
+				},
+			},
+		},
+		{
+			name: "Failed to get kubeconfig file",
+			opts: ifc.ExecutorConfig{
+				ClusterName: "testCluster",
+				KubeConfig: fakeKubeConfig{
+					getFile: func() (string, kubeconfig.Cleanup, error) {
+						return "", func() {}, getFileErr
+					},
+				},
+			},
+			expectedErr: getFileErr,
+		},
+	}
+
+	for _, tc := range testCases {
+		tt := tc
+		t.Run(tt.name, func(t *testing.T) {
+			e := executors.ContainerExecutor{
+				Options:   tt.opts,
+				Container: &v1alpha1.GenericContainer{},
+				Helper:    makeDefaultHelper(t, singleExecutorBundlePath, "../metadata.yaml"),
+			}
+			_, err := e.SetKubeConfig()
+			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
+
+type fakeKubeConfig struct {
+	getFile func() (string, kubeconfig.Cleanup, error)
+}
+
+func (k fakeKubeConfig) GetFile() (string, kubeconfig.Cleanup, error) { return k.getFile() }
+func (k fakeKubeConfig) Write(_ io.Writer) error                      { return nil }
+func (k fakeKubeConfig) WriteFile(path string) error                  { return nil }
+func (k fakeKubeConfig) WriteTempFile(dumpRoot string) (string, kubeconfig.Cleanup, error) {
+	return k.getFile()
 }

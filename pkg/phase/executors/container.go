@@ -25,6 +25,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
+	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
@@ -40,6 +41,7 @@ type ContainerExecutor struct {
 	ExecutorBundle   document.Bundle
 	ExecutorDocument document.Document
 	Helper           ifc.Helper
+	Options          ifc.ExecutorConfig
 }
 
 // NewContainerExecutor creates instance of phase executor
@@ -70,6 +72,7 @@ func NewContainerExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 		ClientFunc: container.NewClientV1Alpha1,
 		Helper:     cfg.Helper,
 		Container:  apiObj,
+		Options:    cfg,
 	}, nil
 }
 
@@ -81,6 +84,14 @@ func (c *ContainerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 		Operation: events.GenericContainerStart,
 		Message:   "starting generic container",
 	})
+
+	if c.Options.ClusterName != "" {
+		cleanup, err := c.SetKubeConfig()
+		if err != nil {
+			handleError(evtCh, err)
+		}
+		defer cleanup()
+	}
 
 	input, err := bundleReader(c.ExecutorBundle)
 	if err != nil {
@@ -119,6 +130,31 @@ func (c *ContainerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 		Operation: events.GenericContainerStop,
 		Message:   "execution of the generic container finished",
 	})
+}
+
+// SetKubeConfig adds env variable and mounts kubeconfig to container
+func (c *ContainerExecutor) SetKubeConfig() (kubeconfig.Cleanup, error) {
+	clusterMap, err := c.Helper.ClusterMap()
+	if err != nil {
+		return nil, err
+	}
+	context, err := clusterMap.ClusterKubeconfigContext(c.Options.ClusterName)
+	if err != nil {
+		return nil, err
+	}
+	kubeConfigSrc, cleanup, err := c.Options.KubeConfig.GetFile()
+	if err != nil {
+		return nil, err
+	}
+	c.Container.Spec.StorageMounts = append(c.Container.Spec.StorageMounts, v1alpha1.StorageMount{
+		MountType: "bind",
+		Src:       kubeConfigSrc,
+		DstPath:   v1alpha1.KubeConfigPath,
+	})
+	envs := []string{v1alpha1.KubeConfigEnv, v1alpha1.KubeConfigEnvKeyContext + "=" + context}
+	c.Container.Spec.EnvVars = append(c.Container.Spec.EnvVars, envs...)
+
+	return cleanup, nil
 }
 
 // bundleReader sets input for function
