@@ -123,7 +123,7 @@ type ErrMissingConfig struct {
 }
 
 func (e ErrMissingConfig) Error() string {
-	return "Missing configuration: " + e.What
+	return "missing configuration: " + e.What
 }
 
 // ErrConfigFailed returned in case of failure during configuration
@@ -195,7 +195,7 @@ type ErrConflictingAuthOptions struct {
 }
 
 func (e ErrConflictingAuthOptions) Error() string {
-	return "Specifying token and username/password is not allowed at the same time."
+	return "specifying token and username/password is not allowed at the same time."
 }
 
 // ErrConflictingClusterOptions returned when both certificate-authority and
@@ -204,7 +204,7 @@ type ErrConflictingClusterOptions struct {
 }
 
 func (e ErrConflictingClusterOptions) Error() string {
-	return "Specifying certificate-authority and insecure-skip-tls-verify mode is not allowed at the same time."
+	return "specifying certificate-authority and insecure-skip-tls-verify mode is not allowed at the same time."
 }
 
 // ErrConflictingContextOptions returned when both context and --current is set at same time
@@ -212,7 +212,7 @@ type ErrConflictingContextOptions struct {
 }
 
 func (e ErrConflictingContextOptions) Error() string {
-	return "Specifying context and --current Flag is not allowed at the same time."
+	return "specifying context and --current Flag is not allowed at the same time."
 }
 
 // ErrEmptyContextName returned when empty context name is set
@@ -220,7 +220,7 @@ type ErrEmptyContextName struct {
 }
 
 func (e ErrEmptyContextName) Error() string {
-	return "Context name must not be empty."
+	return "context name must not be empty."
 }
 
 // ErrDecodingCredentials returned when the given string cannot be decoded
@@ -265,7 +265,7 @@ type ErrMutuallyExclusiveEncryptionConfigType struct {
 }
 
 func (e ErrMutuallyExclusiveEncryptionConfigType) Error() string {
-	return "Specify mutually exclusive encryption config sources, use either: " +
+	return "specify mutually exclusive encryption config sources, use either: " +
 		"--decryption-key-path/--decryption-key-path or --secret-name/--secret-namespace."
 }
 
@@ -275,7 +275,7 @@ type ErrInvalidEncryptionKeyPath struct {
 }
 
 func (e ErrInvalidEncryptionKeyPath) Error() string {
-	return "Specify both encryption and decryption keys when setting encryption config"
+	return "specify both encryption and decryption keys when setting encryption config"
 }
 
 // ErrInvalidEncryptionKey is returned when encryption config specifies only one of
@@ -284,7 +284,7 @@ type ErrInvalidEncryptionKey struct {
 }
 
 func (e ErrInvalidEncryptionKey) Error() string {
-	return "Specify both secret name and namespace when setting encryption config"
+	return "specify both secret name and namespace when setting encryption config"
 }
 
 // ErrMissingFlag is returned when flag is not provided

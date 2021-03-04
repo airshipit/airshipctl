@@ -29,7 +29,7 @@ import (
 
 const (
 	testFactoryErr        = "test config error"
-	testNewHelperErr      = "Missing configuration"
+	testNewHelperErr      = "missing configuration"
 	testNoBundlePath      = "no such file or directory"
 	defaultCurrentContext = "context"
 )
@@ -317,7 +317,7 @@ func TestPlanRunCommand(t *testing.T) {
 					Contexts:       make(map[string]*config.Context),
 				}, nil
 			},
-			expectedErr: "Missing configuration: Context with name 'does not exist'",
+			expectedErr: "missing configuration: context with name 'does not exist'",
 		},
 		{
 			name: "Error phase by id",
@@ -391,7 +391,7 @@ func TestClusterListCommand_RunE(t *testing.T) {
 					Contexts:       make(map[string]*config.Context),
 				}, nil
 			},
-			expectedErr: "Missing configuration: Context with name 'does not exist'",
+			expectedErr: "missing configuration: context with name 'does not exist'",
 		},
 		{
 			name: "No error",

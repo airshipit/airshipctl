@@ -45,7 +45,7 @@ func TestGetEncryptionConfigCmd(t *testing.T) {
 			Name:    "get-encryption-config-not-found",
 			CmdLine: "foo",
 			Cmd:     cmd.NewGetEncryptionConfigCommand(emptySettings),
-			Error:   config.ErrEncryptionConfigurationNotFound{Name: "foo"},
+			Error:   config.ErrEncryptionConfigurationNotFound{Name: "Encryption Config with name 'foo'"},
 		},
 		{
 			Name:    "get-encryption-config-all",

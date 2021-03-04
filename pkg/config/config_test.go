@@ -402,7 +402,7 @@ func TestCurrentContextManifestMetadata(t *testing.T) {
 		},
 		{
 			name:           "no such file or directory",
-			metaPath:       "does not exist",
+			metaPath:       "doesn't exist",
 			currentContext: "testContext",
 			expectErr:      true,
 			errorChecker:   os.IsNotExist,
@@ -412,7 +412,7 @@ func TestCurrentContextManifestMetadata(t *testing.T) {
 			currentContext: "doesn't exist",
 			expectErr:      true,
 			errorChecker: func(err error) bool {
-				return strings.Contains(err.Error(), "Missing configuration")
+				return strings.Contains(err.Error(), "missing configuration")
 			},
 		},
 	}

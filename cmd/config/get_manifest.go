@@ -57,7 +57,7 @@ func NewGetManifestCommand(cfgFactory config.Factory) *cobra.Command {
 				manifest, exists := airconfig.Manifests[o.Name]
 				if !exists {
 					return config.ErrMissingConfig{
-						What: fmt.Sprintf("Manifest with name '%s'", o.Name),
+						What: fmt.Sprintf("manifest with name '%s'", o.Name),
 					}
 				}
 				fmt.Fprintln(cmd.OutOrStdout(), manifest)

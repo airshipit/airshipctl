@@ -1,4 +1,4 @@
-Error: Specify both encryption and decryption keys when setting encryption config
+Error: specify both encryption and decryption keys when setting encryption config
 Usage:
   set-encryption-config NAME [flags]
 

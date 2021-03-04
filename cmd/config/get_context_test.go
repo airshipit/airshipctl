@@ -64,7 +64,7 @@ func TestGetContextCmd(t *testing.T) {
 			Name:    "missing",
 			CmdLine: fmt.Sprintf("%s", missingContext),
 			Cmd:     cmd.NewGetContextCommand(settings),
-			Error: fmt.Errorf("context %s information was not found in the configuration",
+			Error: fmt.Errorf("missing configuration: context with name '%s'",
 				missingContext),
 		},
 		{

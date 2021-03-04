@@ -51,7 +51,7 @@ func TestBaremetalInventory(t *testing.T) {
 		},
 		{
 			name:      "error no manifest defined",
-			errString: "Missing configuration: manifest named",
+			errString: "missing configuration: manifest named",
 
 			factory: func() (*config.Config, error) {
 				cfg := config.NewConfig()
