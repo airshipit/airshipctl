@@ -25,8 +25,13 @@ export EXTERNAL_KUBECONFIG=${EXTERNAL_KUBECONFIG:-""}
 export SITE=${SITE:-"test-site"}
 
 if [[ -z "$EXTERNAL_KUBECONFIG" ]]; then
-   # TODO: use airshipctl cluster get-kubeconfig command when it's implemented
-   KUSTOMIZE_PLUGIN_HOME=./ kustomize build --enable_alpha_plugins "${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})/manifests/site/$SITE/kubeconfig/" | yq '.config' --yaml-output > ~/.airship/kubeconfig
+   # we want to take config from bundle - remove kubeconfig file so
+   # airshipctl could regenerated it from kustomize
+   [ -f "~/.airship/kubeconfig" ] && rm ~/.airship/kubeconfig
+   # we need to use tmp file, because airshipctl uses it and fails
+   # if we write directly
+   airshipctl cluster get-kubeconfig > ~/.airship/tmp-kubeconfig
+   mv ~/.airship/tmp-kubeconfig ~/.airship/kubeconfig
 fi
 
 #backward compatibility with previous behavior
