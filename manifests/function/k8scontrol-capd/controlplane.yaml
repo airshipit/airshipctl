@@ -3,6 +3,7 @@ apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
 kind: DockerMachineTemplate
 metadata:
   name: "target-cluster-control-plane"
+  namespace: default
 spec:
   template:
     spec:
@@ -14,53 +15,26 @@ kind: KubeadmControlPlane
 apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
 metadata:
   name: "target-cluster-control-plane"
+  namespace: default
 spec:
   replicas: ${ CONTROL_PLANE_MACHINE_COUNT }
   infrastructureTemplate:
     kind: DockerMachineTemplate
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
     name: "target-cluster-control-plane"
+    namespace: default
   kubeadmConfigSpec:
     clusterConfiguration:
-      apiServer:
-        certSANs:
-        - localhost
-        - 127.0.0.1
       controllerManager:
-        extraArgs:
-          enable-hostpath-provisioner: "true"
-    files:
-      - path: /calico.sh
-        owner: root:root
-        permissions: "0755"
-        content: |
-          #!/bin/sh -x
-          su - root -c "sleep 10; kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://docs.projectcalico.org/v3.12/manifests/calico.yaml"
+        extraArgs: {enable-hostpath-provisioner: 'true'}
+      apiServer:
+        certSANs: [localhost, 127.0.0.1]
     initConfiguration:
       nodeRegistration:
         criSocket: /var/run/containerd/containerd.sock
-        kubeletExtraArgs:
-          eviction-hard: nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%
+        kubeletExtraArgs: {eviction-hard: 'nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%'}
     joinConfiguration:
       nodeRegistration:
         criSocket: /var/run/containerd/containerd.sock
-        kubeletExtraArgs:
-          eviction-hard: nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%
-    postKubeadmCommands:
-      - sh /calico.sh
+        kubeletExtraArgs: {eviction-hard: 'nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%'}
   version: "v1.18.6"
----
-apiVersion: cluster.x-k8s.io/v1alpha3
-kind: MachineHealthCheck
-metadata:
-  name: "target-cluster-mhc-0"
-spec:
-  clusterName: "target-cluster"
-  maxUnhealthy: 100%
-  selector:
-    matchLabels:
-      nodepool: "pool1"
-  unhealthyConditions:
-    - type: E2ENodeUnhealthy
-      status: "True"
-      timeout: 30s

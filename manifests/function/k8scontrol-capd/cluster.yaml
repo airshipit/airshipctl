@@ -1,26 +1,29 @@
-apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
-kind: DockerCluster
-metadata:
-  name: "target-cluster"
 ---
 apiVersion: cluster.x-k8s.io/v1alpha3
 kind: Cluster
 metadata:
   name: "target-cluster"
+  namespace: default
 spec:
   clusterNetwork:
-    pods:
-      cidrBlocks:
-      - 172.17.0.0/16
-    serviceDomain: cluster.local
     services:
-      cidrBlocks:
-      - 10.0.0.0/24
+      cidrBlocks: ["10.128.0.0/12"]
+    pods:
+      cidrBlocks: ["192.168.0.0/16"]
+    serviceDomain: "cluster.local"
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
     kind: DockerCluster
     name: "target-cluster"
+    namespace: default
   controlPlaneRef:
     kind: KubeadmControlPlane
     apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
     name: "target-cluster-control-plane"
+    namespace: default
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: DockerCluster
+metadata:
+  name: "target-cluster"
+  namespace: default
