@@ -103,7 +103,6 @@ func (p *phase) Executor() (ifc.Executor, error) {
 		WithBundle(p.helper.PhaseBundleRoot()).
 		WithClusterMap(cMap).
 		WithClusterName(p.apiObj.ClusterName).
-		WithPath(p.kubeconfig).
 		WithTempRoot(wd).
 		WithClusterctClient(cctlClient).
 		Build()

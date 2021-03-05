@@ -24,6 +24,8 @@ set -xe
 : ${SITE:="test-workload"}
 : ${CONTEXT:="kind-airship"}
 : ${AIRSHIPKUBECONFIG:="${HOME}/.airship/kubeconfig"}
+: ${AIRSHIPKUBECONFIG_BACKUP:="${AIRSHIPKUBECONFIG}-backup"}
+
 
 : ${KUBECTL:="/usr/local/bin/kubectl"}
 TMP=$(mktemp -d)
@@ -37,11 +39,10 @@ else
 fi
 
 : ${AIRSHIPCONFIG:="${TMP}/config"}
-: ${KUBECONFIG:="${TMP}/kubeconfig"}
 : ${AIRSHIPCTL:="${AIRSHIPCTL_DEFAULT}"}
-ACTL="${AIRSHIPCTL} --airshipconf ${AIRSHIPCONFIG} --kubeconfig ${KUBECONFIG}"
+ACTL="${AIRSHIPCTL} --airshipconf ${AIRSHIPCONFIG}"
 
-export KUBECONFIG
+export KUBECONFIG="${AIRSHIPKUBECONFIG}"
 
 # TODO: use `airshipctl config` to do this once all the needed knobs are exposed
 # The non-default parts are to set the targetPath appropriately,
@@ -83,8 +84,19 @@ EOL
 function cleanup() {
   ${KIND} delete cluster --name $CLUSTER
   rm -rf ${TMP}
+
+  if [ -f "${AIRSHIPKUBECONFIG_BACKUP}" ]; then
+    echo "Restoring a backup copy of kubeconfig"
+    cp "${AIRSHIPKUBECONFIG_BACKUP}" "${AIRSHIPKUBECONFIG}"
+  fi
 }
 trap cleanup EXIT
+
+if [ -f "${AIRSHIPKUBECONFIG}" ]; then
+  echo "Making a backup copy of kubeconfig"
+  cp "${AIRSHIPKUBECONFIG}" "${AIRSHIPKUBECONFIG_BACKUP}"
+fi
+
 
 generate_airshipconf "default"
 
@@ -96,8 +108,6 @@ for plan in $phase_plans; do
   for cluster in $cluster_list; do
     echo -e "\n**** Rendering phases for cluster: ${cluster}"
 
-    # Since we'll be mucking with the kubeconfig - make a copy of it and muck with the copy
-    cp ${AIRSHIPKUBECONFIG} ${KUBECONFIG}
     export CLUSTER="${cluster}"
 
     # Start a fresh, empty kind cluster for validating documents
@@ -120,13 +130,14 @@ for plan in $phase_plans; do
       # e.g., load CRDs from initinfra first, so they're present when validating later phases
       ${AIRSHIPCTL} --airshipconf ${AIRSHIPCONFIG} phase render ${phase} -s executor -k CustomResourceDefinition >${TMP}/${phase}-crds.yaml
       if [ -s ${TMP}/${phase}-crds.yaml ]; then
-        ${KUBECTL} --context ${CLUSTER} --kubeconfig ${KUBECONFIG} apply -f ${TMP}/${phase}-crds.yaml
+        ${KUBECTL} --context ${CLUSTER} apply -f ${TMP}/${phase}-crds.yaml
       fi
 
       # step 2: dry-run the entire phase
       ${ACTL} phase run --dry-run ${phase}
     done
-
+    # Delete cluster kubeconfig
+    rm ${KUBECONFIG}
     ${KIND} delete cluster --name $CLUSTER
   done
 done

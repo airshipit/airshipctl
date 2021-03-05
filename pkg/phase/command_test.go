@@ -18,12 +18,14 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase"
 )
 
@@ -296,6 +298,7 @@ func TestPlanListCommand(t *testing.T) {
 }
 
 func TestPlanRunCommand(t *testing.T) {
+	log.Init(true, os.Stdout)
 	testErr := fmt.Errorf(testFactoryErr)
 	testCases := []struct {
 		name        string
@@ -343,8 +346,7 @@ func TestPlanRunCommand(t *testing.T) {
 				}
 				return conf, nil
 			},
-			expectedErr: `Error events received on channel, errors are:
-[document filtered by selector [Group="airshipit.org", Version="v1alpha1", Kind="KubeConfig"] found no documents]`,
+			expectedErr: `context "ephemeral-cluster" does not exist`,
 		},
 	}
 	for _, tc := range testCases {
@@ -361,7 +363,7 @@ func TestPlanRunCommand(t *testing.T) {
 			err := cmd.RunE()
 			if tt.expectedErr != "" {
 				require.Error(t, err)
-				assert.Equal(t, tt.expectedErr, err.Error())
+				assert.Contains(t, err.Error(), tt.expectedErr)
 			} else {
 				assert.NoError(t, err)
 			}

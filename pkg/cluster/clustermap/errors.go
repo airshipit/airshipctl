@@ -37,5 +37,5 @@ type ErrClusterNotInMap struct {
 }
 
 func (e ErrClusterNotInMap) Error() string {
-	return fmt.Sprintf("cluster %s is not defined in in cluster map %v", e.Child, e.Map)
+	return fmt.Sprintf("cluster '%s' is not defined in cluster map %v", e.Child, e.Map)
 }

@@ -5,5 +5,8 @@ metadata:
 map:
   target:
     parent: ephemeral
-    dynamicKubeConf: false
-  ephemeral: {}
+    kubeconfigSources:
+    - type: bundle
+  ephemeral:
+    kubeconfigSources:
+    - type: bundle

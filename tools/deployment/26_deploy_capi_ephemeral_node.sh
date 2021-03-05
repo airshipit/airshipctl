@@ -54,7 +54,7 @@ if [ "$PROVIDER" = "metal3" ]; then
     airshipctl phase run clusterctl-init-ephemeral --debug
 else
     echo "Deploy cluster-api components to ephemeral node"
-    airshipctl phase run clusterctl-init-ephemeral --debug --kubeconfig ${KUBECONFIG}
+    airshipctl phase run clusterctl-init-ephemeral --debug
     kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT get pods -A
 fi
 

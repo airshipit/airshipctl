@@ -7,5 +7,9 @@ metadata:
   name: main-map
 map:
   target-cluster:
-    parent: ephemeral-cluster
-  ephemeral-cluster: {}
+    parent: ephemeral
+    kubeconfigSources:
+    - type: bundle
+  ephemeral-cluster:
+    kubeconfigSources:
+    - type: bundle

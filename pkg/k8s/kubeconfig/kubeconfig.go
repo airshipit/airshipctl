@@ -18,12 +18,15 @@ import (
 	"io"
 	"log"
 
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/yaml"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/fs"
+	"opendev.org/airship/airshipctl/pkg/util"
 )
 
 const (
@@ -110,10 +113,14 @@ func FromSecret(c client.Interface, o *client.GetKubeconfigOptions) KubeSourceFu
 // FromFile returns KubeSource type, uses path to kubeconfig on FS as source to construct kubeconfig object
 func FromFile(path string, fSys fs.FileSystem) KubeSourceFunc {
 	return func() ([]byte, error) {
+		expandedPath, err := util.ExpandTilde(path)
+		if err != nil {
+			return nil, err
+		}
 		if fSys == nil {
 			fSys = fs.NewDocumentFs()
 		}
-		return fSys.ReadFile(path)
+		return fSys.ReadFile(expandedPath)
 	}
 }
 
@@ -141,6 +148,13 @@ func FromBundle(root string) KubeSourceFunc {
 		}
 
 		return yaml.Marshal(config.Config)
+	}
+}
+
+// FromConfig returns KubeSource type, write passed config as bytes
+func FromConfig(cfg *api.Config) KubeSourceFunc {
+	return func() ([]byte, error) {
+		return clientcmd.Write(*cfg)
 	}
 }
 
@@ -193,6 +207,7 @@ func (k *kubeConfig) WriteTempFile(root string) (string, Cleanup, error) {
 	}
 	file, err := k.fileSystem.TempFile(root, KubeconfigPrefix)
 	if err != nil {
+		log.Printf("Failed to write temporary file, error %v", err)
 		return "", nil, err
 	}
 	defer file.Close()

@@ -117,7 +117,7 @@ func (e *KubeApplierExecutor) prepareApplier(ch chan events.Event) (*k8sapplier.
 	}
 	// set up cleanup only if all calls up to here were successful
 	e.cleanup = cleanup
-	log.Debugf("Using kubeconfig at '%s' and context '%s'", path, context)
+	log.Printf("Using kubeconfig at '%s' and context '%s'", path, context)
 	factory := utils.FactoryFromKubeConfig(path, context)
 	return k8sapplier.NewApplier(ch, factory), bundle, nil
 }

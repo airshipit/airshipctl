@@ -32,19 +32,50 @@ type ClusterMap struct {
 type Cluster struct {
 	// Parent is a key in ClusterMap.Map that identifies the name of the parent(management) cluster
 	Parent string `json:"parent,omitempty"`
-	// DynamicKubeConfig kubeconfig allows to get kubeconfig from parent cluster, instead
-	// expecting it to be in document bundle. Parent kubeconfig will be used to get kubeconfig
-	DynamicKubeConfig bool `json:"dynamicKubeConf,omitempty"`
 	// KubeconfigContext is the context in kubeconfig, default is equals to clusterMap key
-	KubeconfigContext string `json:"kubeconfigContext,omitempty"`
-	// ClusterAPIRef references to Cluster API cluster resources
-	ClusterAPIRef ClusterAPIRef `json:"clusterAPIRef,omitempty"`
+	Sources []KubeconfigSource `json:"kubeconfigSources"`
 }
 
-// ClusterAPIRef will be used to find cluster object in kubernetes parent cluster
-type ClusterAPIRef struct {
-	Name      string
-	Namespace string
+// KubeconfigSource describes source of the kubeconfig
+type KubeconfigSource struct {
+	Type       KubeconfigSourceType       `json:"type"`
+	FileSystem KubeconfigSourceFilesystem `json:"filesystem,omitempty"`
+	Bundle     KubeconfigSourceBundle     `json:"bundle,omitempty"`
+	ClusterAPI KubeconfigSourceClusterAPI `json:"clusterAPI,omitempty"`
+}
+
+// KubeconfigSourceType type of source
+type KubeconfigSourceType string
+
+const (
+	// KubeconfigSourceTypeFilesystem is used when you want kubeconfig to be taken from local filesystem
+	KubeconfigSourceTypeFilesystem KubeconfigSourceType = "filesystem"
+	// KubeconfigSourceTypeBundle use config document bundle to get kubeconfig
+	KubeconfigSourceTypeBundle KubeconfigSourceType = "bundle"
+	// KubeconfigSourceTypeClusterAPI use ClusterAPI to get kubeconfig, parent cluster must be specified
+	KubeconfigSourceTypeClusterAPI KubeconfigSourceType = "clusterAPI"
+)
+
+// KubeconfigSourceFilesystem get kubeconfig from filesystem path
+type KubeconfigSourceFilesystem struct {
+	Path    string `json:"path,omitempty"`
+	Context string `json:"contextName,omitempty"`
+}
+
+// KubeconfigSourceClusterAPI get kubeconfig from clusterAPI parent cluster
+type KubeconfigSourceClusterAPI struct {
+	NamespacedName `json:"clusterNamespacedName,omitempty"`
+}
+
+// KubeconfigSourceBundle get kubeconfig from bundle
+type KubeconfigSourceBundle struct {
+	Context string `json:"contextName,omitempty"`
+}
+
+// NamespacedName is a name combined with namespace to uniquely identify objects
+type NamespacedName struct {
+	Name      string `json:"name,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
 }
 
 // DefaultClusterMap can be used to safely unmarshal ClusterMap object without nil pointers

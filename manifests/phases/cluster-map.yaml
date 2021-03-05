@@ -8,4 +8,25 @@ metadata:
 map:
   target-cluster:
     parent: ephemeral-cluster
-  ephemeral-cluster: {}
+    kubeconfigSources:
+      - type: "filesystem"
+        filesystem:
+          path: ~/.airship/kubeconfig
+          contextName: target-cluster
+      - type: "clusterAPI"
+        clusterAPI:
+          clusterNamespacedName:
+            name: target-cluster
+            namespace: default
+      - type: "bundle"
+        bundle:
+          contextName: target-cluster
+  ephemeral-cluster:
+    kubeconfigSources:
+      - type: "filesystem"
+        filesystem:
+          path: ~/.airship/kubeconfig
+          contextName: ephemeral-cluster
+      - type: "bundle"
+        bundle:
+          contextName: ephemeral-cluster

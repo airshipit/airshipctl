@@ -60,11 +60,6 @@ func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
 		"wait-timeout",
 		0,
 		"wait timeout")
-	flags.StringVar(
-		&p.Options.Kubeconfig,
-		"kubeconfig",
-		"",
-		"Path to kubeconfig associated with site being managed")
 	flags.BoolVar(
 		&p.Options.Progress,
 		"progress",

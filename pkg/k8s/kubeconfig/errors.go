@@ -16,21 +16,35 @@ package kubeconfig
 
 import "fmt"
 
-// ErrKubeConfigPathEmpty returned when kubeconfig path is not specified
-type ErrKubeConfigPathEmpty struct {
+// ErrAllSourcesFailed returned when kubeconfig path is not specified
+type ErrAllSourcesFailed struct {
+	ClusterName string
 }
 
-func (e *ErrKubeConfigPathEmpty) Error() string {
-	return "kubeconfig path is not defined"
+func (e *ErrAllSourcesFailed) Error() string {
+	return fmt.Sprintf("all kubeconfig sources failed for cluster '%s'", e.ClusterName)
 }
 
-// ErrClusterctlKubeconfigWrongContextsCount is returned when clusterctl client returns
-// multiple or no contexts in kubeconfig for the child cluster
-type ErrClusterctlKubeconfigWrongContextsCount struct {
-	ContextCount int
+// ErrKubeconfigMergeFailed is returned when builder doesn't know which context to merge
+type ErrKubeconfigMergeFailed struct {
+	Message string
 }
 
-func (e *ErrClusterctlKubeconfigWrongContextsCount) Error() string {
-	return fmt.Sprintf("clusterctl client returned '%d' contexts in kubeconfig "+
-		"context count must exactly one", e.ContextCount)
+func (e *ErrKubeconfigMergeFailed) Error() string {
+	return fmt.Sprintf("failed merging kubeconfig: %s", e.Message)
+}
+
+// IsErrAllSourcesFailedErr returns true if error is of type ErrAllSourcesFailedErr
+func IsErrAllSourcesFailedErr(err error) bool {
+	_, ok := err.(*ErrAllSourcesFailed)
+	return ok
+}
+
+// ErrUknownKubeconfigSourceType returned type of kubeconfig source is unknown
+type ErrUknownKubeconfigSourceType struct {
+	Type string
+}
+
+func (e *ErrUknownKubeconfigSourceType) Error() string {
+	return fmt.Sprintf("unknown source type %s", e.Type)
 }

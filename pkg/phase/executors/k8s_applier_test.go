@@ -178,7 +178,7 @@ func TestKubeApplierExecutorRun(t *testing.T) {
 		},
 		{
 			name:          "error cluster not defined",
-			containsErr:   "cluster  is not defined in in cluster map",
+			containsErr:   "is not defined in cluster map",
 			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata", defaultMetadataPath),
 			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
 			kubeconf:      testKubeconfig(testValidKubeconfig),

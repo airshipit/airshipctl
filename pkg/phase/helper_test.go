@@ -318,10 +318,20 @@ func TestHelperClusterMapAPI(t *testing.T) {
 				},
 				Map: map[string]*airshipv1.Cluster{
 					"target": {
-						Parent:            "ephemeral",
-						DynamicKubeConfig: false,
+						Parent: "ephemeral",
+						Sources: []airshipv1.KubeconfigSource{
+							{
+								Type: airshipv1.KubeconfigSourceTypeBundle,
+							},
+						},
 					},
-					"ephemeral": {},
+					"ephemeral": {
+						Sources: []airshipv1.KubeconfigSource{
+							{
+								Type: airshipv1.KubeconfigSourceTypeBundle,
+							},
+						},
+					},
 				},
 			},
 			config: testConfig,

@@ -16,7 +16,6 @@ package clustermap
 
 import (
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
-	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 // DefaultClusterAPIObjNamespace is a default namespace used for cluster-api cluster object
@@ -28,9 +27,8 @@ const DefaultClusterAPIObjNamespace = "default"
 type ClusterMap interface {
 	ParentCluster(string) (string, error)
 	AllClusters() []string
-	DynamicKubeConfig(string) bool
 	ClusterKubeconfigContext(string) (string, error)
-	ClusterAPIRef(string) (ClusterAPIRef, error)
+	Sources(string) ([]v1alpha1.KubeconfigSource, error)
 }
 
 // clusterMap allows to view clusters and relationship between them
@@ -57,16 +55,6 @@ func (cm clusterMap) ParentCluster(child string) (string, error) {
 	return currentCluster.Parent, nil
 }
 
-// DynamicKubeConfig check if dynamic kubeconfig is enabled for the child cluster
-func (cm clusterMap) DynamicKubeConfig(child string) bool {
-	childCluster, exist := cm.apiMap.Map[child]
-	if !exist {
-		log.Debugf("cluster %s is not defined in cluster map %v", child, cm.apiMap)
-		return false
-	}
-	return childCluster.DynamicKubeConfig
-}
-
 // AllClusters returns all clusters in a map
 func (cm clusterMap) AllClusters() []string {
 	clusters := []string{}
@@ -76,49 +64,21 @@ func (cm clusterMap) AllClusters() []string {
 	return clusters
 }
 
-// ClusterAPIRef helps to find corresponding cluster-api Cluster object in kubernetes cluster
-type ClusterAPIRef struct {
-	Name      string
-	Namespace string
-}
-
-// ClusterAPIRef maps a clusterapi name and namespace for a given cluster
-func (cm clusterMap) ClusterAPIRef(clusterName string) (ClusterAPIRef, error) {
-	clstr, ok := cm.apiMap.Map[clusterName]
-	if !ok {
-		return ClusterAPIRef{}, ErrClusterNotInMap{Child: clusterName, Map: cm.apiMap}
-	}
-
-	name := clstr.ClusterAPIRef.Name
-	namespace := clstr.ClusterAPIRef.Namespace
-
-	if name == "" {
-		name = clusterName
-	}
-
-	if namespace == "" {
-		namespace = DefaultClusterAPIObjNamespace
-	}
-
-	return ClusterAPIRef{
-		Name:      name,
-		Namespace: namespace,
-	}, nil
-}
-
 // ClusterKubeconfigContext returns name of the context in kubeconfig corresponding to a given cluster
 func (cm clusterMap) ClusterKubeconfigContext(clusterName string) (string, error) {
-	cluster, exists := cm.apiMap.Map[clusterName]
+	_, exists := cm.apiMap.Map[clusterName]
 
 	if !exists {
 		return "", ErrClusterNotInMap{Map: cm.apiMap, Child: clusterName}
 	}
 
-	kubeContext := cluster.KubeconfigContext
-	// if kubeContext is still empty, set it to clusterName
-	if cluster.KubeconfigContext == "" {
-		kubeContext = clusterName
-	}
+	return clusterName, nil
+}
 
-	return kubeContext, nil
+func (cm clusterMap) Sources(clusterName string) ([]v1alpha1.KubeconfigSource, error) {
+	cluster, ok := cm.apiMap.Map[clusterName]
+	if !ok {
+		return nil, ErrClusterNotInMap{Child: clusterName, Map: cm.apiMap}
+	}
+	return cluster.Sources, nil
 }

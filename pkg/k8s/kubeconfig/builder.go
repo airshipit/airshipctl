@@ -15,8 +15,7 @@
 package kubeconfig
 
 import (
-	"bytes"
-	"path/filepath"
+	"fmt"
 
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
@@ -24,10 +23,8 @@ import (
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
-	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/log"
-	"opendev.org/airship/airshipctl/pkg/util"
 )
 
 // KubeconfigDefaultFileName is a default name for kubeconfig
@@ -35,13 +32,14 @@ const KubeconfigDefaultFileName = "kubeconfig"
 
 // NewBuilder returns instance of kubeconfig builder.
 func NewBuilder() *Builder {
-	return &Builder{}
+	return &Builder{
+		siteKubeconf: emptyConfig(),
+	}
 }
 
 // Builder is an object that allows to build a kubeconfig based on various provided sources
 // such as path to kubeconfig, path to bundle that should contain kubeconfig and parent cluster
 type Builder struct {
-	path        string
 	bundlePath  string
 	clusterName string
 	root        string
@@ -49,12 +47,7 @@ type Builder struct {
 	clusterMap       clustermap.ClusterMap
 	clusterctlClient client.Interface
 	fs               fs.FileSystem
-}
-
-// WithPath allows to set path to prexisting kubeconfig
-func (b *Builder) WithPath(filePath string) *Builder {
-	b.path = filePath
-	return b
+	siteKubeconf     *api.Config
 }
 
 // WithBundle allows to set path to bundle that should contain kubeconfig api object
@@ -94,129 +87,217 @@ func (b *Builder) WithFilesytem(fs fs.FileSystem) *Builder {
 	return b
 }
 
-// Build builds a kubeconfig interface to be used
+// Build site kubeconfig, ignores, but logs, errors that happen when building individual
+// kubeconfigs. We need this behavior because, some clusters may not yet be deployed
+// and their kubeconfig is inaccessible yet, but will be accessible at later phases
+// If builder can't build kubeconfig for specific cluster, its context will not be present
+// in final kubeconfig. User of kubeconfig, will receive error stating that context doesn't exist
 func (b *Builder) Build() Interface {
-	switch {
-	case b.path != "":
-		return NewKubeConfig(FromFile(b.path, b.fs), InjectFilePath(b.path, b.fs), InjectTempRoot(b.root))
-	case b.fromParent():
-		// TODO consider adding various drivers to source kubeconfig from
-		// Also consider accumulating different kubeconfigs, and returning one single
-		// large file, so that every executor has access to all parent clusters.
-		return NewKubeConfig(b.buildClusterctlFromParent, InjectTempRoot(b.root), InjectFileSystem(b.fs))
-	case b.bundlePath != "":
-		return NewKubeConfig(FromBundle(b.bundlePath), InjectTempRoot(b.root), InjectFileSystem(b.fs))
-	default:
-		// return default path to kubeconfig file in airship workdir
-		path := filepath.Join(util.UserHomeDir(), config.AirshipConfigDir, KubeconfigDefaultFileName)
-		return NewKubeConfig(FromFile(path, b.fs), InjectFilePath(path, b.fs), InjectTempRoot(b.root))
-	}
+	return NewKubeConfig(b.build, InjectFileSystem(b.fs), InjectTempRoot(b.root))
 }
 
-// fromParent checks if we should get kubeconfig from parent cluster secret
-func (b *Builder) fromParent() bool {
-	if b.clusterMap == nil {
-		return false
-	}
-	return b.clusterMap.DynamicKubeConfig(b.clusterName)
-}
-
-func (b *Builder) buildClusterctlFromParent() ([]byte, error) {
-	currentCluster := b.clusterName
-	log.Printf("current cluster name is '%s'",
-		currentCluster)
-	parentCluster, err := b.clusterMap.ParentCluster(currentCluster)
-	if err != nil {
-		return nil, err
-	}
-
-	parentKubeconfig := b.WithClusterName(parentCluster).Build()
-
-	f, cleanup, err := parentKubeconfig.GetFile()
-	if err != nil {
-		return nil, err
-	}
-	defer cleanup()
-
-	parentCtx, err := b.clusterMap.ClusterKubeconfigContext(parentCluster)
-	if err != nil {
-		return nil, err
-	}
-
-	clusterAPIRef, err := b.clusterMap.ClusterAPIRef(currentCluster)
-	if err != nil {
-		return nil, err
-	}
-
-	if b.clusterctlClient == nil {
-		b.clusterctlClient, err = client.NewClient("", log.DebugEnabled(), v1alpha1.DefaultClusterctl())
-		if err != nil {
+func (b *Builder) build() ([]byte, error) {
+	for _, clusterID := range b.clusterMap.AllClusters() {
+		log.Printf("Getting kubeconfig for cluster '%s'", clusterID)
+		// buildOne merges context into site kubeconfig
+		_, _, err := b.buildOne(clusterID)
+		if IsErrAllSourcesFailedErr(err) {
+			log.Printf("All kubeconfig sources failed for cluster '%s', error '%v', skipping it",
+				clusterID, err)
+			continue
+		} else if err != nil {
 			return nil, err
 		}
 	}
-
-	log.Printf("Getting child kubeconfig from parent, parent context '%s', parent kubeconfing '%s'",
-		parentCtx, f)
-
-	stringChild, err := b.clusterctlClient.GetKubeconfig(&client.GetKubeconfigOptions{
-		ParentKubeconfigPath:    f,
-		ParentKubeconfigContext: parentCtx,
-		ManagedClusterNamespace: clusterAPIRef.Namespace,
-		ManagedClusterName:      clusterAPIRef.Name,
-	})
-	if err != nil {
-		return nil, err
+	// Set current context to clustername if it was provided
+	if b.clusterName != "" {
+		kubeContext, err := b.clusterMap.ClusterKubeconfigContext(b.clusterName)
+		if err != nil {
+			return nil, err
+		}
+		b.siteKubeconf.CurrentContext = kubeContext
 	}
-
-	buf := bytes.NewBuffer([]byte{})
-
-	err = parentKubeconfig.Write(buf)
-	if err != nil {
-		return nil, err
-	}
-
-	parentObj, err := clientcmd.Load(buf.Bytes())
-	if err != nil {
-		return nil, err
-	}
-
-	childObj, err := clientcmd.Load([]byte(stringChild))
-	if err != nil {
-		return nil, err
-	}
-
-	childCtx, err := b.clusterMap.ClusterKubeconfigContext(currentCluster)
-	if err != nil {
-		return nil, err
-	}
-	log.Printf("Merging '%s' cluster kubeconfig into '%s' cluster kubeconfig",
-		currentCluster, parentCluster)
-
-	return b.mergeOneContext(childCtx, parentObj, childObj)
+	return clientcmd.Write(*b.siteKubeconf)
 }
 
-// merges two kubeconfigs,
-func (b *Builder) mergeOneContext(contextOverride string, dst, src *api.Config) ([]byte, error) {
-	for key, content := range src.AuthInfos {
-		dst.AuthInfos[key] = content
+func (b *Builder) buildOne(clusterID string) (string, *api.Config, error) {
+	destContext, err := b.clusterMap.ClusterKubeconfigContext(clusterID)
+	if err != nil {
+		return "", nil, err
 	}
 
-	for key, content := range src.Clusters {
-		dst.Clusters[key] = content
+	// use already built kubeconfig context, to avoid doing work multiple times
+	built, oneKubeconf := b.alreadyBuilt(destContext)
+	if built {
+		log.Printf("kubeconfig for cluster '%s' is already built, using it", clusterID)
+		return destContext, oneKubeconf, nil
 	}
 
-	if len(src.Contexts) != 1 {
-		return nil, &ErrClusterctlKubeconfigWrongContextsCount{
-			ContextCount: len(src.Contexts),
+	sources, err := b.clusterMap.Sources(clusterID)
+	if err != nil {
+		return "", nil, err
+	}
+
+	for _, source := range sources {
+		oneKubeconf, sourceErr := b.trySource(clusterID, destContext, source)
+		if sourceErr == nil {
+			// Merge source context into site kubeconfig
+			log.Printf("Merging kubecontext for cluster '%s', into site kubeconfig", clusterID)
+			if err = mergeContextAPI(destContext, destContext, b.siteKubeconf, oneKubeconf); err != nil {
+				return "", nil, err
+			}
+			return destContext, oneKubeconf, err
+		}
+		// if error, log it and ignore it. missing problem with one kubeconfig should not
+		// effect other clusters, which don't depend on it. If they do depend on it, their calls
+		// will fail because the context will be missing. Combitation with a log message will make
+		// it clear where the problem is.
+		log.Printf("received error while trying kubeconfig source for cluster '%s', source type '%s', error '%v'",
+			clusterID, source.Type, sourceErr)
+	}
+	// return empty not nil kubeconfig without error.
+	return "", nil, &ErrAllSourcesFailed{ClusterName: clusterID}
+}
+
+func (b *Builder) trySource(clusterID, dstContext string, source v1alpha1.KubeconfigSource) (*api.Config, error) {
+	var getter KubeSourceFunc
+	// TODO add sourceContext defaults
+	var sourceContext string
+	switch source.Type {
+	case v1alpha1.KubeconfigSourceTypeFilesystem:
+		getter = FromFile(source.FileSystem.Path, b.fs)
+		sourceContext = source.FileSystem.Context
+	case v1alpha1.KubeconfigSourceTypeBundle:
+		getter = FromBundle(b.bundlePath)
+		sourceContext = source.Bundle.Context
+	case v1alpha1.KubeconfigSourceTypeClusterAPI:
+		getter = b.fromClusterAPI(clusterID, source.ClusterAPI)
+	default:
+		// TODO add validation for fast fails to clustermap interface instead of this
+		return nil, &ErrUknownKubeconfigSourceType{Type: string(source.Type)}
+	}
+	kubeBytes, err := getter()
+	if err != nil {
+		return nil, err
+	}
+	return extractContext(dstContext, sourceContext, kubeBytes)
+}
+
+func (b *Builder) fromClusterAPI(clusterName string, ref v1alpha1.KubeconfigSourceClusterAPI) KubeSourceFunc {
+	return func() ([]byte, error) {
+		log.Printf("Getting kubeconfig from cluster API for cluster '%s'", clusterName)
+		parentCluster, err := b.clusterMap.ParentCluster(clusterName)
+		if err != nil {
+			return nil, err
+		}
+
+		parentContext, parentKubeconf, err := b.buildOne(parentCluster)
+		if err != nil {
+			return nil, err
+		}
+
+		parentKubeconfig := NewKubeConfig(FromConfig(parentKubeconf), InjectFileSystem(b.fs))
+
+		f, cleanup, err := parentKubeconfig.GetFile()
+		if err != nil {
+			return nil, err
+		}
+		defer cleanup()
+
+		if b.clusterctlClient == nil {
+			b.clusterctlClient, err = client.NewClient("", log.DebugEnabled(), v1alpha1.DefaultClusterctl())
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		log.Printf("Getting child kubeconfig from parent, parent context '%s', parent kubeconfing '%s'",
+			parentContext, f)
+		return FromSecret(b.clusterctlClient, &client.GetKubeconfigOptions{
+			ParentKubeconfigPath:    f,
+			ParentKubeconfigContext: parentContext,
+			ManagedClusterNamespace: ref.Namespace,
+			ManagedClusterName:      ref.Name,
+		})()
+	}
+}
+
+func (b *Builder) alreadyBuilt(clusterContext string) (bool, *api.Config) {
+	kubeconfBytes, err := clientcmd.Write(*b.siteKubeconf)
+	if err != nil {
+		log.Debugf("Received error when converting kubeconfig to bytes, ignoring kubeconfig. Error: %v", err)
+		return false, nil
+	}
+
+	// resulting and existing context names must be the same, otherwise error will be returned
+	clusterKubeconfig, err := extractContext(clusterContext, clusterContext, kubeconfBytes)
+	if err != nil {
+		log.Debugf("Received error when extacting context, ignoring kubeconfig. Error: %v", err)
+		return false, nil
+	}
+
+	return true, clusterKubeconfig
+}
+
+func extractContext(destContext, sourceContext string, src []byte) (*api.Config, error) {
+	srcKubeconf, err := clientcmd.Load(src)
+	if err != nil {
+		return nil, err
+	}
+	dstKubeconf := emptyConfig()
+	return dstKubeconf, mergeContextAPI(destContext, sourceContext, dstKubeconf, srcKubeconf)
+}
+
+// merges two kubeconfigs
+func mergeContextAPI(destContext, sourceContext string, dst, src *api.Config) error {
+	if len(src.Contexts) > 1 && sourceContext == "" {
+		// When more than one context, we don't know which to choose
+		return &ErrKubeconfigMergeFailed{
+			Message: "kubeconfig has multiple contexts, don't know which to choose, " +
+				"please specify contextName in clusterMap cluster kubeconfig source",
 		}
 	}
 
-	for key, content := range src.Contexts {
-		if contextOverride == "" {
-			contextOverride = key
+	var context *api.Context
+	context, exists := src.Contexts[sourceContext]
+	switch {
+	case exists:
+	case sourceContext == "" && len(src.Contexts) == 1:
+		for _, context = range src.Contexts {
+			log.Debugf("Using context '%v' to merge kubeconfig", context)
 		}
-		dst.Contexts[contextOverride] = content
+	default:
+		return &ErrKubeconfigMergeFailed{
+			Message: fmt.Sprintf("source context '%s' does not exist in source kubeconfig", sourceContext),
+		}
 	}
+	dst.Contexts[destContext] = context
 
-	return clientcmd.Write(*dst)
+	// TODO design logic to make authinfo keys unique, they can overlap, or human error can occur
+	user, exists := src.AuthInfos[context.AuthInfo]
+	if !exists {
+		return &ErrKubeconfigMergeFailed{
+			Message: fmt.Sprintf("user '%s' does not exist in source kubeconfig", context.AuthInfo),
+		}
+	}
+	dst.AuthInfos[context.AuthInfo] = user
+
+	// TODO design logic to make cluster keys unique, they can overlap, or human error can occur
+	cluster, exists := src.Clusters[context.Cluster]
+	if !exists {
+		return &ErrKubeconfigMergeFailed{
+			Message: fmt.Sprintf("cluster '%s' does not exist in source kubeconfig", context.Cluster),
+		}
+	}
+	dst.Clusters[context.Cluster] = cluster
+
+	return nil
+}
+
+func emptyConfig() *api.Config {
+	return &api.Config{
+		Contexts:  make(map[string]*api.Context),
+		AuthInfos: make(map[string]*api.AuthInfo),
+		Clusters:  make(map[string]*api.Cluster),
+	}
 }
