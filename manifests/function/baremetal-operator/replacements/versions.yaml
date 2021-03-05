@@ -34,6 +34,16 @@ replacements:
     objref:
       kind: VersionsCatalogue
       name: versions-airshipctl
+    fieldref: "{.spec.images.baremetal_operator.ironic.qcow_bundle.image}"
+  target:
+    objref:
+      kind: Deployment
+      name: ironic
+    fieldrefs: ["{.spec.template.spec.initContainers[?(.name == 'qcow-bundle')].image}"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
     fieldref: "{.spec.images.baremetal_operator.ironic.dnsmasq.image}"
   target:
     objref:
