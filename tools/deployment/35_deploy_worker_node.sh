@@ -59,8 +59,5 @@ airshipctl phase run workers-target --debug
 echo "Waiting $TIMEOUT seconds for bmh to be in ready state."
 node_timeout bmh ready
 
-echo "Classify and provision worker node"
-airshipctl phase run  workers-classification --debug
-
 echo "Waiting $TIMEOUT seconds for node to be provisioned."
 node_timeout node Ready
