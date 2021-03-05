@@ -7,7 +7,7 @@ spec:
   version: v1.18.6
   infrastructureTemplate:
     kind: Metal3MachineTemplate
-    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
     name: cluster-controlplane
   kubeadmConfigSpec:
     clusterConfiguration:
@@ -44,7 +44,7 @@ spec:
           - 2.pool.ntp.org
           - 3.pool.ntp.org
 ---
-apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
 kind: Metal3MachineTemplate
 metadata:
   name: cluster-controlplane
