@@ -37,6 +37,12 @@ spec:
         name: '{{ ds.meta_data.local_hostname }}'
         kubeletExtraArgs:
           node-labels: 'metal3.io/uuid={{ ds.meta_data.uuid }}'
+    ntp:
+       servers:
+          - 0.pool.ntp.org
+          - 1.pool.ntp.org
+          - 2.pool.ntp.org
+          - 3.pool.ntp.org
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
 kind: Metal3MachineTemplate
