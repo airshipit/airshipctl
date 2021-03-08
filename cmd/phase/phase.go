@@ -40,6 +40,7 @@ func NewPhaseCommand(cfgFactory config.Factory) *cobra.Command {
 	phaseRootCmd.AddCommand(NewRunCommand(cfgFactory))
 	phaseRootCmd.AddCommand(NewTreeCommand(cfgFactory))
 	phaseRootCmd.AddCommand(NewValidateCommand(cfgFactory))
+	phaseRootCmd.AddCommand(NewStatusCommand(cfgFactory))
 
 	return phaseRootCmd
 }

@@ -1,0 +1,13 @@
+Status of the specific life-cycle phase such as ephemeral-control-plane, target-initinfra etc...
+
+Usage:
+  status [flags]
+
+Examples:
+
+#Status of initinfra phase
+airshipctl phase status ephemeral-control-plane
+
+
+Flags:
+  -h, --help   help for status
