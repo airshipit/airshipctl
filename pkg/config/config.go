@@ -49,9 +49,6 @@ type Config struct {
 	// Manifests is a map of referenceable names to documents
 	Manifests map[string]*Manifest `json:"manifests"`
 
-	// EncryptionConfigs is a map of referenceable names to encryption configs
-	EncryptionConfigs map[string]*EncryptionConfig `json:"encryptionConfigs"`
-
 	// CurrentContext is the name of the context that you would like to use by default
 	CurrentContext string `json:"currentContext"`
 
@@ -301,9 +298,6 @@ func (c *Config) ModifyContext(context *Context, theContext *ContextOptions) {
 	if theContext.Manifest != "" {
 		context.Manifest = theContext.Manifest
 	}
-	if theContext.EncryptionConfig != "" {
-		context.EncryptionConfig = theContext.EncryptionConfig
-	}
 }
 
 // GetCurrentContext methods Returns the appropriate information for the current context
@@ -477,57 +471,6 @@ func (c *Config) ModifyRepository(repository *Repository, theManifest *ManifestO
 		return ErrMissingRepoCheckoutOptions{}
 	}
 	return nil
-}
-
-// GetEncryptionConfigs returns all the encryption configs associated with the Config sorted by name
-func (c *Config) GetEncryptionConfigs() []*EncryptionConfig {
-	keys := make([]string, 0, len(c.EncryptionConfigs))
-	for name := range c.EncryptionConfigs {
-		keys = append(keys, name)
-	}
-	sort.Strings(keys)
-
-	encryptionConfigs := make([]*EncryptionConfig, 0, len(c.EncryptionConfigs))
-	for _, name := range keys {
-		encryptionConfigs = append(encryptionConfigs, c.EncryptionConfigs[name])
-	}
-	return encryptionConfigs
-}
-
-// AddEncryptionConfig creates a new encryption config
-func (c *Config) AddEncryptionConfig(options *EncryptionConfigOptions) *EncryptionConfig {
-	encryptionConfig := &EncryptionConfig{
-		EncryptionKeyFileSource: EncryptionKeyFileSource{
-			EncryptionKeyPath: options.EncryptionKeyPath,
-			DecryptionKeyPath: options.DecryptionKeyPath,
-		},
-		EncryptionKeySecretSource: EncryptionKeySecretSource{
-			KeySecretName:      options.KeySecretName,
-			KeySecretNamespace: options.KeySecretNamespace,
-		},
-	}
-	if c.EncryptionConfigs == nil {
-		c.EncryptionConfigs = make(map[string]*EncryptionConfig)
-	}
-	c.EncryptionConfigs[options.Name] = encryptionConfig
-	return encryptionConfig
-}
-
-// ModifyEncryptionConfig sets existing values to existing encryption config
-func (c *Config) ModifyEncryptionConfig(encryptionConfig *EncryptionConfig, options *EncryptionConfigOptions) {
-	if options.EncryptionKeyPath != "" {
-		encryptionConfig.EncryptionKeyPath = options.EncryptionKeyPath
-	}
-	if options.DecryptionKeyPath != "" {
-		encryptionConfig.DecryptionKeyPath = options.DecryptionKeyPath
-	}
-	if options.KeySecretName != "" {
-		encryptionConfig.KeySecretName = options.KeySecretName
-	}
-	if options.KeySecretNamespace != "" {
-		encryptionConfig.KeySecretNamespace = options.KeySecretNamespace
-	}
-	return
 }
 
 // CurrentContextManagementConfig returns the management options for the current context

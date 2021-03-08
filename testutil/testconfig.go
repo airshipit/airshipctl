@@ -45,9 +45,6 @@ func DummyConfig() *config.Config {
 	conf.ManagementConfiguration = map[string]*config.ManagementConfiguration{
 		"dummy_management_config": DummyManagementConfiguration(),
 	}
-	conf.EncryptionConfigs = map[string]*config.EncryptionConfig{
-		"dummy_encryption_config": DummyEncryptionConfig(),
-	}
 	conf.CurrentContext = "dummy_context"
 	return conf
 }
@@ -57,7 +54,6 @@ func DummyContext() *config.Context {
 	c := config.NewContext()
 	c.NameInKubeconf = "dummy_cluster_ephemeral"
 	c.Manifest = "dummy_manifest"
-	c.EncryptionConfig = "dummy_encryption_config"
 	c.ManagementConfiguration = "dummy_management_config"
 	return c
 }
@@ -134,29 +130,7 @@ func DummyContextOptions() *config.ContextOptions {
 	co.Name = "dummy_context"
 	co.Manifest = "dummy_manifest"
 	co.CurrentContext = false
-	co.EncryptionConfig = "dummy_encryption_config"
 	return co
-}
-
-// DummyEncryptionConfig creates EncryptionConfigOptions object
-// for unit testing
-func DummyEncryptionConfig() *config.EncryptionConfig {
-	return &config.EncryptionConfig{
-		EncryptionKeyFileSource: config.EncryptionKeyFileSource{
-			EncryptionKeyPath: "/tmp/encryption.key",
-			DecryptionKeyPath: "/tmp/decryption.pub",
-		},
-	}
-}
-
-// DummyEncryptionConfigOptions creates ManifestOptions config object
-// for unit testing
-func DummyEncryptionConfigOptions() *config.EncryptionConfigOptions {
-	return &config.EncryptionConfigOptions{
-		Name:              "dummy_encryption_config",
-		EncryptionKeyPath: "/tmp/encryption.key",
-		DecryptionKeyPath: "/tmp/decryption.pub",
-	}
 }
 
 // DummyManagementConfiguration creates a management configuration for unit testing
