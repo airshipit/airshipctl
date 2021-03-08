@@ -28,5 +28,5 @@ such as getting list and applying specific one.
 * [airshipctl phase render](airshipctl_phase_render.md)	 - Render phase documents from model
 * [airshipctl phase run](airshipctl_phase_run.md)	 - Run phase
 * [airshipctl phase tree](airshipctl_phase_tree.md)	 - Tree view of kustomize entrypoints of phase
-* [airshipctl phase validate](airshipctl_phase_validate.md)	 - Validate phase
+* [airshipctl phase validate](airshipctl_phase_validate.md)	 - Assert that a phase is valid
 

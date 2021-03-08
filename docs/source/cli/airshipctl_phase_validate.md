@@ -4,7 +4,8 @@ Assert that a phase is valid
 
 ### Synopsis
 
-Command which would validate that the phase contains the required documents to run the phase
+Command which would validate that the phase contains the required documents to run the phase.
+
 
 ```
 airshipctl phase validate PHASE_NAME [flags]
@@ -22,7 +23,7 @@ airshipctl phase validate initinfra
 ### Options
 
 ```
-  -h, --help                    help for run
+  -h, --help   help for validate
 ```
 
 ### Options inherited from parent commands
