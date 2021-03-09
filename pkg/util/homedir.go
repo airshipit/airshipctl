@@ -14,7 +14,10 @@
 
 package util
 
-import "os"
+import (
+	"os"
+	"path/filepath"
+)
 
 // UserHomeDir is a utility function that wraps os.UserHomeDir and returns no
 // errors. If the user has no home directory, the returned value will be the
@@ -25,4 +28,24 @@ func UserHomeDir() string {
 		homeDir = ""
 	}
 	return homeDir
+}
+
+// ExpandTilde expands the path to include the home directory if the path
+// is prefixed with `~`. If it isn't prefixed with `~`, the path is
+// returned as-is.
+// Original source code: https://github.com/mitchellh/go-homedir/blob/master/homedir.go#L55-L77
+func ExpandTilde(path string) (string, error) {
+	if len(path) == 0 {
+		return path, nil
+	}
+
+	if path[0] != '~' {
+		return path, nil
+	}
+
+	if len(path) > 1 && path[1] != '/' {
+		return "", &ErrCantExpandTildePath{}
+	}
+
+	return filepath.Join(UserHomeDir(), path[1:]), nil
 }
