@@ -36,8 +36,6 @@ const (
 	WaitType
 	// ClusterctlType event emitted by Clusterctl executor
 	ClusterctlType
-	// IsogenType event emitted by Isogen executor
-	IsogenType
 	// BootstrapType event emitted by Bootstrap executor
 	BootstrapType
 	// GenericContainerType event emitted by GenericContainer
@@ -54,7 +52,6 @@ type Event struct {
 	ErrorEvent            ErrorEvent
 	StatusPollerEvent     statuspollerevent.Event
 	ClusterctlEvent       ClusterctlEvent
-	IsogenEvent           IsogenEvent
 	BootstrapEvent        BootstrapEvent
 	GenericContainerEvent GenericContainerEvent
 	BaremetalManagerEvent BaremetalManagerEvent
@@ -70,7 +67,6 @@ type GenericEvent struct {
 
 var mapTypeToEvent = map[Type]string{
 	ClusterctlType:       "ClusterctlEvent",
-	IsogenType:           "IsogenEvent",
 	BootstrapType:        "BootstrapEvent",
 	GenericContainerType: "GenericContainerEvent",
 }
@@ -80,12 +76,6 @@ var unknownEventType = map[Type]string{
 	ErrorType:        "ErrorType",
 	StatusPollerType: "StatusPollerType",
 	WaitType:         "WaitType",
-}
-
-var isogenOperationToString = map[IsogenOperation]string{
-	IsogenStart:      "IsogenStart",
-	IsogenValidation: "IsogenValidation",
-	IsogenEnd:        "IsogenEnd",
 }
 
 var clusterctlOperationToString = map[ClusterctlOperation]string{
@@ -127,9 +117,6 @@ func Normalize(e Event) GenericEvent {
 	case ClusterctlType:
 		operation = clusterctlOperationToString[e.ClusterctlEvent.Operation]
 		message = e.ClusterctlEvent.Message
-	case IsogenType:
-		operation = isogenOperationToString[e.IsogenEvent.Operation]
-		message = e.IsogenEvent.Message
 	case BootstrapType:
 		operation = bootstrapOperationToString[e.BootstrapEvent.Operation]
 		message = e.BootstrapEvent.Message
@@ -192,31 +179,6 @@ type ClusterctlEvent struct {
 func (e Event) WithClusterctlEvent(concreteEvent ClusterctlEvent) Event {
 	e.Type = ClusterctlType
 	e.ClusterctlEvent = concreteEvent
-	return e
-}
-
-// IsogenOperation type
-type IsogenOperation int
-
-const (
-	// IsogenStart operation
-	IsogenStart IsogenOperation = iota
-	// IsogenValidation operation
-	IsogenValidation
-	// IsogenEnd operation
-	IsogenEnd
-)
-
-// IsogenEvent needs to to track events in isogen executor
-type IsogenEvent struct {
-	Operation IsogenOperation
-	Message   string
-}
-
-// WithIsogenEvent sets type and actual isogen event
-func (e Event) WithIsogenEvent(concreteEvent IsogenEvent) Event {
-	e.Type = IsogenType
-	e.IsogenEvent = concreteEvent
 	return e
 }
 

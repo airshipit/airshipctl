@@ -54,9 +54,9 @@ func TestPrintEvent(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			p := events.NewGenericPrinter(tt.writer, tt.formatterType)
-			e := events.NewEvent().WithIsogenEvent(events.IsogenEvent{
-				Operation: events.IsogenStart,
-				Message:   "starting ISO generation",
+			e := events.NewEvent().WithGenericContainerEvent(events.GenericContainerEvent{
+				Operation: events.GenericContainerStart,
+				Message:   "starting generic container generation",
 			})
 			ge := events.Normalize(e)
 			err := p.PrintEvent(ge)

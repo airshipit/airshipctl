@@ -62,16 +62,6 @@ func TestRegisterExecutor(t *testing.T) {
 			},
 		},
 		{
-			name:         "register isogen executor",
-			executorName: executors.Isogen,
-			registry:     make(map[schema.GroupVersionKind]ifc.ExecutorFactory),
-			expectedGVK: schema.GroupVersionKind{
-				Group:   "airshipit.org",
-				Version: "v1alpha1",
-				Kind:    "IsoConfiguration",
-			},
-		},
-		{
 			name:         "register k8s applier executor",
 			executorName: executors.KubernetesApply,
 			registry:     make(map[schema.GroupVersionKind]ifc.ExecutorFactory),

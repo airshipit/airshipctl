@@ -26,7 +26,6 @@ import (
 const (
 	Clusterctl       = "clusterctl"
 	KubernetesApply  = "kubernetes-apply"
-	Isogen           = "isogen"
 	GenericContainer = "generic-container"
 	Ephemeral        = "ephemeral"
 	BMHManager       = "BaremetalManager"
@@ -45,9 +44,6 @@ func RegisterExecutor(executorName string, registry map[schema.GroupVersionKind]
 	case KubernetesApply:
 		gvks, _, err = airshipv1.Scheme.ObjectKinds(&airshipv1.KubernetesApply{})
 		execObj = NewKubeApplierExecutor
-	case Isogen:
-		gvks, _, err = airshipv1.Scheme.ObjectKinds(airshipv1.DefaultIsoConfiguration())
-		execObj = NewIsogenExecutor
 	case GenericContainer:
 		gvks, _, err = airshipv1.Scheme.ObjectKinds(airshipv1.DefaultGenericContainer())
 		execObj = NewContainerExecutor

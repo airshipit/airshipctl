@@ -20,7 +20,7 @@ IMAGE_DIR=${IMAGE_DIR:-"/srv/images"}
 CLEANUP_SERVE_DIR=${CLEANUP_SERVE_DIR:-"false"}
 SITE_NAME=${SITE_NAME:-test-site}
 # List of phases to run to build images.
-IMAGE_PHASES=${IMAGE_PHASES:-"bootstrap-iso"}
+IMAGE_PHASE_PLANS=${IMAGE_PHASE_PLANS:-"iso"}
 
 #Create serving directories and assign permission and ownership
 sudo rm -rf ${IMAGE_DIR}
@@ -29,9 +29,9 @@ sudo chmod -R 755 ${IMAGE_DIR}
 sudo chown -R ${USER_NAME} ${IMAGE_DIR}
 
 unset IFS
-for phase in $IMAGE_PHASES; do
-  echo "Build phase: $phase"
-  airshipctl phase run $phase --debug
+for plan in $IMAGE_PHASE_PLANS; do
+  echo "Build phase plan: $plan"
+  airshipctl plan run $plan --debug
 done
 
 echo "List generated images"
