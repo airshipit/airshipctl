@@ -49,19 +49,6 @@ type ErrRuntimeObjectKind struct {
 	Obj runtime.Object
 }
 
-// ErrDataNotSupplied error returned of no data in the Secret
-type ErrDataNotSupplied struct {
-	DocName string
-	Key     string
-}
-
-// ErrDuplicateNetworkDataDocuments error returned if multiple matching documents
-// were found with the same name in the same namespace
-type ErrDuplicateNetworkDataDocuments struct {
-	DocName   string
-	Namespace string
-}
-
 // ErrBadValueFormat returned if wrong field type requested
 type ErrBadValueFormat struct {
 	Value    string
@@ -87,14 +74,6 @@ func (e ErrDocumentMalformed) Error() string {
 
 func (e ErrRuntimeObjectKind) Error() string {
 	return fmt.Sprintf("object %#v has either none or multiple kinds in scheme (expected one)", e.Obj)
-}
-
-func (e ErrDataNotSupplied) Error() string {
-	return fmt.Sprintf("Document %s has no key %s", e.DocName, e.Key)
-}
-
-func (e ErrDuplicateNetworkDataDocuments) Error() string {
-	return fmt.Sprintf("Found more than one document with the name %s in namespace %s", e.DocName, e.Namespace)
 }
 
 func (e ErrBadValueFormat) Error() string {

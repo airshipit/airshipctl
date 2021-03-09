@@ -16,7 +16,8 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/kustomize/api/types"
+
+	"opendev.org/airship/airshipctl/pkg/document"
 )
 
 // IsoContainer structure contains parameters related to Docker runtime, used for building image
@@ -32,11 +33,11 @@ type IsoContainer struct {
 // Isogen structure defines document selection criteria for cloud-init metadata
 type Isogen struct {
 	// Cloud Init user data will be retrieved from the doc matching this object
-	UserDataSelector types.Selector `json:"userDataSelector,omitempty"`
+	UserDataSelector document.Selector `json:"userDataSelector,omitempty"`
 	// Cloud init user data will be retrieved from this document key
 	UserDataKey string `json:"userDataKey,omitempty"`
 	// Cloud Init network config will be retrieved from the doc matching this object
-	NetworkConfigSelector types.Selector `json:"networkConfigSelector,omitempty"`
+	NetworkConfigSelector document.Selector `json:"networkConfigSelector,omitempty"`
 	// Cloud init network config will be retrieved from this document key
 	NetworkConfigKey string `json:"networkConfigKey,omitempty"`
 	// File name to use for the output image that will be written to the container volume root

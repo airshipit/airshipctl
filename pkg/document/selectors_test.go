@@ -60,16 +60,6 @@ func TestSelectorsPositive(t *testing.T) {
 		require.NoError(t, err)
 		assert.Len(t, doc, 1)
 	})
-
-	t.Run("TestGetSecretData", func(t *testing.T) {
-		data, err := document.GetSecretData(bundle, types.Selector{
-			Gvk:           resid.Gvk{Kind: "Secret"},
-			LabelSelector: "airshipit.org/ephemeral-user-data",
-		},
-			"userData")
-		require.NoError(t, err)
-		assert.Equal(t, []byte("cloud-init"), data)
-	})
 }
 
 func TestSelectorsNegative(t *testing.T) {
