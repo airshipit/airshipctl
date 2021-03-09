@@ -583,3 +583,13 @@ func (c *Config) CurrentContextManifestMetadata() (*Metadata, error) {
 	}
 	return meta, nil
 }
+
+// WorkDir returns working directory for airshipctl. Creates if it doesn't exist
+func (c *Config) WorkDir() (dir string, err error) {
+	dir = filepath.Join(util.UserHomeDir(), AirshipConfigDir)
+	// if not dir, create it
+	if !c.fileSystem.IsDir(dir) {
+		err = c.fileSystem.MkdirAll(dir)
+	}
+	return dir, err
+}
