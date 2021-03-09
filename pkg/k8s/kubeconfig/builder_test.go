@@ -100,11 +100,10 @@ func TestBuilderClusterctl(t *testing.T) {
 		fs                                                    fs.FileSystem
 	}{
 		{
-			name:                 "success cluster-api not reachable",
-			requestedClusterName: childClusterID,
-			expectedContexts:     []string{parentClusterID},
-			expectedClusters:     []string{parentParentCluster},
-			expectedAuthInfos:    []string{parentParentUser},
+			name:              "success cluster-api not reachable",
+			expectedContexts:  []string{parentClusterID},
+			expectedClusters:  []string{parentParentCluster},
+			expectedAuthInfos: []string{parentParentUser},
 			clusterMap: clustermap.NewClusterMap(&v1alpha1.ClusterMap{
 				Map: map[string]*v1alpha1.Cluster{
 					childClusterID: {

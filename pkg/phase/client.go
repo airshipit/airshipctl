@@ -102,7 +102,6 @@ func (p *phase) Executor() (ifc.Executor, error) {
 	kubeconf := kubeconfig.NewBuilder().
 		WithBundle(p.helper.PhaseBundleRoot()).
 		WithClusterMap(cMap).
-		WithClusterName(p.apiObj.ClusterName).
 		WithTempRoot(wd).
 		WithClusterctClient(cctlClient).
 		Build()
