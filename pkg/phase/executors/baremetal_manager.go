@@ -57,8 +57,8 @@ func (e *BaremetalManagerExecutor) Run(evtCh chan events.Event, opts ifc.RunOpti
 	evtCh <- events.NewEvent().WithBaremetalManagerEvent(events.BaremetalManagerEvent{
 		Step:          events.BaremetalManagerStart,
 		HostOperation: string(e.options.Spec.Operation),
-		Message: fmt.Sprintf("Starting remote operation, selector to be to filter hosts %v",
-			e.options.Spec.HostSelector),
+		Message: fmt.Sprintf("Starting remote operation '%s', selector to be to filter hosts %v",
+			e.options.Spec.Operation, e.options.Spec.HostSelector),
 	})
 
 	op, err := e.validate()

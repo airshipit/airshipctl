@@ -108,6 +108,11 @@ var genericContainerOperationToString = map[GenericContainerOperation]string{
 	GenericContainerStop:  "GenericContainerStop",
 }
 
+var baremetalInventoryOperationToString = map[BaremetalManagerStep]string{
+	BaremetalManagerStart:    "BaremetalOperationStart",
+	BaremetalManagerComplete: "BaremetalOperationComplete",
+}
+
 //Normalize cast Event to GenericEvent type
 func Normalize(e Event) GenericEvent {
 	var eventType string
@@ -131,6 +136,9 @@ func Normalize(e Event) GenericEvent {
 	case GenericContainerType:
 		operation = genericContainerOperationToString[e.GenericContainerEvent.Operation]
 		message = e.GenericContainerEvent.Message
+	case BaremetalManagerEventType:
+		operation = baremetalInventoryOperationToString[e.BaremetalManagerEvent.Step]
+		message = e.BaremetalManagerEvent.Message
 	}
 
 	return GenericEvent{
