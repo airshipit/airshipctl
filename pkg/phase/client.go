@@ -28,7 +28,9 @@ import (
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/pkg/log"
+	"opendev.org/airship/airshipctl/pkg/phase/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
+	executorerrors "opendev.org/airship/airshipctl/pkg/phase/executors/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
@@ -42,7 +44,7 @@ func DefaultExecutorRegistry() map[schema.GroupVersionKind]ifc.ExecutorFactory {
 	for _, execName := range []string{executors.Clusterctl, executors.KubernetesApply,
 		executors.GenericContainer, executors.Ephemeral, executors.BMHManager} {
 		if err := executors.RegisterExecutor(execName, execMap); err != nil {
-			log.Fatal(ErrExecutorRegistration{ExecutorName: execName, Err: err})
+			log.Fatal(executorerrors.ErrExecutorRegistration{ExecutorName: execName, Err: err})
 		}
 	}
 	return execMap
@@ -78,7 +80,7 @@ func (p *phase) Executor() (ifc.Executor, error) {
 	// Look for executor factory defined in registry
 	executorFactory, found := p.registry()[refGVK]
 	if !found {
-		return nil, ErrExecutorNotFound{GVK: refGVK}
+		return nil, executorerrors.ErrExecutorNotFound{GVK: refGVK}
 	}
 
 	cMap, err := p.helper.ClusterMap()
@@ -195,7 +197,7 @@ func (p *phase) Status() (ifc.PhaseStatus, error) {
 func (p *phase) DocumentRoot() (string, error) {
 	relativePath := p.apiObj.Config.DocumentEntryPoint
 	if relativePath == "" {
-		return "", ErrDocumentEntrypointNotDefined{
+		return "", errors.ErrDocumentEntrypointNotDefined{
 			PhaseName:      p.apiObj.Name,
 			PhaseNamespace: p.apiObj.Namespace,
 		}

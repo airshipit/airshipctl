@@ -12,10 +12,12 @@
  limitations under the License.
 */
 
-package executors
+package errors
 
 import (
 	"fmt"
+
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // ErrUnknownExecutorAction is returned when unknown action or operation is requested
@@ -58,11 +60,34 @@ func (e ErrNilExecutorDoc) Error() string {
 	return "executor document is nil"
 }
 
-// ErrInvalidPhase is returned if the phase is invalid
-type ErrInvalidPhase struct {
-	Reason string
+// ErrExecutorRefNotDefined returned when phase has no entrypoint defined and phase needs it
+type ErrExecutorRefNotDefined struct {
+	PhaseName      string
+	PhaseNamespace string
 }
 
-func (e ErrInvalidPhase) Error() string {
-	return fmt.Sprintf("invalid phase: %s", e.Reason)
+func (e ErrExecutorRefNotDefined) Error() string {
+	return fmt.Sprintf("Phase name '%s', namespace '%s' must have executorRef field defined in config",
+		e.PhaseName,
+		e.PhaseNamespace)
+}
+
+// ErrExecutorNotFound is returned if phase executor was not found in executor
+// registry map
+type ErrExecutorNotFound struct {
+	GVK schema.GroupVersionKind
+}
+
+func (e ErrExecutorNotFound) Error() string {
+	return fmt.Sprintf("executor identified by '%s' is not found", e.GVK)
+}
+
+// ErrExecutorRegistration is a wrapper for executor registration errors
+type ErrExecutorRegistration struct {
+	ExecutorName string
+	Err          error
+}
+
+func (e ErrExecutorRegistration) Error() string {
+	return fmt.Sprintf("failed to register executor %s, registration function returned %s", e.ExecutorName, e.Err.Error())
 }

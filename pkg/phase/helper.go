@@ -15,7 +15,7 @@
 package phase
 
 import (
-	"errors"
+	goerrors "errors"
 	"path/filepath"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,6 +27,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/inventory"
 	inventoryifc "opendev.org/airship/airshipctl/pkg/inventory/ifc"
 	"opendev.org/airship/airshipctl/pkg/log"
+	"opendev.org/airship/airshipctl/pkg/phase/executors/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
@@ -195,7 +196,7 @@ func (helper *Helper) getDocsByPhasePlan(planID ifc.ID, bundle document.Bundle) 
 
 		doc, filterErr := bundle.SelectOne(selector)
 		if filterErr != nil {
-			if errors.As(filterErr, &document.ErrDocNotFound{}) {
+			if goerrors.As(filterErr, &document.ErrDocNotFound{}) {
 				log.Debug(filterErr.Error())
 				continue
 			}
@@ -282,7 +283,7 @@ func (helper *Helper) ExecutorDoc(phaseID ifc.ID) (document.Document, error) {
 	phaseConfig := phaseObj.Config
 
 	if phaseConfig.ExecutorRef == nil {
-		return nil, ErrExecutorRefNotDefined{PhaseName: phaseID.Name, PhaseNamespace: phaseID.Namespace}
+		return nil, errors.ErrExecutorRefNotDefined{PhaseName: phaseID.Name, PhaseNamespace: phaseID.Namespace}
 	}
 
 	// Searching executor configuration document referenced in

@@ -21,6 +21,7 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/phase/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
@@ -122,10 +123,13 @@ func (fo *RenderCommand) Validate() (err error) {
 		// do nothing, source config doesnt need any parameters
 	case RenderSourceExecutor, RenderSourcePhase:
 		if fo.PhaseID.Name == "" {
-			err = ErrRenderPhaseNameNotSpecified{}
+			err = errors.ErrRenderPhaseNameNotSpecified{Sources: []string{RenderSourceExecutor, RenderSourcePhase}}
 		}
 	default:
-		err = ErrUknownRenderSource{Source: fo.Source}
+		err = errors.ErrUnknownRenderSource{
+			Source:       fo.Source,
+			ValidSources: []string{RenderSourceConfig, RenderSourceExecutor, RenderSourcePhase},
+		}
 	}
 	return err
 }

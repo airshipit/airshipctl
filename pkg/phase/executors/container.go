@@ -23,7 +23,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/errors"
+	commonerrors "opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/log"
@@ -165,12 +165,12 @@ func bundleReader(bundle document.Bundle) (io.Reader, error) {
 
 // Validate executor configuration and documents
 func (c *ContainerExecutor) Validate() error {
-	return errors.ErrNotImplemented{}
+	return commonerrors.ErrNotImplemented{}
 }
 
 // Render executor documents
 func (c *ContainerExecutor) Render(_ io.Writer, _ ifc.RenderOptions) error {
-	return errors.ErrNotImplemented{}
+	return commonerrors.ErrNotImplemented{}
 }
 
 func (c *ContainerExecutor) setConfig() error {
@@ -202,5 +202,5 @@ func (c *ContainerExecutor) setConfig() error {
 
 // Status returns the status of the given phase
 func (c *ContainerExecutor) Status() (ifc.ExecutorStatus, error) {
-	return ifc.ExecutorStatus{}, errors.ErrNotImplemented{What: GenericContainer}
+	return ifc.ExecutorStatus{}, commonerrors.ErrNotImplemented{What: GenericContainer}
 }

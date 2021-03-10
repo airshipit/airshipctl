@@ -24,11 +24,12 @@ import (
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/errors"
 	airerrors "opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/log"
+	phaseerrors "opendev.org/airship/airshipctl/pkg/phase/errors"
+	"opendev.org/airship/airshipctl/pkg/phase/executors/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
@@ -72,7 +73,7 @@ func (c *ClusterctlExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 	case airshipv1.Init:
 		c.init(opts, evtCh)
 	default:
-		handleError(evtCh, ErrUnknownExecutorAction{Action: string(c.options.Action), ExecutorName: "clusterctl"})
+		handleError(evtCh, errors.ErrUnknownExecutorAction{Action: string(c.options.Action), ExecutorName: "clusterctl"})
 	}
 }
 
@@ -174,17 +175,17 @@ func isAlreadyExistsError(err error) bool {
 func (c *ClusterctlExecutor) Validate() error {
 	switch c.options.Action {
 	case "":
-		return airerrors.ErrInvalidPhase{Reason: "ClusterctlExecutor.Action is empty"}
+		return phaseerrors.ErrInvalidPhase{Reason: "ClusterctlExecutor.Action is empty"}
 	case airshipv1.Init:
 		if c.options.InitOptions.CoreProvider == "" {
-			return airerrors.ErrInvalidPhase{Reason: "ClusterctlExecutor.InitOptions.CoreProvider is empty"}
+			return phaseerrors.ErrInvalidPhase{Reason: "ClusterctlExecutor.InitOptions.CoreProvider is empty"}
 		}
 	case airshipv1.Move:
 		if c.options.MoveOptions.Namespace == "" {
-			return airerrors.ErrInvalidPhase{Reason: "ClusterctlExecutor.MoveOptions.Namespace is empty"}
+			return phaseerrors.ErrInvalidPhase{Reason: "ClusterctlExecutor.MoveOptions.Namespace is empty"}
 		}
 	default:
-		return ErrUnknownExecutorAction{Action: string(c.options.Action)}
+		return errors.ErrUnknownExecutorAction{Action: string(c.options.Action)}
 	}
 	// TODO: need to find if any other validation needs to be added
 	return nil
@@ -204,7 +205,7 @@ func (c *ClusterctlExecutor) Render(w io.Writer, ro ifc.RenderOptions) error {
 		for _, prv := range prvList {
 			res := strings.Split(prv, ":")
 			if len(res) != 2 {
-				return ErrUnableParseProvider{
+				return errors.ErrUnableParseProvider{
 					Provider:     prv,
 					ProviderType: prvType,
 				}
@@ -235,5 +236,5 @@ func (c *ClusterctlExecutor) Render(w io.Writer, ro ifc.RenderOptions) error {
 
 // Status returns the status of the given phase
 func (c *ClusterctlExecutor) Status() (ifc.ExecutorStatus, error) {
-	return ifc.ExecutorStatus{}, errors.ErrNotImplemented{What: Clusterctl}
+	return ifc.ExecutorStatus{}, airerrors.ErrNotImplemented{What: Clusterctl}
 }

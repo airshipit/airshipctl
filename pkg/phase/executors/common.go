@@ -19,6 +19,7 @@ import (
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/events"
+	"opendev.org/airship/airshipctl/pkg/phase/executors/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
@@ -54,7 +55,7 @@ func RegisterExecutor(executorName string, registry map[schema.GroupVersionKind]
 		gvks, _, err = airshipv1.Scheme.ObjectKinds(&airshipv1.BaremetalManager{})
 		execObj = NewBaremetalExecutor
 	default:
-		return ErrUnknownExecutorName{ExecutorName: executorName}
+		return errors.ErrUnknownExecutorName{ExecutorName: executorName}
 	}
 
 	if err != nil {
