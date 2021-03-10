@@ -21,7 +21,6 @@ A unified entrypoint to various airship components
 * [airshipctl completion](airshipctl_completion.md)	 - Generate completion script for the specified shell (bash or zsh)
 * [airshipctl config](airshipctl_config.md)	 - Manage the airshipctl config file
 * [airshipctl document](airshipctl_document.md)	 - Manage deployment documents
-* [airshipctl image](airshipctl_image.md)	 - Manage ISO image creation
 * [airshipctl phase](airshipctl_phase.md)	 - Manage phases
 * [airshipctl plan](airshipctl_plan.md)	 - Manage plans
 * [airshipctl secret](airshipctl_secret.md)	 - Manage secrets

@@ -10,7 +10,6 @@ Available Commands:
   config      Manage the airshipctl config file
   document    Manage deployment documents
   help        Help about any command
-  image       Manage ISO image creation
   phase       Manage phases
   plan        Manage plans
   secret      Manage secrets

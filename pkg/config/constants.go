@@ -16,11 +16,6 @@ package config
 
 import "opendev.org/airship/airshipctl/pkg/remote/redfish"
 
-// Constants related to Phases
-const (
-	BootstrapPhase = "bootstrap-iso"
-)
-
 // Constants defining default values
 const (
 	AirshipConfig                         = "config"
