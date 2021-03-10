@@ -47,7 +47,7 @@ type GenericContainer struct {
 	// Holds container configuration
 	Spec GenericContainerSpec `json:"spec,omitempty"`
 
-	// Config will be passed to stdin of the container togather with other objects
+	// Config will be passed to stdin of the container together with other objects
 	// more information on easy ways to consume the config can be found here
 	// https://googlecontainertools.github.io/kpt/guides/producer/functions/golang/
 	Config string `json:"config,omitempty"`
@@ -68,7 +68,7 @@ type GenericContainerSpec struct {
 	// Supported types are "airship" and "krm"
 	Type GenericContainerType `json:"type,omitempty"`
 
-	// Ariship container spec
+	// Airship container spec
 	Airship AirshipContainerSpec `json:"airship,omitempty"`
 
 	// KRM container function spec
@@ -121,6 +121,9 @@ type StorageMount struct {
 	// For named volumes, this is the name of the volume.
 	// For anonymous volumes, this field is omitted (empty string).
 	// For bind mounts, this is the path to the file or directory on the host.
+	// If provided path is relative, it will be expanded to absolute one by following patterns:
+	// - if starts with '~/' or contains only '~' : $HOME + Src
+	// - in other cases : TargetPath + Src
 	Src string `json:"src,omitempty" yaml:"src,omitempty"`
 
 	// The path where the file or directory is mounted in the container.

@@ -124,7 +124,7 @@ func (c *ContainerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 		return
 	}
 
-	err = c.ClientFunc(c.ResultsDir, input, output, c.Container).Run()
+	err = c.ClientFunc(c.ResultsDir, input, output, c.Container, c.Helper.TargetPath()).Run()
 	if err != nil {
 		handleError(evtCh, err)
 		return

@@ -16,11 +16,11 @@ package util_test
 
 import (
 	"os"
-	"path"
 	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/util"
 	"opendev.org/airship/airshipctl/testutil"
@@ -45,33 +45,42 @@ func setHome(path string) (resetHome func()) {
 }
 
 func TestExpandTilde(t *testing.T) {
-	t.Run("success home path", func(t *testing.T) {
-		airshipDir := ".airship"
-		dir := filepath.Join("~", airshipDir)
-		expandedDir, err := util.ExpandTilde(dir)
-		assert.NoError(t, err)
-		homedir := path.Join(util.UserHomeDir(), airshipDir)
-		assert.Equal(t, homedir, expandedDir)
-	})
+	tests := []struct {
+		name        string
+		input       string
+		expectedOut string
+	}{
+		{
+			name:        "expand home path",
+			input:       "~/.airship",
+			expectedOut: filepath.Join(util.UserHomeDir(), "~/.airship"[1:]),
+		},
+		{
+			name:        "expand just ~",
+			input:       "~",
+			expectedOut: util.UserHomeDir(),
+		},
+		{
+			name:        "empty path",
+			input:       "",
+			expectedOut: "",
+		},
+		{
+			name:        "absolute path",
+			input:       "/.airship",
+			expectedOut: "/.airship",
+		},
+		{
+			name:        "tilde path",
+			input:       "~.airship",
+			expectedOut: "~.airship",
+		},
+	}
 
-	t.Run("success nothing to expand", func(t *testing.T) {
-		dir := "/home/ubuntu/.airship"
-		expandedDir, err := util.ExpandTilde(dir)
-		assert.NoError(t, err)
-		assert.Equal(t, dir, expandedDir)
-	})
-
-	t.Run("error malformed path", func(t *testing.T) {
-		malformedDir := "~.home/ubuntu/.airship"
-		expandedDir, err := util.ExpandTilde(malformedDir)
-		assert.Error(t, err)
-		assert.Equal(t, "", expandedDir)
-	})
-
-	t.Run("success empty path", func(t *testing.T) {
-		emptyDir := ""
-		expandedDir, err := util.ExpandTilde(emptyDir)
-		assert.NoError(t, err)
-		assert.Equal(t, emptyDir, expandedDir)
-	})
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.expectedOut, util.ExpandTilde(tt.input))
+		})
+	}
 }

@@ -17,6 +17,7 @@ package util
 import (
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // UserHomeDir is a utility function that wraps os.UserHomeDir and returns no
@@ -31,21 +32,18 @@ func UserHomeDir() string {
 }
 
 // ExpandTilde expands the path to include the home directory if the path
-// is prefixed with `~`. If it isn't prefixed with `~`, the path is
-// returned as-is.
-// Original source code: https://github.com/mitchellh/go-homedir/blob/master/homedir.go#L55-L77
-func ExpandTilde(path string) (string, error) {
-	if len(path) == 0 {
-		return path, nil
+// is prefixed with `~`. If it isn't prefixed with `~` or has no slash after tilde,
+// the path is returned as-is.
+func ExpandTilde(path string) string {
+	// Just tilde - return current $HOME dir
+	if path == "~" {
+		return UserHomeDir()
+	}
+	// If path starts with ~/ - expand it
+	if strings.HasPrefix(path, "~/") {
+		return filepath.Join(UserHomeDir(), path[1:])
 	}
 
-	if path[0] != '~' {
-		return path, nil
-	}
-
-	if len(path) > 1 && path[1] != '/' {
-		return "", &ErrCantExpandTildePath{}
-	}
-
-	return filepath.Join(UserHomeDir(), path[1:]), nil
+	// empty strings, absolute paths, ~<(dir/file)name> return as-is
+	return path
 }
