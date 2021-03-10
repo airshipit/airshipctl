@@ -16,6 +16,8 @@ package util_test
 
 import (
 	"os"
+	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -40,4 +42,36 @@ func setHome(path string) (resetHome func()) {
 	return func() {
 		os.Setenv("HOME", oldHome)
 	}
+}
+
+func TestExpandTilde(t *testing.T) {
+	t.Run("success home path", func(t *testing.T) {
+		airshipDir := ".airship"
+		dir := filepath.Join("~", airshipDir)
+		expandedDir, err := util.ExpandTilde(dir)
+		assert.NoError(t, err)
+		homedir := path.Join(util.UserHomeDir(), airshipDir)
+		assert.Equal(t, homedir, expandedDir)
+	})
+
+	t.Run("success nothing to expand", func(t *testing.T) {
+		dir := "/home/ubuntu/.airship"
+		expandedDir, err := util.ExpandTilde(dir)
+		assert.NoError(t, err)
+		assert.Equal(t, dir, expandedDir)
+	})
+
+	t.Run("error malformed path", func(t *testing.T) {
+		malformedDir := "~.home/ubuntu/.airship"
+		expandedDir, err := util.ExpandTilde(malformedDir)
+		assert.Error(t, err)
+		assert.Equal(t, "", expandedDir)
+	})
+
+	t.Run("success empty path", func(t *testing.T) {
+		emptyDir := ""
+		expandedDir, err := util.ExpandTilde(emptyDir)
+		assert.NoError(t, err)
+		assert.Equal(t, emptyDir, expandedDir)
+	})
 }
