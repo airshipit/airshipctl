@@ -16,6 +16,7 @@ package executors
 
 import (
 	"bytes"
+	goerrors "errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -27,6 +28,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/log"
+	"opendev.org/airship/airshipctl/pkg/phase/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
@@ -46,9 +48,12 @@ type ContainerExecutor struct {
 
 // NewContainerExecutor creates instance of phase executor
 func NewContainerExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
-	// TODO add logic that checks if the path was not defined, and if so, we are fine
-	// and bundle should be either nil or empty, consider ContinueOnEmptyInput option to container client
 	bundle, err := cfg.BundleFactory()
+	// ErrDocumentEntrypointNotDefined error should not cause Container executor to fail, so filter it
+	if err != nil && goerrors.As(err, &errors.ErrDocumentEntrypointNotDefined{}) {
+		// if docEntryPoint isn't defined initialize empty bundle instead to safely use it without nil checks
+		bundle, err = document.NewBundleFromBytes([]byte{})
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +100,6 @@ func (c *ContainerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 
 	input, err := bundleReader(c.ExecutorBundle)
 	if err != nil {
-		// TODO move bundleFactory here, and make sure that if executorDoc is not defined, we dont fail
 		handleError(evtCh, err)
 		return
 	}

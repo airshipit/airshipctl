@@ -26,6 +26,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
+	"opendev.org/airship/airshipctl/pkg/phase/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
@@ -83,6 +84,18 @@ func TestNewContainerExecutor(t *testing.T) {
 		})
 		assert.Error(t, err)
 		assert.Nil(t, e)
+	})
+
+	t.Run("bundle factory - empty documentEntryPoint", func(t *testing.T) {
+		e, err := executors.NewContainerExecutor(ifc.ExecutorConfig{
+			ExecutorDocument: execDoc,
+			BundleFactory: func() (document.Bundle, error) {
+				return nil, errors.ErrDocumentEntrypointNotDefined{}
+			},
+			Helper: makeDefaultHelper(t, "../../container/testdata", "metadata.yaml"),
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, e)
 	})
 }
 
