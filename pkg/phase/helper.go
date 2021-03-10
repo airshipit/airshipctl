@@ -28,7 +28,6 @@ import (
 	inventoryifc "opendev.org/airship/airshipctl/pkg/inventory/ifc"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
-	"opendev.org/airship/airshipctl/pkg/util"
 )
 
 // Helper provides functions built around phase bundle to filter and build documents
@@ -41,11 +40,14 @@ type Helper struct {
 
 	inventory inventoryifc.Inventory
 	metadata  *config.Metadata
+	config    *config.Config
 }
 
 // NewHelper constructs metadata interface based on config
 func NewHelper(cfg *config.Config) (ifc.Helper, error) {
-	helper := &Helper{}
+	helper := &Helper{
+		config: cfg,
+	}
 
 	var err error
 	helper.targetPath, err = cfg.CurrentContextTargetPath()
@@ -321,10 +323,9 @@ func (helper *Helper) PhaseEntryPointBasePath() string {
 	return helper.phaseEntryPointBasePath
 }
 
-// WorkDir return manifest root
-// TODO add creation of WorkDir if it doesn't exist
+// WorkDir return working directory for aisrhipctl, creates it, if doesn't exist
 func (helper *Helper) WorkDir() (string, error) {
-	return filepath.Join(util.UserHomeDir(), config.AirshipConfigDir), nil
+	return helper.config.WorkDir()
 }
 
 // Inventory return inventory interface

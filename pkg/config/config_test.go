@@ -541,3 +541,11 @@ func TestModifyEncryptionConfigs(t *testing.T) {
 	conf.ModifyEncryptionConfig(encryptionConfig, eco)
 	assert.Equal(t, eco.DecryptionKeyPath, modifiedConfig.DecryptionKeyPath)
 }
+
+func TestWorkDir(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+	wd, err := conf.WorkDir()
+	assert.NoError(t, err)
+	assert.NotEmpty(t, wd)
+}
