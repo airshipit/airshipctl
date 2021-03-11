@@ -30,7 +30,11 @@ type Executor interface {
 	Run(chan events.Event, RunOptions)
 	Render(io.Writer, RenderOptions) error
 	Validate() error
+	Status() (ExecutorStatus, error)
 }
+
+// ExecutorStatus is a struct which defines the status
+type ExecutorStatus struct{}
 
 // RunOptions holds options for run method
 type RunOptions struct {

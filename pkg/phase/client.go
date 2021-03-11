@@ -177,6 +177,21 @@ func (p *phase) Render(w io.Writer, executorRender bool, options ifc.RenderOptio
 	return rendered.Write(w)
 }
 
+// Status returns the status of the given phase
+func (p *phase) Status() (ifc.PhaseStatus, error) {
+	executor, err := p.Executor()
+	if err != nil {
+		return ifc.PhaseStatus{}, err
+	}
+
+	sts, err := executor.Status()
+	if err != nil {
+		return ifc.PhaseStatus{}, err
+	}
+
+	return ifc.PhaseStatus{ExecutorStatus: sts}, err
+}
+
 // DocumentRoot root that holds all the documents associated with the phase
 func (p *phase) DocumentRoot() (string, error) {
 	relativePath := p.apiObj.Config.DocumentEntryPoint

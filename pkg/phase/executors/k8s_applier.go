@@ -19,6 +19,10 @@ import (
 	"time"
 
 	"sigs.k8s.io/cli-utils/pkg/common"
+	"sigs.k8s.io/cli-utils/pkg/kstatus/polling/aggregator"
+	"sigs.k8s.io/cli-utils/pkg/kstatus/polling/event"
+	"sigs.k8s.io/cli-utils/pkg/kstatus/status"
+	"sigs.k8s.io/cli-utils/pkg/provider"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
@@ -145,4 +149,44 @@ func (e *KubeApplierExecutor) Render(w io.Writer, o ifc.RenderOptions) error {
 		return err
 	}
 	return bundle.Write(w)
+}
+
+// Status returns the status of the given phase
+func (e *KubeApplierExecutor) Status() (sts ifc.ExecutorStatus, err error) {
+	var ctx string
+	ctx, err = e.clusterMap.ClusterKubeconfigContext(e.clusterName)
+	if err != nil {
+		return sts, err
+	}
+	log.Debug("Getting kubeconfig file information from kubeconfig provider")
+	path, _, err := e.kubeconfig.GetFile()
+	if err != nil {
+		return sts, err
+	}
+
+	cf := provider.NewProvider(utils.FactoryFromKubeConfig(path, ctx))
+	rm, err := cf.Factory().ToRESTMapper()
+	if err != nil {
+		return
+	}
+	r := utils.DefaultManifestReaderFactory(false, e.ExecutorBundle, rm)
+	infos, err := r.Read()
+	if err != nil {
+		return
+	}
+
+	var resSts event.ResourceStatuses
+
+	for _, info := range infos {
+		s, sErr := status.Compute(info)
+		if sErr != nil {
+			return
+		}
+		st := &event.ResourceStatus{
+			Status: s.Status,
+		}
+		resSts = append(resSts, st)
+	}
+	_ = aggregator.AggregateStatus(resSts, status.CurrentStatus)
+	return ifc.ExecutorStatus{}, err
 }

@@ -29,6 +29,12 @@ type Phase interface {
 	Details() (string, error)
 	Executor() (Executor, error)
 	Render(io.Writer, bool, RenderOptions) error
+	Status() (PhaseStatus, error)
+}
+
+// PhaseStatus is a struct which defines status of phase
+type PhaseStatus struct {
+	ExecutorStatus ExecutorStatus
 }
 
 // Plan provides a way to interact with phase plans

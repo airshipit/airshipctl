@@ -24,6 +24,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/errors"
 	airerrors "opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
@@ -230,4 +231,9 @@ func (c *ClusterctlExecutor) Render(w io.Writer, ro ifc.RenderOptions) error {
 		return err
 	}
 	return filtered.Write(w)
+}
+
+// Status returns the status of the given phase
+func (c *ClusterctlExecutor) Status() (ifc.ExecutorStatus, error) {
+	return ifc.ExecutorStatus{}, errors.ErrNotImplemented{What: Clusterctl}
 }

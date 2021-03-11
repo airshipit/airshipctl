@@ -21,6 +21,7 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/inventory"
 	inventoryifc "opendev.org/airship/airshipctl/pkg/inventory/ifc"
@@ -139,4 +140,9 @@ func toCommandOptions(i inventoryifc.Inventory,
 		Namespace: spec.HostSelector.Namespace,
 		Timeout:   timeout,
 	}
+}
+
+// Status returns the status of the given phase
+func (e *BaremetalManagerExecutor) Status() (ifc.ExecutorStatus, error) {
+	return ifc.ExecutorStatus{}, errors.ErrNotImplemented{What: BMHManager}
 }
