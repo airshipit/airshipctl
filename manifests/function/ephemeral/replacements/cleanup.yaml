@@ -1,0 +1,12 @@
+apiVersion: builtin
+kind: PatchStrategicMergeTransformer
+metadata:
+  name: delete-secret-stringData
+patches: |-
+  ---
+  apiVersion: v1
+  kind: Secret
+  metadata:
+    name: ephemeral-bmc-secret
+  stringData:
+    $patch: delete

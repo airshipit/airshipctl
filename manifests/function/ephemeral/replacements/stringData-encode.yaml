@@ -1,0 +1,21 @@
+# These rules inject networking info artifacts into the ephemeral function.
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: secret-encode
+  annotations:
+    config.kubernetes.io/function: |-
+      container:
+        image: localhost/replacement-transformer
+replacements:
+# converts and moves stringData to data field
+- source:
+    objref:
+      kind: Secret
+      name: ephemeral-bmc-secret
+    fieldref: stringData.userData
+  target:
+    objref:
+      name: ephemeral-bmc-secret
+      kind: Secret
+    fieldrefs: ["data.userData"]
