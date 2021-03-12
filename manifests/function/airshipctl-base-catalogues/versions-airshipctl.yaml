@@ -30,6 +30,9 @@ spec:
       auth_proxy:
         repository: gcr.io/kubebuilder
         tag: v0.4.0
+      ipam-manager:
+        repository: quay.io/metal3-io
+        tag: v0.0.4
     cacpk:
       manager:
         repository: us.gcr.io/k8s-artifacts-prod/cluster-api

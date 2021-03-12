@@ -63,6 +63,9 @@ images:
   infrastructure-metal3/kube-rbac-proxy:
     repository: "gcr.io/kubebuilder"
     tag: "v0.4.0"
+  infrastructure-metal3/ip-address-manager:
+    repository: "quay.io/metal3-io"
+    tag: "v0.4.0"
   infrastructure-docker/capd-manager:
     repository: "gcr.io/k8s-staging-cluster-api"
     tag: "v20201019-v0.3.10-86-gc1647481f"
