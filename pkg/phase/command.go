@@ -298,6 +298,7 @@ func (c *ValidateCommand) RunE() error {
 		return err
 	}
 
+	util.Setenv(util.EnvVar{Key: "AIRSHIPCTL_CURRENT_PHASE", Value: c.Options.PhaseID.Name})
 	helper, err := NewHelper(cfg)
 	if err != nil {
 		return err
@@ -364,6 +365,7 @@ func (c *PlanValidateCommand) RunE() error {
 		return err
 	}
 
+	util.Setenv(util.EnvVar{Key: "AIRSHIPCTL_CURRENT_PLAN", Value: c.Options.PlanID.Name})
 	helper, err := NewHelper(cfg)
 	if err != nil {
 		return err

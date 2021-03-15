@@ -20,7 +20,6 @@ set -xe
 # The location of sites whose manifests should be validated.
 # This are relative to MANIFEST_ROOT above
 : ${SITE_ROOT:="$(basename "${PWD}")/manifests/site"}
-: ${SCHEMAS_ROOT:="${PWD}/manifests/function/airshipctl-schemas"}
 : ${MANIFEST_REPO_URL:="https://review.opendev.org/airship/airshipctl"}
 : ${SITE:="test-workload"}
 : ${CONTEXT:="kind-airship"}
@@ -97,13 +96,14 @@ if [ -f "${AIRSHIPKUBECONFIG}" ]; then
   cp "${AIRSHIPKUBECONFIG}" "${AIRSHIPKUBECONFIG_BACKUP}"
 fi
 
-
 generate_airshipconf "default"
-
-catalogues=("versions" "networking")
 
 phase_plans=$(airshipctl --airshipconf ${AIRSHIPCONFIG} plan list | grep "PhasePlan" | awk -F '/' '{print $2}' | awk '{print $1}')
 for plan in $phase_plans; do
+  # Perform static validation first, add support of all plans later
+  if [ "$plan" = "phasePlan" ]; then
+    airshipctl --airshipconf ${AIRSHIPCONFIG} plan validate $plan
+  fi
 
   cluster_list=$(airshipctl --airshipconf ${AIRSHIPCONFIG} cluster list)
   # Loop over all cluster types and phases for the given site
@@ -123,9 +123,6 @@ for plan in $phase_plans; do
     # In the meantime, as new phases are added, please add them here as well.
     phases=$(airshipctl --airshipconf ${AIRSHIPCONFIG} phase list --plan $plan -c $cluster | grep Phase | awk -F '/' '{print $2}' | awk '{print $1}' || true)
 
-    # apply catalogue CRDs
-    ${KUBECTL} --context ${CLUSTER} --kubeconfig ${KUBECONFIG} apply -k ${SCHEMAS_ROOT}
-
     for phase in $phases; do
       # Guard against bootstrap or initinfra being missing, which could be the case for some configs
       echo -e "\n*** Rendering ${cluster}/${phase}"
@@ -135,10 +132,6 @@ for plan in $phase_plans; do
       # e.g., load CRDs from initinfra first, so they're present when validating later phases
       ${AIRSHIPCTL} --airshipconf ${AIRSHIPCONFIG} phase render ${phase} -s executor -k CustomResourceDefinition >${TMP}/${phase}-crds.yaml
 
-      # extract rendered catalogue CRs
-      ${AIRSHIPCTL} --airshipconf ${AIRSHIPCONFIG} phase render ${phase} -s executor -k NetworkCatalogue >${TMP}/${phase}-networking.yaml
-      ${AIRSHIPCTL} --airshipconf ${AIRSHIPCONFIG} phase render ${phase} -s executor -k VersionsCatalogue >${TMP}/${phase}-versions.yaml
-
       if [ -s ${TMP}/${phase}-crds.yaml ]; then
         ${KUBECTL} --context ${CLUSTER} apply -f ${TMP}/${phase}-crds.yaml
       fi
@@ -146,14 +139,6 @@ for plan in $phase_plans; do
       # step 2: dry-run the entire phase
       ${ACTL} phase run --dry-run ${phase}
 
-      # catalogues have the label deploy-k8s: false, so they won't get applied during the dry-run
-      # and will have to be applied manually here
-      for catalogue in "${catalogues[@]}"
-      do
-        if [ -s ${TMP}/${phase}-${catalogue}.yaml ]; then
-          ${KUBECTL} --context ${CLUSTER} --kubeconfig ${KUBECONFIG} apply -f ${TMP}/$phase-${catalogue}.yaml --dry-run=client
-        fi
-      done
     done
     # Delete cluster kubeconfig
     rm ${KUBECONFIG}

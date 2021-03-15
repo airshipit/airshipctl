@@ -58,8 +58,8 @@ spec:
   sinkOutputDir: "target/generator/results/generated"
   image: gcr.io/kpt-fn-contrib/sops:v0.1.0
   envVars:
-  - SOPS_IMPORT_PGP
-  - SOPS_PGP_FP
+    - SOPS_IMPORT_PGP
+    - SOPS_PGP_FP
 config: |
   apiVersion: v1
   kind: ConfigMap
@@ -77,8 +77,8 @@ spec:
   type: krm
   image: gcr.io/kpt-fn-contrib/sops:v0.1.0
   envVars:
-  - SOPS_IMPORT_PGP
-  - SOPS_PGP_FP
+    - SOPS_IMPORT_PGP
+    - SOPS_PGP_FP
 config: |
   apiVersion: v1
   kind: ConfigMap
@@ -211,10 +211,10 @@ spec:
   type: krm
   image: quay.io/airshipit/cloud-init:v2
   mounts:
-  - type: bind
-    src: /srv/images
-    dst: /config
-    rw: true
+    - type: bind
+      src: /srv/images
+      dst: /config
+      rw: true
 config: |
   apiVersion: airshipit.org/v1alpha1
   kind: IsoConfiguration
@@ -246,28 +246,28 @@ spec:
     privileged: true
     containerRuntime: docker
     cmd:
-    - /bin/bash
-    - -c
-    - /usr/bin/local/entrypoint.sh 1>&2
+      - /bin/bash
+      - -c
+      - /usr/bin/local/entrypoint.sh 1>&2
   image: quay.io/airshipit/image-builder:latest-ubuntu_focal
   mounts:
-  - type: bind
-    src: /srv/images
-    dst: /config
-    rw: true
+    - type: bind
+      src: /srv/images
+      dst: /config
+      rw: true
   envVars:
-  - IMAGE_TYPE=iso
-  - BUILDER_CONFIG=/config/builder-conf.yaml
-  - USER_DATA_FILE=user-data
-  - NET_CONFIG_FILE=network-data
-  - OUTPUT_FILE_NAME=ephemerial.iso
-  - OUTPUT_METADATA_FILE_NAME=output-metadata.yaml
-  - http_proxy
-  - https_proxy
-  - HTTP_PROXY
-  - HTTPS_PROXY
-  - no_proxy
-  - NO_PROXY
+    - IMAGE_TYPE=iso
+    - BUILDER_CONFIG=/config/builder-conf.yaml
+    - USER_DATA_FILE=user-data
+    - NET_CONFIG_FILE=network-data
+    - OUTPUT_FILE_NAME=ephemerial.iso
+    - OUTPUT_METADATA_FILE_NAME=output-metadata.yaml
+    - http_proxy
+    - https_proxy
+    - HTTP_PROXY
+    - HTTPS_PROXY
+    - no_proxy
+    - NO_PROXY
 config: |
   apiVersion: airshipit.org/v1alpha1
   kind: DoesNotMatter
@@ -363,3 +363,31 @@ configRef:
   kind: ConfigMap
   name: kubectl-wait-pods
   apiVersion: v1
+---
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: document-validation
+  labels:
+    airshipit.org/deploy-k8s: "false"
+spec:
+  type: krm
+  image: quay.io/airshipit/kubeval-validator:latest
+  envVars:
+    - VALIDATOR_PREVENT_CLEANUP # Validator won't cleanup its working directory after finish
+    - VALIDATOR_PLAN_VALIDATION # Validator will not use phase-specific settings for validation
+    - VALIDATOR_REWRITE_SCHEMAS # Validator will rewrite schemas for kubeval if they already exist
+  mounts:
+    - type: bind
+      src: airshipctl/manifests
+      dst: /manifests
+      rw: false
+    - type: bind
+      src: ~/.airship
+      dst: /workdir
+      rw: true
+  hostNetwork: true
+configRef:
+  apiVersion: airshipit.org/v1alpha1
+  kind: KubevalOptions
+  name: kubeval-options

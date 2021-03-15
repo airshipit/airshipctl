@@ -258,8 +258,8 @@ func (helper *Helper) ExecutorDoc(phaseID ifc.ID) (document.Document, error) {
 	if err != nil {
 		return nil, err
 	}
-	phaseConfig := phaseObj.Config
 
+	phaseConfig := phaseObj.Config
 	if phaseConfig.ExecutorRef == nil {
 		return nil, errors.ErrExecutorRefNotDefined{PhaseName: phaseID.Name, PhaseNamespace: phaseID.Namespace}
 	}

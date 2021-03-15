@@ -606,6 +606,8 @@ func TestValidateCommand(t *testing.T) {
 				}
 				return conf, nil
 			},
+			errContains: `document filtered by selector [Group="airshipit.org", Version="v1alpha1", ` +
+				`Kind="GenericContainer", Name="document-validation"] found no documents`,
 		},
 	}
 

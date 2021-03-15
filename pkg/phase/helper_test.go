@@ -475,8 +475,7 @@ func TestHelperExecutorDoc(t *testing.T) {
 				conf.Manifests["dummy_manifest"].MetadataPath = brokenMetaPath
 				return conf
 			},
-			errContains: "no such file or directory",
-			helperErr:   true,
+			helperErr: true,
 		},
 		{
 			name:    "Error get phase without executor",

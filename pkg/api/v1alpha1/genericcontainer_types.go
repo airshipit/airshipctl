@@ -35,6 +35,11 @@ const (
 	KubeConfigEnvKeyContext = "KCTL_CONTEXT"
 	// KubeConfigEnv uses as a kubeconfig env variable
 	KubeConfigEnv = KubeConfigEnvKey + "=" + KubeConfigPath
+
+	// ValidatorPreventCleanup is an env variable that prevents validator to clean up its working directory after finish
+	ValidatorPreventCleanup = "VALIDATOR_PREVENT_CLEANUP"
+	// ValidatorPlanValidation is an env variable that tells validator not to use phase-specific config for validation
+	ValidatorPlanValidation = "VALIDATOR_PLAN_VALIDATION"
 )
 
 // +kubebuilder:object:root=true

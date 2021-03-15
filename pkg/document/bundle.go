@@ -59,9 +59,30 @@ type Bundle interface {
 	Append(Document) error
 }
 
+// DocFactoryFunc is a type of function which returns (Document, error) and can be used on demand
+type DocFactoryFunc func() (Document, error)
+
 // BundleFactoryFunc is a function that returns bundle, can be used to build bundle on demand
 // instead of inplace, useful, when you don't know if bundle will be needed or not, see phase for detail
 type BundleFactoryFunc func() (Bundle, error)
+
+// BundleFactoryFromBytes is a function which returns BundleFactoryFunc based on new bundle from bytes
+func BundleFactoryFromBytes(data []byte) BundleFactoryFunc {
+	return func() (Bundle, error) {
+		return NewBundleFromBytes(data)
+	}
+}
+
+// BundleFactoryFromDocRoot is a function which returns BundleFactoryFunc based on new bundle from DocumentRoot path
+func BundleFactoryFromDocRoot(docRootFunc func() (string, error)) BundleFactoryFunc {
+	return func() (Bundle, error) {
+		path, err := docRootFunc()
+		if err != nil {
+			return nil, err
+		}
+		return NewBundleByPath(path)
+	}
+}
 
 // NewBundleByPath is a function which builds new document.Bundle from kustomize rootPath using default FS object
 // example: document.NewBundleByPath("path/to/phase-root")
