@@ -99,15 +99,16 @@ jobs:
           sudo npm install github-release-notes -g
       - name: Generate release notes
         run: |
+          TAG_NAME=${TAG##*/}
           gren changelog --override --generate \
             --username airshipit --repo airshipctl \
             --changelog-filename release-notes.md \
             --token "$GITHUB_TOKEN" \
-            --tags "$TAGS" \
+            --tags "$TAG_NAME" \
             --debug
           cat release-notes.md
         env:
-          TAGS: ${{ github.ref }}
+          TAG: ${{ github.ref }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup Go
         uses: actions/setup-go@v2
