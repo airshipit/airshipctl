@@ -1,0 +1,3 @@
+phase:
+  path: "valid_site_with_doc_prefix/phases"
+  docEntryPointPrefix: "valid_site_with_doc_prefix/phases"

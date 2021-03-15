@@ -1,0 +1,10 @@
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: some_phase
+  clusterName: some_cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: Does not exist
+    name: executor-name

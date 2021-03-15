@@ -27,6 +27,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
+	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/testutil/clusterctl"
@@ -85,8 +86,9 @@ func TestBuilderClusterctl(t *testing.T) {
 	parentUser := "parent_admin"
 	parentParentUser := "parent_parent_admin"
 	childUser := "child_user"
-	testBundlePath := "testdata"
-	kubeconfigPath := filepath.Join(testBundlePath, "kubeconfig-12341234")
+	testBundle, err := document.NewBundleByPath("testdata")
+	require.NoError(t, err)
+	kubeconfigPath := filepath.Join("testdata", "kubeconfig-12341234")
 
 	tests := []struct {
 		name                 string
@@ -259,7 +261,7 @@ func TestBuilderClusterctl(t *testing.T) {
 			kube := kubeconfig.NewBuilder().
 				WithClusterMap(tt.clusterMap).
 				WithClusterName(tt.requestedClusterName).
-				WithBundle(testBundlePath).
+				WithBundle(testBundle).
 				WithTempRoot(tt.tempRoot).
 				WithClusterctClient(tt.clusterctlClient).
 				WithFilesytem(tt.fs).

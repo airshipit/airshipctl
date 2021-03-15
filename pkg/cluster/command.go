@@ -78,22 +78,17 @@ func (cmd *GetKubeconfigCommand) RunE(cfgFactory config.Factory, writer io.Write
 		return err
 	}
 
-	wd, err := helper.WorkDir()
-	if err != nil {
-		return err
-	}
-
 	client, err := client.NewClient(helper.TargetPath(), log.DebugEnabled(), airshipv1.DefaultClusterctl())
 	if err != nil {
 		return err
 	}
 
 	kubeconf := kubeconfig.NewBuilder().
-		WithBundle(helper.PhaseBundleRoot()).
+		WithBundle(helper.PhaseConfigBundle()).
 		WithClusterctClient(client).
 		WithClusterMap(cMap).
 		WithClusterName(cmd.ClusterName).
-		WithTempRoot(wd).
+		WithTempRoot(helper.WorkDir()).
 		Build()
 
 	return kubeconf.Write(writer)

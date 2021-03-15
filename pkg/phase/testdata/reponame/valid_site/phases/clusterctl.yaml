@@ -1,0 +1,12 @@
+apiVersion: airshipit.org/v1alpha1
+kind: Clusterctl
+metadata:
+  name: clusterctl-v1
+action: init
+init-options:
+  core-provider: "cluster-api:v0.3.3"
+providers:
+  - name: "cluster-api"
+    type: "CoreProvider"
+    versions:
+      v0.3.3: manifests/function/capi/v0.3.3

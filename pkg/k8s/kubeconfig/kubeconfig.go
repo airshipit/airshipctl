@@ -122,20 +122,15 @@ func FromFile(path string, fSys fs.FileSystem) KubeSourceFunc {
 }
 
 // FromBundle returns KubeSource type, uses path to document bundle to find kubeconfig
-func FromBundle(root string) KubeSourceFunc {
+func FromBundle(bundle document.Bundle) KubeSourceFunc {
 	return func() ([]byte, error) {
-		docBundle, err := document.NewBundleByPath(root)
-		if err != nil {
-			return nil, err
-		}
-
 		config := &v1alpha1.KubeConfig{}
 		selector, err := document.NewSelector().ByObject(config, v1alpha1.Scheme)
 		if err != nil {
 			return nil, err
 		}
 
-		doc, err := docBundle.SelectOne(selector)
+		doc, err := bundle.SelectOne(selector)
 		if err != nil {
 			return nil, err
 		}

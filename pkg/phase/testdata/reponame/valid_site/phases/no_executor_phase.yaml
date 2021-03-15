@@ -1,0 +1,7 @@
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: no_executor_phase
+config:
+  documentEntryPoint: valid_site/phases
+

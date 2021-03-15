@@ -1,0 +1,6 @@
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: sample
+config:
+  documentEntryPoint: entrypoint

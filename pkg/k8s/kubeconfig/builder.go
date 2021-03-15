@@ -23,6 +23,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
+	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/log"
 )
@@ -40,19 +41,19 @@ func NewBuilder() *Builder {
 // Builder is an object that allows to build a kubeconfig based on various provided sources
 // such as path to kubeconfig, path to bundle that should contain kubeconfig and parent cluster
 type Builder struct {
-	bundlePath  string
 	clusterName string
 	root        string
 
+	bundle           document.Bundle
 	clusterMap       clustermap.ClusterMap
 	clusterctlClient client.Interface
 	fs               fs.FileSystem
 	siteKubeconf     *api.Config
 }
 
-// WithBundle allows to set path to bundle that should contain kubeconfig api object
-func (b *Builder) WithBundle(bundlePath string) *Builder {
-	b.bundlePath = bundlePath
+// WithBundle allows to set document.Bundle object that should contain kubeconfig api object
+func (b *Builder) WithBundle(bundle document.Bundle) *Builder {
+	b.bundle = bundle
 	return b
 }
 
@@ -181,7 +182,7 @@ func (b *Builder) trySource(clusterID, dstContext string, source v1alpha1.Kubeco
 		getter = FromFile(source.FileSystem.Path, b.fs)
 		sourceContext = source.FileSystem.Context
 	case v1alpha1.KubeconfigSourceTypeBundle:
-		getter = FromBundle(b.bundlePath)
+		getter = FromBundle(b.bundle)
 		sourceContext = source.Bundle.Context
 	case v1alpha1.KubeconfigSourceTypeClusterAPI:
 		getter = b.fromClusterAPI(clusterID, source.ClusterAPI)

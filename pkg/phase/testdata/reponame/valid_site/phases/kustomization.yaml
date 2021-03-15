@@ -1,0 +1,11 @@
+resources:
+  - phaseplan.yaml
+  - some_phase.yaml
+  - some_exc.yaml
+  - capi_init.yaml
+  - clusterctl.yaml
+  - kubernetes_apply.yaml
+  - cluster_map.yaml
+  - phase_no_docentrypoint.yaml
+  - no_executor_phase.yaml
+  - kubeapply_phase.yaml

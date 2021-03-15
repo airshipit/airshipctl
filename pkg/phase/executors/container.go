@@ -179,18 +179,14 @@ func (c *ContainerExecutor) Render(_ io.Writer, _ ifc.RenderOptions) error {
 
 func (c *ContainerExecutor) setConfig() error {
 	if c.Container.ConfigRef != nil {
-		log.Printf("Config reference is specified, looking for the object in config ref: '%v'", c.Container.ConfigRef)
-		log.Printf("using bundle root %s", c.Helper.PhaseBundleRoot())
-		bundle, err := document.NewBundleByPath(c.Helper.PhaseBundleRoot())
-		if err != nil {
-			return err
-		}
+		log.Debugf("Config reference is specified, looking for the object in config ref: '%v'", c.Container.ConfigRef)
+		log.Debugf("using bundle root %s", c.Helper.PhaseBundleRoot())
 		gvk := c.Container.ConfigRef.GroupVersionKind()
 		selector := document.NewSelector().
 			ByName(c.Container.ConfigRef.Name).
 			ByNamespace(c.Container.ConfigRef.Namespace).
 			ByGvk(gvk.Group, gvk.Version, gvk.Kind)
-		doc, err := bundle.SelectOne(selector)
+		doc, err := c.Helper.PhaseConfigBundle().SelectOne(selector)
 		if err != nil {
 			return err
 		}

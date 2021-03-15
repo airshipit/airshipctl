@@ -41,6 +41,7 @@ func TestHelperPhase(t *testing.T) {
 	testCases := []struct {
 		name        string
 		errContains string
+		helperErr   bool
 
 		phaseID       ifc.ID
 		config        func(t *testing.T) *config.Config
@@ -82,6 +83,7 @@ func TestHelperPhase(t *testing.T) {
 				return conf
 			},
 			errContains: "no such file or directory",
+			helperErr:   true,
 		},
 	}
 
@@ -89,9 +91,11 @@ func TestHelperPhase(t *testing.T) {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
 			helper, err := phase.NewHelper(tt.config(t))
-			require.NoError(t, err)
+			if tt.helperErr {
+				require.Error(t, err)
+				return
+			}
 			require.NotNil(t, helper)
-
 			actualPhase, actualErr := helper.Phase(tt.phaseID)
 			if tt.errContains != "" {
 				require.Error(t, actualErr)
@@ -111,6 +115,7 @@ func TestHelperPlan(t *testing.T) {
 		errContains  string
 		expectedPlan *v1alpha1.PhasePlan
 		config       func(t *testing.T) *config.Config
+		bundleErr    bool
 	}{
 		{
 			name:   "Valid Phase Plan",
@@ -156,6 +161,7 @@ func TestHelperPlan(t *testing.T) {
 				return conf
 			},
 			errContains: "no such file or directory",
+			bundleErr:   true,
 		},
 	}
 
@@ -163,6 +169,10 @@ func TestHelperPlan(t *testing.T) {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
 			helper, err := phase.NewHelper(tt.config(t))
+			if tt.bundleErr {
+				require.Error(t, err)
+				return
+			}
 			require.NoError(t, err)
 			require.NotNil(t, helper)
 
@@ -185,6 +195,7 @@ func TestHelperListPhases(t *testing.T) {
 		phaseLen    int
 		config      func(t *testing.T) *config.Config
 		options     ifc.ListPhaseOptions
+		bundleErr   bool
 	}{
 		{
 			name:     "Success phase list",
@@ -199,6 +210,7 @@ func TestHelperListPhases(t *testing.T) {
 				return conf
 			},
 			errContains: "no such file or directory",
+			bundleErr:   true,
 		},
 		{
 			name: "Success 0 phases",
@@ -234,6 +246,10 @@ func TestHelperListPhases(t *testing.T) {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
 			helper, err := phase.NewHelper(tt.config(t))
+			if tt.bundleErr {
+				require.Error(t, err)
+				return
+			}
 			require.NoError(t, err)
 			require.NotNil(t, helper)
 
@@ -253,6 +269,7 @@ func TestHelperListPlans(t *testing.T) {
 	testCases := []struct {
 		name        string
 		errContains string
+		bundleErr   bool
 		expectedLen int
 		config      func(t *testing.T) *config.Config
 	}{
@@ -269,6 +286,7 @@ func TestHelperListPlans(t *testing.T) {
 				return conf
 			},
 			errContains: "no such file or directory",
+			bundleErr:   true,
 		},
 		{
 			name: "Success 0 plans",
@@ -285,6 +303,10 @@ func TestHelperListPlans(t *testing.T) {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
 			helper, err := phase.NewHelper(tt.config(t))
+			if tt.bundleErr {
+				require.Error(t, err)
+				return
+			}
 			require.NoError(t, err)
 			require.NotNil(t, helper)
 
@@ -304,6 +326,7 @@ func TestHelperClusterMapAPI(t *testing.T) {
 	testCases := []struct {
 		name         string
 		errContains  string
+		helperErr    bool
 		expectedCMap *v1alpha1.ClusterMap
 		config       func(t *testing.T) *config.Config
 	}{
@@ -345,6 +368,7 @@ func TestHelperClusterMapAPI(t *testing.T) {
 				return conf
 			},
 			errContains: "no such file or directory",
+			helperErr:   true,
 		},
 		{
 			name: "Error no cluster map",
@@ -361,6 +385,10 @@ func TestHelperClusterMapAPI(t *testing.T) {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
 			helper, err := phase.NewHelper(tt.config(t))
+			if tt.helperErr {
+				require.Error(t, err)
+				return
+			}
 			require.NoError(t, err)
 			require.NotNil(t, helper)
 
@@ -421,6 +449,7 @@ func TestHelperExecutorDoc(t *testing.T) {
 		name             string
 		errContains      string
 		expectedExecutor string
+		helperErr        bool
 
 		phaseID ifc.ID
 		config  func(t *testing.T) *config.Config
@@ -445,6 +474,7 @@ func TestHelperExecutorDoc(t *testing.T) {
 				return conf
 			},
 			errContains: "no such file or directory",
+			helperErr:   true,
 		},
 		{
 			name:    "Error get phase without executor",
@@ -460,6 +490,10 @@ func TestHelperExecutorDoc(t *testing.T) {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
 			helper, err := phase.NewHelper(tt.config(t))
+			if tt.helperErr {
+				require.Error(t, err)
+				return
+			}
 			require.NoError(t, err)
 
 			actualDoc, actualErr := helper.ExecutorDoc(tt.phaseID)
@@ -533,8 +567,7 @@ func TestHelperWorkdir(t *testing.T) {
 	helper, err := phase.NewHelper(testConfig(t))
 	require.NoError(t, err)
 	require.NotNil(t, helper)
-	workDir, err := helper.WorkDir()
-	assert.NoError(t, err)
+	workDir := helper.WorkDir()
 	assert.Greater(t, len(workDir), 0)
 }
 
