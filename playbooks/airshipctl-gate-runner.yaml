@@ -15,7 +15,8 @@
     - vars/test-config.yaml
   environment:
     SOPS_IMPORT_PGP: "{{ airship_config_pgp }}"
-    SOPS_PGP_FP: "{{ airship_config_pgp_fp }}"
+    SOPS_PGP_FP_ENCRYPT: "{{ airship_config_pgp_fp1 }}"
+    SOPS_PGP_FP_REENCRYPT: "{{ airship_config_pgp_fp2 }}"
     AZURE_SUBSCRIPTION_ID_B64: "UGxlYXNlLCBwcm92aWRlIHlvdXIgQXp1cmUgc3Vic2NyaXB0aW9uIGlkIGhlcmUK"
     AZURE_TENANT_ID_B64: "UGxlYXNlLCBwcm92aWRlIHlvdXIgQXp1cmUgdGVuYW50IGlkIGhlcmUK"
     AZURE_CLIENT_ID_B64: "UGxlYXNlLCBwcm92aWRlIHlvdXIgQXp1cmUgc2VydmljZSBwcmluY2lwYWwgaWQgaGVyZQo="

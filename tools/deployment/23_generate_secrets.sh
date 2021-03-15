@@ -15,14 +15,43 @@
 set -xe
 
 echo "Generating secrets using airshipctl"
+export SOPS_PGP_FP=${SOPS_PGP_FP_ENCRYPT:-"${SOPS_PGP_FP}"}
 airshipctl phase run secret-generate
 
+echo "Generating ~/.airship/kubeconfig"
 export AIRSHIP_CONFIG_MANIFEST_DIRECTORY=${AIRSHIP_CONFIG_MANIFEST_DIRECTORY:-"/tmp/airship"}
 export AIRSHIP_CONFIG_PHASE_REPO_URL=${AIRSHIP_CONFIG_PHASE_REPO_URL:-"https://review.opendev.org/airship/airshipctl"}
 export EXTERNAL_KUBECONFIG=${EXTERNAL_KUBECONFIG:-""}
-
-echo "Generating ~/.airship/kubeconfig"
 if [[ -z "$EXTERNAL_KUBECONFIG" ]]; then
    # TODO: use airshipctl cluster get-kubeconfig command when it's implemented
    KUSTOMIZE_PLUGIN_HOME=./ kustomize build --enable_alpha_plugins "${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})/manifests/site/test-site/kubeconfig/" | yq '.config' --yaml-output > ~/.airship/kubeconfig
+fi
+
+#backward compatibility with previous behavior
+if [[ -z "${SOPS_PGP_FP_ENCRYPT}" ]]; then
+	#skipping sanity checks
+	exit 0
+fi
+
+echo "Sanity check for secret-reencrypt phase"
+decrypted1=$(airshipctl phase run secret-show)
+if [[ -z "${decrypted1}" ]]; then
+	echo "Got empty decrypted value"
+	exit 1
+fi
+
+#make sure that generated file has right FP
+grep "${SOPS_PGP_FP}" "${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})/manifests/site/test-site/target/generator/results/generated/secrets.yaml"
+
+#set new FP and reencrypt
+export SOPS_PGP_FP=${SOPS_PGP_FP_REENCRYPT}
+airshipctl phase run secret-reencrypt
+#make sure that generated file has right FP
+grep "${SOPS_PGP_FP}" "${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})/manifests/site/test-site/target/generator/results/generated/secrets.yaml"
+
+#make sure that decrypted valus stay the same
+decrypted2=$(airshipctl phase run secret-show)
+if [ "${decrypted1}" != "${decrypted2}" ]; then
+	echo "reencrypted decrypted value is different from the original"
+	exit 1
 fi
