@@ -29,6 +29,16 @@ replacements:
       kind: Clusterctl
       name: clusterctl_init
     fieldrefs: ["{.images.infrastructure-metal3/kube-rbac-proxy}"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.capi_images.capm3.ipam-manager}"
+  target:
+    objref:
+      kind: Clusterctl
+      name: clusterctl_init
+    fieldrefs: ["{.images.infrastructure-metal3/ip-address-manager}"]
 # Replace cacpk versions
 - source:
     objref:
