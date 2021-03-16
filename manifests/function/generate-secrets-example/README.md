@@ -47,7 +47,7 @@ metadata:
 kustomizeSinkOutputDir: "target/generator/results/generated"
 spec:
   container:
-    image: quay.io/aodinokov/sops:v0.0.3
+    image: gcr.io/kpt-fn-contrib/sops:v0.1.0
     envs:
     - SOPS_IMPORT_PGP
     - SOPS_PGP_FP
