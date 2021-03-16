@@ -74,7 +74,7 @@ func AddDefaultAirshipCTLCommands(cmd *cobra.Command, factory cfg.Factory) *cobr
 	cmd.AddCommand(completion.NewCompletionCommand())
 	cmd.AddCommand(document.NewDocumentCommand(factory))
 	cmd.AddCommand(config.NewConfigCommand(factory))
-	cmd.AddCommand(secret.NewSecretCommand(factory))
+	cmd.AddCommand(secret.NewSecretCommand())
 	cmd.AddCommand(phase.NewPhaseCommand(factory))
 	cmd.AddCommand(plan.NewPlanCommand(factory))
 	cmd.AddCommand(NewVersionCommand())
