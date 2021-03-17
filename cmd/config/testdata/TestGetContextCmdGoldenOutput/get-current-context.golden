@@ -1,3 +1,4 @@
-managementConfiguration: ""
-manifest: Manifest_ContextBaz
-
+contexts:
+  ContextBaz:
+    managementConfiguration: ""
+    manifest: Manifest_ContextBaz

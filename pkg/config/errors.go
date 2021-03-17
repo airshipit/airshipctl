@@ -276,3 +276,13 @@ type ErrConfigFileExists struct {
 func (e ErrConfigFileExists) Error() string {
 	return fmt.Sprintf("could not create default config at %s, file already exists", e.Path)
 }
+
+// ErrWrongOutputFormat is returned when unknown output format is defined for printing config
+type ErrWrongOutputFormat struct {
+	Wrong    string
+	Possible []string
+}
+
+func (e ErrWrongOutputFormat) Error() string {
+	return fmt.Sprintf("wrong output format %s, must be one of %s", e.Wrong, strings.Join(e.Possible, " "))
+}

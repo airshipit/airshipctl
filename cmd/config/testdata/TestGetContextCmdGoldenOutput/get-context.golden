@@ -1,3 +1,4 @@
-managementConfiguration: ""
-manifest: Manifest_ContextFoo
-
+contexts:
+  ContextFoo:
+    managementConfiguration: ""
+    manifest: Manifest_ContextFoo

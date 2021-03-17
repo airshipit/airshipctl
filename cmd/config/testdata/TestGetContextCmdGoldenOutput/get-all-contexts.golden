@@ -1,3 +1,4 @@
-managementConfiguration: ""
-manifest: Manifest_ContextBar
-
+contexts:
+  ContextBar:
+    managementConfiguration: ""
+    manifest: Manifest_ContextBar
