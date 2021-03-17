@@ -22,17 +22,17 @@ export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
 export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
 
 # Get control plane node
-CONTROL_PLANE_NODES=( $(kubectl --kubeconfig $KUBECONFIG get --no-headers=true nodes \
+CONTROL_PLANE_NODES=( $(kubectl --context $KUBECONFIG_TARGET_CONTEXT --kubeconfig $KUBECONFIG get --no-headers=true nodes \
 | grep cluster-control-plane | awk '{print $1}') )
 
 # Remove noschedule taint to prevent cluster init from timing out
 for i in "${CONTROL_PLANE_NODES}"; do
   echo untainting node $i
-  kubectl taint node $i node-role.kubernetes.io/master- --kubeconfig $KUBECONFIG --request-timeout 10s
+  kubectl taint node $i node-role.kubernetes.io/master- --context $KUBECONFIG_TARGET_CONTEXT --kubeconfig $KUBECONFIG --request-timeout 10s
 done
 
 echo "Deploy CAPI components to target cluster"
-airshipctl phase run clusterctl-init-target --debug --kubeconfig "$KUBECONFIG"
+airshipctl phase run clusterctl-init-target --debug
 
 echo "Waiting for pods to be ready"
 kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT wait --all-namespaces --for=condition=Ready pods --all --timeout=600s
