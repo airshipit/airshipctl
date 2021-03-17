@@ -48,12 +48,12 @@ jobs:
             fi
             if [[ "$TAG" =~ ^($TAG_PREFIX)?v?(([0-9]+)\.([0-9]+)\.([0-9]+)(-[a-zA-Z]+(\.[0-9]+)?)?)$ ]]
             then
-              TAGS="${BASH_REMATCH[2]}"
+              TAGS="v${BASH_REMATCH[2]}"
               # Prereleases don't count as major and minor
               if [[ -z ${BASH_REMATCH[6]} ]]
               then
-                MINOR_TAG="${BASH_REMATCH[3]}.${BASH_REMATCH[4]}"
-                MAJOR_TAG="${BASH_REMATCH[3]}"
+                MINOR_TAG="v${BASH_REMATCH[3]}.${BASH_REMATCH[4]}"
+                MAJOR_TAG="v${BASH_REMATCH[3]}"
                 TAGS="$TAGS $MINOR_TAG $MAJOR_TAG"
               fi
               echo ::set-output name=IMG::$IMG
