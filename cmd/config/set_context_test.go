@@ -28,9 +28,8 @@ import (
 )
 
 const (
-	testEncryptionConfig = "test_encryption_config"
-	defaultManifest      = "edge_cloud"
-	testManifest         = "test_manifest"
+	defaultManifest = "edge_cloud"
+	testManifest    = "test_manifest"
 )
 
 type setContextTest struct {
@@ -70,23 +69,20 @@ func TestSetContext(t *testing.T) {
 	defer cleanupGiven(t)
 
 	tests := []struct {
-		testName         string
-		contextName      string
-		flags            []string
-		givenConfig      *config.Config
-		manifest         string
-		encryptionConfig string
+		testName    string
+		contextName string
+		flags       []string
+		givenConfig *config.Config
+		manifest    string
 	}{
 		{
 			testName:    "set-context",
 			contextName: "dummycontext",
 			flags: []string{
 				"--manifest=" + defaultManifest,
-				"--encryption-config=" + testEncryptionConfig,
 			},
-			givenConfig:      given,
-			manifest:         defaultManifest,
-			encryptionConfig: testEncryptionConfig,
+			givenConfig: given,
+			manifest:    defaultManifest,
 		},
 		{
 			testName:    "set-current-context",
@@ -102,15 +98,6 @@ func TestSetContext(t *testing.T) {
 			},
 			givenConfig: given,
 			manifest:    testManifest,
-		},
-		{
-			testName:    "modify-context",
-			contextName: "def_target",
-			flags: []string{
-				"--encryption-config=" + testEncryptionConfig,
-			},
-			givenConfig:      given,
-			encryptionConfig: testEncryptionConfig,
 		},
 	}
 

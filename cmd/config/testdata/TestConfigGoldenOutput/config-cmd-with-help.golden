@@ -5,13 +5,11 @@ Usage:
 
 Available Commands:
   get-context           Get context information from the airshipctl config
-  get-encryption-config Get an encryption config information from the airshipctl config
   get-management-config View a management config or all management configs defined in the airshipctl config
   get-manifest          Get a manifest information from the airshipctl config
   help                  Help about any command
   init                  Generate initial configuration file for airshipctl
   set-context           Manage contexts
-  set-encryption-config Manage encryption configs in airship config
   set-management-config Modify an out-of-band management configuration
   set-manifest          Manage manifests in airship config
   use-context           Switch to a different context

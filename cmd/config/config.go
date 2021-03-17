@@ -39,9 +39,6 @@ func NewConfigCommand(cfgFactory config.Factory) *cobra.Command {
 	configRootCmd.AddCommand(NewGetManifestCommand(cfgFactory))
 	configRootCmd.AddCommand(NewSetManifestCommand(cfgFactory))
 
-	configRootCmd.AddCommand(NewGetEncryptionConfigCommand(cfgFactory))
-	configRootCmd.AddCommand(NewSetEncryptionConfigCommand(cfgFactory))
-
 	// Init will have different factory
 	configRootCmd.AddCommand(NewInitCommand())
 	return configRootCmd

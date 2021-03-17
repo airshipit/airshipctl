@@ -31,7 +31,6 @@ Create or modify a context in the airshipctl config files.
 # Create a new context named "exampleContext"
 airshipctl config set-context exampleContext \
   --manifest=exampleManifest \
-  --encryption-config=exampleEncryptionConfig
 
 # Update the manifest of the current-context
 airshipctl config set-context \
@@ -91,12 +90,6 @@ func addSetContextFlags(o *config.ContextOptions, cmd *cobra.Command) {
 		"manifest",
 		"",
 		"set the manifest for the specified context")
-
-	flags.StringVar(
-		&o.EncryptionConfig,
-		"encryption-config",
-		"",
-		"set the encryption config for the specified context")
 
 	flags.BoolVar(
 		&o.Current,

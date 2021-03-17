@@ -18,7 +18,6 @@ airshipctl config set-context NAME [flags]
 # Create a new context named "exampleContext"
 airshipctl config set-context exampleContext \
   --manifest=exampleManifest \
-  --encryption-config=exampleEncryptionConfig
 
 # Update the manifest of the current-context
 airshipctl config set-context \
@@ -30,10 +29,9 @@ airshipctl config set-context \
 ### Options
 
 ```
-      --current                    update the current context
-      --encryption-config string   set the encryption config for the specified context
-  -h, --help                       help for set-context
-      --manifest string            set the manifest for the specified context
+      --current           update the current context
+  -h, --help              help for set-context
+      --manifest string   set the manifest for the specified context
 ```
 
 ### Options inherited from parent commands
