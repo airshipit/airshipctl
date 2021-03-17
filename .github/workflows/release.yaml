@@ -38,16 +38,16 @@ jobs:
           set -e
 
           TAG=$(echo "${TAG_REF}" | sed -e 's|refs/tags/||')
-          for i in '' replacement-transformer- templater-
+          for IMG in airshipctl $(cd krm-functions; echo */ | tr -d /)
           do
-            if [[ "$TAG" =~ ^($i)?v?(([0-9]+)\.([0-9]+)\.([0-9]+)(-[a-zA-Z]+(\.[0-9]+)?)?)$ ]]
+            if [[ $IMG == airshipctl ]]
             then
-              if [[ -z ${BASH_REMATCH[1]} ]]
-              then
-                IMG=airshipctl
-              else
-                IMG=${i%-}
-              fi
+              TAG_PREFIX=
+            else
+              TAG_PREFIX=$IMG-
+            fi
+            if [[ "$TAG" =~ ^($TAG_PREFIX)?v?(([0-9]+)\.([0-9]+)\.([0-9]+)(-[a-zA-Z]+(\.[0-9]+)?)?)$ ]]
+            then
               TAGS="${BASH_REMATCH[2]}"
               # Prereleases don't count as major and minor
               if [[ -z ${BASH_REMATCH[6]} ]]
