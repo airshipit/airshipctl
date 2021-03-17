@@ -15,8 +15,6 @@ limitations under the License.
 package config
 
 import (
-	"os"
-
 	"opendev.org/airship/airshipctl/pkg/errors"
 )
 
@@ -27,7 +25,6 @@ type ContextOptions struct {
 	Manifest                string
 	Current                 bool
 	ManagementConfiguration string
-	EncryptionConfig        string
 }
 
 // ManifestOptions holds all configurable options for manifest configuration
@@ -43,15 +40,6 @@ type ManifestOptions struct {
 	IsPhase      bool
 	TargetPath   string
 	MetadataPath string
-}
-
-// EncryptionConfigOptions holds all configurable options for encryption configuration
-type EncryptionConfigOptions struct {
-	Name               string
-	EncryptionKeyPath  string
-	DecryptionKeyPath  string
-	KeySecretName      string
-	KeySecretNamespace string
 }
 
 // TODO(howell): The following functions are tightly coupled with flags passed
@@ -100,62 +88,6 @@ func (o *ManifestOptions) Validate() error {
 	}
 	if count > 1 {
 		return ErrMutuallyExclusiveCheckout{}
-	}
-	return nil
-}
-
-// Validate checks for the possible errors with encryption config
-// Error when invalid value, incompatible choice of values given or if the
-// key file paths do not exist in the file system
-func (o *EncryptionConfigOptions) Validate() error {
-	switch {
-	case o.Name == "":
-		return ErrMissingEncryptionConfigName{}
-
-	case o.backedByFileSystem() == o.backedByAPIServer():
-		return ErrMutuallyExclusiveEncryptionConfigType{}
-
-	case o.backedByFileSystem():
-		if o.EncryptionKeyPath == "" || o.DecryptionKeyPath == "" {
-			return ErrInvalidEncryptionKeyPath{}
-		}
-
-	case o.backedByAPIServer():
-		if o.KeySecretName == "" || o.KeySecretNamespace == "" {
-			return ErrInvalidEncryptionKey{}
-		}
-	}
-
-	if o.backedByFileSystem() {
-		if err := checkExists("encryption-key-path", o.EncryptionKeyPath); err != nil {
-			return err
-		}
-		if err := checkExists("decryption-key-path", o.EncryptionKeyPath); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (o EncryptionConfigOptions) backedByFileSystem() bool {
-	return o.EncryptionKeyPath != "" || o.DecryptionKeyPath != ""
-}
-
-func (o EncryptionConfigOptions) backedByAPIServer() bool {
-	return o.KeySecretName != "" || o.KeySecretNamespace != ""
-}
-
-func checkExists(flagName, path string) error {
-	if path == "" {
-		return ErrMissingFlag{FlagName: flagName}
-	}
-	if _, err := os.Stat(path); err != nil {
-		return ErrCheckFile{
-			FlagName:    flagName,
-			Path:        path,
-			InternalErr: err,
-		}
 	}
 	return nil
 }
