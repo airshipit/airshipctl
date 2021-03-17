@@ -108,16 +108,16 @@ spec:
     calico_v3:
       node: # calico-node DaemonSet
         upgrade_ipam:
-          image: calico/cni:v3.15.1
+          image: quay.io/calico/cni:v3.15.1
         install_cni:
-          image: calico/cni:v3.15.1
+          image: quay.io/calico/cni:v3.15.1
         flexvol_driver:
-          image: calico/pod2daemon-flexvol:v3.15.1
+          image: quay.io/calico/pod2daemon-flexvol:v3.15.1
         calico_node:
-          image: calico/node:v3.15.1
+          image: quay.io/calico/node:v3.15.1
       kube_controllers: # calico-kube-controllers Deployment
         calico_kube_controllers:
-          image: calico/kube-controllers:v3.15.1
+          image: quay.io/calico/kube-controllers:v3.15.1
     hwcc:
       manager: # controller-manager Deployment
         manager:
