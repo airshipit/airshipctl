@@ -6,10 +6,10 @@ GIT_MODULE          ?= opendev.org/airship/airshipctl/pkg/version
 GO_FLAGS            := -ldflags '-extldflags "-static"' -tags=netgo -trimpath
 GO_FLAGS            += -ldflags "-X ${GIT_MODULE}.gitVersion=${GIT_VERSION}"
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
-ifeq (,$(shell go env GOBIN))
-GOBIN = $(shell go env GOPATH)/bin
+ifeq (,$(shell go env GOBIN 2> /dev/null))
+GOBIN = $(shell go env GOPATH 2> /dev/null)/bin
 else
-GOBIN = $(shell go env GOBIN)
+GOBIN = $(shell go env GOBIN 2> /dev/null)
 endif
 
 BINDIR              := bin
