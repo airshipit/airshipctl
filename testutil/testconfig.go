@@ -115,10 +115,13 @@ func InitConfig(t *testing.T) (conf *config.Config, cleanup func(*testing.T)) {
 	err := ioutil.WriteFile(configPath, []byte(testConfigYAML), 0600)
 	require.NoError(t, err)
 
-	conf = config.NewConfig()
-
 	cfg, err := config.CreateFactory(&configPath)()
 	require.NoError(t, err)
+
+	cfg.Permissions = config.Permissions{
+		DirectoryPermission: config.AirshipDefaultDirectoryPermission,
+		FilePermission:      config.AirshipDefaultFilePermission,
+	}
 
 	return cfg, cleanup
 }
