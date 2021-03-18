@@ -97,8 +97,29 @@ func (b *Builder) Build() Interface {
 }
 
 func (b *Builder) build() ([]byte, error) {
+	// Set current context to clustername if it was provided
+	var result *api.Config
+	var err error
+	var kubeContext string
+	if b.clusterName != "" {
+		kubeContext, result, err = b.buildOne(b.clusterName)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		result, err = b.builtSiteKubeconf()
+		if err != nil {
+			return nil, err
+		}
+	}
+	b.siteKubeconf.CurrentContext = kubeContext
+	return clientcmd.Write(*result)
+}
+
+func (b *Builder) builtSiteKubeconf() (*api.Config, error) {
+	log.Debugf("Getting site kubeconfig")
 	for _, clusterID := range b.clusterMap.AllClusters() {
-		log.Printf("Getting kubeconfig for cluster '%s'", clusterID)
+		log.Debugf("Getting kubeconfig for cluster '%s' to build site kubeconfig", clusterID)
 		// buildOne merges context into site kubeconfig
 		_, _, err := b.buildOne(clusterID)
 		if IsErrAllSourcesFailedErr(err) {
@@ -109,15 +130,7 @@ func (b *Builder) build() ([]byte, error) {
 			return nil, err
 		}
 	}
-	// Set current context to clustername if it was provided
-	if b.clusterName != "" {
-		kubeContext, err := b.clusterMap.ClusterKubeconfigContext(b.clusterName)
-		if err != nil {
-			return nil, err
-		}
-		b.siteKubeconf.CurrentContext = kubeContext
-	}
-	return clientcmd.Write(*b.siteKubeconf)
+	return b.siteKubeconf, nil
 }
 
 func (b *Builder) buildOne(clusterID string) (string, *api.Config, error) {
