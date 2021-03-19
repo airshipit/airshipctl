@@ -32,7 +32,7 @@ We also encourage new contributors and operators alike to join us in our
 You can learn more about Airship on the `Airship wiki`_.
 
 .. _Airship 1.0: https://docs.airshipit.org/treasuremap
-.. _Airship blog series: https://www.airshipit.org/blog/airship-blog-series-1-evolution-towards-2.0
+.. _Airship blog series: https://www.airshipit.org/category/airship-2-0
 .. _Airship wiki: https://wiki.openstack.org/wiki/Airship
 .. _Cluster API: https://github.com/kubernetes-sigs/cluster-api
 .. _developer guide: https://docs.airshipit.org/airshipctl/developers.html
