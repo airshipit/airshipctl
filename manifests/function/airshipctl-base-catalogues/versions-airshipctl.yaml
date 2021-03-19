@@ -87,7 +87,7 @@ spec:
     baremetal_operator:
       ironic: # ironic Deployment
         init_bootstrap:
-          image: centos
+          image: quay.io/centos/centos:8.3.2011
         init_images:
           image: quay.io/airshipit/ipa:latest
         dnsmasq:
