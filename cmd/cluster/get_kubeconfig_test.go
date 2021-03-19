@@ -17,7 +17,11 @@ package cluster_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"opendev.org/airship/airshipctl/cmd/cluster"
+	pkgcluster "opendev.org/airship/airshipctl/pkg/cluster"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
@@ -31,5 +35,43 @@ func TestNewKubeConfigCommandCmd(t *testing.T) {
 	}
 	for _, testcase := range tests {
 		testutil.RunTest(t, testcase)
+	}
+}
+
+func TestGetKubeconfArgs(t *testing.T) {
+	tests := []struct {
+		name                string
+		args                []string
+		expectedErrStr      string
+		expectedClusterName string
+	}{
+		{
+			name:                "success one cluster specified",
+			args:                []string{"cluster01"},
+			expectedClusterName: "cluster01",
+		},
+		{
+			name: "success no cluster specified",
+		},
+		{
+			name:           "error two cluster specified",
+			expectedErrStr: "accepts at most 1 arg(s)",
+			args:           []string{"cluster01", "cluster02"},
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			cmd := &pkgcluster.GetKubeconfigCommand{}
+			args := cluster.GetKubeconfArgs(cmd)
+			err := args(cluster.NewGetKubeconfigCommand(nil), tt.args)
+			if tt.expectedErrStr != "" {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.expectedErrStr)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expectedClusterName, cmd.ClusterName)
+			}
+		})
 	}
 }

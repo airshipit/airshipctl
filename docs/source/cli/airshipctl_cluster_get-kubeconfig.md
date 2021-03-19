@@ -5,10 +5,14 @@ Retrieve kubeconfig for a desired cluster
 ### Synopsis
 
 Retrieve cluster kubeconfig and print it to stdout
+If you specify clusterName, kubeconfig will have a CurrentContext set to clusterName and
+will have this context defined
+If you don't specify clusterName, kubeconfig will have multiple contexts for every cluster
+in the airship site. Context names will correspond to cluster names. CurrentContext will be empty
 
 
 ```
-airshipctl cluster get-kubeconfig [cluster_name] [flags]
+airshipctl cluster get-kubeconfig [clusterName] [flags]
 ```
 
 ### Examples
@@ -16,6 +20,9 @@ airshipctl cluster get-kubeconfig [cluster_name] [flags]
 ```
 # Retrieve target-cluster kubeconfig
 airshipctl cluster get-kubeconfig target-cluster
+
+# Retrieve kubeconfig for the entire site; the kubeconfig will have context for every cluster
+airshipctl cluster get-kubeconfig
 
 ```
 

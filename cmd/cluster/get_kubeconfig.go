@@ -24,31 +24,42 @@ import (
 const (
 	getKubeconfigLong = `
 Retrieve cluster kubeconfig and print it to stdout
+If you specify clusterName, kubeconfig will have a CurrentContext set to clusterName and
+will have this context defined
+If you don't specify clusterName, kubeconfig will have multiple contexts for every cluster
+in the airship site. Context names will correspond to cluster names. CurrentContext will be empty
 `
 	getKubeconfigExample = `
 # Retrieve target-cluster kubeconfig
 airshipctl cluster get-kubeconfig target-cluster
+
+# Retrieve kubeconfig for the entire site; the kubeconfig will have context for every cluster
+airshipctl cluster get-kubeconfig
 `
 )
 
 // NewGetKubeconfigCommand creates a command which retrieves cluster kubeconfig
 func NewGetKubeconfigCommand(cfgFactory config.Factory) *cobra.Command {
+	opts := &cluster.GetKubeconfigCommand{}
 	cmd := &cobra.Command{
-		Use:     "get-kubeconfig [cluster_name]",
+		Use:     "get-kubeconfig [clusterName]",
 		Short:   "Retrieve kubeconfig for a desired cluster",
 		Long:    getKubeconfigLong[1:],
+		Args:    GetKubeconfArgs(opts),
 		Example: getKubeconfigExample[1:],
-		Args:    cobra.ExactArgs(1),
-		RunE:    getKubeconfigRunE(cfgFactory),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return opts.RunE(cfgFactory, cmd.OutOrStdout())
+		},
 	}
-
 	return cmd
 }
 
-// getKubeconfigRunE returns a function to cobra command to be executed in runtime
-func getKubeconfigRunE(cfgFactory config.Factory) func(
-	cmd *cobra.Command, args []string) error {
+// GetKubeconfArgs extracts one or less arguments from command line, and saves it as name
+func GetKubeconfArgs(opts *cluster.GetKubeconfigCommand) cobra.PositionalArgs {
 	return func(cmd *cobra.Command, args []string) error {
-		return cluster.GetKubeconfig(cfgFactory, args[0], cmd.OutOrStdout())
+		if len(args) == 1 {
+			opts.ClusterName = args[0]
+		}
+		return cobra.MaximumNArgs(1)(cmd, args)
 	}
 }

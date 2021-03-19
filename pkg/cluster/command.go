@@ -56,8 +56,13 @@ func StatusRunner(o StatusOptions, w io.Writer) error {
 	return nil
 }
 
-// GetKubeconfig creates new kubeconfig interface object from secret and prints its content to writer
-func GetKubeconfig(cfgFactory config.Factory, clusterName string, writer io.Writer) error {
+// GetKubeconfigCommand holds options for get kubeconfig command
+type GetKubeconfigCommand struct {
+	ClusterName string
+}
+
+// RunE creates new kubeconfig interface object from secret and prints its content to writer
+func (cmd *GetKubeconfigCommand) RunE(cfgFactory config.Factory, writer io.Writer) error {
 	cfg, err := cfgFactory()
 	if err != nil {
 		return err
@@ -87,7 +92,7 @@ func GetKubeconfig(cfgFactory config.Factory, clusterName string, writer io.Writ
 		WithBundle(helper.PhaseBundleRoot()).
 		WithClusterctClient(client).
 		WithClusterMap(cMap).
-		WithClusterName(clusterName).
+		WithClusterName(cmd.ClusterName).
 		WithTempRoot(wd).
 		Build()
 
