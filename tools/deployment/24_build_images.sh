@@ -18,7 +18,7 @@ export USER_NAME=${USER:-"ubuntu"}
 
 IMAGE_DIR=${IMAGE_DIR:-"/srv/images"}
 CLEANUP_SERVE_DIR=${CLEANUP_SERVE_DIR:-"false"}
-SITE_NAME=${SITE_NAME:-test-site}
+SITE=${SITE:-test-site}
 # List of phases to run to build images.
 IMAGE_PHASE_PLANS=${IMAGE_PHASE_PLANS:-"iso"}
 
