@@ -81,7 +81,7 @@ func (p *DefaultProcessor) Close() {
 
 func (p *DefaultProcessor) processApplierEvent(e applyevent.Event) {
 	if e.Type == applyevent.ErrorType {
-		log.Printf("Received error when applying errors to kubernetes %v", e.ErrorEvent.Err)
+		log.Printf("Received error when applying resources to kubernetes: %v", e.ErrorEvent.Err)
 		p.errors = append(p.errors, e.ErrorEvent.Err)
 		// Don't write errors events to applier channel, as it will use os.Exit to stop program execution
 		return
