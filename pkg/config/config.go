@@ -74,7 +74,7 @@ type Factory func() (*Config, error)
 // CreateFactory returns function which creates ready to use Config object
 func CreateFactory(airshipConfigPath *string) Factory {
 	return func() (*Config, error) {
-		cfg := NewConfig()
+		cfg := NewEmptyConfig()
 
 		var acp string
 		if airshipConfigPath != nil {

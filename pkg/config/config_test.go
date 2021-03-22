@@ -90,7 +90,7 @@ func TestLoadConfig(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
-	assert.Len(t, conf.Contexts, 4)
+	assert.Len(t, conf.Contexts, 3)
 }
 
 func TestPersistConfig(t *testing.T) {
@@ -183,13 +183,14 @@ func TestCurrentContextManagementConfig(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
+	conf.ManagementConfiguration[defaultString] = testutil.DummyManagementConfiguration()
+
 	managementConfig, err := conf.CurrentContextManagementConfig()
 	require.Error(t, err)
 	assert.Nil(t, managementConfig)
 
 	conf.CurrentContext = currentContextName
 	conf.Contexts[currentContextName].ManagementConfiguration = defaultString
-	conf.Contexts[currentContextName].Manifest = defaultString
 
 	managementConfig, err = conf.CurrentContextManagementConfig()
 	require.NoError(t, err)
@@ -234,7 +235,7 @@ func TestGetContexts(t *testing.T) {
 	defer cleanup(t)
 
 	contexts := conf.GetContexts()
-	assert.Len(t, contexts, 4)
+	assert.Len(t, contexts, 3)
 }
 
 func TestGetContext(t *testing.T) {
@@ -292,6 +293,8 @@ func TestCurrentContextManifest(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
+	conf.Manifests[defaultString] = testutil.DummyManifest()
+
 	conf.CurrentContext = currentContextName
 	conf.Contexts[currentContextName].Manifest = defaultString
 
@@ -304,6 +307,8 @@ func TestCurrentTargetPath(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
+	conf.Manifests[defaultString] = testutil.DummyManifest()
+
 	conf.CurrentContext = currentContextName
 	conf.Contexts[currentContextName].Manifest = defaultString
 
@@ -315,6 +320,8 @@ func TestCurrentTargetPath(t *testing.T) {
 func TestCurrentPhaseRepositoryDir(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
+
+	conf.Manifests[defaultString] = testutil.DummyManifest()
 
 	conf.CurrentContext = currentContextName
 	conf.Contexts[currentContextName].Manifest = defaultString
@@ -335,6 +342,8 @@ func TestCurrentPhaseRepositoryDir(t *testing.T) {
 func TestCurrentInventoryRepositoryDir(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
+
+	conf.Manifests[defaultString] = testutil.DummyManifest()
 
 	conf.CurrentContext = currentContextName
 	conf.Contexts[currentContextName].Manifest = defaultString
@@ -454,6 +463,8 @@ func TestManagementConfigurationByName(t *testing.T) {
 	conf, cleanupConfig := testutil.InitConfig(t)
 	defer cleanupConfig(t)
 
+	conf.ManagementConfiguration[defaultString] = testutil.DummyManagementConfiguration()
+
 	mgmtCfg, err := conf.GetManagementConfiguration(config.AirshipDefaultContext)
 	require.NoError(t, err)
 	assert.Equal(t, conf.ManagementConfiguration[config.AirshipDefaultContext], mgmtCfg)
@@ -470,6 +481,8 @@ func TestManagementConfigurationByNameDoesNotExist(t *testing.T) {
 func TestGetManifests(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
+
+	conf.Manifests["dummy_manifest"] = testutil.DummyManifest()
 
 	manifests := conf.GetManifests()
 	require.NotNil(t, manifests)

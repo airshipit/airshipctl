@@ -139,7 +139,7 @@ func (test setManifestTest) run(t *testing.T) {
 
 	afterRunConf := test.inputConfig
 	// Find the Manifest Created or Modified
-	afterRunManifest, _ := afterRunConf.Manifests[test.manifestName]
+	afterRunManifest := afterRunConf.Manifests[test.manifestName]
 	require.NotNil(t, afterRunManifest)
 	assert.EqualValues(t, afterRunManifest.TargetPath, test.manifestTargetPath)
 }

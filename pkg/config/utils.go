@@ -59,6 +59,16 @@ func NewConfig() *Config {
 	}
 }
 
+// NewEmptyConfig returns an initialized Config object with no default values
+func NewEmptyConfig() *Config {
+	return &Config{
+		ManagementConfiguration: map[string]*ManagementConfiguration{},
+		Manifests:               map[string]*Manifest{},
+		Contexts:                map[string]*Context{},
+		fileSystem:              fs.NewDocumentFs(),
+	}
+}
+
 // NewContext is a convenience function that returns a new Context
 func NewContext() *Context {
 	return &Context{}

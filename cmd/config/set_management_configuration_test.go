@@ -72,6 +72,8 @@ func TestConfigSetManagementConfigurationInsecure(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
+	conf.ManagementConfiguration[config.AirshipDefaultManagementConfiguration] = config.NewManagementConfiguration()
+
 	settings := func() (*config.Config, error) {
 		return conf, nil
 	}
@@ -95,6 +97,8 @@ func TestConfigSetManagementConfigurationInsecure(t *testing.T) {
 func TestConfigSetManagementConfigurationType(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
+
+	conf.ManagementConfiguration[config.AirshipDefaultManagementConfiguration] = config.NewManagementConfiguration()
 
 	settings := func() (*config.Config, error) {
 		return conf, nil
@@ -130,6 +134,8 @@ func TestConfigSetManagementConfigurationUseProxy(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
 
+	conf.ManagementConfiguration[config.AirshipDefaultManagementConfiguration] = config.NewManagementConfiguration()
+
 	settings := func() (*config.Config, error) {
 		return conf, nil
 	}
@@ -148,6 +154,8 @@ func TestConfigSetManagementConfigurationUseProxy(t *testing.T) {
 func TestConfigSetManagementConfigurationMultipleOptions(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)
+
+	conf.ManagementConfiguration[config.AirshipDefaultManagementConfiguration] = config.NewManagementConfiguration()
 
 	settings := func() (*config.Config, error) {
 		return conf, nil
