@@ -194,7 +194,7 @@ and verify all control pods.
 Pre-requisites:
 Make sure the following conditions are met:
 1. Nested Virtualization enabled on the Host
-2. A Virtual Machine with 20 GB RAM, 4 vCPU and 60GB Disk and Ubuntu 18.04 Installed.
+2. A Virtual Machine with 20 GB RAM, 4 vCPU and 80GB Disk and Ubuntu 18.04 Installed.
 3. Clone the following repo -
     - git clone https://opendev.org/airship/airshipctl.git
 4. Install necessary packages and pre deployment setup
