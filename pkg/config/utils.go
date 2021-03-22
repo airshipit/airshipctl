@@ -66,6 +66,10 @@ func NewEmptyConfig() *Config {
 		Manifests:               map[string]*Manifest{},
 		Contexts:                map[string]*Context{},
 		fileSystem:              fs.NewDocumentFs(),
+		Permissions: Permissions{
+			DirectoryPermission: AirshipDefaultDirectoryPermission,
+			FilePermission:      AirshipDefaultFilePermission,
+		},
 	}
 }
 
