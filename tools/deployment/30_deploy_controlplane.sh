@@ -20,14 +20,16 @@ export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
 
 # TODO (dukov) this is needed due to sushy tools inserts cdrom image to
 # all vms. This can be removed once sushy tool is fixed
-echo "Ensure all cdrom images are ejected."
-for vm in $(sudo virsh list --all --name |grep -v ${EPHEMERAL_DOMAIN_NAME})
-do
-  sudo virsh domblklist $vm |
-    awk 'NF==2 {print $1}' |
-    grep -v Target |
-    xargs -I{} sudo virsh change-media $vm {} --eject || :
-done
+if type "virsh" > /dev/null; then
+  echo "Ensure all cdrom images are ejected."
+  for vm in $(sudo virsh list --all --name |grep -v ${EPHEMERAL_DOMAIN_NAME})
+  do
+    sudo virsh domblklist $vm |
+      awk 'NF==2 {print $1}' |
+      grep -v Target |
+      xargs -I{} sudo virsh change-media $vm {} --eject || :
+  done
+fi
 
 echo "Create target k8s cluster resources"
 airshipctl phase run controlplane-ephemeral --debug

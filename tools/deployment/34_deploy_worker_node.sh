@@ -18,32 +18,42 @@ set -e
 export TIMEOUT=${TIMEOUT:-3600}
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
 export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
-WORKER_NODE="node03"
+WORKER_NODE=${WORKER_NODE:-"node03"}
+EPHEMERAL_DOMAIN_NAME="air-ephemeral"
 
-echo "Stop ephemeral node"
-sudo virsh destroy air-ephemeral
+# all vms. This can be removed once sushy tool is fixed
+if type "virsh" > /dev/null; then
+  for vm in $(sudo virsh list --all --name --state-running |grep ${EPHEMERAL_DOMAIN_NAME})
+  do
+    echo "Stop ephemeral node '$vm'"
+    sudo virsh destroy $vm
+  done
+fi
 
 node_timeout () {
-    end=$(($(date +%s) + $TIMEOUT))
+  end=$(($(date +%s) + $TIMEOUT))
+  for worker in $WORKER_NODE
+  do
     while true; do
-        if (kubectl --request-timeout 20s --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get $1 $WORKER_NODE | grep -qw $2) ; then
-            if [ "$1" = "node" ]; then
-              kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT label nodes $WORKER_NODE node-role.kubernetes.io/worker=""
-            fi
-
-            echo -e "\nGet $1 status"
-            kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get $1
-            break
-        else
-            now=$(date +%s)
-            if [ $now -gt $end ]; then
-                echo -e "\n$1 is not ready before TIMEOUT."
-                exit 1
-            fi
-            echo -n .
-            sleep 15
+      if (kubectl --request-timeout 20s --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get $1 $worker | grep -qw $2) ; then
+        if [ "$1" = "node" ]; then
+          kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT label nodes $worker node-role.kubernetes.io/worker=""
         fi
+
+        echo -e "\nGet $1 status"
+        kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get $1
+        break
+      else
+        now=$(date +%s)
+        if [ $now -gt $end ]; then
+          echo -e "\n$1 is not ready before TIMEOUT."
+          exit 1
+        fi
+        echo -n .
+        sleep 15
+      fi
     done
+  done
 }
 
 echo "Deploy worker node"

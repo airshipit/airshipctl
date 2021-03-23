@@ -36,7 +36,7 @@ export SYSTEM_REBOOT_DELAY=30
 export AIRSHIP_CONFIG_PRIMARY_REPO_BRANCH=${BRANCH:-"master"}
 # the git repo url or local file system path to a cloned repo, e.g., /home/stack/airshipctl
 export AIRSHIP_CONFIG_PRIMARY_REPO_URL=${REPO:-"https://review.opendev.org/airship/airshipctl"}
-export AIRSHIP_SITE_NAME="airshipctl/manifests/site/az-test-site"
+export SITE="airshipctl/manifests/site/az-test-site"
 export AIRSHIP_CONFIG_MANIFEST_DIRECTORY=${remote_work_dir}
 export AIRSHIP_CONFIG_CA_DATA=$(cat tools/deployment/certificates/airship_config_ca_data| base64 -w0)
 export AIRSHIP_CONFIG_EPHEMERAL_IP=${IP_Ephemeral:-"10.23.25.101"}
