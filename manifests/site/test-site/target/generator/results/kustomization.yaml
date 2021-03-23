@@ -3,3 +3,4 @@ resources:
 
 transformers:
   - decrypt-secrets
+  - ../overrideplacement

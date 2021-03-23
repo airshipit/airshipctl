@@ -229,6 +229,28 @@ config:
 apiVersion: airshipit.org/v1alpha1
 kind: Phase
 metadata:
+  name: secret-show
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: decrypter
+  documentEntryPoint: target/generator/results
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: secret-reencrypt
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: encrypter
+  documentEntryPoint: target/generator/results
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
   name: remotedirect-ephemeral
 config:
   executorRef:

@@ -55,6 +55,24 @@ config: |
     cmd: encrypt
     unencrypted-regex: '^(kind|apiVersion|group|metadata)$'
 ---
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: decrypter
+  labels:
+    airshipit.org/deploy-k8s: "false"
+spec:
+  type: krm
+  image: gcr.io/kpt-fn-contrib/sops:v0.1.0
+  envVars:
+  - SOPS_IMPORT_PGP
+  - SOPS_PGP_FP
+config: |
+  apiVersion: v1
+  kind: ConfigMap
+  data:
+    cmd: decrypt
+---
 # This executor launchs a bootstrap container, which creates
 # an Azure Kubernetes Service (AKS) cluster
 apiVersion: airshipit.org/v1alpha1
