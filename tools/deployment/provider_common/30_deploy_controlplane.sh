@@ -13,58 +13,34 @@
 # limitations under the License.
 
 # Example Usage
-# CONTROLPLANE_COUNT=1 \
-# SITE=docker-test-site \
 # ./tools/deployment/provider_common/30_deploy_controlplane.sh
 
-export AIRSHIP_SRC=${AIRSHIP_SRC:-"/tmp/airship"}
+set -xe
+
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
-export CONTROLPLANE_COUNT=${CONTROLPLANE_COUNT:-"1"}
-export SITE=${SITE:-"docker-test-site"}
-export TARGET_CLUSTER_NAME=${TARGET_CLUSTER_NAME:-"target-cluster"}
-
-# Adjust Control Plane Count (default 1)
-# No. of control plane can be changed using
-# CONTROLPLANE_COUNT=<replicas> tools/deployment/docker/30_deploy_controlplane.sh
-
-sed -i "/value.*/s//value\": $CONTROLPLANE_COUNT }/g" \
-${AIRSHIP_SRC}/airshipctl/manifests/site/${SITE}/ephemeral/controlplane/machine_count.json
+export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
+export KUBECONFIG_EPHEMERAL_CONTEXT=${KUBECONFIG_EPHEMERAL_CONTEXT:-"ephemeral-cluster"}
 
 echo "create control plane"
-airshipctl phase run controlplane-ephemeral --debug --kubeconfig ${KUBECONFIG} --wait-timeout 1000s
+airshipctl phase run controlplane-ephemeral --debug --wait-timeout 1000s
 
-TARGET_KUBECONFIG=""
-TARGET_KUBECONFIG=$(kubectl --kubeconfig "${KUBECONFIG}" --namespace=default get secret/"${TARGET_CLUSTER_NAME}"-kubeconfig -o jsonpath={.data.value}  || true)
+airshipctl cluster get-kubeconfig > ~/.airship/kubeconfig-tmp
 
-if [[ -z "$TARGET_KUBECONFIG" ]]; then
-  echo "Error: Could not get kubeconfig from secret."
-  exit 1
-fi
-
-echo "Generate kubeconfig"
-echo ${TARGET_KUBECONFIG} | base64 -d > /tmp/${TARGET_CLUSTER_NAME}.kubeconfig
-echo "Generate kubeconfig: /tmp/${TARGET_CLUSTER_NAME}.kubeconfig"
-
-echo "add context target-cluster"
-kubectl config set-context ${TARGET_CLUSTER_NAME} --user ${TARGET_CLUSTER_NAME}-admin --cluster ${TARGET_CLUSTER_NAME} \
---kubeconfig "/tmp/${TARGET_CLUSTER_NAME}.kubeconfig"
+mv ~/.airship/kubeconfig-tmp "${KUBECONFIG}"
 
 echo "apply cni as a part of initinfra-networking"
-airshipctl phase run initinfra-networking-target --debug --kubeconfig "/tmp/${TARGET_CLUSTER_NAME}.kubeconfig"
+airshipctl phase run initinfra-networking-target --debug
 
 echo "Check nodes status"
-kubectl --kubeconfig /tmp/"${TARGET_CLUSTER_NAME}".kubeconfig wait --for=condition=Ready nodes --all --timeout 4000s
-kubectl get nodes --kubeconfig /tmp/"${TARGET_CLUSTER_NAME}".kubeconfig
+kubectl --kubeconfig "${KUBECONFIG}" --context "${KUBECONFIG_TARGET_CONTEXT}" wait --for=condition=Ready nodes --all --timeout 4000s
+kubectl get nodes --kubeconfig "${KUBECONFIG}" --context "${KUBECONFIG_TARGET_CONTEXT}"
 
 echo "Waiting for  pods to come up"
-kubectl --kubeconfig /tmp/${TARGET_CLUSTER_NAME}.kubeconfig  wait --for=condition=ready pods --all --timeout=4000s -A
-kubectl --kubeconfig /tmp/${TARGET_CLUSTER_NAME}.kubeconfig get pods -A
+kubectl --kubeconfig "${KUBECONFIG}" --context "${KUBECONFIG_TARGET_CONTEXT}" wait --for=condition=ready pods --all --timeout=4000s -A
+kubectl --kubeconfig "${KUBECONFIG}" --context "${KUBECONFIG_TARGET_CONTEXT}" get pods -A
 
 echo "Check machine status"
-kubectl get machines --kubeconfig ${KUBECONFIG}
+kubectl get machines --kubeconfig ${KUBECONFIG} --context "${KUBECONFIG_EPHEMERAL_CONTEXT}"
 
 echo "Get cluster state for target workload cluster "
-kubectl --kubeconfig ${KUBECONFIG} get cluster
-
-echo "Target Cluster Kubeconfig"
-echo "/tmp/${TARGET_CLUSTER_NAME}.kubeconfig"
+kubectl --kubeconfig ${KUBECONFIG} --context "${KUBECONFIG_EPHEMERAL_CONTEXT}" get cluster

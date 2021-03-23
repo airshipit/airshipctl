@@ -187,12 +187,10 @@
         - AIRSHIP_CONFIG_METADATA_PATH=manifests/site/docker-test-site/metadata.yaml SITE=docker-test-site EXTERNAL_KUBECONFIG="true" ./tools/deployment/22_test_configs.sh
         - ./tools/deployment/23_pull_documents.sh
         - PROVIDER=default SITE=docker-test-site ./tools/deployment/26_deploy_capi_ephemeral_node.sh
-        - CONTROLPLANE_COUNT=1 SITE=docker-test-site ./tools/deployment/provider_common/30_deploy_controlplane.sh
-        - KUBECONFIG=/tmp/target-cluster.kubeconfig ./tools/deployment/provider_common/32_cluster_init_target_node.sh
+        - ./tools/deployment/provider_common/30_deploy_controlplane.sh
+        - ./tools/deployment/provider_common/32_cluster_init_target_node.sh
         - ./tools/deployment/provider_common/33_cluster_move_target_node.sh
-        - WORKERS_COUNT=2 KUBECONFIG=/tmp/target-cluster.kubeconfig SITE=docker-test-site ./tools/deployment/provider_common/34_deploy_worker_node.sh
-        - KUBECONFIG=/tmp/target-cluster.kubeconfig ./tools/deployment/provider_common/41_check_certificate_expiration.sh
-        - KUBECONFIG=/tmp/target-cluster.kubeconfig ./tools/deployment/provider_common/42_rotate_sa_token.sh
+        - ./tools/deployment/provider_common/34_deploy_worker_node.sh
     voting: false
 - job:
     name: airship-airshipctl-docker-kubebench-conformance
