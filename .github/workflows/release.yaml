@@ -98,7 +98,7 @@ jobs:
           fetch-depth: 0
       - name: Download release notes utility
         run: |
-          sudo npm install github-release-notes -g
+          sudo npm install github-release-notes@0.17.1 -g
       - name: Generate release notes
         run: |
           TAG_NAME=${TAG##*/}
@@ -107,6 +107,7 @@ jobs:
             --changelog-filename release-notes.md \
             --token "$GITHUB_TOKEN" \
             --tags "$TAG_NAME" \
+            --ignore-tags-with '^(?!v\d)' `# only consider semver tags without krm function prefix when finding previous tag` \
             --debug
           cat release-notes.md
         env:
