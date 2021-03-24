@@ -197,7 +197,7 @@ metadata:
     airshipit.org/deploy-k8s: "false"
 spec:
   type: krm
-  image: quay.io/airshipit/cloud-init:latest
+  image: quay.io/airshipit/cloud-init:v2
   mounts:
   - type: bind
     src: /srv/images

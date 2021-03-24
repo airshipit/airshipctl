@@ -21,14 +21,17 @@ set -xe
 
 export MANIFEST_DIR=${MANIFEST_DIR:-"$(pwd)"}
 
-export OLD_REPLACEMENT_TRANSFORMER=${OLD_REPLACEMENT_TRANSFORMER:-"quay.io/airshipit/replacement-transformer:latest"}
-export OLD_TEMPLATER=${OLD_TEMPLATER:-"quay.io/airshipit/templater:latest"}
+export OLD_REPLACEMENT_TRANSFORMER=${OLD_REPLACEMENT_TRANSFORMER:-"quay.io/airshipit/replacement-transformer:v2"}
+export OLD_TEMPLATER=${OLD_TEMPLATER:-"quay.io/airshipit/templater:v2"}
+export OLD_CLOUD_INIT=${OLD_CLOUD_INIT:-"quay.io/airshipit/cloud-init:v2"}
 export OLD_SOPS=${OLD_SOPS:-"quay.io/aodinokov/sops:v0.0.3"}
 
 export NEW_REPLACEMENT_TRANSFORMER=${NEW_REPLACEMENT_TRANSFORMER:-$OLD_REPLACEMENT_TRANSFORMER}
 export NEW_TEMPLATER=${NEW_TEMPLATER:-$OLD_TEMPLATER}
+export NEW_CLOUD_INIT=${NEW_CLOUD_INIT:-$OLD_CLOUD_INIT}
 export NEW_SOPS=${NEW_SOPS:-$OLD_SOPS}
 
 find "$MANIFEST_DIR" -type f -exec sed -i -e "s#$OLD_REPLACEMENT_TRANSFORMER#$NEW_REPLACEMENT_TRANSFORMER#g" {} \;
 find "$MANIFEST_DIR" -type f -exec sed -i -e "s#$OLD_TEMPLATER#$NEW_TEMPLATER#g" {} \;
+find "$MANIFEST_DIR" -type f -exec sed -i -e "s#$OLD_CLOUD_INIT#$NEW_CLOUD_INIT#g" {} \;
 find "$MANIFEST_DIR" -type f -exec sed -i -e "s#$OLD_SOPS#$NEW_SOPS#g" {} \;
