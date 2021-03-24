@@ -52,11 +52,10 @@ var _ ifc.Phase = &phase{}
 
 // Phase implements phase interface
 type phase struct {
-	helper     ifc.Helper
-	apiObj     *v1alpha1.Phase
-	registry   ExecutorRegistry
-	processor  events.EventProcessor
-	kubeconfig string
+	helper    ifc.Helper
+	apiObj    *v1alpha1.Phase
+	registry  ExecutorRegistry
+	processor events.EventProcessor
 }
 
 // Executor returns executor interface associated with the phase
@@ -257,7 +256,6 @@ type client struct {
 
 	registry      ExecutorRegistry
 	processorFunc ProcessorFunc
-	kubeconfig    string
 }
 
 // ProcessorFunc that returns processor interface
@@ -266,24 +264,10 @@ type ProcessorFunc func() events.EventProcessor
 // Option allows to add various options to a phase
 type Option func(*client)
 
-// InjectProcessor is an option that allows to inject event processor into phase client
-func InjectProcessor(procFunc ProcessorFunc) Option {
-	return func(c *client) {
-		c.processorFunc = procFunc
-	}
-}
-
 // InjectRegistry is an option that allows to inject executor registry into phase client
 func InjectRegistry(registry ExecutorRegistry) Option {
 	return func(c *client) {
 		c.registry = registry
-	}
-}
-
-// InjectKubeconfigPath is an option that allows to inject path to kubeconfig into phase client
-func InjectKubeconfigPath(path string) Option {
-	return func(c *client) {
-		c.kubeconfig = path
 	}
 }
 
@@ -309,11 +293,10 @@ func (c *client) PhaseByID(id ifc.ID) (ifc.Phase, error) {
 	}
 
 	phase := &phase{
-		apiObj:     phaseObj,
-		helper:     c.Helper,
-		processor:  c.processorFunc(),
-		registry:   c.registry,
-		kubeconfig: c.kubeconfig,
+		apiObj:    phaseObj,
+		helper:    c.Helper,
+		processor: c.processorFunc(),
+		registry:  c.registry,
 	}
 	return phase, nil
 }
@@ -332,11 +315,10 @@ func (c *client) PlanByID(id ifc.ID) (ifc.Plan, error) {
 
 func (c *client) PhaseByAPIObj(phaseObj *v1alpha1.Phase) (ifc.Phase, error) {
 	phase := &phase{
-		apiObj:     phaseObj,
-		helper:     c.Helper,
-		processor:  c.processorFunc(),
-		registry:   c.registry,
-		kubeconfig: c.kubeconfig,
+		apiObj:    phaseObj,
+		helper:    c.Helper,
+		processor: c.processorFunc(),
+		registry:  c.registry,
 	}
 	return phase, nil
 }

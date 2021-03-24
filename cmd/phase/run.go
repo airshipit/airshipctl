@@ -60,10 +60,5 @@ func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
 		"wait-timeout",
 		0,
 		"wait timeout")
-	flags.BoolVar(
-		&p.Options.Progress,
-		"progress",
-		false,
-		"show progress")
 	return runCmd
 }
