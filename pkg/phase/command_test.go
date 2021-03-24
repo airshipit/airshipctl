@@ -27,6 +27,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase"
+	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
 const (
@@ -599,6 +600,75 @@ func TestStatusCommand(t *testing.T) {
 			if tt.errContains != "" {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), tt.errContains)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestPlanValidateCommand(t *testing.T) {
+	testErr := fmt.Errorf(testFactoryErr)
+	testCases := []struct {
+		name        string
+		factory     config.Factory
+		expectedErr string
+	}{
+		{
+			name: "Error config factory",
+			factory: func() (*config.Config, error) {
+				return nil, testErr
+			},
+			expectedErr: testFactoryErr,
+		},
+		{
+			name: "Error new helper",
+			factory: func() (*config.Config, error) {
+				return &config.Config{
+					CurrentContext: "does not exist",
+					Contexts:       make(map[string]*config.Context),
+				}, nil
+			},
+			expectedErr: "missing configuration: context with name 'does not exist'",
+		},
+		{
+			name: "Error plan by id",
+			factory: func() (*config.Config, error) {
+				conf := config.NewConfig()
+				conf.Manifests = map[string]*config.Manifest{
+					"manifest": {
+						MetadataPath:        "metadata.yaml",
+						TargetPath:          "testdata",
+						PhaseRepositoryName: config.DefaultTestPhaseRepo,
+						Repositories: map[string]*config.Repository{
+							config.DefaultTestPhaseRepo: {
+								URLString: "",
+							},
+						},
+					},
+				}
+				conf.CurrentContext = defaultCurrentContext
+				conf.Contexts = map[string]*config.Context{
+					"context": {
+						Manifest: "manifest",
+					},
+				}
+				return conf, nil
+			},
+			expectedErr: `found no documents`,
+		},
+	}
+	for _, tc := range testCases {
+		tt := tc
+		t.Run(tt.name, func(t *testing.T) {
+			cmd := phase.PlanValidateCommand{
+				Options: phase.PlanValidateFlags{PlanID: ifc.ID{Name: "invalid"}},
+				Factory: tt.factory,
+			}
+			err := cmd.RunE()
+			if tt.expectedErr != "" {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.expectedErr)
 			} else {
 				assert.NoError(t, err)
 			}
