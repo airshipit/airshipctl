@@ -166,11 +166,9 @@ $ cat ~/.airship/config
 apiVersion: airshipit.org/v1alpha1
 contexts:
   default:
-    contextKubeconf: ""
     managementConfiguration: default
     manifest: default
   ephemeral-cluster:
-    contextKubeconf: ephemeral-cluster
     managementConfiguration: ""
     manifest: gcp_manifest
 currentContext: ephemeral-cluster

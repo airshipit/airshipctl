@@ -154,12 +154,11 @@ func (e ErrMissingCurrentContext) Error() string {
 
 // ErrMissingManagementConfiguration means the management configuration was not defined for the active cluster.
 type ErrMissingManagementConfiguration struct {
-	context *Context
+	contextName string
 }
 
 func (e ErrMissingManagementConfiguration) Error() string {
-	return fmt.Sprintf("Management configuration %s for cluster %s undefined.", e.context.ManagementConfiguration,
-		e.context.NameInKubeconf)
+	return fmt.Sprintf("Management configuration for context '%s' undefined.", e.contextName)
 }
 
 // ErrMissingPhaseRepo returned when Phase Repository is not set in context manifest

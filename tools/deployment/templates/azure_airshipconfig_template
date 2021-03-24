@@ -1,7 +1,6 @@
 apiVersion: airshipit.org/v1alpha1
 contexts:
   kind-capi-azure:
-    contextKubeconf: kind-capi-azure_target
     manifest: azure_manifest
 currentContext: kind-capi-azure
 kind: Config

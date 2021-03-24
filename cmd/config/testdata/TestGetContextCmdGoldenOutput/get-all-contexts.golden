@@ -1,12 +1,9 @@
-contextKubeconf: ContextBar
 managementConfiguration: ""
 manifest: Manifest_ContextBar
 
-contextKubeconf: ContextBaz
 managementConfiguration: ""
 manifest: Manifest_ContextBaz
 
-contextKubeconf: ContextFoo
 managementConfiguration: ""
 manifest: Manifest_ContextFoo
 

@@ -1,7 +1,6 @@
 apiVersion: airshipit.org/v1alpha1
 contexts:
   default:
-    contextKubeconf: default_target
     manifest: default
 currentContext: ""
 kind: Config

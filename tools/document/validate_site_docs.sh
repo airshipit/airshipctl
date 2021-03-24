@@ -54,7 +54,6 @@ function generate_airshipconf() {
 apiVersion: airshipit.org/v1alpha1
 contexts:
   ${CONTEXT}_${cluster}:
-    contextKubeconf: ${CONTEXT}_${cluster}
     manifest: ${CONTEXT}_${cluster}
     managementConfiguration: default
 currentContext: ${CONTEXT}_${cluster}

@@ -8,11 +8,9 @@ managementConfiguration:
     systemRebootDelay: ${SYSTEM_REBOOT_DELAY}
 contexts:
   ephemeral-cluster:
-    contextKubeconf: ephemeral-cluster_ephemeral
     manifest: dummy_manifest
     managementConfiguration: dummy_management_config
   target-cluster:
-    contextKubeconf: target-cluster_target
     manifest: dummy_manifest
     managementConfiguration: dummy_management_config
 currentContext: ephemeral-cluster

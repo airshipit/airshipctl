@@ -282,7 +282,6 @@ func (c *Config) AddContext(theContext *ContextOptions) *Context {
 	// Create the new Airship config context
 	nContext := NewContext()
 	c.Contexts[theContext.Name] = nContext
-	nContext.NameInKubeconf = theContext.Name
 
 	// Ok , I have initialized structs for the Context information
 	// We can use Modify to populate the correct information
@@ -482,13 +481,13 @@ func (c *Config) CurrentContextManagementConfig() (*ManagementConfiguration, err
 
 	if currentContext.ManagementConfiguration == "" {
 		return nil, ErrMissingConfig{
-			What: fmt.Sprintf("no management config listed for cluster %s", currentContext.NameInKubeconf),
+			What: fmt.Sprintf("no management config listed for context '%s'", c.CurrentContext),
 		}
 	}
 
 	managementCfg, exists := c.ManagementConfiguration[currentContext.ManagementConfiguration]
 	if !exists {
-		return nil, ErrMissingManagementConfiguration{context: currentContext}
+		return nil, ErrMissingManagementConfiguration{contextName: c.CurrentContext}
 	}
 
 	return managementCfg, nil

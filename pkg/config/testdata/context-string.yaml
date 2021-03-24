@@ -1,3 +1,2 @@
-contextKubeconf: dummy_cluster_ephemeral
 managementConfiguration: dummy_management_config
 manifest: dummy_manifest
