@@ -12,4 +12,4 @@
 # limitations under the License.
 set -ex
 
-sudo pip3 install yq
+sudo -H pip3 install yq
