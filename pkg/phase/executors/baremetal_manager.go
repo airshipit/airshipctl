@@ -21,10 +21,11 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
-	"opendev.org/airship/airshipctl/pkg/errors"
+	commonerrors "opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/inventory"
 	inventoryifc "opendev.org/airship/airshipctl/pkg/inventory/ifc"
+	"opendev.org/airship/airshipctl/pkg/phase/executors/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
@@ -112,7 +113,7 @@ func (e *BaremetalManagerExecutor) validate() (inventoryifc.BaremetalOperation, 
 		// TODO add remote direct validation, make sure that ISO-URL is specified
 		result = ""
 	default:
-		err = ErrUnknownExecutorAction{Action: string(e.options.Spec.Operation), ExecutorName: BMHManager}
+		err = errors.ErrUnknownExecutorAction{Action: string(e.options.Spec.Operation), ExecutorName: BMHManager}
 	}
 	return result, err
 }
@@ -144,5 +145,5 @@ func toCommandOptions(i inventoryifc.Inventory,
 
 // Status returns the status of the given phase
 func (e *BaremetalManagerExecutor) Status() (ifc.ExecutorStatus, error) {
-	return ifc.ExecutorStatus{}, errors.ErrNotImplemented{What: BMHManager}
+	return ifc.ExecutorStatus{}, commonerrors.ErrNotImplemented{What: BMHManager}
 }

@@ -27,6 +27,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/phase"
+	"opendev.org/airship/airshipctl/pkg/phase/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
@@ -261,7 +262,7 @@ func TestDocumentRoot(t *testing.T) {
 		{
 			name:        "Error entrypoint does not exists",
 			phaseID:     ifc.ID{Name: "some_phase"},
-			expectedErr: phase.ErrDocumentEntrypointNotDefined{PhaseName: "some_phase"},
+			expectedErr: errors.ErrDocumentEntrypointNotDefined{PhaseName: "some_phase"},
 		},
 		{
 			name:         "Success entrypoint with doc prefix path",
@@ -331,7 +332,7 @@ func TestBundleFactoryExecutor(t *testing.T) {
 	require.NoError(t, err)
 	_, err = p.Executor()
 	assert.Error(t, err)
-	assert.Equal(t, phase.ErrDocumentEntrypointNotDefined{PhaseName: "no_entry_point"}, err)
+	assert.Equal(t, errors.ErrDocumentEntrypointNotDefined{PhaseName: "no_entry_point"}, err)
 }
 
 func TestPlanRun(t *testing.T) {

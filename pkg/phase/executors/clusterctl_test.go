@@ -16,7 +16,7 @@ package executors_test
 
 import (
 	"bytes"
-	"errors"
+	goerrors "errors"
 	"fmt"
 	"testing"
 	"time"
@@ -31,6 +31,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
+	"opendev.org/airship/airshipctl/pkg/phase/executors/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	testfs "opendev.org/airship/airshipctl/testutil/fs"
 )
@@ -126,7 +127,7 @@ func TestNewClusterctlExecutor(t *testing.T) {
 }
 
 func TestClusterctlExecutorRun(t *testing.T) {
-	errTmpFile := errors.New("TmpFile error")
+	errTmpFile := goerrors.New("TmpFile error")
 
 	testCases := []struct {
 		name        string
@@ -141,7 +142,7 @@ func TestClusterctlExecutorRun(t *testing.T) {
 			cfgDoc:     executorDoc(t, fmt.Sprintf(executorConfigTmplGood, "someAction")),
 			bundlePath: "testdata/executor_init",
 			expectedEvt: []events.Event{
-				wrapError(executors.ErrUnknownExecutorAction{Action: "someAction", ExecutorName: "clusterctl"}),
+				wrapError(errors.ErrUnknownExecutorAction{Action: "someAction", ExecutorName: "clusterctl"}),
 			},
 			clusterMap: clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
 		},

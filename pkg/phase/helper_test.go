@@ -28,6 +28,7 @@ import (
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/phase"
+	"opendev.org/airship/airshipctl/pkg/phase/executors/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
@@ -449,7 +450,7 @@ func TestHelperExecutorDoc(t *testing.T) {
 			name:    "Error get phase without executor",
 			config:  testConfig,
 			phaseID: ifc.ID{Name: "no_executor_phase"},
-			errContains: phase.ErrExecutorRefNotDefined{
+			errContains: errors.ErrExecutorRefNotDefined{
 				PhaseName: "no_executor_phase",
 			}.Error(),
 		},

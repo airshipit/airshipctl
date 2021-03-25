@@ -26,6 +26,7 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/phase"
+	"opendev.org/airship/airshipctl/pkg/phase/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	"opendev.org/airship/airshipctl/testutil"
 )
@@ -114,14 +115,16 @@ func TestRender(t *testing.T) {
 			settings: &phase.RenderCommand{
 				Source: "unknown",
 			},
-			expErr: phase.ErrUknownRenderSource{Source: "unknown"},
+			expErr: errors.ErrUnknownRenderSource{Source: "unknown",
+				ValidSources: []string{phase.RenderSourceConfig, phase.RenderSourceExecutor, phase.RenderSourcePhase}},
 		},
 		{
 			name: "phase name not specified",
 			settings: &phase.RenderCommand{
 				Source: phase.RenderSourcePhase,
 			},
-			expErr: phase.ErrRenderPhaseNameNotSpecified{},
+			expErr: errors.ErrRenderPhaseNameNotSpecified{
+				Sources: []string{phase.RenderSourceExecutor, phase.RenderSourcePhase}},
 		},
 	}
 
