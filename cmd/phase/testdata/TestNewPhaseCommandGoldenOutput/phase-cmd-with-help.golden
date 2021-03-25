@@ -9,6 +9,7 @@ Available Commands:
   list        List phases
   render      Render phase documents from model
   run         Run phase
+  status      Status of the phase
   tree        Tree view of kustomize entrypoints of phase
   validate    Assert that a phase is valid
 

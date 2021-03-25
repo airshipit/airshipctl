@@ -302,3 +302,37 @@ func (c *ValidateCommand) RunE() error {
 	}
 	return phase.Validate()
 }
+
+// StatusFlags is a struct to define status type
+type StatusFlags struct {
+	Timeout  time.Duration
+	PhaseID  ifc.ID
+	Progress bool
+}
+
+// StatusCommand is a struct which defines status
+type StatusCommand struct {
+	Options StatusFlags
+	Factory config.Factory
+}
+
+// RunE returns the status of the given phase
+func (s *StatusCommand) RunE() error {
+	cfg, err := s.Factory()
+	if err != nil {
+		return err
+	}
+
+	helper, err := NewHelper(cfg)
+	if err != nil {
+		return err
+	}
+
+	ph, err := NewClient(helper).PhaseByID(s.Options.PhaseID)
+	if err != nil {
+		return err
+	}
+
+	_, err = ph.Status()
+	return err
+}
