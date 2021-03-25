@@ -34,10 +34,8 @@ import (
 
 // GenericRunFlags generic options for run command
 type GenericRunFlags struct {
-	DryRun     bool
-	Timeout    time.Duration
-	Kubeconfig string
-	Progress   bool
+	DryRun  bool
+	Timeout time.Duration
 }
 
 // RunFlags options for phase run command
@@ -64,14 +62,13 @@ func (c *RunCommand) RunE() error {
 		return err
 	}
 
-	kubeconfigOption := InjectKubeconfigPath(c.Options.Kubeconfig)
-	client := NewClient(helper, kubeconfigOption)
+	client := NewClient(helper)
 
 	phase, err := client.PhaseByID(c.Options.PhaseID)
 	if err != nil {
 		return err
 	}
-	return phase.Run(ifc.RunOptions{DryRun: c.Options.DryRun, Timeout: c.Options.Timeout, Progress: c.Options.Progress})
+	return phase.Run(ifc.RunOptions{DryRun: c.Options.DryRun, Timeout: c.Options.Timeout})
 }
 
 // ListCommand phase list command
@@ -235,14 +232,13 @@ func (c *PlanRunCommand) RunE() error {
 		return err
 	}
 
-	kubeconfigOption := InjectKubeconfigPath(c.Options.Kubeconfig)
-	client := NewClient(helper, kubeconfigOption)
+	client := NewClient(helper)
 
 	plan, err := client.PlanByID(c.Options.PlanID)
 	if err != nil {
 		return err
 	}
-	return plan.Run(ifc.RunOptions{DryRun: c.Options.DryRun, Timeout: c.Options.Timeout, Progress: c.Options.Progress})
+	return plan.Run(ifc.RunOptions{DryRun: c.Options.DryRun, Timeout: c.Options.Timeout})
 }
 
 // ClusterListCommand options for cluster list command

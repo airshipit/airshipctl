@@ -24,7 +24,6 @@ airshipctl phase run ephemeral-control-plane
 ```
       --dry-run                 simulate phase execution
   -h, --help                    help for run
-      --progress                show progress
       --wait-timeout duration   wait timeout
 ```
 
