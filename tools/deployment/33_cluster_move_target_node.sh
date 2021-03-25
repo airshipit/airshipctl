@@ -25,6 +25,9 @@ export CLUSTER_NAMESPACE=${CLUSTER_NAMESPACE:-"default"}
 echo "Check Cluster Status"
 kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT -n $CLUSTER_NAMESPACE get cluster target-cluster -o json | jq '.status.controlPlaneReady'
 
+echo "Annotate BMH for target node"
+kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT -n $CLUSTER_NAMESPACE annotate bmh $TARGET_NODE baremetalhost.metal3.io/paused=true
+
 echo "Move Cluster Object to Target Cluster"
 airshipctl phase run clusterctl-move
 
