@@ -278,4 +278,3 @@ config:
     apiVersion: airshipit.org/v1alpha1
     kind: GenericContainer
     name: iso-build-image
-  documentEntryPoint: empty
