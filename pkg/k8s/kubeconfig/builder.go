@@ -123,7 +123,7 @@ func (b *Builder) builtSiteKubeconf() (*api.Config, error) {
 		// buildOne merges context into site kubeconfig
 		_, _, err := b.buildOne(clusterID)
 		if IsErrAllSourcesFailedErr(err) {
-			log.Printf("All kubeconfig sources failed for cluster '%s', error '%v', skipping it",
+			log.Debugf("All kubeconfig sources failed for cluster '%s', error '%v', skipping it",
 				clusterID, err)
 			continue
 		} else if err != nil {
@@ -142,7 +142,7 @@ func (b *Builder) buildOne(clusterID string) (string, *api.Config, error) {
 	// use already built kubeconfig context, to avoid doing work multiple times
 	built, oneKubeconf := b.alreadyBuilt(destContext)
 	if built {
-		log.Printf("kubeconfig for cluster '%s' is already built, using it", clusterID)
+		log.Debugf("Kubeconfig for cluster '%s' is already built, using it", clusterID)
 		return destContext, oneKubeconf, nil
 	}
 
@@ -155,7 +155,7 @@ func (b *Builder) buildOne(clusterID string) (string, *api.Config, error) {
 		oneKubeconf, sourceErr := b.trySource(clusterID, destContext, source)
 		if sourceErr == nil {
 			// Merge source context into site kubeconfig
-			log.Printf("Merging kubecontext for cluster '%s', into site kubeconfig", clusterID)
+			log.Debugf("Merging kubecontext for cluster '%s', into site kubeconfig", clusterID)
 			if err = mergeContextAPI(destContext, destContext, b.siteKubeconf, oneKubeconf); err != nil {
 				return "", nil, err
 			}
@@ -165,7 +165,7 @@ func (b *Builder) buildOne(clusterID string) (string, *api.Config, error) {
 		// effect other clusters, which don't depend on it. If they do depend on it, their calls
 		// will fail because the context will be missing. Combitation with a log message will make
 		// it clear where the problem is.
-		log.Printf("received error while trying kubeconfig source for cluster '%s', source type '%s', error '%v'",
+		log.Debugf("Received error while trying kubeconfig source for cluster '%s', source type '%s', error '%v'",
 			clusterID, source.Type, sourceErr)
 	}
 	// return empty not nil kubeconfig without error.
@@ -198,7 +198,7 @@ func (b *Builder) trySource(clusterID, dstContext string, source v1alpha1.Kubeco
 
 func (b *Builder) fromClusterAPI(clusterName string, ref v1alpha1.KubeconfigSourceClusterAPI) KubeSourceFunc {
 	return func() ([]byte, error) {
-		log.Printf("Getting kubeconfig from cluster API for cluster '%s'", clusterName)
+		log.Debugf("Getting kubeconfig from cluster API for cluster '%s'", clusterName)
 		parentCluster, err := b.clusterMap.ParentCluster(clusterName)
 		if err != nil {
 			return nil, err
@@ -224,7 +224,7 @@ func (b *Builder) fromClusterAPI(clusterName string, ref v1alpha1.KubeconfigSour
 			}
 		}
 
-		log.Printf("Getting child kubeconfig from parent, parent context '%s', parent kubeconfing '%s'",
+		log.Debugf("Getting child kubeconfig from parent, parent context '%s', parent kubeconfing '%s'",
 			parentContext, f)
 		return FromSecret(b.clusterctlClient, &client.GetKubeconfigOptions{
 			ParentKubeconfigPath:    f,
