@@ -32,7 +32,7 @@ if type "virsh" > /dev/null; then
 fi
 
 echo "Create target k8s cluster resources"
-time airshipctl phase run controlplane-ephemeral --debug
+airshipctl phase run controlplane-ephemeral --debug
 
 echo "List all nodes in target cluster"
 kubectl \
