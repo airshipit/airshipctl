@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	// TODO this small library needs to be moved to airshipctl and extended
@@ -33,6 +34,7 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/log"
+	"opendev.org/airship/airshipctl/pkg/util"
 )
 
 // ClientV1Alpha1 provides airship generic container API
@@ -46,13 +48,15 @@ type ClientV1Alpha1FactoryFunc func(
 	resultsDir string,
 	input io.Reader,
 	output io.Writer,
-	conf *v1alpha1.GenericContainer) ClientV1Alpha1
+	conf *v1alpha1.GenericContainer,
+	targetPath string) ClientV1Alpha1
 
 type clientV1Alpha1 struct {
 	resultsDir string
 	input      io.Reader
 	output     io.Writer
 	conf       *v1alpha1.GenericContainer
+	targetPath string
 
 	containerFunc containerFunc
 }
@@ -64,18 +68,22 @@ func NewClientV1Alpha1(
 	resultsDir string,
 	input io.Reader,
 	output io.Writer,
-	conf *v1alpha1.GenericContainer) ClientV1Alpha1 {
+	conf *v1alpha1.GenericContainer,
+	targetPath string) ClientV1Alpha1 {
 	return &clientV1Alpha1{
 		resultsDir:    resultsDir,
 		output:        output,
 		input:         input,
 		conf:          conf,
 		containerFunc: NewContainer,
+		targetPath:    targetPath,
 	}
 }
 
-// Run will peform container run action based on the configuration
+// Run will perform container run action based on the configuration
 func (c *clientV1Alpha1) Run() error {
+	// expand Src paths for mount if they are relative
+	ExpandSourceMounts(c.conf.Spec.StorageMounts, c.targetPath)
 	// set default runtime
 	switch c.conf.Spec.Type {
 	case v1alpha1.GenericContainerTypeAirship, "":
@@ -83,7 +91,7 @@ func (c *clientV1Alpha1) Run() error {
 	case v1alpha1.GenericContainerTypeKrm:
 		return c.runKRM()
 	default:
-		return fmt.Errorf("uknown generic container type %s", c.conf.Spec.Type)
+		return fmt.Errorf("unknown generic container type %s", c.conf.Spec.Type)
 	}
 }
 
@@ -274,4 +282,17 @@ func convertDockerMount(airMounts []v1alpha1.StorageMount) (mounts []Mount) {
 		mounts = append(mounts, mnt)
 	}
 	return mounts
+}
+
+// ExpandSourceMounts converts relative paths into absolute ones
+func ExpandSourceMounts(storageMounts []v1alpha1.StorageMount, targetPath string) {
+	for i, mount := range storageMounts {
+		// Try to expand Src path
+		path := util.ExpandTilde(mount.Src)
+		// If still relative - add targetPath prefix
+		if !filepath.IsAbs(path) {
+			path = filepath.Join(targetPath, mount.Src)
+		}
+		storageMounts[i].Src = path
+	}
 }

@@ -187,7 +187,7 @@ func (b *Builder) trySource(clusterID, dstContext string, source v1alpha1.Kubeco
 		getter = b.fromClusterAPI(clusterID, source.ClusterAPI)
 	default:
 		// TODO add validation for fast fails to clustermap interface instead of this
-		return nil, &ErrUknownKubeconfigSourceType{Type: string(source.Type)}
+		return nil, &ErrUnknownKubeconfigSourceType{Type: string(source.Type)}
 	}
 	kubeBytes, err := getter()
 	if err != nil {

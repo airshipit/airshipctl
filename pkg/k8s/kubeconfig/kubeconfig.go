@@ -113,10 +113,7 @@ func FromSecret(c client.Interface, o *client.GetKubeconfigOptions) KubeSourceFu
 // FromFile returns KubeSource type, uses path to kubeconfig on FS as source to construct kubeconfig object
 func FromFile(path string, fSys fs.FileSystem) KubeSourceFunc {
 	return func() ([]byte, error) {
-		expandedPath, err := util.ExpandTilde(path)
-		if err != nil {
-			return nil, err
-		}
+		expandedPath := util.ExpandTilde(path)
 		if fSys == nil {
 			fSys = fs.NewDocumentFs()
 		}

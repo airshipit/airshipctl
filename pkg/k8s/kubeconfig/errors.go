@@ -40,11 +40,11 @@ func IsErrAllSourcesFailedErr(err error) bool {
 	return ok
 }
 
-// ErrUknownKubeconfigSourceType returned type of kubeconfig source is unknown
-type ErrUknownKubeconfigSourceType struct {
+// ErrUnknownKubeconfigSourceType returned type of kubeconfig source is unknown
+type ErrUnknownKubeconfigSourceType struct {
 	Type string
 }
 
-func (e *ErrUknownKubeconfigSourceType) Error() string {
+func (e *ErrUnknownKubeconfigSourceType) Error() string {
 	return fmt.Sprintf("unknown source type %s", e.Type)
 }

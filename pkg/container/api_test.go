@@ -19,6 +19,7 @@ import (
 	"context"
 	"io"
 	"io/ioutil"
+	"path/filepath"
 	"testing"
 
 	"github.com/docker/docker/api/types"
@@ -29,6 +30,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
+	"opendev.org/airship/airshipctl/pkg/util"
 )
 
 func bundlePathToInput(t *testing.T, bundlePath string) io.Reader {
@@ -56,7 +58,7 @@ func TestGenericContainer(t *testing.T) {
 	}{
 		{
 			name:        "error unknown container type",
-			expectedErr: "uknown generic container type",
+			expectedErr: "unknown generic container type",
 			containerAPI: &v1alpha1.GenericContainer{
 				Spec: v1alpha1.GenericContainerSpec{
 					Type: "unknown",
@@ -65,7 +67,7 @@ func TestGenericContainer(t *testing.T) {
 			execFunc: NewContainer,
 		},
 		{
-			name: "error kyaml cant parse config",
+			name: "error kyaml can't parse config",
 			containerAPI: &v1alpha1.GenericContainer{
 				Spec: v1alpha1.GenericContainerSpec{
 					Type: v1alpha1.GenericContainerTypeKrm,
@@ -144,6 +146,11 @@ func TestGenericContainer(t *testing.T) {
 							MountType: "bind",
 							Src:       "test",
 							DstPath:   "/mount",
+						},
+						{
+							MountType: "bind",
+							Src:       "~/test",
+							DstPath:   "/mnt",
 						},
 					},
 				},
@@ -234,6 +241,42 @@ func TestGenericContainer(t *testing.T) {
 
 // Dummy test to keep up with coverage.
 func TestNewClientV1alpha1(t *testing.T) {
-	client := NewClientV1Alpha1("", nil, nil, v1alpha1.DefaultGenericContainer())
+	client := NewClientV1Alpha1("", nil, nil, v1alpha1.DefaultGenericContainer(), "")
 	require.NotNil(t, client)
+}
+
+func TestExpandSourceMounts(t *testing.T) {
+	tests := []struct {
+		name           string
+		inputMounts    []v1alpha1.StorageMount
+		targetPath     string
+		expectedMounts []v1alpha1.StorageMount
+	}{
+		{
+			name:           "absolute path",
+			inputMounts:    []v1alpha1.StorageMount{{Src: "/test"}},
+			targetPath:     "/target-path",
+			expectedMounts: []v1alpha1.StorageMount{{Src: "/test"}},
+		},
+		{
+			name:           "tilde path",
+			inputMounts:    []v1alpha1.StorageMount{{Src: "~/test"}},
+			targetPath:     "/target-path",
+			expectedMounts: []v1alpha1.StorageMount{{Src: util.ExpandTilde("~/test")}},
+		},
+		{
+			name:           "relative path",
+			inputMounts:    []v1alpha1.StorageMount{{Src: "test"}},
+			targetPath:     "/target-path",
+			expectedMounts: []v1alpha1.StorageMount{{Src: filepath.Join("/target-path", "test")}},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			ExpandSourceMounts(tt.inputMounts, tt.targetPath)
+			require.Equal(t, tt.expectedMounts, tt.inputMounts)
+		})
+	}
 }

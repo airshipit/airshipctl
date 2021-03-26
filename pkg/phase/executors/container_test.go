@@ -48,11 +48,15 @@ const (
       src: /home/ubuntu/mounts
       dst: /my-mounts
       rw: true
+    - type: bind
+      src: ~/mounts
+      dst: /my-tilde-mount
+      rw: true
   config: |
     apiVersion: v1
     kind: ConfigMap
     metadata:
-      name: my-srange-name
+      name: my-strange-name
     data:
       cmd: encrypt
       unencrypted-regex: '^(kind|apiVersion|group|metadata)$'`
@@ -114,7 +118,7 @@ func TestGenericContainer(t *testing.T) {
 	}{
 		{
 			name:        "error unknown container type",
-			expectedErr: "uknown generic container type",
+			expectedErr: "unknown generic container type",
 			containerAPI: &v1alpha1.GenericContainer{
 				Spec: v1alpha1.GenericContainerSpec{
 					Type: "unknown",
@@ -202,7 +206,7 @@ type: Opaque
 			ch := make(chan events.Event)
 			go container.Run(ch, tt.runOptions)
 
-			var actualEvt []events.Event
+			actualEvt := make([]events.Event, 0)
 			for evt := range ch {
 				actualEvt = append(actualEvt, evt)
 			}
@@ -275,7 +279,7 @@ type fakeKubeConfig struct {
 
 func (k fakeKubeConfig) GetFile() (string, kubeconfig.Cleanup, error) { return k.getFile() }
 func (k fakeKubeConfig) Write(_ io.Writer) error                      { return nil }
-func (k fakeKubeConfig) WriteFile(path string) error                  { return nil }
-func (k fakeKubeConfig) WriteTempFile(dumpRoot string) (string, kubeconfig.Cleanup, error) {
+func (k fakeKubeConfig) WriteFile(_ string) error                     { return nil }
+func (k fakeKubeConfig) WriteTempFile(_ string) (string, kubeconfig.Cleanup, error) {
 	return k.getFile()
 }
