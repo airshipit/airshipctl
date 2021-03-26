@@ -17,9 +17,8 @@ package cluster
 import (
 	"github.com/spf13/cobra"
 
-	"opendev.org/airship/airshipctl/pkg/cluster"
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/k8s/client"
+	"opendev.org/airship/airshipctl/pkg/errors"
 )
 
 // NewStatusCommand creates a command which reports the statuses of a cluster's deployed components.
@@ -28,7 +27,7 @@ func NewStatusCommand(cfgFactory config.Factory) *cobra.Command {
 	statusCmd := &cobra.Command{
 		Use:   "status",
 		Short: "Retrieve statuses of deployed cluster components",
-		RunE:  clusterStatusRunE(cfgFactory, kubeconfig),
+		RunE:  clusterStatusRunE,
 	}
 
 	statusCmd.Flags().StringVar(
@@ -40,8 +39,6 @@ func NewStatusCommand(cfgFactory config.Factory) *cobra.Command {
 	return statusCmd
 }
 
-func clusterStatusRunE(cfgFactory config.Factory, kubeconfig string) func(cmd *cobra.Command, args []string) error {
-	return func(cmd *cobra.Command, args []string) error {
-		return cluster.StatusRunner(cluster.NewStatusOptions(cfgFactory, client.DefaultClient, kubeconfig), cmd.OutOrStdout())
-	}
+func clusterStatusRunE(cmd *cobra.Command, args []string) error {
+	return errors.ErrNotImplemented{What: "Cluster Status"}
 }
