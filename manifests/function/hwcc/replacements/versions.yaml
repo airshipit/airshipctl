@@ -15,7 +15,7 @@ replacements:
   target:
     objref:
       kind: Deployment
-      name: controller-manager
+      name: hardware-classification-controller-manager
     fieldrefs: ["spec.template.spec.containers[name=manager].image"]
 - source:
     objref:
@@ -25,6 +25,6 @@ replacements:
   target:
     objref:
       kind: Deployment
-      name: controller-manager
+      name: hardware-classification-controller-manager
     fieldrefs: ["spec.template.spec.containers[name=kube-rbac-proxy].image"]
 
