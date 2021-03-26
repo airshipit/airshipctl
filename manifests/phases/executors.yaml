@@ -196,10 +196,10 @@ metadata:
 spec:
   operation: remote-direct
   hostSelector:
-    name: REPLACE_ME
+    name: EPHEMERAL_NODE
   operationOptions:
     remoteDirect:
-      isoURL: REPLACE_ME
+      isoURL: ISO_URL
 ---
 apiVersion: airshipit.org/v1alpha1
 kind: GenericContainer

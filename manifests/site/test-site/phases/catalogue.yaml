@@ -1,0 +1,10 @@
+apiVersion: airshipit.org/v1alpha1
+kind: VersionsCatalogue
+metadata:
+  name: versions-remotedirect
+spec:
+  remotedirect:
+    # NOTE(aostapenko) This value will only be used in absense of
+    # AIRSHIPCTL_EPHEMERAL_ISO_URL environment variable
+    isoURL: http://localhost:8099/ephemeral.iso
+    node: node02
