@@ -1,0 +1,28 @@
+apiVersion: airshipit.org/v1alpha1
+kind: Templater
+metadata:
+  name: iso-patch-template
+  annotations:
+    config.kubernetes.io/function: |
+      container:
+        image: quay.io/airshipit/templater:latest
+        envs:
+        - AIRSHIPCTL_EPHEMERAL_ISO_URL
+template: |
+  {{- $isoURL := env "AIRSHIPCTL_EPHEMERAL_ISO_URL" }}
+  {{- if not (empty $isoURL) }}
+  apiVersion: builtin
+  kind: PatchStrategicMergeTransformer
+  metadata:
+    name: smp
+  patches: |-
+    ---
+    apiVersion: airshipit.org/v1alpha1
+    kind: BaremetalManager
+    metadata:
+      name: RemoteDirectEphemeral
+    spec:
+      operationOptions:
+        remoteDirect:
+          isoURL: {{ $isoURL }}
+  {{- end }}
