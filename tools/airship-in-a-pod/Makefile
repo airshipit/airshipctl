@@ -1,5 +1,5 @@
 IMAGE_REGISTRY    ?= quay.io/airshipit
-IMAGES            := infra-builder airshipctl-builder runner
+IMAGES            := infra-builder artifact-setup runner
 IMAGE_TAG         ?= latest
 
 PUSH_IMAGES       ?= false
@@ -34,6 +34,12 @@ ifeq (true, $(PUSH_IMAGES))
 	docker push $(IMAGE_REGISTRY)/aiap-$@:$(IMAGE_TAG)
 endif
 
-test: build ## Test airship-in-a-pod
-	kubectl delete -f airship-in-a-pod.yaml || true
-	kubectl create -f airship-in-a-pod.yaml
+test: test-airshipctl test-treasuremap
+
+test-airshipctl: build
+	kubectl delete pod  airship-in-a-pod || true
+	kustomize build ./examples/airshipctl | kubectl apply -f -
+
+test-treasuremap: build
+	kubectl delete pod  airship-in-a-pod || true
+	kustomize build ./examples/airshipctl | kubectl apply -f -

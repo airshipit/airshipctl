@@ -20,9 +20,11 @@ spec:
   containers:
 
   - name: libvirt
-    image: ianhowell/libvirt:latest
+    image: quay.io/airshipit/libvirt:aiap-v1
     # Set to true for debugging
-    tty: false
+    # 18June2021 : reverting #578 fix due to erratic behaviour
+    # for “setctty: operation not permitted" error, set tty:false
+    tty: true
     securityContext:
       privileged: true
       #SYS_ADMIN required for systemd, need to work out reqs for libvirt
@@ -180,9 +182,13 @@ spec:
         mountPath: /var/run/
       - name: srv
         mountPath: /srv/
+      - name: airship-config
+        mountPath: /root/.airship
+      - name: var-run-libvirt
+        mountPath: /var/run/libvirt
 
-  - name: airshipctl-builder
-    image: quay.io/airshipit/aiap-airshipctl-builder:latest
+  - name: artifact-setup
+    image: quay.io/airshipit/aiap-artifact-setup:latest
     command:
       - bash
       - -cex
@@ -194,18 +200,22 @@ spec:
         command:
         - test
         - -e
-        - /tmp/completed/airshipctl-builder
+        - /tmp/completed/artifact-setup
     env:
       - name: CACHE_DIR
         value: /opt/aiap-cache
-      - name: USE_CACHED_AIRSHIPCTL
+      - name: USE_CACHED_ARTIFACTS
         value: "false"
       - name: ARTIFACTS_DIR
         value: /opt/aiap-artifacts
-      - name: AIRSHIPCTL_REPO
+      - name: MANIFEST_REPO_URL
         value: https://review.opendev.org/airship/airshipctl
-      - name: AIRSHIPCTL_REF
+      - name: MANIFEST_REPO_REF
         value: master
+      - name: MANIFEST_REPO_NAME
+        value: airshipctl
+      - name: AIRSHIPCTL_REF
+        value:
     volumeMounts:
       - name: tmp
         mountPath: /tmp
@@ -217,6 +227,8 @@ spec:
         mountPath: /tmp/completed
       - name: var-run-docker
         mountPath: /var/run
+      - name: var-run-libvirt
+        mountPath: /var/run/libvirt
 
   - name: infra-builder
     image: quay.io/airshipit/aiap-infra-builder:latest
@@ -284,6 +296,8 @@ spec:
         value: /opt/aiap-artifacts
       - name: USE_CACHED_ISO
         value: "false"
+      - name: MANIFEST_REPO_NAME
+        value: airshipctl
     volumeMounts:
       - name: cache
         mountPath: /opt/aiap-cache
@@ -305,6 +319,8 @@ spec:
         mountPath: /var/log/
       - name: var-run-docker
         mountPath: /var/run
+      - name: airship-config
+        mountPath: /root/.airship
 
   volumes:
     - name: cache
@@ -321,6 +337,8 @@ spec:
     - name: tmp
       emptyDir:
         medium: "Memory"
+    - name: airship-config
+      emptyDir: {}
     - name: run
       emptyDir:
         medium: "Memory"

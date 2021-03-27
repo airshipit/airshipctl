@@ -14,8 +14,8 @@
 
 set -ex
 
-# Wait until airshipctl and libvirt infrastructure has been built
-/wait_for airshipctl-builder
+# Wait until artifact-setup and libvirt infrastructure has been built
+/wait_for artifact-setup
 /wait_for infra-builder
 
 export USER=root
@@ -28,35 +28,62 @@ kustomize_download_url="https://github.com/kubernetes-sigs/kustomize/releases/do
 curl -sSL "$kustomize_download_url" | tar -C /tmp -xzf -
 install /tmp/kustomize /usr/local/bin
 
-cp "$ARTIFACTS_DIR/airshipctl/bin/airshipctl" /usr/local/bin/airshipctl
-cp -r "$ARTIFACTS_DIR/airshipctl/" /opt/airshipctl
-cd /opt/airshipctl
+cp "$ARTIFACTS_DIR/$MANIFEST_REPO_NAME/bin/airshipctl" /usr/local/bin/airshipctl
+if [ $MANIFEST_REPO_NAME != "airshipctl" ]
+then
+        export AIRSHIP_CONFIG_PHASE_REPO_URL="https://opendev.org/airship/treasuremap"
+	cp -r $ARTIFACTS_DIR/airshipctl/ /opt/airshipctl
+fi
 
+cp  -r $ARTIFACTS_DIR/$MANIFEST_REPO_NAME/ /opt/$MANIFEST_REPO_NAME
+cd /opt/$MANIFEST_REPO_NAME
 
-curl -fsSL -o key.asc https://raw.githubusercontent.com/mozilla/sops/master/pgp/sops_functional_tests_key.asc
-SOPS_IMPORT_PGP="$(cat key.asc)"
 SOPS_PGP_FP="FBC7B9E2A4F9289AC0C1D4843D16CEE4A27381B4"
-export SOPS_IMPORT_PGP SOPS_PGP_FP
+curl -fsSL -o /tmp/key.asc https://raw.githubusercontent.com/mozilla/sops/master/pgp/sops_functional_tests_key.asc
+echo 'export SOPS_IMPORT_PGP="$(cat /tmp/key.asc)"' >> ~/.profile
+echo "export SOPS_PGP_FP=${SOPS_PGP_FP}" >> ~/.profile
+source ~/.profile
+
+export AIRSHIP_CONFIG_MANIFEST_DIRECTORY="/tmp/airship"
 
 # By default, don't build airshipctl - use the binary from the shared volume instead
 # ./tools/deployment/21_systemwide_executable.sh
-./tools/deployment/22_test_configs.sh
-./tools/deployment/23_pull_documents.sh
-./tools/deployment/23_generate_secrets.sh
+if [ "$MANIFEST_REPO_NAME" == "airshipctl" ]
+then
+  ./tools/deployment/22_test_configs.sh
+  ./tools/deployment/23_pull_documents.sh
+  ./tools/deployment/23_generate_secrets.sh
+else
+  ./tools/deployment/airship-core/22_test_configs.sh
+  ./tools/deployment/airship-core/23_pull_documents.sh
+  ./tools/deployment/airship-core/23_generate_secrets.sh
 
-sed -i -e 's#bmcAddress: redfish+http://\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\):8000#bmcAddress: redfish+https://10.23.25.1:8443#' /tmp/airship/airshipctl/manifests/site/test-site/target/catalogues/hosts.yaml
-sed -i -e 's#root#username#' /tmp/airship/airshipctl/manifests/site/test-site/target/catalogues/hosts.yaml
-sed -i -e 's#r00tme#password#' /tmp/airship/airshipctl/manifests/site/test-site/target/catalogues/hosts.yaml
-sed -i -e 's#disableCertificateVerification: false#disableCertificateVerification: true#' /tmp/airship/airshipctl/manifests/site/test-site/target/catalogues/hosts.yaml
+fi
+
+sed -i -e 's#bmcAddress: redfish+http://\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\):8000#bmcAddress: redfish+https://10.23.25.1:8443#' "/tmp/airship/$MANIFEST_REPO_NAME/manifests/site/test-site/target/catalogues/hosts.yaml"
+sed -i -e 's#root#username#' "/tmp/airship/$MANIFEST_REPO_NAME/manifests/site/test-site/target/catalogues/hosts.yaml"
+sed -i -e 's#r00tme#password#' "/tmp/airship/$MANIFEST_REPO_NAME/manifests/site/test-site/target/catalogues/hosts.yaml"
+sed -i -e 's#disableCertificateVerification: false#disableCertificateVerification: true#' "/tmp/airship/$MANIFEST_REPO_NAME/manifests/site/test-site/target/catalogues/hosts.yaml"
 
 if [[ "$USE_CACHED_ISO" = "true" ]]; then
   mkdir -p /srv/images
   tar -xzf "$CACHE_DIR/iso.tar.gz" --directory /srv/images
 else
-  ./tools/deployment/24_build_images.sh
+  if [ "$MANIFEST_REPO_NAME" == "airshipctl" ]
+  then
+     ./tools/deployment/24_build_images.sh
+  else
+     ./tools/deployment/airship-core/24_build_images.sh
+  fi
+
   tar -czf "$ARTIFACTS_DIR/iso.tar.gz" --directory=/srv/images .
 fi
 
-./tools/deployment/25_deploy_gating.sh
+if [ "$MANIFEST_REPO_NAME" == "airshipctl" ]
+then
+  ./tools/deployment/25_deploy_gating.sh
+else
+  ./tools/deployment/airship-core/25_deploy_gating.sh
+fi
 
 /signal_complete runner
