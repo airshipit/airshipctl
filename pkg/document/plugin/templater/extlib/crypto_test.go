@@ -168,3 +168,12 @@ func TestNameFromString(t *testing.T) {
 		assert.Equal(t, tc.expectedOut, *r)
 	}
 }
+
+func TestGenSSHKeyPair(t *testing.T) {
+	key, err := genSSHKeyPair(2048)
+	assert.Nil(t, err)
+	assert.NotNil(t, key.Private)
+	assert.NotNil(t, key.Public)
+	assert.Contains(t, key.Private, "RSA PRIVATE KEY")
+	assert.Contains(t, key.Public, "ssh-rsa")
+}
