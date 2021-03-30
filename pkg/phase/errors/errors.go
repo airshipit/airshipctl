@@ -52,6 +52,15 @@ func (e ErrRenderPhaseNameNotSpecified) Error() string {
 		e.Sources)
 }
 
+// ErrInvalidFormat is called when the user provides format other than yaml/json
+type ErrInvalidFormat struct {
+	RequestedFormat string
+}
+
+func (e ErrInvalidFormat) Error() string {
+	return fmt.Sprintf("invalid output format specified %s. Allowed values are table|yaml", e.RequestedFormat)
+}
+
 // ErrInvalidPhase is returned if the phase is invalid
 type ErrInvalidPhase struct {
 	Reason string

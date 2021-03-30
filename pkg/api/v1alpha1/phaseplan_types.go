@@ -30,5 +30,6 @@ type PhasePlan struct {
 
 // PhaseStep represents phase (or step) within a phase plan
 type PhaseStep struct {
-	Name string `json:"name,omitempty"`
+	Name      string `json:"name,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
 }

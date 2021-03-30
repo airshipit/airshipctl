@@ -1,4 +1,5 @@
 resources:
+  - phases.yaml
   - phaseplan.yaml
   - some_phase.yaml
   - some_exc.yaml
