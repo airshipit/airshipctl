@@ -27,6 +27,22 @@ List life-cycle phases which were defined in document model by group.
 Phases within a group are executed sequentially. Multiple phase groups
 are executed in parallel.
 `
+	listExample = `
+# List phases of phasePlan
+airshipctl phase list --plan phasePlan
+
+# To output the contents to table (default operation)
+airshipctl phase list --plan phasePlan -o table
+
+# To output the contents to yaml
+airshipctl phase list --plan phasePlan -o yaml
+
+# List all phases
+airshipctl phase list
+
+# List phases with clustername
+airshipctl phase list --cluster-name clustername
+`
 )
 
 // NewListCommand creates a command which prints available phases
@@ -34,9 +50,10 @@ func NewListCommand(cfgFactory config.Factory) *cobra.Command {
 	p := &phase.ListCommand{Factory: cfgFactory}
 
 	planCmd := &cobra.Command{
-		Use:   "list",
-		Short: "List phases",
-		Long:  cmdLong[1:],
+		Use:     "list PHASE_NAME",
+		Short:   "List phases",
+		Long:    cmdLong[1:],
+		Example: listExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			p.Writer = cmd.OutOrStdout()
 			return p.RunE()
@@ -62,4 +79,10 @@ func addListFlags(options *phase.ListCommand, cmd *cobra.Command) {
 		"plan",
 		"",
 		"Plan name of a plan")
+
+	flags.StringVarP(
+		&options.OutputFormat,
+		"output", "o", "table", "'table' "+
+			"and 'yaml' are available "+
+			"output formats")
 }
