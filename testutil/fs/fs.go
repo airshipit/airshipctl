@@ -62,7 +62,7 @@ func (fsys MockFileSystem) Dir(path string) string {
 type TestFile struct {
 	fs.File
 	MockName  func() string
-	MockWrite func() (int, error)
+	MockWrite func([]byte) (int, error)
 	MockClose func() error
 }
 
@@ -70,7 +70,7 @@ type TestFile struct {
 func (f TestFile) Name() string { return f.MockName() }
 
 // Write File interface implementation
-func (f TestFile) Write([]byte) (int, error) { return f.MockWrite() }
+func (f TestFile) Write(b []byte) (int, error) { return f.MockWrite(b) }
 
 // Close File interface implementation
 func (f TestFile) Close() error { return f.MockClose() }

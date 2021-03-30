@@ -83,7 +83,7 @@ func TestApply(t *testing.T) {
 				MockTempFile: func(string, string) (fs.File, error) {
 					return testfs.TestFile{
 						MockName:  func() string { return filenameRC },
-						MockWrite: func() (int, error) { return 0, nil },
+						MockWrite: func([]byte) (int, error) { return 0, nil },
 						MockClose: func() error { return nil },
 					}, nil
 				},
@@ -100,7 +100,7 @@ func TestApply(t *testing.T) {
 				MockRemoveAll: func() error { return nil },
 				MockTempFile: func(string, string) (fs.File, error) {
 					return testfs.TestFile{
-						MockWrite: func() (int, error) { return 0, ErrTempFileError },
+						MockWrite: func([]byte) (int, error) { return 0, ErrTempFileError },
 						MockName:  func() string { return filenameRC },
 						MockClose: func() error { return nil },
 					}, nil

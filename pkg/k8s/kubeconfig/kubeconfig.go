@@ -24,6 +24,7 @@ import (
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
+
 	"sigs.k8s.io/yaml"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
@@ -48,7 +49,8 @@ type Interface interface {
 	// Write will write kubeconfig to the provided writer
 	Write(w io.Writer) error
 	// WriteFile will write kubeconfig data to specified path
-	WriteFile(path string) error
+	// WriteOptions holds additional option when writing kubeconfig to file
+	WriteFile(path string, options WriteOptions) error
 	// WriteTempFile writes a file a temporary file, returns path to it, cleanup function and error
 	// it is responsibility of the caller to use the cleanup function to make sure that there are no leftovers
 	WriteTempFile(dumpRoot string) (string, Cleanup, error)
@@ -63,6 +65,11 @@ type kubeConfig struct {
 
 	fileSystem fs.FileSystem
 	sourceFunc KubeSourceFunc
+}
+
+// WriteOptions holds additional option while writing kubeconfig to the file
+type WriteOptions struct {
+	Merge bool
 }
 
 // NewKubeConfig serves as a constructor for kubeconfig Interface
@@ -206,8 +213,14 @@ func InjectFilePath(path string, fSys fs.FileSystem) Option {
 	}
 }
 
-func (k *kubeConfig) WriteFile(path string) (err error) {
-	data, err := k.bytes()
+func (k *kubeConfig) WriteFile(path string, options WriteOptions) error {
+	var data []byte
+	var err error
+	if options.Merge && path != "" {
+		data, err = k.mergedBytes(path)
+	} else {
+		data, err = k.bytes()
+	}
 	if err != nil {
 		return err
 	}
@@ -251,6 +264,24 @@ func (k *kubeConfig) bytes() ([]byte, error) {
 		k.savedByes, err = k.sourceFunc()
 	}
 	return k.savedByes, err
+}
+
+// mergedBytes takes the file path and return byte data of the kubeconfig file to be written
+func (k *kubeConfig) mergedBytes(path string) ([]byte, error) {
+	kFile, cleanup, err := k.WriteTempFile(k.dumpRoot)
+	if err != nil {
+		return []byte{}, err
+	}
+	defer cleanup()
+
+	rules := clientcmd.ClientConfigLoadingRules{
+		Precedence: []string{path, kFile},
+	}
+	mergedConfig, err := rules.Load()
+	if err != nil {
+		return []byte{}, err
+	}
+	return clientcmd.Write(*mergedConfig)
 }
 
 // GetFile checks if path to kubeconfig is already set and returns it no cleanup is necessary,

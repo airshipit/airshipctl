@@ -63,6 +63,52 @@ users:
     client-certificate-data: cert-data
     client-key-data: client-keydata
 `
+	testValidKubeconfigTwo = `
+apiVersion: v1
+clusters:
+- cluster:
+    server: https://10.0.1.7:6443
+  name: kubernetes_target
+contexts:
+- context:
+    cluster: kubernetes_target
+    user: kubernetes-admin
+  name: kubernetes-admin@kubernetes
+current-context: ""
+kind: Config
+preferences: {}
+users:
+- name: kubernetes-admin
+  user: {}
+`
+	//testMergedValidKubeconfig tests to confirm whether two kubeconfig got merged or not
+	testMergedValidKubeconfig = `
+apiVersion: v1
+clusters:
+- cluster:
+    server: https://10.23.25.101:6443
+  name: dummycluster_ephemeral
+- cluster:
+    server: https://10.0.1.7:6443
+  name: kubernetes_target
+contexts:
+- context:
+    cluster: dummycluster_ephemeral
+    user: kubernetes-admin
+  name: dummy_cluster
+- context:
+    cluster: kubernetes_target
+    user: kubernetes-admin
+  name: kubernetes-admin@kubernetes
+current-context: dummy_cluster
+kind: Config
+preferences: {}
+users:
+- name: kubernetes-admin
+  user:
+    client-certificate-data: dGVzdAo=
+    client-key-data: dGVzdAo=
+`
 )
 
 var (
@@ -297,7 +343,7 @@ func TestNewKubeConfig(t *testing.T) {
 						MockTempFile: func(root, pattern string) (fs.File, error) {
 							return testfs.TestFile{
 								MockName:  func() string { return "kubeconfig-142398" },
-								MockWrite: func() (int, error) { return 0, nil },
+								MockWrite: func([]byte) (int, error) { return 0, nil },
 								MockClose: func() error { return nil },
 							}, nil
 						},
@@ -322,7 +368,7 @@ func TestNewKubeConfig(t *testing.T) {
 							}
 							return testfs.TestFile{
 								MockName:  func() string { return "kubeconfig-142398" },
-								MockWrite: func() (int, error) { return 0, nil },
+								MockWrite: func([]byte) (int, error) { return 0, nil },
 								MockClose: func() error { return nil },
 							}, nil
 						},
@@ -440,6 +486,7 @@ func TestKubeConfigWriteFile(t *testing.T) {
 		expectedContent       string
 		path                  string
 		expectedErrorContains string
+		merge                 bool
 
 		fs  fs.FileSystem
 		src kubeconfig.KubeSourceFunc
@@ -448,26 +495,52 @@ func TestKubeConfigWriteFile(t *testing.T) {
 			name:            "Basic write file",
 			src:             kubeconfig.FromByte([]byte(testValidKubeconfig)),
 			expectedContent: testValidKubeconfig,
+			merge:           false,
 			fs:              fsWithFile(t, "/test-path"),
 			path:            "/test-path",
+		},
+		{
+			name:            "Basic merge write file",
+			src:             kubeconfig.FromByte([]byte(testValidKubeconfigTwo)),
+			expectedContent: testMergedValidKubeconfig,
+			merge:           true,
+			fs:              fs.NewDocumentFs(),
+			path:            "testdata/kubeconfig-test",
 		},
 		{
 			name:                  "Source error",
 			src:                   func() ([]byte, error) { return nil, errSourceFunc },
 			expectedErrorContains: errSourceFunc.Error(),
+			merge:                 false,
 		},
 	}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			kubeconf := kubeconfig.NewKubeConfig(tt.src, kubeconfig.InjectFileSystem(tt.fs))
-			err := kubeconf.WriteFile(tt.path)
+			kubeconf := kubeconfig.NewKubeConfig(tt.src,
+				kubeconfig.InjectTempRoot("testdata/"),
+				kubeconfig.InjectFileSystem(tt.fs))
+			options := kubeconfig.WriteOptions{
+				Merge: tt.merge,
+			}
+			if tt.merge {
+				_, clean, err := kubeconf.GetFile()
+				require.NoError(t, err)
+				defer clean()
+				original, err := ioutil.ReadFile(tt.path)
+				require.NoError(t, err)
+				defer func() {
+					err = ioutil.WriteFile(tt.path, original, 0600)
+					require.NoError(t, err)
+				}()
+			}
+			err := kubeconf.WriteFile(tt.path, options)
 			if tt.expectedErrorContains != "" {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), tt.expectedErrorContains)
 			} else {
 				require.NoError(t, err)
-				assert.Equal(t, tt.expectedContent, readFile(t, tt.path, tt.fs))
+				assert.YAMLEq(t, tt.expectedContent, readFile(t, tt.path, tt.fs))
 			}
 		})
 	}
@@ -486,10 +559,18 @@ func read(t *testing.T, r io.Reader) string {
 }
 
 func fsWithFile(t *testing.T, path string) fs.FileSystem {
+	memFs := kustfs.MakeFsInMemory()
 	fSys := testfs.MockFileSystem{
-		FileSystem: kustfs.MakeFsInMemory(),
+		FileSystem: memFs,
 		MockRemoveAll: func() error {
 			return nil
+		},
+		MockTempFile: func(root, pattern string) (fs.File, error) {
+			return testfs.TestFile{
+				MockName:  func() string { return "kubeconfig-142398" },
+				MockWrite: func(b []byte) (int, error) { return 0, memFs.WriteFile("kubeconfig-142398", b) },
+				MockClose: func() error { return nil },
+			}, nil
 		},
 	}
 	err := fSys.WriteFile(path, []byte(testValidKubeconfig))

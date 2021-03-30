@@ -37,6 +37,14 @@ Retrieve target-cluster kubeconfig
 
 Retrieve kubeconfig for the entire site; the kubeconfig will have context for every cluster
 # airshipctl cluster get-kubeconfig
+
+Specify a file where kubeconfig should be written
+# airshipctl cluster get-kubeconfig --file ~/my-kubeconfig
+
+Merge site kubeconfig with existing kubeconfig file.
+Keep in mind that this can override a context if it has the same name
+Airshipctl will overwrite the contents of the file, if you want merge with existing file, specify "--merge" flag
+# airshipctl cluster get-kubeconfig --file ~/.airship/kubeconfig --merge
 `
 )
 
@@ -53,6 +61,21 @@ func NewGetKubeconfigCommand(cfgFactory config.Factory) *cobra.Command {
 			return opts.RunE(cfgFactory, cmd.OutOrStdout())
 		},
 	}
+	flags := cmd.Flags()
+
+	flags.StringVarP(
+		&opts.File,
+		"file",
+		"f",
+		"",
+		"specify where to write kubeconfig file. If flag isn't specified, airshipctl will write it to stdout",
+	)
+	flags.BoolVar(
+		&opts.Merge,
+		"merge",
+		false,
+		"specify if you want to merge kubeconfig with the one that exists at --file location",
+	)
 	return cmd
 }
 
