@@ -91,7 +91,7 @@ func TestNewContainerExecutor(t *testing.T) {
 	t.Run("success new container executor", func(t *testing.T) {
 		e, err := executors.NewContainerExecutor(ifc.ExecutorConfig{
 			ExecutorDocument: execDoc,
-			BundleFactory:    testBundleFactory(singleExecutorBundlePath),
+			BundleFactory:    testBundleFactory(),
 		})
 		assert.NoError(t, err)
 		assert.NotNil(t, e)

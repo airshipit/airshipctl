@@ -70,18 +70,23 @@ func NewKubeApplierExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 		clusterMap:       cfg.ClusterMap,
 		clusterName:      cfg.ClusterName,
 		kubeconfig:       cfg.KubeConfig,
+		// default cleanup that does nothing
+		// replaced with a meaningful cleanup while preparing kubeconfig
+		cleanup: func() {},
 	}, nil
 }
 
 // Run executor, should be performed in separate go routine
 func (e *KubeApplierExecutor) Run(ch chan events.Event, runOpts ifc.RunOptions) {
 	defer close(ch)
+
 	applier, filteredBundle, err := e.prepareApplier(ch)
 	if err != nil {
 		handleError(ch, err)
 		return
 	}
 	defer e.cleanup()
+
 	dryRunStrategy := common.DryRunNone
 	if runOpts.DryRun {
 		dryRunStrategy = common.DryRunClient
@@ -102,6 +107,11 @@ func (e *KubeApplierExecutor) Run(ch chan events.Event, runOpts ifc.RunOptions) 
 }
 
 func (e *KubeApplierExecutor) prepareApplier(ch chan events.Event) (*k8sapplier.Applier, document.Bundle, error) {
+	log.Debug("Filtering out documents that shouldn't be applied to kubernetes from document bundle")
+	bundle, err := e.ExecutorBundle.SelectBundle(document.NewDeployToK8sSelector())
+	if err != nil {
+		return nil, nil, err
+	}
 	log.Debug("Getting kubeconfig context name from cluster map")
 	context, err := e.clusterMap.ClusterKubeconfigContext(e.clusterName)
 	if err != nil {
@@ -110,12 +120,6 @@ func (e *KubeApplierExecutor) prepareApplier(ch chan events.Event) (*k8sapplier.
 	log.Debug("Getting kubeconfig file information from kubeconfig provider")
 	path, cleanup, err := e.kubeconfig.GetFile()
 	if err != nil {
-		return nil, nil, err
-	}
-	log.Debug("Filtering out documents that shouldn't be applied to kubernetes from document bundle")
-	bundle, err := e.ExecutorBundle.SelectBundle(document.NewDeployToK8sSelector())
-	if err != nil {
-		cleanup()
 		return nil, nil, err
 	}
 	// set up cleanup only if all calls up to here were successful

@@ -16,9 +16,12 @@ package executors_test
 
 import (
 	"bytes"
+	"errors"
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
@@ -30,6 +33,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
+	testdoc "opendev.org/airship/airshipctl/testutil/document"
 	testfs "opendev.org/airship/airshipctl/testutil/fs"
 )
 
@@ -79,58 +83,108 @@ users:
     client-certificate-data: cert-data
     client-key-data: client-keydata
 `
-)
-
-func TestNewKubeApplierExecutor(t *testing.T) {
-	tests := []struct {
-		name          string
-		cfgDoc        string
-		expectedErr   string
-		kubeconf      kubeconfig.Interface
-		bundleFactory document.BundleFactoryFunc
-	}{
-		{
-			name:          "valid executor",
-			cfgDoc:        ValidExecutorDoc,
-			kubeconf:      testKubeconfig(testValidKubeconfig),
-			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
-		},
-		{
-			name: "wrong config document",
-			cfgDoc: `apiVersion: v1
+	WrongExecutorDoc = `apiVersion: v1
 kind: ConfigMap
 metadata:
   name: first-map
   namespace: default
   labels:
-    cli-utils.sigs.k8s.io/inventory-id: "some id"`,
-			expectedErr:   "wrong config document",
-			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
+    cli-utils.sigs.k8s.io/inventory-id: "some id"
+`
+)
+
+func testApplierBundleFactory(t *testing.T, filteredContent string, writer io.Writer) document.BundleFactoryFunc {
+	return func() (document.Bundle, error) {
+		// When the k8s applier executor Run method is called, the executor bundle is filtered
+		// using the label selector "airshipit.org/deploy-k8s notin (False, false)".
+		// Render method just filters out document with a given selector.
+		// That is why we need "SelectBundle" method mocked and return a filtered bundle.
+		filteredBundle := &testdoc.MockBundle{}
+		// Filtered bundle is passed to the k8s applier, which looks it up
+		// for an inventory document using label "cli-utils.sigs.k8s.io/inventory-id"
+		// and kind "ConfigMap". Therefore "SelectOne" method is mocked in the filtered bundle.
+		// This mock is used to get inventory document. Empty document is ok for k8s applier.
+		filteredBundle.On("SelectOne", mock.Anything).Return(&testdoc.MockDocument{}, nil)
+		// This mock is used to get the contents of the applier filtered bundle both for
+		// rendering and for applying it to a k8s cluster.
+		filteredBundle.On("Write", writer).
+			Return(nil).
+			Run(func(args mock.Arguments) {
+				arg, ok := args.Get(0).(io.Writer)
+				if ok {
+					_, err := arg.Write([]byte(filteredContent))
+					require.NoError(t, err)
+				}
+			})
+		// This is the applier executor bundle.
+		bundle := &testdoc.MockBundle{}
+		// This mock is used to filter out documents labeled with
+		// "airshipit.org/deploy-k8s notin (False, false)"
+		bundle.On("SelectBundle", mock.Anything).Return(filteredBundle, nil)
+		return bundle, nil
+	}
+}
+
+func testApplierBundleFactoryFilterError() document.BundleFactoryFunc {
+	return func() (document.Bundle, error) {
+		bundle := &testdoc.MockBundle{}
+		bundle.On("SelectBundle", mock.Anything).
+			Return(nil, errors.New("error"))
+		return bundle, nil
+	}
+}
+
+func testApplierBundleFactoryEmptyAllDocuments() document.BundleFactoryFunc {
+	return func() (document.Bundle, error) {
+		bundle := &testdoc.MockBundle{}
+		bundle.On("GetAllDocuments").Return([]document.Document{}, nil)
+		return bundle, nil
+	}
+}
+
+func testApplierBundleFactoryAllDocuments() document.BundleFactoryFunc {
+	return func() (document.Bundle, error) {
+		bundle := &testdoc.MockBundle{}
+		bundle.On("GetAllDocuments").Return([]document.Document{&testdoc.MockDocument{}}, nil)
+		return bundle, nil
+	}
+}
+
+func TestNewKubeApplierExecutor(t *testing.T) {
+	tests := []struct {
+		name          string
+		execDoc       document.Document
+		expectedErr   bool
+		bundleFactory document.BundleFactoryFunc
+	}{
+		{
+			name:          "valid executor",
+			execDoc:       executorDoc(t, ValidExecutorDoc),
+			bundleFactory: testdoc.EmptyBundleFactory,
+		},
+		{
+			name:        "wrong executor document",
+			execDoc:     executorDoc(t, WrongExecutorDoc),
+			expectedErr: true,
 		},
 
 		{
-			name:          "path to bundle does not exist",
-			cfgDoc:        ValidExecutorDoc,
-			expectedErr:   "no such file or directory",
-			kubeconf:      testKubeconfig(testValidKubeconfig),
-			bundleFactory: testBundleFactory("does not exist"),
+			name:          "bundle factory returns an error",
+			execDoc:       executorDoc(t, ValidExecutorDoc),
+			expectedErr:   true,
+			bundleFactory: testdoc.ErrorBundleFactory,
 		},
 	}
 
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			doc, err := document.NewDocumentFromBytes([]byte(tt.cfgDoc))
-			require.NoError(t, err)
-			require.NotNil(t, doc)
-
 			exec, err := executors.NewKubeApplierExecutor(
 				ifc.ExecutorConfig{
-					ExecutorDocument: doc,
+					ExecutorDocument: tt.execDoc,
 					BundleFactory:    tt.bundleFactory,
-					KubeConfig:       tt.kubeconf,
 				})
-			if tt.expectedErr != "" {
+			if tt.expectedErr {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), "")
 				assert.Nil(t, exec)
@@ -159,9 +213,9 @@ func TestKubeApplierExecutorRun(t *testing.T) {
 		{
 			name:          "cant read kubeconfig error",
 			containsErr:   "no such file or directory",
-			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
+			bundleFactory: testApplierBundleFactory(t, "", nil),
 			kubeconf:      testKubeconfig(`invalid kubeconfig`),
-			execDoc:       executorDoc(t, ValidExecutorDocNamespaced),
+			execDoc:       executorDoc(t, ValidExecutorDoc),
 			clusterName:   "ephemeral-cluster",
 			clusterMap: clustermap.NewClusterMap(&v1alpha1.ClusterMap{
 				Map: map[string]*v1alpha1.Cluster{
@@ -172,10 +226,16 @@ func TestKubeApplierExecutorRun(t *testing.T) {
 		{
 			name:          "error cluster not defined",
 			containsErr:   "is not defined in cluster map",
-			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
+			bundleFactory: testApplierBundleFactory(t, "", nil),
 			kubeconf:      testKubeconfig(testValidKubeconfig),
-			execDoc:       executorDoc(t, ValidExecutorDocNamespaced),
+			execDoc:       executorDoc(t, ValidExecutorDoc),
 			clusterMap:    clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
+		},
+		{
+			name:          "error during executor bundle filtering",
+			containsErr:   "error",
+			execDoc:       executorDoc(t, ValidExecutorDoc),
+			bundleFactory: testApplierBundleFactoryFilterError(),
 		},
 	}
 	for _, tt := range tests {
@@ -189,44 +249,37 @@ func TestKubeApplierExecutorRun(t *testing.T) {
 					ClusterMap:       tt.clusterMap,
 					ClusterName:      tt.clusterName,
 				})
-			if tt.name == "Nil bundle provided" {
+			require.NoError(t, err)
+			require.NotNil(t, exec)
+			ch := make(chan events.Event)
+			go exec.Run(ch, ifc.RunOptions{})
+			processor := events.NewDefaultProcessor(utils.Streams())
+			err = processor.Process(ch)
+			if tt.containsErr != "" {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), tt.containsErr)
 			} else {
-				require.NoError(t, err)
-				require.NotNil(t, exec)
-				ch := make(chan events.Event)
-				go exec.Run(ch, ifc.RunOptions{})
-				processor := events.NewDefaultProcessor(utils.Streams())
-				err = processor.Process(ch)
-				if tt.containsErr != "" {
-					require.Error(t, err)
-					assert.Contains(t, err.Error(), tt.containsErr)
-				} else {
-					assert.NoError(t, err)
-				}
+				assert.NoError(t, err)
 			}
 		})
 	}
 }
 
 func TestRender(t *testing.T) {
-	execDoc, err := document.NewDocumentFromBytes([]byte(ValidExecutorDoc))
-	require.NoError(t, err)
-	require.NotNil(t, execDoc)
+	writer := bytes.NewBuffer([]byte{})
+	content := "Some content"
 	exec, err := executors.NewKubeApplierExecutor(ifc.ExecutorConfig{
-		BundleFactory:    testBundleFactory("../../k8s/applier/testdata/source_bundle"),
-		ExecutorDocument: execDoc,
+		BundleFactory:    testApplierBundleFactory(t, content, writer),
+		ExecutorDocument: executorDoc(t, ValidExecutorDoc),
 	})
 	require.NoError(t, err)
 	require.NotNil(t, exec)
 
-	writerReader := bytes.NewBuffer([]byte{})
-	err = exec.Render(writerReader, ifc.RenderOptions{})
+	err = exec.Render(writer, ifc.RenderOptions{})
 	require.NoError(t, err)
 
-	result := writerReader.String()
-	assert.Contains(t, result, "ReplicationController")
+	result := writer.String()
+	assert.Equal(t, content, result)
 }
 
 func testKubeconfig(stringData string) kubeconfig.Interface {
@@ -247,48 +300,37 @@ func testKubeconfig(stringData string) kubeconfig.Interface {
 }
 
 func TestKubeApplierExecutor_Validate(t *testing.T) {
-	type fields struct {
-		BundleName string
-		path       string
-	}
 	tests := []struct {
-		name    string
-		fields  fields
-		wantErr bool
+		name          string
+		bundleFactory document.BundleFactoryFunc
+		bundleName    string
+		wantErr       bool
 	}{
 		{
-			name: "Error empty BundleName",
-			fields: fields{
-				path: "../../k8s/applier/testdata/source_bundle",
-			},
-			wantErr: true,
+			name:          "Error empty BundleName",
+			bundleFactory: testdoc.EmptyBundleFactory,
+			wantErr:       true,
 		},
 		{
-			name: "Error no documents",
-			fields: fields{BundleName: "some name",
-				path: "../../k8s/applier/testdata/no_bundle",
-			},
-			wantErr: true,
+			name:          "Error no documents",
+			bundleName:    "some name",
+			bundleFactory: testApplierBundleFactoryEmptyAllDocuments(),
+			wantErr:       true,
 		},
 		{
-			name: "Success case",
-			fields: fields{BundleName: "some name",
-				path: "../../k8s/applier/testdata/source_bundle",
-			},
-			wantErr: false,
+			name:          "Success case",
+			bundleName:    "some name",
+			bundleFactory: testApplierBundleFactoryAllDocuments(),
+			wantErr:       false,
 		},
 	}
 	for _, test := range tests {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
-			execDoc, err := document.NewDocumentFromBytes([]byte(ValidExecutorDoc))
-			require.NoError(t, err)
-			require.NotNil(t, execDoc)
-
 			e, err := executors.NewKubeApplierExecutor(ifc.ExecutorConfig{
-				BundleFactory:    testBundleFactory(tt.fields.path),
-				PhaseName:        tt.fields.BundleName,
-				ExecutorDocument: execDoc,
+				BundleFactory:    tt.bundleFactory,
+				PhaseName:        tt.bundleName,
+				ExecutorDocument: executorDoc(t, ValidExecutorDoc),
 			})
 			require.NoError(t, err)
 			require.NotNil(t, e)
