@@ -83,6 +83,86 @@ func (o *RunSetContextOptions) RunSetContext(opts ...ContextOption) error {
 	return cfg.PersistConfig(true)
 }
 
+// ManagementConfigOption is a function that allows to modify ManagementConfig object
+type ManagementConfigOption func(mgmtConf *ManagementConfiguration)
+
+// SetManagementConfigInsecure sets Insecure option in ManagementConfig object
+func SetManagementConfigInsecure(insecure bool) ManagementConfigOption {
+	return func(mgmtConf *ManagementConfiguration) {
+		mgmtConf.Insecure = insecure
+	}
+}
+
+// SetManagementConfigMgmtType sets Type in ManagementConfig object
+func SetManagementConfigMgmtType(mgmtType string) ManagementConfigOption {
+	return func(mgmtCfg *ManagementConfiguration) {
+		mgmtCfg.Type = mgmtType
+	}
+}
+
+// SetManagementConfigUseProxy sets UseProxy in ManagementConfig object
+func SetManagementConfigUseProxy(useProxy bool) ManagementConfigOption {
+	return func(mgmtCfg *ManagementConfiguration) {
+		mgmtCfg.UseProxy = useProxy
+	}
+}
+
+// SetManagementConfigSystemActionRetries sets SystemActionRetries in ManagementConfig object
+func SetManagementConfigSystemActionRetries(sysActionRetries int) ManagementConfigOption {
+	return func(mgmtCfg *ManagementConfiguration) {
+		mgmtCfg.SystemActionRetries = sysActionRetries
+	}
+}
+
+// SetManagementConfigSystemRebootDelay sets SystemRebootDelay in ManagementConfig object
+func SetManagementConfigSystemRebootDelay(sysRebootDelay int) ManagementConfigOption {
+	return func(mgmtCfg *ManagementConfiguration) {
+		mgmtCfg.SystemRebootDelay = sysRebootDelay
+	}
+}
+
+// RunSetManagementConfigOptions are options required to create/modify airshipctl management config
+type RunSetManagementConfigOptions struct {
+	CfgFactory  Factory
+	MgmtCfgName string
+	Writer      io.Writer
+}
+
+// RunSetManagementConfig validates the given command line options and invokes add/modify ManagementConfig
+func (o *RunSetManagementConfigOptions) RunSetManagementConfig(opts ...ManagementConfigOption) error {
+	cfg, err := o.CfgFactory()
+	if err != nil {
+		return err
+	}
+
+	if o.MgmtCfgName == "" {
+		return ErrEmptyManagementConfigurationName{}
+	}
+
+	infoMsg := fmt.Sprintf("management configuration with name %s", o.MgmtCfgName)
+	mgmtCfg, err := cfg.GetManagementConfiguration(o.MgmtCfgName)
+	if err != nil {
+		// context didn't exist, create it
+		cfg.AddManagementConfig(o.MgmtCfgName, opts...)
+		infoMsg = fmt.Sprintf("%s created\n", infoMsg)
+	} else {
+		// Context exists, lets update
+		cfg.ModifyManagementConfig(mgmtCfg, opts...)
+		infoMsg = fmt.Sprintf("%s modified\n", infoMsg)
+	}
+
+	// Verify we didn't break anything
+	if err = cfg.EnsureComplete(); err != nil {
+		return err
+	}
+
+	if _, err := o.Writer.Write([]byte(infoMsg)); err != nil {
+		return err
+	}
+	// Update configuration file just in time persistence approach
+	return cfg.PersistConfig(true)
+}
+
 // RunUseContext validates the given context name and updates it as current context
 func RunUseContext(desiredContext string, airconfig *Config) error {
 	if _, err := airconfig.GetContext(desiredContext); err != nil {

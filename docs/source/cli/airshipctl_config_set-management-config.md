@@ -13,10 +13,12 @@ airshipctl config set-management-config NAME [flags]
 ### Options
 
 ```
-  -h, --help                     help for set-management-config
-      --insecure                 Ignore SSL certificate verification on out-of-band management requests
-      --management-type string   Set the out-of-band management type (default "redfish")
-      --use-proxy                Use the proxy configuration specified in the local environment (default true)
+  -h, --help                        help for set-management-config
+      --insecure                    Ignore SSL certificate verification on out-of-band management requests
+      --management-type string      Set the out-of-band management type (default "redfish")
+      --system-action-retries int   Set the number of attempts to poll a host for a status (default 30)
+      --system-reboot-delay int     Set the number of seconds to wait between power actions (e.g. shutdown, startup) (default 30)
+      --use-proxy                   Use the proxy configuration specified in the local environment (default true)
 ```
 
 ### Options inherited from parent commands
