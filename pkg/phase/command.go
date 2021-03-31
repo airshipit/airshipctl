@@ -26,6 +26,7 @@ import (
 	"sigs.k8s.io/cli-utils/pkg/print/table"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	phaseerrors "opendev.org/airship/airshipctl/pkg/phase/errors"
@@ -247,10 +248,14 @@ func (c *PlanRunCommand) RunE() error {
 type ClusterListCommand struct {
 	Factory config.Factory
 	Writer  io.Writer
+	Format  string
 }
 
 // RunE executes cluster list command
 func (c *ClusterListCommand) RunE() error {
+	if c.Format != "table" && c.Format != "name" {
+		return phaseerrors.ErrInvalidOutputFormat{RequestedFormat: c.Format}
+	}
 	cfg, err := c.Factory()
 	if err != nil {
 		return err
@@ -263,12 +268,9 @@ func (c *ClusterListCommand) RunE() error {
 	if err != nil {
 		return err
 	}
-
-	clusterList := clusterMap.AllClusters()
-	for _, clusterName := range clusterList {
-		if _, err := c.Writer.Write([]byte(clusterName + "\n")); err != nil {
-			return err
-		}
+	err = clusterMap.Write(c.Writer, clustermap.WriteOptions{Format: c.Format})
+	if err != nil {
+		return err
 	}
 	return nil
 }

@@ -26,6 +26,8 @@ const (
 	listExample = `
 # Retrieve cluster list
 airshipctl cluster list --airshipconf /tmp/airconfig
+airshipctl cluster list -o table
+airshipctl cluster list -o name
 `
 )
 
@@ -38,6 +40,11 @@ func NewListCommand(cfgFactory config.Factory) *cobra.Command {
 		Example: listExample[1:],
 		RunE:    listRunE(o),
 	}
+	flags := cmd.Flags()
+	flags.StringVarP(&o.Format,
+		"output", "o", "name", "'table' "+
+			"and 'name' are available "+
+			"output formats")
 
 	return cmd
 }

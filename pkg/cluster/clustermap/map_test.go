@@ -15,6 +15,11 @@
 package clustermap_test
 
 import (
+	"bufio"
+	"bytes"
+	"io"
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -65,7 +70,6 @@ func TestClusterMap(t *testing.T) {
 			},
 		},
 	}
-
 	cMap := clustermap.NewClusterMap(apiMap)
 	require.NotNil(t, cMap)
 
@@ -120,4 +124,65 @@ func TestClusterMap(t *testing.T) {
 		_, err := cMap.Sources("does not exist")
 		assert.Error(t, err)
 	})
+}
+
+func Test_clusterMap_Write(t *testing.T) {
+	var b bytes.Buffer
+	wr := bufio.NewWriter(&b)
+	targetCluster := "target"
+	ephemeraCluster := "ephemeral"
+	apiMap := &v1alpha1.ClusterMap{
+		Map: map[string]*v1alpha1.Cluster{
+			targetCluster: {
+				Parent: ephemeraCluster,
+			},
+		},
+	}
+	tests := []struct {
+		name        string
+		wo          clustermap.WriteOptions
+		wantWriter  string
+		expectedOut string
+		expectedErr string
+		writer      io.Writer
+	}{
+		{
+			name: "success table",
+			wo:   clustermap.WriteOptions{Format: "table"},
+			expectedOut: "NAME                KUBECONFIG CONTEXT  PARENT CLUSTER" +
+				"\ntarget              target              ephemeral\n",
+			writer: wr,
+		},
+		{
+			name:        "writer nil",
+			wo:          clustermap.WriteOptions{Format: "table"},
+			writer:      nil,
+			expectedOut: "",
+		},
+	}
+	rStdout := os.Stdout
+	r, w, err := os.Pipe()
+	if err != nil {
+		require.Error(t, err)
+	}
+	os.Stdout = w
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cMap := clustermap.NewClusterMap(apiMap)
+			err := cMap.Write(tt.writer, tt.wo)
+			w.Close()
+			if tt.expectedErr != "" {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.expectedErr)
+			} else {
+				assert.NoError(t, err)
+			}
+			out, err := ioutil.ReadAll(r)
+			if err != nil {
+				require.Error(t, err)
+			}
+			os.Stdout = rStdout
+			assert.Equal(t, tt.expectedOut, string(out))
+		})
+	}
 }
