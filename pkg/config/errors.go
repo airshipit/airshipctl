@@ -144,6 +144,14 @@ func (e ErrManagementConfigurationNotFound) Error() string {
 	return fmt.Sprintf("Unknown management configuration '%s'.", e.Name)
 }
 
+// ErrEmptyManagementConfigurationName returned when attempted to create/modify management config with empty name
+type ErrEmptyManagementConfigurationName struct {
+}
+
+func (e ErrEmptyManagementConfigurationName) Error() string {
+	return fmt.Sprintf("management config name must not be empty")
+}
+
 // ErrMissingCurrentContext returned in case --current used without setting current-context
 type ErrMissingCurrentContext struct {
 }

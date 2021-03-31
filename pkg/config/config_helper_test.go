@@ -128,6 +128,88 @@ func TestRunSetContext(t *testing.T) {
 	}
 }
 
+func TestRunSetManagementConfig(t *testing.T) {
+	ioBuffer := bytes.NewBuffer(nil)
+	tests := []struct {
+		name        string
+		options     config.RunSetManagementConfigOptions
+		mgmtCfgOpts []config.ManagementConfigOption
+		expectedOut string
+		err         error
+	}{
+		{
+			name: "create new mgmt cfg",
+			options: config.RunSetManagementConfigOptions{
+				CfgFactory:  prepareConfig(),
+				MgmtCfgName: "new_mgmt_cfg",
+				Writer:      ioBuffer,
+			},
+			mgmtCfgOpts: []config.ManagementConfigOption{config.SetManagementConfigInsecure(true),
+				config.SetManagementConfigUseProxy(true), config.SetManagementConfigMgmtType("redfish")},
+			err:         nil,
+			expectedOut: "management configuration with name new_mgmt_cfg created\n",
+		},
+		{
+			name: "modify mgmt cfg",
+			options: config.RunSetManagementConfigOptions{
+				CfgFactory:  prepareConfig(),
+				MgmtCfgName: "dummy_management_config",
+				Writer:      ioBuffer,
+			},
+			mgmtCfgOpts: []config.ManagementConfigOption{config.SetManagementConfigSystemRebootDelay(25),
+				config.SetManagementConfigSystemActionRetries(20)},
+			err:         nil,
+			expectedOut: "management configuration with name dummy_management_config modified\n",
+		},
+		{
+			name: "bad config",
+			options: config.RunSetManagementConfigOptions{
+				CfgFactory: func() (*config.Config, error) {
+					return nil, config.ErrMissingConfig{What: "bad config"}
+				},
+			},
+			err: config.ErrMissingConfig{What: "bad config"},
+		},
+		{
+			name: "no mgmt cfg name provided",
+			options: config.RunSetManagementConfigOptions{
+				CfgFactory:  prepareConfig(),
+				MgmtCfgName: "",
+			},
+			err: config.ErrEmptyManagementConfigurationName{},
+		},
+		{
+			name: "incomplete config",
+			options: config.RunSetManagementConfigOptions{
+				CfgFactory: func() (*config.Config, error) {
+					cfg := testutil.DummyConfig()
+					cfg.Contexts = map[string]*config.Context{}
+					return cfg, nil
+				},
+				MgmtCfgName: "dummy_management_config",
+			},
+			err: config.ErrMissingConfig{What: "At least one Context needs to be defined"},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			ioBuffer.Reset()
+			err := tt.options.RunSetManagementConfig(tt.mgmtCfgOpts...)
+			if tt.err != nil {
+				require.Error(t, err)
+				require.Equal(t, tt.err, err)
+			} else {
+				require.NoError(t, err)
+			}
+			if tt.expectedOut != "" {
+				require.Equal(t, tt.expectedOut, ioBuffer.String())
+			}
+		})
+	}
+}
+
 func TestRunUseContext(t *testing.T) {
 	t.Run("testUseContext", func(t *testing.T) {
 		conf := testutil.DummyConfig()

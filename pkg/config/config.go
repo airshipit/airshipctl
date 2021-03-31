@@ -537,3 +537,21 @@ func (c *Config) WorkDir() (dir string, err error) {
 	}
 	return dir, err
 }
+
+// AddManagementConfig creates a new instance of ManagementConfig object
+func (c *Config) AddManagementConfig(mgmtCfgName string, opts ...ManagementConfigOption) *ManagementConfiguration {
+	// Create the new Airshipctl config ManagementConfig
+	nMgmtCfg := NewManagementConfiguration()
+	c.ManagementConfiguration[mgmtCfgName] = nMgmtCfg
+
+	// We can use Modify to populate the correct information
+	c.ModifyManagementConfig(nMgmtCfg, opts...)
+	return nMgmtCfg
+}
+
+// ModifyManagementConfig updates ManagementConfig object with given options
+func (c *Config) ModifyManagementConfig(mgmtConfig *ManagementConfiguration, opts ...ManagementConfigOption) {
+	for _, o := range opts {
+		o(mgmtConfig)
+	}
+}

@@ -15,9 +15,8 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/remote/redfish"
@@ -32,74 +31,67 @@ const (
 
 	flagUseProxy            = "use-proxy"
 	flagUseProxyDescription = "Use the proxy configuration specified in the local environment"
+
+	flagSystemActionRetries            = "system-action-retries"
+	flagSystemActionRetriesDescription = "Set the number of attempts to poll a host for a status"
+
+	flagSystemRebootDelay            = "system-reboot-delay"
+	flagSystemRebootDelayDescription = "Set the number of seconds to wait between power actions (e.g. shutdown, startup)"
 )
 
 // NewSetManagementConfigCommand creates a command for creating and modifying clusters
 // in the airshipctl config file.
 func NewSetManagementConfigCommand(cfgFactory config.Factory) *cobra.Command {
-	var insecure bool
-	var managementType string
-	var useProxy bool
-
+	o := &config.ManagementConfiguration{}
 	cmd := &cobra.Command{
 		Use:   "set-management-config NAME",
 		Short: "Modify an out-of-band management configuration",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := cfgFactory()
-			if err != nil {
-				return err
-			}
-			name := args[0]
-			managementCfg, err := cfg.GetManagementConfiguration(name)
-			if err != nil {
-				return err
-			}
-
-			var modified bool
-			if cmd.Flags().Changed(flagInsecure) && insecure != managementCfg.Insecure {
-				modified = true
-				managementCfg.Insecure = insecure
-
-				fmt.Fprintf(cmd.OutOrStdout(),
-					"Option 'insecure' set to '%t' for management configuration '%s'.\n",
-					managementCfg.Insecure, name)
-			}
-
-			if cmd.Flags().Changed(flagManagementType) && managementType != managementCfg.Type {
-				modified = true
-				if err = managementCfg.SetType(managementType); err != nil {
-					return err
-				}
-
-				fmt.Fprintf(cmd.OutOrStdout(),
-					"Option 'type' set to '%s' for management configuration '%s'.\n",
-					managementCfg.Type, name)
-			}
-
-			if cmd.Flags().Changed(flagUseProxy) && useProxy != managementCfg.UseProxy {
-				modified = true
-				managementCfg.UseProxy = useProxy
-
-				fmt.Fprintf(cmd.OutOrStdout(),
-					"Option 'useproxy' set to '%t' for management configuration '%s'\n",
-					managementCfg.UseProxy, name)
-			}
-
-			if !modified {
-				fmt.Fprintf(cmd.OutOrStdout(),
-					"Management configuration '%s' not modified. No new settings.\n", name)
-				return nil
-			}
-
-			return cfg.PersistConfig(true)
-		},
+		RunE:  setManagementConfigRunE(cfgFactory, o),
 	}
 
-	flags := cmd.Flags()
-	flags.BoolVar(&insecure, flagInsecure, false, flagInsecureDescription)
-	flags.StringVar(&managementType, flagManagementType, redfish.ClientType, flagManagementTypeDescription)
-	flags.BoolVar(&useProxy, flagUseProxy, true, flagUseProxyDescription)
-
+	addSetManagementConfigFlags(cmd, o)
 	return cmd
+}
+
+func addSetManagementConfigFlags(cmd *cobra.Command, o *config.ManagementConfiguration) {
+	flags := cmd.Flags()
+
+	flags.BoolVar(&o.Insecure, flagInsecure, false, flagInsecureDescription)
+	flags.StringVar(&o.Type, flagManagementType, redfish.ClientType, flagManagementTypeDescription)
+	flags.BoolVar(&o.UseProxy, flagUseProxy, true, flagUseProxyDescription)
+	flags.IntVar(&o.SystemActionRetries, flagSystemActionRetries,
+		config.DefaultSystemActionRetries, flagSystemActionRetriesDescription)
+	flags.IntVar(&o.SystemRebootDelay, flagSystemRebootDelay,
+		config.DefaultSystemRebootDelay, flagSystemRebootDelayDescription)
+}
+
+func setManagementConfigRunE(cfgFactory config.Factory, o *config.ManagementConfiguration) func(
+	cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		// Go through all the flags that have been set
+		var opts []config.ManagementConfigOption
+		fn := func(flag *pflag.Flag) {
+			switch flag.Name {
+			case flagInsecure:
+				opts = append(opts, config.SetManagementConfigInsecure(o.Insecure))
+			case flagManagementType:
+				opts = append(opts, config.SetManagementConfigMgmtType(o.Type))
+			case flagUseProxy:
+				opts = append(opts, config.SetManagementConfigUseProxy(o.UseProxy))
+			case flagSystemActionRetries:
+				opts = append(opts, config.SetManagementConfigSystemActionRetries(o.SystemActionRetries))
+			case flagSystemRebootDelay:
+				opts = append(opts, config.SetManagementConfigSystemRebootDelay(o.SystemRebootDelay))
+			}
+		}
+		cmd.Flags().Visit(fn)
+
+		options := &config.RunSetManagementConfigOptions{
+			CfgFactory:  cfgFactory,
+			MgmtCfgName: args[0],
+			Writer:      cmd.OutOrStdout(),
+		}
+		return options.RunSetManagementConfig(opts...)
+	}
 }

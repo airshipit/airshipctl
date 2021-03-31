@@ -521,3 +521,23 @@ func TestWorkDir(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, wd)
 }
+
+func TestAddManagementConfig(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	managementConfig := conf.AddManagementConfig("new_mgmt_context", config.SetManagementConfigUseProxy(false))
+	assert.EqualValues(t, conf.ManagementConfiguration["new_mgmt_context"], managementConfig)
+}
+
+func TestModifyManagementConfig(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	managementConfig := conf.AddManagementConfig("modified_mgmt_config")
+
+	conf.ModifyManagementConfig(managementConfig, config.SetManagementConfigSystemActionRetries(60))
+	assert.EqualValues(t, conf.ManagementConfiguration["modified_mgmt_config"].SystemActionRetries,
+		managementConfig.SystemActionRetries)
+	assert.EqualValues(t, conf.ManagementConfiguration["modified_mgmt_config"], managementConfig)
+}
