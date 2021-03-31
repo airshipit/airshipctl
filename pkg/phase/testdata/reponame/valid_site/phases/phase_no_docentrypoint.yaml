@@ -1,0 +1,9 @@
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: no_entry_point
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: SomeExecutor
+    name: executor-name

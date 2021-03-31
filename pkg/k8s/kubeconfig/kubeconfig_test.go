@@ -29,6 +29,7 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
+	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	testfs "opendev.org/airship/airshipctl/testutil/fs"
@@ -184,14 +185,14 @@ func TestFromBundle(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			kubeconf, err := kubeconfig.FromBundle(tt.rootPath)()
+			bundle, err := document.NewBundleByPath(tt.rootPath)
 			if tt.shouldFail {
 				require.Error(t, err)
-				assert.Nil(t, kubeconf)
-			} else {
-				require.NoError(t, err)
-				assert.Contains(t, string(kubeconf), tt.expectedContains)
+				return
 			}
+			kubeconf, err := kubeconfig.FromBundle(bundle)()
+			require.NoError(t, err)
+			assert.Contains(t, string(kubeconf), tt.expectedContains)
 		})
 	}
 }

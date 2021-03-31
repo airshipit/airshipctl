@@ -87,11 +87,6 @@ func (p *phase) Executor() (ifc.Executor, error) {
 		return nil, err
 	}
 
-	wd, err := p.helper.WorkDir()
-	if err != nil {
-		return nil, err
-	}
-
 	cctlClient, err := cctlclient.NewClient(
 		p.helper.PhaseBundleRoot(),
 		log.DebugEnabled(),
@@ -101,9 +96,9 @@ func (p *phase) Executor() (ifc.Executor, error) {
 	}
 
 	kubeconf := kubeconfig.NewBuilder().
-		WithBundle(p.helper.PhaseBundleRoot()).
+		WithBundle(p.helper.PhaseConfigBundle()).
 		WithClusterMap(cMap).
-		WithTempRoot(wd).
+		WithTempRoot(p.helper.WorkDir()).
 		WithClusterctClient(cctlClient).
 		Build()
 

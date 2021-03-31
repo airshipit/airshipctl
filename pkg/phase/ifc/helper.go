@@ -26,7 +26,7 @@ type Helper interface {
 	TargetPath() string
 	PhaseRepoDir() string
 	DocEntryPointPrefix() string
-	WorkDir() (string, error)
+	WorkDir() string
 	Phase(phaseID ID) (*v1alpha1.Phase, error)
 	Plan(planID ID) (*v1alpha1.PhasePlan, error)
 	ListPhases(o ListPhaseOptions) ([]*v1alpha1.Phase, error)
@@ -37,4 +37,5 @@ type Helper interface {
 	PhaseBundleRoot() string
 	Inventory() (ifc.Inventory, error)
 	PhaseEntryPointBasePath() string
+	PhaseConfigBundle() document.Bundle
 }

@@ -1,0 +1,12 @@
+---
+apiVersion: airshipit.org/v1alpha1
+kind: KubernetesApply
+metadata:
+  labels:
+    airshipit.org/deploy-k8s: "false"
+  name: kubernetes-apply
+config:
+  waitOptions:
+    timeout: 600
+  pruneOptions:
+    prune: false

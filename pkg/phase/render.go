@@ -104,12 +104,7 @@ func (fo *RenderCommand) RunE(cfgFactory config.Factory, out io.Writer) error {
 }
 
 func renderConfigBundle(out io.Writer, h ifc.Helper, sel document.Selector) error {
-	bundle, err := document.NewBundleByPath(h.PhaseBundleRoot())
-	if err != nil {
-		return err
-	}
-
-	bundle, err = bundle.SelectBundle(sel)
+	bundle, err := h.PhaseConfigBundle().SelectBundle(sel)
 	if err != nil {
 		return err
 	}

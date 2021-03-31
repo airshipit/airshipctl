@@ -1,0 +1,12 @@
+apiVersion: airshipit.org/v1alpha1
+kind: ClusterMap
+metadata:
+  name: clusterctl-v1
+map:
+  target:
+    parent: ephemeral
+    kubeconfigSources:
+    - type: bundle
+  ephemeral:
+    kubeconfigSources:
+    - type: bundle
