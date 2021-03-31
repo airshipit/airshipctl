@@ -69,7 +69,6 @@ func TestNewBMHExecutor(t *testing.T) {
 		execDoc := executorDoc(t, fmt.Sprintf(bmhExecutorTemplate, "reboot", "/home/iso-url"))
 		executor, err := executors.NewBaremetalExecutor(ifc.ExecutorConfig{
 			ExecutorDocument: execDoc,
-			BundleFactory:    testBundleFactory(),
 		})
 		assert.NoError(t, err)
 		assert.NotNil(t, executor)
@@ -82,7 +81,6 @@ func TestNewBMHExecutor(t *testing.T) {
 		}
 		executor, actualErr := executors.NewBaremetalExecutor(ifc.ExecutorConfig{
 			ExecutorDocument: execDoc,
-			BundleFactory:    testBundleFactory(),
 		})
 		assert.Equal(t, exepectedErr, actualErr)
 		assert.Nil(t, executor)

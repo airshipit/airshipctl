@@ -14,16 +14,17 @@ package executors_test
 
 import (
 	"bytes"
+	goerrors "errors"
 	"fmt"
 	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
-	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
@@ -31,6 +32,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/phase/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
+	testdoc "opendev.org/airship/airshipctl/testutil/document"
 )
 
 const (
@@ -72,27 +74,71 @@ metadata:
 map:
   testCluster: {}
 `
-	singleExecutorBundlePath = "../../container/testdata/single"
+
+	refConfig = `apiVersion: v1
+kind: Secret
+metadata:
+  name: test-script
+stringData:
+  script.sh: |
+    #!/bin/sh
+    echo WORKS! $var >&2
+type: Opaque
+`
 )
 
-func testClusterMap(t *testing.T) clustermap.ClusterMap {
-	doc, err := document.NewDocumentFromBytes([]byte(singleExecutorClusterMap))
+func testContainerBundleFactory() document.BundleFactoryFunc {
+	return func() (document.Bundle, error) {
+		bundle := &testdoc.MockBundle{}
+		return bundle, nil
+	}
+}
+
+func testContainerBundleFactoryNoDocumentEntryPoint() document.BundleFactoryFunc {
+	return func() (document.Bundle, error) {
+		return nil, errors.ErrDocumentEntrypointNotDefined{}
+	}
+}
+
+func testContainerBundle(t *testing.T, content string) document.Bundle {
+	bundle := &testdoc.MockBundle{}
+	writer := &bytes.Buffer{}
+	bundle.On("Write", writer).
+		Return(nil).
+		Run(func(args mock.Arguments) {
+			arg, ok := args.Get(0).(*bytes.Buffer)
+			if ok {
+				_, err := arg.Write([]byte(content))
+				require.NoError(t, err)
+			}
+		})
+	return bundle
+}
+
+func testContainerPhaseConfigBundleNoDocs() document.Bundle {
+	bundle := &testdoc.MockBundle{}
+	bundle.On("SelectOne", mock.Anything).
+		Return(nil, goerrors.New("found no documents"))
+	return bundle
+}
+
+func testContainerPhaseConfigBundleRefConfig(t *testing.T) document.Bundle {
+	refConfigDoc, err := document.NewDocumentFromBytes([]byte(refConfig))
 	require.NoError(t, err)
-	require.NotNil(t, doc)
-	apiObj := v1alpha1.DefaultClusterMap()
-	err = doc.ToAPIObject(apiObj, v1alpha1.Scheme)
-	require.NoError(t, err)
-	return clustermap.NewClusterMap(apiObj)
+	bundle := &testdoc.MockBundle{}
+	bundle.On("SelectOne", mock.Anything).
+		Return(refConfigDoc, nil)
+	return bundle
 }
 
 func TestNewContainerExecutor(t *testing.T) {
-	execDoc, err := document.NewDocumentFromBytes([]byte(containerExecutorDoc))
-	require.NoError(t, err)
+	execDoc, errDoc := document.NewDocumentFromBytes([]byte(containerExecutorDoc))
+	require.NoError(t, errDoc)
 
 	t.Run("success new container executor", func(t *testing.T) {
 		e, err := executors.NewContainerExecutor(ifc.ExecutorConfig{
 			ExecutorDocument: execDoc,
-			BundleFactory:    testBundleFactory(),
+			BundleFactory:    testContainerBundleFactory(),
 		})
 		assert.NoError(t, err)
 		assert.NotNil(t, e)
@@ -101,9 +147,7 @@ func TestNewContainerExecutor(t *testing.T) {
 	t.Run("error bundle factory", func(t *testing.T) {
 		e, err := executors.NewContainerExecutor(ifc.ExecutorConfig{
 			ExecutorDocument: execDoc,
-			BundleFactory: func() (document.Bundle, error) {
-				return nil, fmt.Errorf("bundle error")
-			},
+			BundleFactory:    testdoc.ErrorBundleFactory,
 		})
 		assert.Error(t, err)
 		assert.Nil(t, e)
@@ -112,9 +156,7 @@ func TestNewContainerExecutor(t *testing.T) {
 	t.Run("bundle factory - empty documentEntryPoint", func(t *testing.T) {
 		e, err := executors.NewContainerExecutor(ifc.ExecutorConfig{
 			ExecutorDocument: execDoc,
-			BundleFactory: func() (document.Bundle, error) {
-				return nil, errors.ErrDocumentEntrypointNotDefined{}
-			},
+			BundleFactory:    testContainerBundleFactoryNoDocumentEntryPoint(),
 		})
 		assert.NoError(t, err)
 		assert.NotNil(t, e)
@@ -128,10 +170,11 @@ func TestGenericContainer(t *testing.T) {
 		expectedErr  string
 		resultConfig string
 
-		containerAPI   *v1alpha1.GenericContainer
-		executorConfig ifc.ExecutorConfig
-		runOptions     ifc.RunOptions
-		clientFunc     container.ClientV1Alpha1FactoryFunc
+		containerAPI      *v1alpha1.GenericContainer
+		executorConfig    ifc.ExecutorConfig
+		runOptions        ifc.RunOptions
+		clientFunc        container.ClientV1Alpha1FactoryFunc
+		phaseConfigBundle document.Bundle
 	}{
 		{
 			name:        "error unknown container type",
@@ -163,8 +206,9 @@ func TestGenericContainer(t *testing.T) {
 					Name: "no such name",
 				},
 			},
-			runOptions:  ifc.RunOptions{DryRun: true},
-			expectedErr: "found no documents",
+			runOptions:        ifc.RunOptions{DryRun: true},
+			expectedErr:       "found no documents",
+			phaseConfigBundle: testContainerPhaseConfigBundleNoDocs(),
 		},
 		{
 			name:         "success dry run",
@@ -180,31 +224,20 @@ func TestGenericContainer(t *testing.T) {
 					APIVersion: "v1",
 				},
 			},
-			runOptions: ifc.RunOptions{DryRun: true},
-			resultConfig: `apiVersion: v1
-kind: Secret
-metadata:
-  name: test-script
-stringData:
-  script.sh: |
-    #!/bin/sh
-    echo WORKS! $var >&2
-type: Opaque
-`,
+			runOptions:        ifc.RunOptions{DryRun: true},
+			resultConfig:      refConfig,
+			phaseConfigBundle: testContainerPhaseConfigBundleRefConfig(t),
 		},
 	}
 
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			b, err := document.NewBundleByPath(singleExecutorBundlePath)
-			require.NoError(t, err)
-			phaseConfigBundle, err := document.NewBundleByPath(singleExecutorBundlePath)
-			require.NoError(t, err)
+			executorBundle := testContainerBundle(t, "")
 
-			container := executors.ContainerExecutor{
+			containerExecutor := executors.ContainerExecutor{
 				ResultsDir:     tt.outputPath,
-				ExecutorBundle: b,
+				ExecutorBundle: executorBundle,
 				Container:      tt.containerAPI,
 				ClientFunc:     tt.clientFunc,
 				Options: ifc.ExecutorConfig{
@@ -215,12 +248,12 @@ type: Opaque
 						},
 					},
 					ClusterMap:        testClusterMap(t),
-					PhaseConfigBundle: phaseConfigBundle,
+					PhaseConfigBundle: tt.phaseConfigBundle,
 				},
 			}
 
 			ch := make(chan events.Event)
-			go container.Run(ch, tt.runOptions)
+			go containerExecutor.Run(ch, tt.runOptions)
 
 			actualEvt := make([]events.Event, 0)
 			for evt := range ch {
@@ -237,7 +270,7 @@ type: Opaque
 				assert.NoError(t, e.ErrorEvent.Error)
 				assert.Equal(t, e.Type, events.GenericContainerType)
 				assert.Equal(t, e.GenericContainerEvent.Operation, events.GenericContainerStop)
-				assert.Equal(t, tt.resultConfig, container.Container.Config)
+				assert.Equal(t, tt.resultConfig, containerExecutor.Container.Config)
 			}
 		})
 	}
