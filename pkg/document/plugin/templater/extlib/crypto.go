@@ -29,6 +29,8 @@ import (
 	"encoding/pem"
 	"math/big"
 	"time"
+
+	"golang.org/x/crypto/ssh"
 )
 
 func toUint32(i int) uint32 { return uint32(i) }
@@ -39,6 +41,11 @@ type dnParser struct {
 	cur   bytes.Buffer
 	state int
 	dn    []string
+}
+
+type sshKey struct {
+	Private string
+	Public  string
 }
 
 func (p *dnParser) startOver() {
@@ -216,6 +223,34 @@ func generateCertificateAuthorityEx(
 	}
 
 	return generateCertificateAuthorityWithKeyInternalEx(subj, daysValid, priv)
+}
+
+// genSSHKeyPair make a pair of public and private keys for SSH access.
+// Public key is encoded in the format for inclusion in an OpenSSH authorized_keys file.
+// Private Key generated is PEM encoded
+func genSSHKeyPair(encryptionBit int) (sshKey, error) {
+	key := sshKey{}
+	privateKey, err := rsa.GenerateKey(rand.Reader, encryptionBit)
+	if err != nil {
+		return key, err
+	}
+
+	privateKeyPEM := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateKey)}
+	var private bytes.Buffer
+	if err = pem.Encode(&private, privateKeyPEM); err != nil {
+		return key, err
+	}
+
+	// generate public key
+	pub, err := ssh.NewPublicKey(&privateKey.PublicKey)
+	if err != nil {
+		return key, err
+	}
+
+	public := ssh.MarshalAuthorizedKey(pub)
+	key.Public = string(public)
+	key.Private = private.String()
+	return key, nil
 }
 
 func generateCertificateAuthorityWithPEMKeyEx(

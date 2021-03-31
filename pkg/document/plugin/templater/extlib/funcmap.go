@@ -32,6 +32,7 @@ var genericMap = map[string]interface{}{
 	"genCAWithKeyEx":         generateCertificateAuthorityWithPEMKeyEx,
 	"genSignedCertEx":        generateSignedCertificateEx,
 	"genSignedCertWithKeyEx": generateSignedCertificateWithPEMKeyEx,
+	"genSSHKeyPair":          genSSHKeyPair,
 	"regexGen":               regexGen,
 	"toYaml":                 toYaml,
 	"toUint32":               toUint32,
