@@ -8,6 +8,7 @@ Available Commands:
   help        Help about any command
   list        List plans
   run         Run plan
+  validate    Validate plan
 
 Flags:
   -h, --help   help for plan

@@ -230,7 +230,7 @@ func (p *plan) Validate() error {
 	return nil
 }
 
-// Run function excutes Run method for each phase
+// Run function executes Run method for each phase
 func (p *plan) Run(ro ifc.RunOptions) error {
 	for _, step := range p.apiObj.Phases {
 		phaseRunner, err := p.phaseClient.PhaseByID(ifc.ID{Name: step.Name})

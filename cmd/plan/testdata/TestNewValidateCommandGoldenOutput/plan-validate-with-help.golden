@@ -1,0 +1,7 @@
+Run life-cycle phase validation which was defined in document model.
+
+Usage:
+  validate PLAN_NAME [flags]
+
+Flags:
+  -h, --help   help for validate

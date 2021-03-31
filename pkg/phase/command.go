@@ -338,3 +338,35 @@ func (s *StatusCommand) RunE() error {
 	_, err = ph.Status()
 	return err
 }
+
+// PlanValidateFlags options for plan validate command
+type PlanValidateFlags struct {
+	PlanID ifc.ID
+}
+
+// PlanValidateCommand plan validate command
+type PlanValidateCommand struct {
+	Options PlanValidateFlags
+	Factory config.Factory
+}
+
+// RunE runs the plan validate command
+func (c *PlanValidateCommand) RunE() error {
+	cfg, err := c.Factory()
+	if err != nil {
+		return err
+	}
+
+	helper, err := NewHelper(cfg)
+	if err != nil {
+		return err
+	}
+
+	client := NewClient(helper)
+
+	plan, err := client.PlanByID(c.Options.PlanID)
+	if err != nil {
+		return err
+	}
+	return plan.Validate()
+}

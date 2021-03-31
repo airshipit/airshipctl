@@ -18,26 +18,31 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/phase"
 )
 
 const (
-	planLong = `
-This command provides capabilities for interacting with plan objects,
-responsible for execution phases in groups
+	validateLong = `
+Run life-cycle phase validation which was defined in document model.
 `
 )
 
-// NewPlanCommand creates a command for interacting with phases
-func NewPlanCommand(cfgFactory config.Factory) *cobra.Command {
-	planRootCmd := &cobra.Command{
-		Use:   "plan",
-		Short: "Manage plans",
-		Long:  planLong[1:],
+// NewValidateCommand creates a command which performs validation of particular phase plan
+func NewValidateCommand(cfgFactory config.Factory) *cobra.Command {
+	r := &phase.PlanValidateCommand{
+		Factory: cfgFactory,
+		Options: phase.PlanValidateFlags{},
+	}
+	runCmd := &cobra.Command{
+		Use:   "validate PLAN_NAME",
+		Short: "Validate plan",
+		Long:  validateLong[1:],
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			r.Options.PlanID.Name = args[0]
+			return r.RunE()
+		},
 	}
 
-	planRootCmd.AddCommand(NewListCommand(cfgFactory))
-	planRootCmd.AddCommand(NewRunCommand(cfgFactory))
-	planRootCmd.AddCommand(NewValidateCommand(cfgFactory))
-
-	return planRootCmd
+	return runCmd
 }

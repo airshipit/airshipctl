@@ -26,4 +26,5 @@ responsible for execution phases in groups
 * [airshipctl](airshipctl.md)	 - A unified entrypoint to various airship components
 * [airshipctl plan list](airshipctl_plan_list.md)	 - List plans
 * [airshipctl plan run](airshipctl_plan_run.md)	 - Run plan
+* [airshipctl plan validate](airshipctl_plan_validate.md)	 - Validate plan
 
