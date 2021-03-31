@@ -173,6 +173,11 @@ func (c *Config) EnsureComplete() error {
 	return nil
 }
 
+// SetFs allows to set custom filesystem used in Config object. Required for unit tests
+func (c *Config) SetFs(fsys fs.FileSystem) {
+	c.fileSystem = fsys
+}
+
 // PersistConfig updates the airshipctl config file to match
 // the current Config object.
 // If file did not previously exist, the file will be created.
@@ -278,24 +283,21 @@ func (c *Config) GetManagementConfiguration(name string) (*ManagementConfigurati
 
 // AddContext creates a new context and returns the instance of
 // newly created context
-func (c *Config) AddContext(theContext *ContextOptions) *Context {
+func (c *Config) AddContext(ctxName string, opts ...ContextOption) *Context {
 	// Create the new Airship config context
 	nContext := NewContext()
-	c.Contexts[theContext.Name] = nContext
+	c.Contexts[ctxName] = nContext
 
 	// Ok , I have initialized structs for the Context information
 	// We can use Modify to populate the correct information
-	c.ModifyContext(nContext, theContext)
+	c.ModifyContext(nContext, opts...)
 	return nContext
 }
 
-// ModifyContext updates Context object with given given context options
-func (c *Config) ModifyContext(context *Context, theContext *ContextOptions) {
-	if theContext.ManagementConfiguration != "" {
-		context.ManagementConfiguration = theContext.ManagementConfiguration
-	}
-	if theContext.Manifest != "" {
-		context.Manifest = theContext.Manifest
+// ModifyContext updates Context object with given context options
+func (c *Config) ModifyContext(context *Context, opts ...ContextOption) {
+	for _, o := range opts {
+		o(context)
 	}
 }
 

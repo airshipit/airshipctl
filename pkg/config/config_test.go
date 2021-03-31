@@ -257,7 +257,8 @@ func TestAddContext(t *testing.T) {
 	defer cleanup(t)
 
 	co := testutil.DummyContextOptions()
-	context := conf.AddContext(co)
+	context := conf.AddContext(co.Name, config.SetContextManifest(co.Manifest),
+		config.SetContextManagementConfig(co.ManagementConfiguration))
 	assert.EqualValues(t, conf.Contexts[co.Name], context)
 }
 
@@ -266,10 +267,10 @@ func TestModifyContext(t *testing.T) {
 	defer cleanup(t)
 
 	co := testutil.DummyContextOptions()
-	context := conf.AddContext(co)
+	context := conf.AddContext(co.Name, config.SetContextManifest(co.Manifest))
 
 	co.Manifest += stringDelta
-	conf.ModifyContext(context, co)
+	conf.ModifyContext(context, config.SetContextManifest(co.Manifest))
 	assert.EqualValues(t, conf.Contexts[co.Name].Manifest, co.Manifest)
 	assert.EqualValues(t, conf.Contexts[co.Name], context)
 }

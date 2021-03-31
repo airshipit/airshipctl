@@ -15,58 +15,72 @@ limitations under the License.
 package config
 
 import (
-	"errors"
+	"fmt"
+	"io"
 )
 
+// ContextOption is a function that allows to modify context object
+type ContextOption func(ctx *Context)
+
+// SetContextManifest sets manifest in context object
+func SetContextManifest(manifest string) ContextOption {
+	return func(ctx *Context) {
+		ctx.Manifest = manifest
+	}
+}
+
+// SetContextManagementConfig sets management config in context object
+func SetContextManagementConfig(managementConfig string) ContextOption {
+	return func(ctx *Context) {
+		ctx.ManagementConfiguration = managementConfig
+	}
+}
+
+// RunSetContextOptions are options required to create/modify airshipctl context
+type RunSetContextOptions struct {
+	CfgFactory Factory
+	CtxName    string
+	Current    bool
+	Writer     io.Writer
+}
+
 // RunSetContext validates the given command line options and invokes AddContext/ModifyContext
-func RunSetContext(o *ContextOptions, airconfig *Config, writeToStorage bool) (bool, error) {
-	modified := false
-	err := o.Validate()
+func (o *RunSetContextOptions) RunSetContext(opts ...ContextOption) error {
+	cfg, err := o.CfgFactory()
 	if err != nil {
-		return modified, err
+		return err
 	}
+
 	if o.Current {
-		if airconfig.CurrentContext == "" {
-			return modified, ErrMissingCurrentContext{}
-		}
-		// when --current flag is passed, use current context
-		o.Name = airconfig.CurrentContext
+		o.CtxName = cfg.CurrentContext
 	}
 
-	context, err := airconfig.GetContext(o.Name)
-	if err != nil {
-		var cerr ErrMissingConfig
-		if !errors.As(err, &cerr) {
-			// An error occurred, but it wasn't a "missing" config error.
-			return modified, err
-		}
+	if o.CtxName == "" {
+		return ErrEmptyContextName{}
+	}
 
-		if o.CurrentContext {
-			return modified, ErrMissingConfig{}
-		}
+	infoMsg := fmt.Sprintf("context with name %s", o.CtxName)
+	context, err := cfg.GetContext(o.CtxName)
+	if err != nil {
 		// context didn't exist, create it
-		// ignoring the returned added context
-		airconfig.AddContext(o)
+		cfg.AddContext(o.CtxName, opts...)
+		infoMsg = fmt.Sprintf("%s created\n", infoMsg)
 	} else {
-		// Found the desired Current Context
-		// Lets update it and be done.
-		if o.CurrentContext {
-			airconfig.CurrentContext = o.Name
-		} else {
-			// Context exists, lets update
-			airconfig.ModifyContext(context, o)
-		}
-		modified = true
+		// Context exists, lets update
+		cfg.ModifyContext(context, opts...)
+		infoMsg = fmt.Sprintf("%s modified\n", infoMsg)
+	}
+
+	// Verify we didn't break anything
+	if err = cfg.EnsureComplete(); err != nil {
+		return err
+	}
+
+	if _, err := o.Writer.Write([]byte(infoMsg)); err != nil {
+		return err
 	}
 	// Update configuration file just in time persistence approach
-	if writeToStorage {
-		if err := airconfig.PersistConfig(true); err != nil {
-			// Error that it didnt persist the changes
-			return modified, ErrConfigFailed{}
-		}
-	}
-
-	return modified, nil
+	return cfg.PersistConfig(true)
 }
 
 // RunUseContext validates the given context name and updates it as current context
