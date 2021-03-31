@@ -3,17 +3,13 @@
 ## Overview
 
 This document demonstrates usage of airshipctl to create kubernetes clusters
-locally using docker and kind.
-
-Airshipctl requires an existing Kubernetes cluster accessible via kubectl.
-We will use kind as a local bootstrap cluster, to provision a target management
-cluster on the docker infrastructure provider. The target management cluster
-will then be used to create a workload cluster with one or more worker nodes.
+locally using docker and kind. Airshipctl requires an existing kubernetes cluster
+accessible via kubectl. We will use kind as a local bootstrap cluster, to provision
+a target management cluster on the docker infrastructure provider.
+The target management cluster will then be used to create a workload cluster
+with one or more worker nodes.
 
 ## Workflow
-
-Below are the steps that we will go through to create the kubernetes clusters
-locally using docker and kind.
 
 - create a single node kubernetes cluster using kind
 - initialize the kind cluster with cluster api management components
@@ -29,29 +25,31 @@ locally using docker and kind.
 
 ## Airshipctl Commands Used And Purpose
 
-`Pull documents from the remote git repository`
+```
+Pull documents from the remote git repository
 > airshipctl document pull
 
-`Initialize the kind cluster with cluster api and docker provider components`
+Initialize the kind cluster with cluster api and docker provider components
 > airshipctl phase run clusterctl-init-ephemeral
 
-`Use the management cluster to create a target cluster with one control plane`
+Use the management cluster to create a target cluster with one control plane
 > airshipctl phase run controlplane-ephemeral
 
-`Get multiple contexts for every cluster in the airship site`
+Get multiple contexts for every cluster in the airship site
 > airshipctl cluster get-kubeconfig > ~/.airship/kubeconfig-tmp
 
-`Initialize CNI on target cluster`
+Initialize CNI on target cluster`
 > airshipctl phase run initinfra-networking-target
 
-`Initialize Target Cluster with cluster api and docker proivder components`
+Initialize Target Cluster with cluster api and docker proivder components
 > airshipctl phase run clusterctl-init-target
 
-`Move managment CRDs from kind management cluster to target management cluster`
+Move managment CRDs from kind management cluster to target management cluster
 > airshipctl phase run clusterctl-move
 
-`Use target management cluster to deploy workers`
+Use target management cluster to deploy workers
 > airshipctl phase run  workers-target
+```
 
 ## Getting Started
 
@@ -111,19 +109,16 @@ $ export KIND_EXPERIMENTAL_DOCKER_NETWORK=bridge
 
 $ export KUBECONFIG="${HOME}/.airship/kubeconfig"
 
-<<<<<<< HEAD
-$ kind create cluster --name ephemeral-cluster --wait 120s --kubeconfig \
-"${HOME}/.airship/kubeconfig" \
+$ kind create cluster --name ephemeral-cluster --wait 120s \
+--kubeconfig "${HOME}/.airship/kubeconfig" \
 --config ./tools/deployment/templates/kind-cluster-with-extramounts
-=======
-```
-Context: kind-capi-docker
-manifest: docker_manifest
->>>>>>> Remove NameInKubeconf field from Context struct
 
 $ kubectl config set-context ephemeral-cluster \
 --cluster kind-ephemeral-cluster \
 --user kind-ephemeral-cluster --kubeconfig $KUBECONFIG
+
+$ kubectl config set-context target-cluster --user target-cluster-admin \
+--cluster target-cluster --kubeconfig  $KUBECONFIG
 
 $ airshipctl document pull -n --debug
 
@@ -144,15 +139,11 @@ $ kubectl get nodes --context target-cluster -A
 
 ```
 
-`Note:
-Please take note of the control plane node name because it is untainted
-in the next step.
-For eg. control plane node name could be something like
-target-cluster-control-plane-twwsv
-`
+Note: Please take note of the control plane node name from the output of previous
+command because it is untainted in the next step. For eg. control plane node
+name could be something like target-cluster-control-plane-twwsv
 
 ```
-
 $ kubectl taint node target-cluster-control-plane-twwsv \
 node-role.kubernetes.io/master- --context target-cluster --request-timeout 10s
 
@@ -160,7 +151,7 @@ $ airshipctl phase run clusterctl-init-target --debug --wait-timeout 300s
 
 $ kubectl get pods -A --context target-cluster
 
-$ airshipctl phase run clusterctl-move --debug --progress
+$ airshipctl phase run clusterctl-move --debug
 
 $ kubectl get machines --context target-cluster
 
