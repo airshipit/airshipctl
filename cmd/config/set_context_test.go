@@ -29,7 +29,6 @@ import (
 
 const (
 	defaultManifest = "edge_cloud"
-	testManifest    = "test_manifest"
 )
 
 type setContextTest struct {
@@ -83,21 +82,6 @@ func TestSetContext(t *testing.T) {
 			},
 			givenConfig: given,
 			manifest:    defaultManifest,
-		},
-		{
-			testName:    "set-current-context",
-			contextName: "def_target",
-			flags:       []string{},
-			givenConfig: given,
-		},
-		{
-			testName:    "modify-context",
-			contextName: "def_target",
-			flags: []string{
-				"--manifest=" + testManifest,
-			},
-			givenConfig: given,
-			manifest:    testManifest,
 		},
 	}
 

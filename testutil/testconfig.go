@@ -52,7 +52,6 @@ func DummyConfig() *config.Config {
 // DummyContext creates a Context config object for unit testing
 func DummyContext() *config.Context {
 	c := config.NewContext()
-	c.NameInKubeconf = "dummy_cluster_ephemeral"
 	c.Manifest = "dummy_manifest"
 	c.ManagementConfiguration = "dummy_management_config"
 	return c
@@ -163,12 +162,9 @@ const (
 	testConfigYAML = `apiVersion: airshipit.org/v1alpha1
 contexts:
   def_ephemeral:
-    contextKubeconf: def_ephemeral
     manifest: dummy_manifest
   def_target:
-    contextKubeconf: def_target
   onlyink:
-    contextKubeconf: onlyinkubeconf_target
 encryptionConfigs: {}
 currentContext: def_ephemeral
 kind: Config

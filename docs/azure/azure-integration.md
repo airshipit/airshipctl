@@ -139,7 +139,6 @@ az-target-cluster-md-0-z5lff            Ready    <none>   17h   v1.18.2
 apiVersion: airshipit.org/v1alpha1
 contexts:
   az-target-cluster-admin@az-target-cluster:
-    contextKubeconf: az-target-cluster_target
     manifest: azure_manifest
 currentContext: az-target-cluster-admin@az-target-cluster
 kind: Config

@@ -1,7 +1,6 @@
 apiVersion: airshipit.org/v1alpha1
 contexts:
   dummy_context:
-    contextKubeconf: dummy_cluster_ephemeral
     managementConfiguration: dummy_management_config
     manifest: dummy_manifest
 currentContext: dummy_context

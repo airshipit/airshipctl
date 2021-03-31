@@ -245,8 +245,7 @@ func TestGetContext(t *testing.T) {
 	context, err := conf.GetContext("def_ephemeral")
 	require.NoError(t, err)
 
-	// Test Positives
-	assert.EqualValues(t, context.NameInKubeconf, "def_ephemeral")
+	assert.EqualValues(t, context.Manifest, "dummy_manifest")
 
 	// Test Wrong Cluster
 	_, err = conf.GetContext("unknown")

@@ -111,9 +111,15 @@ $ export KIND_EXPERIMENTAL_DOCKER_NETWORK=bridge
 
 $ export KUBECONFIG="${HOME}/.airship/kubeconfig"
 
+<<<<<<< HEAD
 $ kind create cluster --name ephemeral-cluster --wait 120s --kubeconfig \
 "${HOME}/.airship/kubeconfig" \
 --config ./tools/deployment/templates/kind-cluster-with-extramounts
+=======
+```
+Context: kind-capi-docker
+manifest: docker_manifest
+>>>>>>> Remove NameInKubeconf field from Context struct
 
 $ kubectl config set-context ephemeral-cluster \
 --cluster kind-ephemeral-cluster \

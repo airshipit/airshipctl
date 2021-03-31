@@ -587,7 +587,6 @@ func testConfig(t *testing.T) *config.Config {
 	confString := `apiVersion: airshipit.org/v1alpha1
 contexts:
   dummy_cluster:
-    contextKubeconf: dummy_cluster
     manifest: dummy_manifest
 currentContext: dummy_cluster
 kind: Config
