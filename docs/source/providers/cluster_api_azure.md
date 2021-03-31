@@ -1,4 +1,4 @@
-# Airship 2.0 Integration with Azure Cloud Platform
+# Airshipctl and Azure Cloud Platform Integration
 This document provides the instructions to setup and execute *airshipctl*
 commands to deploy a Target cluster in Azure cloud platform.
 The manifest for the Target cluster deployment can be found at

@@ -36,6 +36,7 @@ Welcome to airshipctl's Documentation!
    providers/cluster_api_docker
    providers/cluster_api_openstack
    providers/cluster_api_gcp
+   providers/cluster_api_azure
 
 .. toctree::
    :caption: Airship Project Documentation
