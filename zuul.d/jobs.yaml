@@ -104,7 +104,7 @@
 - job:
     name: airship-airshipctl-gate-script-runner
     attempts: 1
-    timeout: 7200
+    timeout: 8400
     pre-run:
       - playbooks/airship-airshipctl-deploy-docker.yaml
       - playbooks/airship-airshipctl-build-gate.yaml
