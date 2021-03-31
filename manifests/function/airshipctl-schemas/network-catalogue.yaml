@@ -120,12 +120,11 @@ spec:
                     # TODO(mfuller): should this be enforced with a pattern?
                     type: string
                   ironicAutomatedClean:
-                    type: boolean
+                    type: string
                   httpPort:
-                    type: integer
-                    maximum: 65535
+                    type: string
                   ironicFastTrack:
-                    type: boolean
+                    type: string
                   deployKernelUrl:
                     type: string
                   deployRamdiskUrl:
