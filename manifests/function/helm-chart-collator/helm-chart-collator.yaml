@@ -18,6 +18,9 @@ spec:
       labels:
         app: helm-chart-collator
     spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
       containers:
       - name: helm-chart-collator
         image: quay.io/airshipit/helm-chart-collator:latest
