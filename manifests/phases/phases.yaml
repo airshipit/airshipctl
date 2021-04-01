@@ -278,3 +278,15 @@ config:
     apiVersion: airshipit.org/v1alpha1
     kind: GenericContainer
     name: iso-build-image
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: kubectl-get-node-ephemeral
+  clusterName: ephemeral-cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: kubectl-get-node
+  documentEntryPoint: ephemeral/initinfra-networking

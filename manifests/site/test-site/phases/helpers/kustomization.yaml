@@ -1,0 +1,6 @@
+configMapGenerator:
+- name: kubectl-get-node
+  options:
+    disableNameSuffixHash: true
+  files:
+  - script=kubectl_get_node.sh

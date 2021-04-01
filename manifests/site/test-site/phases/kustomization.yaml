@@ -2,5 +2,6 @@ resources:
   - ../kubeconfig
   - ../../../phases
   - catalogue.yaml
+  - helpers
 transformers:
   - ../../../function/bootstrap/replacements
