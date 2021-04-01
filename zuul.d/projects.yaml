@@ -56,3 +56,6 @@
       jobs:
         - promote-airship-project-docs: *docs
         - airship-airshipctl-update-github-issues
+    tag:
+      jobs:
+        - airship-airshipctl-upload-git-mirror
