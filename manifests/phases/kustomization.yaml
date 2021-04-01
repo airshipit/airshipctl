@@ -5,6 +5,8 @@ resources:
   - cluster-map.yaml
   - ../function/clusterctl
   - ../function/airshipctl-base-catalogues
+  # Scripts for generic containers
+  - ../function/phase-helpers
 patchesStrategicMerge:
   - clusterctl_init_options.yaml
 transformers:

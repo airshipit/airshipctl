@@ -23,7 +23,7 @@ echo "Deploy ephemeral node using redfish with iso"
 airshipctl phase run remotedirect-ephemeral --debug
 
 echo "Wait for apiserver to become available"
-airshipctl phase run kubectl-get-node-ephemeral
+airshipctl phase run kubectl-wait-node-ephemeral
 
 echo "List all pods"
 kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT get pods --all-namespaces

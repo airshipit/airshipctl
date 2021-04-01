@@ -3,4 +3,4 @@ configMapGenerator:
   options:
     disableNameSuffixHash: true
   files:
-  - script=kubectl_get_node.sh
+  - script=kubectl_wait_node.sh
