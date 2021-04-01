@@ -92,11 +92,12 @@ func (c *ScriptRunner) Run() error {
 
 	c.ResourceList.Items = nil
 
-	os.Setenv(EnvRenderedBundlePath, bundlePath)
-
 	clicmd := exec.Command(scriptPath)
 	clicmd.Stdout = c.OutStream
 	clicmd.Stderr = c.ErrStream
+
+	clicmd.Env = os.Environ()
+	clicmd.Env = append(clicmd.Env, fmt.Sprintf("%s=%s", EnvRenderedBundlePath, bundlePath))
 
 	err = clicmd.Start()
 	if err != nil {
