@@ -22,9 +22,11 @@ echo "Generating ~/.airship/kubeconfig"
 export AIRSHIP_CONFIG_MANIFEST_DIRECTORY=${AIRSHIP_CONFIG_MANIFEST_DIRECTORY:-"/tmp/airship"}
 export AIRSHIP_CONFIG_PHASE_REPO_URL=${AIRSHIP_CONFIG_PHASE_REPO_URL:-"https://review.opendev.org/airship/airshipctl"}
 export EXTERNAL_KUBECONFIG=${EXTERNAL_KUBECONFIG:-""}
+export SITE=${SITE:-"test-site"}
+
 if [[ -z "$EXTERNAL_KUBECONFIG" ]]; then
    # TODO: use airshipctl cluster get-kubeconfig command when it's implemented
-   KUSTOMIZE_PLUGIN_HOME=./ kustomize build --enable_alpha_plugins "${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})/manifests/site/test-site/kubeconfig/" | yq '.config' --yaml-output > ~/.airship/kubeconfig
+   KUSTOMIZE_PLUGIN_HOME=./ kustomize build --enable_alpha_plugins "${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})/manifests/site/$SITE/kubeconfig/" | yq '.config' --yaml-output > ~/.airship/kubeconfig
 fi
 
 #backward compatibility with previous behavior
@@ -41,13 +43,13 @@ if [[ -z "${decrypted1}" ]]; then
 fi
 
 #make sure that generated file has right FP
-grep "${SOPS_PGP_FP}" "${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})/manifests/site/test-site/target/generator/results/generated/secrets.yaml"
+grep "${SOPS_PGP_FP}" "${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})/manifests/site/$SITE/target/generator/results/generated/secrets.yaml"
 
 #set new FP and reencrypt
 export SOPS_PGP_FP=${SOPS_PGP_FP_REENCRYPT}
 airshipctl phase run secret-reencrypt
 #make sure that generated file has right FP
-grep "${SOPS_PGP_FP}" "${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})/manifests/site/test-site/target/generator/results/generated/secrets.yaml"
+grep "${SOPS_PGP_FP}" "${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})/manifests/site/$SITE/target/generator/results/generated/secrets.yaml"
 
 #make sure that decrypted valus stay the same
 decrypted2=$(airshipctl phase run secret-show)
