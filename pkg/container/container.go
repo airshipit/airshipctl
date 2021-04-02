@@ -51,7 +51,7 @@ type Container interface {
 // RunCommandOptions options for RunCommand
 type RunCommandOptions struct {
 	Privileged  bool
-	HostNewtork bool
+	HostNetwork bool
 
 	Cmd     []string
 	EnvVars []string

@@ -151,11 +151,12 @@ func (c *clientV1Alpha1) runAirship() error {
 		c.conf.Spec.Image,
 		c.conf.Spec.Airship.Cmd)
 	err = cont.RunCommand(RunCommandOptions{
-		Privileged: c.conf.Spec.Airship.Privileged,
-		Cmd:        c.conf.Spec.Airship.Cmd,
-		Mounts:     convertDockerMount(c.conf.Spec.StorageMounts),
-		EnvVars:    envs,
-		Input:      decoratedInput,
+		Privileged:  c.conf.Spec.Airship.Privileged,
+		Cmd:         c.conf.Spec.Airship.Cmd,
+		Mounts:      convertDockerMount(c.conf.Spec.StorageMounts),
+		EnvVars:     envs,
+		Input:       decoratedInput,
+		HostNetwork: c.conf.Spec.HostNetwork,
 	})
 	if err != nil {
 		return err
