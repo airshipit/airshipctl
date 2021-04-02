@@ -16,18 +16,22 @@ package executors_test
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
+	inventoryifc "opendev.org/airship/airshipctl/pkg/inventory/ifc"
 	"opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	testdoc "opendev.org/airship/airshipctl/testutil/document"
+	testinventory "opendev.org/airship/airshipctl/testutil/inventory"
 )
 
 var bmhExecutorTemplate = `apiVersion: airshipit.org/v1alpha1
@@ -44,13 +48,27 @@ spec:
     remoteDirect:
       isoURL: %s`
 
+func testBaremetalInventory() inventoryifc.Inventory {
+	bmhi := &testinventory.MockBMHInventory{}
+	bmhi.On("SelectOne", mock.Anything).Return()
+	bi := &testinventory.MockInventory{}
+	bi.On("BaremetalInventory").Return(bmhi, nil)
+	return bi
+}
+
+func testBaremetalInventoryNoKustomization() inventoryifc.Inventory {
+	bi := &testinventory.MockInventory{}
+	bi.On("BaremetalInventory").
+		Return(nil, errors.New("there is no kustomization.yaml"))
+	return bi
+}
+
 func TestNewBMHExecutor(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		execDoc := executorDoc(t, fmt.Sprintf(bmhExecutorTemplate, "reboot", "/home/iso-url"))
 		executor, err := executors.NewBaremetalExecutor(ifc.ExecutorConfig{
 			ExecutorDocument: execDoc,
 			BundleFactory:    testBundleFactory(singleExecutorBundlePath),
-			Helper:           makeDefaultHelper(t, "../testdata", defaultMetadataPath),
 		})
 		assert.NoError(t, err)
 		assert.NotNil(t, executor)
@@ -64,7 +82,6 @@ func TestNewBMHExecutor(t *testing.T) {
 		executor, actualErr := executors.NewBaremetalExecutor(ifc.ExecutorConfig{
 			ExecutorDocument: execDoc,
 			BundleFactory:    testBundleFactory(singleExecutorBundlePath),
-			Helper:           makeDefaultHelper(t, "../testdata", defaultMetadataPath),
 		})
 		assert.Equal(t, exepectedErr, actualErr)
 		assert.Nil(t, executor)
@@ -77,6 +94,7 @@ func TestBMHExecutorRun(t *testing.T) {
 		expectedErr string
 		runOptions  ifc.RunOptions
 		execDoc     document.Document
+		inventory   inventoryifc.Inventory
 	}{
 		{
 			name:        "error validate dry-run",
@@ -86,32 +104,37 @@ func TestBMHExecutorRun(t *testing.T) {
 				// any value but zero
 				Timeout: 40,
 			},
-			execDoc: executorDoc(t, fmt.Sprintf(bmhExecutorTemplate, "unknown", "")),
+			execDoc:   executorDoc(t, fmt.Sprintf(bmhExecutorTemplate, "unknown", "")),
+			inventory: testBaremetalInventory(),
 		},
 		{
 			name: "success validate dry-run",
 			runOptions: ifc.RunOptions{
 				DryRun: true,
 			},
-			execDoc: executorDoc(t, fmt.Sprintf(bmhExecutorTemplate, "remote-direct", "/some/url")),
+			execDoc:   executorDoc(t, fmt.Sprintf(bmhExecutorTemplate, "remote-direct", "/some/url")),
+			inventory: testBaremetalInventory(),
 		},
 		{
 			name:        "error unknown action type",
 			runOptions:  ifc.RunOptions{},
 			execDoc:     executorDoc(t, fmt.Sprintf(bmhExecutorTemplate, "unknown", "")),
 			expectedErr: "unknown action type",
+			inventory:   testBaremetalInventory(),
 		},
 		{
 			name:        "error no kustomization.yaml for inventory remote-direct",
 			runOptions:  ifc.RunOptions{},
 			execDoc:     executorDoc(t, fmt.Sprintf(bmhExecutorTemplate, "remote-direct", "")),
 			expectedErr: "kustomization.yaml",
+			inventory:   testBaremetalInventoryNoKustomization(),
 		},
 		{
-			name:        "error no kustomization.yaml for inventory remote-direct",
+			name:        "error no kustomization.yaml for inventory reboot",
 			runOptions:  ifc.RunOptions{},
 			execDoc:     executorDoc(t, fmt.Sprintf(bmhExecutorTemplate, "reboot", "")),
 			expectedErr: "kustomization.yaml",
+			inventory:   testBaremetalInventoryNoKustomization(),
 		},
 	}
 
@@ -120,8 +143,7 @@ func TestBMHExecutorRun(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			executor, err := executors.NewBaremetalExecutor(ifc.ExecutorConfig{
 				ExecutorDocument: tt.execDoc,
-				BundleFactory:    testBundleFactory(singleExecutorBundlePath),
-				Helper:           makeDefaultHelper(t, "../testdata/", defaultMetadataPath),
+				Inventory:        tt.inventory,
 			})
 			require.NoError(t, err)
 			require.NotNil(t, executor)
@@ -179,8 +201,6 @@ func TestBMHValidate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			executor, err := executors.NewBaremetalExecutor(ifc.ExecutorConfig{
 				ExecutorDocument: tt.execDoc,
-				BundleFactory:    testBundleFactory(singleExecutorBundlePath),
-				Helper:           makeDefaultHelper(t, "../testdata/", defaultMetadataPath),
 			})
 			require.NoError(t, err)
 			require.NotNil(t, executor)
@@ -201,8 +221,6 @@ func TestBMHManagerRender(t *testing.T) {
 	execDoc := executorDoc(t, fmt.Sprintf(bmhExecutorTemplate, "reboot", "/home/iso-url"))
 	executor, err := executors.NewBaremetalExecutor(ifc.ExecutorConfig{
 		ExecutorDocument: execDoc,
-		BundleFactory:    testBundleFactory(singleExecutorBundlePath),
-		Helper:           makeDefaultHelper(t, "../testdata", defaultMetadataPath),
 	})
 	require.NoError(t, err)
 	require.NotNil(t, executor)

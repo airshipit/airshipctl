@@ -21,6 +21,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
+	inventoryifc "opendev.org/airship/airshipctl/pkg/inventory/ifc"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 )
 
@@ -58,12 +59,15 @@ type ExecutorFactory func(config ExecutorConfig) (Executor, error)
 
 // ExecutorConfig container to store all executor options
 type ExecutorConfig struct {
-	PhaseName   string
-	ClusterName string
+	PhaseName    string
+	ClusterName  string
+	SinkBasePath string
+	TargetPath   string
 
-	ClusterMap       clustermap.ClusterMap
-	ExecutorDocument document.Document
-	Helper           Helper
-	KubeConfig       kubeconfig.Interface
-	BundleFactory    document.BundleFactoryFunc
+	ClusterMap        clustermap.ClusterMap
+	ExecutorDocument  document.Document
+	KubeConfig        kubeconfig.Interface
+	BundleFactory     document.BundleFactoryFunc
+	PhaseConfigBundle document.Bundle
+	Inventory         inventoryifc.Inventory
 }

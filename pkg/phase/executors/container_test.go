@@ -22,6 +22,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
@@ -61,8 +62,27 @@ const (
       cmd: encrypt
       unencrypted-regex: '^(kind|apiVersion|group|metadata)$'`
 
+	singleExecutorClusterMap = `apiVersion: airshipit.org/v1alpha1
+kind: ClusterMap
+metadata:
+  labels:
+    airshipit.org/deploy-k8s: "false"
+  name: main-map
+map:
+  testCluster: {}
+`
 	singleExecutorBundlePath = "../../container/testdata/single"
 )
+
+func testClusterMap(t *testing.T) clustermap.ClusterMap {
+	doc, err := document.NewDocumentFromBytes([]byte(singleExecutorClusterMap))
+	require.NoError(t, err)
+	require.NotNil(t, doc)
+	apiObj := v1alpha1.DefaultClusterMap()
+	err = doc.ToAPIObject(apiObj, v1alpha1.Scheme)
+	require.NoError(t, err)
+	return clustermap.NewClusterMap(apiObj)
+}
 
 func TestNewContainerExecutor(t *testing.T) {
 	execDoc, err := document.NewDocumentFromBytes([]byte(containerExecutorDoc))
@@ -72,7 +92,6 @@ func TestNewContainerExecutor(t *testing.T) {
 		e, err := executors.NewContainerExecutor(ifc.ExecutorConfig{
 			ExecutorDocument: execDoc,
 			BundleFactory:    testBundleFactory(singleExecutorBundlePath),
-			Helper:           makeDefaultHelper(t, "../../container/testdata", "metadata.yaml"),
 		})
 		assert.NoError(t, err)
 		assert.NotNil(t, e)
@@ -84,7 +103,6 @@ func TestNewContainerExecutor(t *testing.T) {
 			BundleFactory: func() (document.Bundle, error) {
 				return nil, fmt.Errorf("bundle error")
 			},
-			Helper: makeDefaultHelper(t, "../../container/testdata", "metadata.yaml"),
 		})
 		assert.Error(t, err)
 		assert.Nil(t, e)
@@ -96,7 +114,6 @@ func TestNewContainerExecutor(t *testing.T) {
 			BundleFactory: func() (document.Bundle, error) {
 				return nil, errors.ErrDocumentEntrypointNotDefined{}
 			},
-			Helper: makeDefaultHelper(t, "../../container/testdata", "metadata.yaml"),
 		})
 		assert.NoError(t, err)
 		assert.NotNil(t, e)
@@ -108,7 +125,6 @@ func TestGenericContainer(t *testing.T) {
 		name         string
 		outputPath   string
 		expectedErr  string
-		targetPath   string
 		resultConfig string
 
 		containerAPI   *v1alpha1.GenericContainer
@@ -125,7 +141,6 @@ func TestGenericContainer(t *testing.T) {
 				},
 			},
 			clientFunc: container.NewClientV1Alpha1,
-			targetPath: singleExecutorBundlePath,
 		},
 		{
 			name: "error kyaml cant parse config",
@@ -138,7 +153,6 @@ func TestGenericContainer(t *testing.T) {
 			runOptions:  ifc.RunOptions{},
 			expectedErr: "wrong Node Kind",
 			clientFunc:  container.NewClientV1Alpha1,
-			targetPath:  singleExecutorBundlePath,
 		},
 		{
 			name: "error no object referenced in config",
@@ -150,13 +164,11 @@ func TestGenericContainer(t *testing.T) {
 			},
 			runOptions:  ifc.RunOptions{DryRun: true},
 			expectedErr: "found no documents",
-			targetPath:  singleExecutorBundlePath,
 		},
 		{
 			name:         "success dry run",
 			containerAPI: &v1alpha1.GenericContainer{},
 			runOptions:   ifc.RunOptions{DryRun: true},
-			targetPath:   singleExecutorBundlePath,
 		},
 		{
 			name: "success referenced config present",
@@ -168,7 +180,6 @@ func TestGenericContainer(t *testing.T) {
 				},
 			},
 			runOptions: ifc.RunOptions{DryRun: true},
-			targetPath: singleExecutorBundlePath,
 			resultConfig: `apiVersion: v1
 kind: Secret
 metadata:
@@ -187,12 +198,14 @@ type: Opaque
 		t.Run(tt.name, func(t *testing.T) {
 			b, err := document.NewBundleByPath(singleExecutorBundlePath)
 			require.NoError(t, err)
+			phaseConfigBundle, err := document.NewBundleByPath(singleExecutorBundlePath)
+			require.NoError(t, err)
+
 			container := executors.ContainerExecutor{
 				ResultsDir:     tt.outputPath,
 				ExecutorBundle: b,
 				Container:      tt.containerAPI,
 				ClientFunc:     tt.clientFunc,
-				Helper:         makeDefaultHelper(t, tt.targetPath, "../metadata.yaml"),
 				Options: ifc.ExecutorConfig{
 					ClusterName: "testCluster",
 					KubeConfig: fakeKubeConfig{
@@ -200,6 +213,8 @@ type: Opaque
 							return "testPath", func() {}, nil
 						},
 					},
+					ClusterMap:        testClusterMap(t),
+					PhaseConfigBundle: phaseConfigBundle,
 				},
 			}
 
@@ -243,6 +258,7 @@ func TestSetKubeConfig(t *testing.T) {
 						return "testPath", func() {}, nil
 					},
 				},
+				ClusterMap: testClusterMap(t),
 			},
 		},
 		{
@@ -254,6 +270,7 @@ func TestSetKubeConfig(t *testing.T) {
 						return "", func() {}, getFileErr
 					},
 				},
+				ClusterMap: testClusterMap(t),
 			},
 			expectedErr: getFileErr,
 		},
@@ -265,7 +282,6 @@ func TestSetKubeConfig(t *testing.T) {
 			e := executors.ContainerExecutor{
 				Options:   tt.opts,
 				Container: &v1alpha1.GenericContainer{},
-				Helper:    makeDefaultHelper(t, singleExecutorBundlePath, "../metadata.yaml"),
 			}
 			_, err := e.SetKubeConfig()
 			assert.Equal(t, tt.expectedErr, err)

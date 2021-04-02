@@ -86,7 +86,6 @@ func TestNewKubeApplierExecutor(t *testing.T) {
 		name          string
 		cfgDoc        string
 		expectedErr   string
-		helper        ifc.Helper
 		kubeconf      kubeconfig.Interface
 		bundleFactory document.BundleFactoryFunc
 	}{
@@ -94,7 +93,6 @@ func TestNewKubeApplierExecutor(t *testing.T) {
 			name:          "valid executor",
 			cfgDoc:        ValidExecutorDoc,
 			kubeconf:      testKubeconfig(testValidKubeconfig),
-			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata", defaultMetadataPath),
 			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
 		},
 		{
@@ -107,7 +105,6 @@ metadata:
   labels:
     cli-utils.sigs.k8s.io/inventory-id: "some id"`,
 			expectedErr:   "wrong config document",
-			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata", defaultMetadataPath),
 			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
 		},
 
@@ -116,7 +113,6 @@ metadata:
 			cfgDoc:        ValidExecutorDoc,
 			expectedErr:   "no such file or directory",
 			kubeconf:      testKubeconfig(testValidKubeconfig),
-			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata", defaultMetadataPath),
 			bundleFactory: testBundleFactory("does not exist"),
 		},
 	}
@@ -133,7 +129,6 @@ metadata:
 					ExecutorDocument: doc,
 					BundleFactory:    tt.bundleFactory,
 					KubeConfig:       tt.kubeconf,
-					Helper:           tt.helper,
 				})
 			if tt.expectedErr != "" {
 				require.Error(t, err)
@@ -159,13 +154,11 @@ func TestKubeApplierExecutorRun(t *testing.T) {
 		kubeconf      kubeconfig.Interface
 		execDoc       document.Document
 		bundleFactory document.BundleFactoryFunc
-		helper        ifc.Helper
 		clusterMap    clustermap.ClusterMap
 	}{
 		{
 			name:          "cant read kubeconfig error",
 			containsErr:   "no such file or directory",
-			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata", defaultMetadataPath),
 			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
 			kubeconf:      testKubeconfig(`invalid kubeconfig`),
 			execDoc:       executorDoc(t, ValidExecutorDocNamespaced),
@@ -179,7 +172,6 @@ func TestKubeApplierExecutorRun(t *testing.T) {
 		{
 			name:          "error cluster not defined",
 			containsErr:   "is not defined in cluster map",
-			helper:        makeDefaultHelper(t, "../../k8s/applier/testdata", defaultMetadataPath),
 			bundleFactory: testBundleFactory("../../k8s/applier/testdata/source_bundle"),
 			kubeconf:      testKubeconfig(testValidKubeconfig),
 			execDoc:       executorDoc(t, ValidExecutorDocNamespaced),
@@ -192,7 +184,6 @@ func TestKubeApplierExecutorRun(t *testing.T) {
 			exec, err := executors.NewKubeApplierExecutor(
 				ifc.ExecutorConfig{
 					ExecutorDocument: tt.execDoc,
-					Helper:           tt.helper,
 					BundleFactory:    tt.bundleFactory,
 					KubeConfig:       tt.kubeconf,
 					ClusterMap:       tt.clusterMap,

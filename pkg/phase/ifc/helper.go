@@ -35,7 +35,7 @@ type Helper interface {
 	ClusterMap() (clustermap.ClusterMap, error)
 	ExecutorDoc(phaseID ID) (document.Document, error)
 	PhaseBundleRoot() string
-	Inventory() (ifc.Inventory, error)
+	Inventory() ifc.Inventory
 	PhaseEntryPointBasePath() string
 	PhaseConfigBundle() document.Bundle
 }

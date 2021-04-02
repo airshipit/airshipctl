@@ -51,7 +51,7 @@ func NewClusterctlExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 	if err := cfg.ExecutorDocument.ToAPIObject(options, airshipv1.Scheme); err != nil {
 		return nil, err
 	}
-	client, err := client.NewClient(cfg.Helper.TargetPath(), log.DebugEnabled(), options)
+	client, err := client.NewClient(cfg.TargetPath, log.DebugEnabled(), options)
 	if err != nil {
 		return nil, err
 	}

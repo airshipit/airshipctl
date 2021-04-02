@@ -37,16 +37,12 @@ type BaremetalManagerExecutor struct {
 
 // NewBaremetalExecutor constructor for baremetal executor
 func NewBaremetalExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
-	inv, err := cfg.Helper.Inventory()
-	if err != nil {
-		return nil, err
-	}
 	options := airshipv1.DefaultBaremetalManager()
 	if err := cfg.ExecutorDocument.ToAPIObject(options, airshipv1.Scheme); err != nil {
 		return nil, err
 	}
 	return &BaremetalManagerExecutor{
-		inventory: inv,
+		inventory: cfg.Inventory,
 		options:   options,
 	}, nil
 }

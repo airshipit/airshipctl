@@ -577,8 +577,7 @@ func TestHelperInventory(t *testing.T) {
 	helper, err := phase.NewHelper(testConfig(t))
 	require.NoError(t, err)
 	require.NotNil(t, helper)
-	inv, err := helper.Inventory()
-	assert.NoError(t, err)
+	inv := helper.Inventory()
 	assert.NotNil(t, inv)
 }
 

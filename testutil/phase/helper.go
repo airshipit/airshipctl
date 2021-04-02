@@ -132,13 +132,13 @@ func (mh *MockHelper) PhaseBundleRoot() string {
 }
 
 // Inventory mock
-func (mh *MockHelper) Inventory() (inventoryifc.Inventory, error) {
+func (mh *MockHelper) Inventory() inventoryifc.Inventory {
 	args := mh.Called()
 	val, ok := args.Get(0).(inventoryifc.Inventory)
 	if !ok {
-		return nil, args.Error(1)
+		return nil
 	}
-	return val, args.Error(1)
+	return val
 }
 
 // PhaseEntryPointBasePath mock
