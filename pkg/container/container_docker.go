@@ -27,6 +27,7 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
+	specs "github.com/opencontainers/image-spec/specs-go/v1"
 
 	"opendev.org/airship/airshipctl/pkg/log"
 )
@@ -57,6 +58,7 @@ type DockerClient interface {
 		*container.Config,
 		*container.HostConfig,
 		*network.NetworkingConfig,
+		*specs.Platform,
 		string,
 	) (container.ContainerCreateCreatedBody, error)
 	// ContainerAttach attaches a connection to a container in the server.
@@ -271,6 +273,7 @@ func (c *DockerContainer) RunCommand(opts RunCommandOptions) (err error) {
 		&containerConfig,
 		&hostConfig,
 		nil,
+		nil,
 		"",
 	)
 	if err != nil {
@@ -284,14 +287,28 @@ func (c *DockerContainer) RunCommand(opts RunCommandOptions) (err error) {
 			Stream: true,
 			Stdin:  true,
 		})
+
 		if attachErr != nil {
 			return attachErr
 		}
+
 		defer conn.Close()
 
-		if _, err = io.Copy(conn.Conn, opts.Input); err != nil {
+		// This code is smiplified version of docker cli code
+		cErr := make(chan error, 1)
+
+		// Write to stdin asynchronously
+		go func() {
+			_, copyErr := io.Copy(conn.Conn, opts.Input)
+			cErr <- copyErr
+		}()
+
+		if err = c.dockerClient.ContainerStart(c.ctx, c.id, types.ContainerStartOptions{}); err != nil {
+			<-cErr
 			return err
 		}
+		// lock until error is returned from the write channel
+		return <-cErr
 	}
 
 	if err = c.dockerClient.ContainerStart(c.ctx, c.id, types.ContainerStartOptions{}); err != nil {
