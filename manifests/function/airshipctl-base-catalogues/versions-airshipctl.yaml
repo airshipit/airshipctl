@@ -90,6 +90,8 @@ spec:
           image: quay.io/centos/centos:8.3.2011
         init_images:
           image: quay.io/airshipit/ipa:latest
+        qcow_bundle:
+          image: quay.io/airshipit/qcow-bundle:latest-ubuntu_focal
         dnsmasq:
           image: quay.io/metal3-io/ironic:capm3-v0.4.0
         httpd:
