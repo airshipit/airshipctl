@@ -15,8 +15,6 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipctl/pkg/config"
@@ -39,40 +37,32 @@ airshipctl config get-manifest e2e
 // NewGetManifestCommand creates a command for viewing the manifest information
 // defined in the airshipctl config file.
 func NewGetManifestCommand(cfgFactory config.Factory) *cobra.Command {
-	o := &config.ManifestOptions{}
+	var manifestName string
 	cmd := &cobra.Command{
 		Use:     "get-manifest NAME",
-		Short:   "Get a manifest information from the airshipctl config",
+		Short:   "Get a manifest(s) information from the airshipctl config",
 		Long:    getManifestsLong[1:],
 		Example: getManifestsExample,
-		Args:    cobra.MaximumNArgs(1),
+		Args:    GetManifestNArgs(&manifestName),
 		Aliases: []string{"get-manifests"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			airconfig, err := cfgFactory()
-			if err != nil {
-				return err
-			}
-			if len(args) == 1 {
-				o.Name = args[0]
-				manifest, exists := airconfig.Manifests[o.Name]
-				if !exists {
-					return config.ErrMissingConfig{
-						What: fmt.Sprintf("manifest with name '%s'", o.Name),
-					}
-				}
-				fmt.Fprintln(cmd.OutOrStdout(), manifest)
-			} else {
-				manifests := airconfig.GetManifests()
-				if len(manifests) == 0 {
-					fmt.Fprintln(cmd.OutOrStdout(), "No Manifest found in the configuration.")
-				}
-				for _, manifest := range manifests {
-					fmt.Fprintln(cmd.OutOrStdout(), manifest)
-				}
-			}
-			return nil
+			return config.RunGetManifest(cfgFactory, manifestName, cmd.OutOrStdout())
 		},
 	}
 
 	return cmd
+}
+
+// GetManifestNArgs is used to process arguments for get-manifest cmd
+func GetManifestNArgs(manifestName *string) cobra.PositionalArgs {
+	return func(cmd *cobra.Command, args []string) error {
+		if cmd.CalledAs() == "get-manifests" {
+			return cobra.ExactArgs(0)(cmd, args)
+		}
+		if err := cobra.ExactArgs(1)(cmd, args); err != nil {
+			return err
+		}
+		*manifestName = args[0]
+		return nil
+	}
 }

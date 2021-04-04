@@ -478,6 +478,18 @@ func TestManagementConfigurationByNameDoesNotExist(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestGetManifest(t *testing.T) {
+	conf, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
+
+	_, err := conf.GetManifest("dummy_manifest")
+	require.NoError(t, err)
+
+	// Test Wrong Manifest
+	_, err = conf.GetManifest("unknown")
+	assert.Error(t, err)
+}
+
 func TestGetManifests(t *testing.T) {
 	conf, cleanup := testutil.InitConfig(t)
 	defer cleanup(t)

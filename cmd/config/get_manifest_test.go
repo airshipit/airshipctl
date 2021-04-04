@@ -15,50 +15,23 @@
 package config_test
 
 import (
+	"bytes"
 	"fmt"
 	"testing"
 
-	cmd "opendev.org/airship/airshipctl/cmd/config"
-	"opendev.org/airship/airshipctl/pkg/config"
+	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/require"
+
+	"opendev.org/airship/airshipctl/cmd/config"
 	"opendev.org/airship/airshipctl/testutil"
 )
 
-func TestGetManifestConfigCmd(t *testing.T) {
-	settings := func() (*config.Config, error) {
-		return &config.Config{
-			Manifests: map[string]*config.Manifest{
-				"fooManifestConfig": getTestManifest("foo"),
-				"barManifestConfig": getTestManifest("bar"),
-				"bazManifestConfig": getTestManifest("baz"),
-			},
-		}, nil
-	}
-
-	noConfigSettings := func() (*config.Config, error) {
-		return new(config.Config), nil
-	}
-
+func TestNewGetManifestCommand(t *testing.T) {
 	cmdTests := []*testutil.CmdTest{
 		{
-			Name:    "get-manifest",
-			CmdLine: "fooManifestConfig",
-			Cmd:     cmd.NewGetManifestCommand(settings),
-		},
-		{
-			Name:    "get-all-manifests",
-			CmdLine: "",
-			Cmd:     cmd.NewGetManifestCommand(settings),
-		},
-		{
-			Name:    "missing",
-			CmdLine: "manifestMissing",
-			Cmd:     cmd.NewGetManifestCommand(settings),
-			Error:   fmt.Errorf("missing configuration: manifest with name 'manifestMissing'"),
-		},
-		{
-			Name:    "no-manifests",
-			CmdLine: "",
-			Cmd:     cmd.NewGetManifestCommand(noConfigSettings),
+			Name:    "config-get-manifest-help",
+			CmdLine: "-h",
+			Cmd:     config.NewGetManifestCommand(nil),
 		},
 	}
 
@@ -67,10 +40,58 @@ func TestGetManifestConfigCmd(t *testing.T) {
 	}
 }
 
-func getTestManifest(name string) *config.Manifest {
-	manifests := &config.Manifest{
-		PhaseRepositoryName: name + "_phase_repo",
-		TargetPath:          name + "_target_path",
+func TestGetManifestNArgs(t *testing.T) {
+	tests := []struct {
+		name         string
+		use          string
+		args         []string
+		manifestName string
+		err          error
+	}{
+		{
+			name: "get-manifests no args",
+			use:  "get-manifests",
+			args: []string{},
+			err:  nil,
+		},
+		{
+			name: "get-manifests 1 arg",
+			use:  "get-manifests",
+			args: []string{"arg1"},
+			err:  fmt.Errorf("accepts 0 arg(s), received 1"),
+		},
+		{
+			name: "get-manifest no args",
+			use:  "get-manifest",
+			args: []string{},
+			err:  fmt.Errorf("accepts 1 arg(s), received 0"),
+		},
+		{
+			name: "get-manifest 1 arg",
+			use:  "get-manifest",
+			args: []string{"arg1"},
+			err:  nil,
+		},
 	}
-	return manifests
+
+	out := &bytes.Buffer{}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			cmd := &cobra.Command{
+				Use:  tt.use,
+				Args: config.GetManifestNArgs(&tt.manifestName),
+				Run:  func(cmd *cobra.Command, args []string) {},
+			}
+			cmd.SetArgs(tt.args)
+			cmd.SetOut(out)
+			err := cmd.Execute()
+			if tt.err != nil {
+				require.Equal(t, tt.err, err)
+			} else if len(tt.args) == 1 {
+				require.Equal(t, tt.args[0], tt.manifestName)
+			}
+			out.Reset()
+		})
+	}
 }

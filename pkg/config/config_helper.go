@@ -17,6 +17,8 @@ package config
 import (
 	"fmt"
 	"io"
+
+	"sigs.k8s.io/yaml"
 )
 
 // ContextOption is a function that allows to modify context object
@@ -208,4 +210,29 @@ func RunSetManifest(o *ManifestOptions, airconfig *Config, writeToStorage bool) 
 	}
 
 	return modified, nil
+}
+
+// RunGetManifest prints desired manifest(s) by its name
+func RunGetManifest(cfgFactory Factory, manifestName string, w io.Writer) error {
+	cfg, err := cfgFactory()
+	if err != nil {
+		return err
+	}
+
+	manifestsMap := map[string]*Manifest{}
+	if manifestName != "" {
+		manifestsMap[manifestName], err = cfg.GetManifest(manifestName)
+		if err != nil {
+			return err
+		}
+	} else {
+		manifestsMap = cfg.Manifests
+	}
+
+	data, err := yaml.Marshal(manifestsMap)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(data)
+	return err
 }
