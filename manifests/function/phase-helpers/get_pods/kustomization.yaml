@@ -1,0 +1,6 @@
+configMapGenerator:
+- name: kubectl-get-pods
+  options:
+    disableNameSuffixHash: true
+  files:
+  - script=kubectl_get_pods.sh

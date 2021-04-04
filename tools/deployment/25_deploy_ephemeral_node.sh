@@ -14,16 +14,17 @@
 
 set -xe
 
-#Default wait timeout is 3600 seconds
-export TIMEOUT=${TIMEOUT:-3600}
-export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
-export KUBECONFIG_EPHEMERAL_CONTEXT=${KUBECONFIG_EPHEMERAL_CONTEXT:-"ephemeral-cluster"}
-
 echo "Deploy ephemeral node using redfish with iso"
 airshipctl phase run remotedirect-ephemeral --debug
 
 echo "Wait for apiserver to become available"
-airshipctl phase run kubectl-wait-node-ephemeral
+# Scripts for this phase placed in manifests/function/phase-helpers/wait_node/
+# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+# and find ConfigMap with name kubectl-get-node
+airshipctl phase run kubectl-wait-node-ephemeral --debug
 
 echo "List all pods"
-kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT get pods --all-namespaces
+# Scripts for this phase placed in manifests/function/phase-helpers/get_pods/
+# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+# and find ConfigMap with name kubectl-get-pods
+airshipctl phase run kubectl-get-pods-ephemeral --debug
