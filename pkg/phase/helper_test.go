@@ -76,6 +76,12 @@ func TestHelperPhase(t *testing.T) {
 			errContains: "found no documents",
 		},
 		{
+			name:        "Error no executor",
+			config:      testConfig,
+			phaseID:     ifc.ID{Name: "no_executor_phase"},
+			errContains: "Phase name 'no_executor_phase', namespace '' must have executorRef field defined in config",
+		},
+		{
 			name: "Error bundle path doesn't exist",
 			config: func(t *testing.T) *config.Config {
 				conf := testConfig(t)
@@ -95,6 +101,7 @@ func TestHelperPhase(t *testing.T) {
 				require.Error(t, err)
 				return
 			}
+			require.NoError(t, err)
 			require.NotNil(t, helper)
 			actualPhase, actualErr := helper.Phase(tt.phaseID)
 			if tt.errContains != "" {

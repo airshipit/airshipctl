@@ -182,12 +182,7 @@ func (c *ContainerExecutor) Render(w io.Writer, o ifc.RenderOptions) error {
 func (c *ContainerExecutor) setConfig() error {
 	if c.Container.ConfigRef != nil {
 		log.Debugf("Config reference is specified, looking for the object in config ref: '%v'", c.Container.ConfigRef)
-		gvk := c.Container.ConfigRef.GroupVersionKind()
-		selector := document.NewSelector().
-			ByName(c.Container.ConfigRef.Name).
-			ByNamespace(c.Container.ConfigRef.Namespace).
-			ByGvk(gvk.Group, gvk.Version, gvk.Kind)
-		doc, err := c.Options.PhaseConfigBundle.SelectOne(selector)
+		doc, err := c.Options.PhaseConfigBundle.SelectOne(document.NewSelector().ByObjectReference(c.Container.ConfigRef))
 		if err != nil {
 			return err
 		}

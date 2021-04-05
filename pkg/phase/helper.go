@@ -110,6 +110,13 @@ func (helper *Helper) Phase(phaseID ifc.ID) (*v1alpha1.Phase, error) {
 	if err = doc.ToAPIObject(phase, v1alpha1.Scheme); err != nil {
 		return nil, err
 	}
+	// Phase must contain an executor
+	if phase.Config.ExecutorRef == nil {
+		return nil, errors.ErrExecutorRefNotDefined{
+			PhaseName:      phase.Name,
+			PhaseNamespace: phase.Namespace,
+		}
+	}
 	return phase, nil
 }
 
@@ -271,19 +278,9 @@ func (helper *Helper) ExecutorDoc(phaseID ifc.ID) (document.Document, error) {
 		return nil, err
 	}
 
-	phaseConfig := phaseObj.Config
-	if phaseConfig.ExecutorRef == nil {
-		return nil, errors.ErrExecutorRefNotDefined{PhaseName: phaseID.Name, PhaseNamespace: phaseID.Namespace}
-	}
-
 	// Searching executor configuration document referenced in
 	// phase configuration
-	refGVK := phaseConfig.ExecutorRef.GroupVersionKind()
-	selector := document.NewSelector().
-		ByGvk(refGVK.Group, refGVK.Version, refGVK.Kind).
-		ByName(phaseConfig.ExecutorRef.Name).
-		ByNamespace(phaseConfig.ExecutorRef.Namespace)
-	return helper.phaseConfigBundle.SelectOne(selector)
+	return helper.phaseConfigBundle.SelectOne(document.NewSelector().ByObjectReference(phaseObj.Config.ExecutorRef))
 }
 
 // TargetPath returns manifest root
