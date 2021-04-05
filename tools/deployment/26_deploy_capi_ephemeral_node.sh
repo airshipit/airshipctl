@@ -14,8 +14,6 @@
 
 set -xe
 export PROVIDER=${PROVIDER:-"metal3"}
-export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
-export KUBECONFIG_EPHEMERAL_CONTEXT=${KUBECONFIG_EPHEMERAL_CONTEXT:-"ephemeral-cluster"}
 
 
 if [ "$PROVIDER" = "metal3" ]; then
@@ -32,17 +30,30 @@ if [ "$PROVIDER" = "metal3" ]; then
     echo "Deploy metal3.io components to ephemeral node"
     airshipctl phase run initinfra-ephemeral --debug
 
-    echo "Getting metal3 pods as debug information"
-    kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT --namespace ${PROVIDER} get pods
+    echo "Getting pods as debug information"
+    # Scripts for this phase placed in manifests/function/phase-helpers/get_pods/
+    # To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+    # and find ConfigMap with name kubectl-get-pods
+    airshipctl phase run kubectl-get-pods-ephemeral --debug
 
     echo "Deploy cluster-api components to ephemeral node"
     airshipctl phase run clusterctl-init-ephemeral --debug
 else
     echo "Deploy cluster-api components to ephemeral node"
     airshipctl phase run clusterctl-init-ephemeral --debug
-    kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT get pods -A
+    # Scripts for this phase placed in manifests/function/phase-helpers/get_pods/
+    # To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+    # and find ConfigMap with name kubectl-get-pods
+    airshipctl phase run kubectl-get-pods-ephemeral --debug
 fi
 
 echo "Waiting for clusterapi pods to come up"
-kubectl --kubeconfig $KUBECONFIG  --context $KUBECONFIG_EPHEMERAL_CONTEXT wait --for=condition=available deploy --all --timeout=1000s -A
-kubectl --kubeconfig $KUBECONFIG  --context $KUBECONFIG_EPHEMERAL_CONTEXT get pods --all-namespaces
+# Scripts for this phase placed in manifests/function/phase-helpers/wait_deploy/
+# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+# and find ConfigMap with name kubectl-wait-deploy
+airshipctl phase run kubectl-wait-deploy-ephemeral --debug
+
+# Scripts for this phase placed in manifests/function/phase-helpers/get_pods/
+# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+# and find ConfigMap with name kubectl-get-pods
+airshipctl phase run kubectl-get-pods-ephemeral --debug
