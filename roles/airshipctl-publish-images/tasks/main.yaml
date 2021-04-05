@@ -38,6 +38,7 @@
           NO_PROXY: "{{ proxy.noproxy }}"
           USE_PROXY: "{{ proxy.enabled | lower }}"
           DOCKER_REGISTRY: "{{ image_repo }}"
+          DOCKER_IMAGE_PREFIX: "{{ image_prefix | default('airshipit') }}"
         target: images
 
     - name: Push Image with Commit Tag
@@ -50,4 +51,5 @@
           NO_PROXY: "{{ proxy.noproxy }}"
           USE_PROXY: "{{ proxy.enabled | lower }}"
           DOCKER_REGISTRY: "{{ image_repo }}"
+          DOCKER_IMAGE_PREFIX: "{{ image_prefix | default('airshipit') }}"
         target: images
