@@ -173,8 +173,12 @@ func (c *ContainerExecutor) Validate() error {
 }
 
 // Render executor documents
-func (c *ContainerExecutor) Render(_ io.Writer, _ ifc.RenderOptions) error {
-	return commonerrors.ErrNotImplemented{}
+func (c *ContainerExecutor) Render(w io.Writer, o ifc.RenderOptions) error {
+	bundle, err := c.ExecutorBundle.SelectBundle(o.FilterSelector)
+	if err != nil {
+		return err
+	}
+	return bundle.Write(w)
 }
 
 func (c *ContainerExecutor) setConfig() error {
