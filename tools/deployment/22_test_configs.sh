@@ -30,7 +30,8 @@ export REMOTE_PROXY=false
 export AIRSHIP_CONFIG_ISO_SERVE_HOST=${HOST:-"localhost"}
 export AIRSHIP_CONFIG_ISO_PORT=${SERVE_PORT}
 export AIRSHIP_CONFIG_ISO_NAME=${ISO_NAME:-"ephemeral.iso"}
-export AIRSHIP_CONFIG_METADATA_PATH=${AIRSHIP_CONFIG_METADATA_PATH:-"manifests/site/test-site/metadata.yaml"}
+export SITE=${SITE:-"test-site"}
+export AIRSHIP_CONFIG_METADATA_PATH=${AIRSHIP_CONFIG_METADATA_PATH:-"manifests/site/${SITE}/metadata.yaml"}
 export SYSTEM_ACTION_RETRIES=30
 export SYSTEM_REBOOT_DELAY=30
 export AIRSHIP_CONFIG_PHASE_REPO_BRANCH=${BRANCH:-"master"}
@@ -38,7 +39,6 @@ export AIRSHIP_CONFIG_PHASE_REPO_BRANCH=${BRANCH:-"master"}
 export AIRSHIP_CONFIG_PHASE_REPO_URL=${AIRSHIP_CONFIG_PHASE_REPO_URL:-"https://review.opendev.org/airship/airshipctl"}
 export AIRSHIP_CONFIG_PHASE_REPO_NAME=${AIRSHIP_CONFIG_PHASE_REPO_NAME:-"airshipctl"}
 export AIRSHIP_CONFIG_MANIFEST_DIRECTORY=${AIRSHIP_CONFIG_MANIFEST_DIRECTORY:-"/tmp/airship"}
-export SITE=${SITE:-"test-site"}
 export EXTERNAL_KUBECONFIG=${EXTERNAL_KUBECONFIG:-""}
 
 # Remove the contents of the .airship folder, preserving the kustomize plugin directory

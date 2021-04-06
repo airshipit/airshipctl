@@ -21,13 +21,13 @@ export NO_PROXY=${NO_PROXY:-${no_proxy}}
 export PROXY=${PROXY:-${http_proxy}}
 
 echo "Build airshipctl docker images"
-make images
+sudo -E make images
 
 echo "Copy airshipctl from docker image"
-DOCKER_IMAGE_TAG=$(make print-docker-image-tag)
-CONTAINER=$(docker create "${DOCKER_IMAGE_TAG}")
-sudo docker cp "${CONTAINER}:/usr/local/bin/airshipctl" "/usr/local/bin/airshipctl"
-sudo docker rm "${CONTAINER}"
+DOCKER_IMAGE_TAG=$(sudo -E make print-docker-image-tag)
+CONTAINER=$(sudo -E docker create "${DOCKER_IMAGE_TAG}")
+sudo -E docker cp "${CONTAINER}:/usr/local/bin/airshipctl" "/usr/local/bin/airshipctl"
+sudo -E docker rm "${CONTAINER}"
 
 if ! airshipctl version | grep -q 'airshipctl'; then
   echo "Unable to verify airshipctl command. Please verify if the airshipctl is installed in /usr/local/bin/"

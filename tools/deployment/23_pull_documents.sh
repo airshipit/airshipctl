@@ -14,5 +14,11 @@
 
 set -xe
 
+NO_CHECKOUT=${NO_CHECKOUT:-"true"}
+
 echo "Pull site documents using airshipctl"
-airshipctl document pull -n --debug
+if [ ${NO_CHECKOUT} == "true" ]; then
+  airshipctl document pull -n --debug
+else
+  airshipctl document pull --debug
+fi
