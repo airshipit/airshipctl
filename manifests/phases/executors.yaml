@@ -410,3 +410,19 @@ configRef:
   kind: ConfigMap
   name: kubectl-pause-bmh
   apiVersion: v1
+---
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: kubectl-wait-cluster
+spec:
+  image: quay.io/airshipit/toolbox:latest
+  hostNetwork: true
+  envVars:
+    - RESOURCE_GROUP_FILTER=cluster.x-k8s.io
+    - RESOURCE_VERSION_FILTER=v1alpha3
+    - RESOURCE_KIND_FILTER=Cluster
+configRef:
+  kind: ConfigMap
+  name: kubectl-wait-cluster
+  apiVersion: v1

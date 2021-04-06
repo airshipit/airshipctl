@@ -14,4 +14,13 @@
 
 set -xe
 
-kubectl --kubeconfig $KUBECONFIG --context $KCTL_CONTEXT wait --all-namespaces --for=condition=Ready pods --all --timeout=600s 1>&2
+export TIMEOUT=${TIMEOUT:-3000s}
+
+echo "Waiting for all pods in the cluster with context in kubeconfg ${KCTL_CONTEXT} to reach ready condition" 1>&2
+kubectl --context $KCTL_CONTEXT \
+  wait \
+  --all-namespaces \
+  --for=condition=Ready \
+  pods \
+  --all \
+  --timeout=$TIMEOUT 1>&2

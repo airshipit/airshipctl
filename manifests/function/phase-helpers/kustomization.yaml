@@ -6,3 +6,4 @@ resources:
 - get_node
 - wait_pods
 - pause_bmh
+- wait_cluster
