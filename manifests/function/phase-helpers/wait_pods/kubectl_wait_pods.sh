@@ -14,4 +14,4 @@
 
 set -xe
 
-kubectl --kubeconfig $KUBECONFIG --context $KCTL_CONTEXT --request-timeout 10s get pods --all-namespaces 1>&2
+kubectl --kubeconfig $KUBECONFIG --context $KCTL_CONTEXT wait --all-namespaces --for=condition=Ready pods --all --timeout=600s 1>&2
