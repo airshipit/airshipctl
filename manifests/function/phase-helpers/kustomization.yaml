@@ -9,3 +9,5 @@ resources:
 - wait_cluster
 - virsh-eject-cdrom-images
 - virsh-destroy-vms
+- wait_bmh
+- wait_label_node

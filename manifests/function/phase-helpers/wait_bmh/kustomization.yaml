@@ -1,0 +1,6 @@
+configMapGenerator:
+- name: kubectl-wait-bmh
+  options:
+    disableNameSuffixHash: true
+  files:
+  - script=kubectl_wait_bmh.sh

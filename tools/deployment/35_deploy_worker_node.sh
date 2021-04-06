@@ -14,50 +14,23 @@
 
 set -e
 
-#Default wait timeout is 3600 seconds
-export TIMEOUT=${TIMEOUT:-3600}
-export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
-export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
-WORKER_NODE=${WORKER_NODE:-"node03"}
-EPHEMERAL_DOMAIN_NAME="air-ephemeral"
-
 # all vms. This can be removed once sushy tool is fixed
 # Scripts for this phase placed in manifests/function/phase-helpers/virsh-destroy-vms/
 # To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
 # and find ConfigMap with name virsh-destroy-vms
 airshipctl phase run virsh-destroy-vms --debug
 
-node_timeout () {
-  end=$(($(date +%s) + $TIMEOUT))
-  for worker in $WORKER_NODE
-  do
-    while true; do
-      if (kubectl --request-timeout 20s --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get $1 $worker | grep -qw $2) ; then
-        if [ "$1" = "node" ]; then
-          kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT label nodes $worker node-role.kubernetes.io/worker=""
-        fi
-
-        echo -e "\nGet $1 status"
-        kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get $1
-        break
-      else
-        now=$(date +%s)
-        if [ $now -gt $end ]; then
-          echo -e "\n$1 is not ready before TIMEOUT."
-          exit 1
-        fi
-        echo -n .
-        sleep 15
-      fi
-    done
-  done
-}
-
 echo "Deploy worker node"
 airshipctl phase run workers-target --debug
 
-echo "Waiting $TIMEOUT seconds for bmh to be in ready state."
-node_timeout bmh ready
+# Waiting for bmh to be in ready state
+# Scripts for this phase placed in manifests/function/phase-helpers/wait_bmh/
+# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+# and find ConfigMap with name kubectl-wait-bmh
+airshipctl phase run kubectl-wait-bmh-target --debug
 
-echo "Waiting $TIMEOUT seconds for node to be provisioned."
-node_timeout node Ready
+# Waiting for node to be provisioned."
+# Scripts for this phase placed in manifests/function/phase-helpers/wait_label_node/
+# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+# and find ConfigMap with name kubectl-wait-label-node
+airshipctl phase run kubectl-wait-label-node-target --debug

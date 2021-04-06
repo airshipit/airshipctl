@@ -1,0 +1,6 @@
+configMapGenerator:
+- name: kubectl-wait-label-node
+  options:
+    disableNameSuffixHash: true
+  files:
+  - script=kubectl_wait_label_node.sh

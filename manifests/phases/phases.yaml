@@ -398,3 +398,27 @@ config:
     apiVersion: airshipit.org/v1alpha1
     kind: GenericContainer
     name: virsh-destroy-vms
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: kubectl-wait-bmh-target
+  clusterName: target-cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: kubectl-wait-bmh
+  documentEntryPoint: target/workers
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: kubectl-wait-label-node-target
+  clusterName: target-cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: kubectl-wait-label-node
+  documentEntryPoint: target/workers
