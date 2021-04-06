@@ -1,0 +1,6 @@
+configMapGenerator:
+- name: kubectl-check-ingress-ctrl
+  options:
+    disableNameSuffixHash: true
+  files:
+  - script=kubectl_check_ingress_ctrl.sh

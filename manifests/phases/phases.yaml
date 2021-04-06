@@ -433,3 +433,14 @@ config:
     kind: GenericContainer
     name: kubectl-wait-label-node
   documentEntryPoint: target/workers
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: kubectl-check-ingress-ctrl-target
+  clusterName: target-cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: kubectl-check-ingress-ctrl

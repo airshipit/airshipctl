@@ -26,6 +26,7 @@ COPY main.go .
 RUN /usr/local/go/bin/go build -v -o /usr/local/bin/config-function ./
 
 FROM ${PLUGINS_RELEASE_IMAGE} as release
+RUN apk update && apk add curl && rm -rf /var/cache/apk/*
 COPY --from=ctls /kubectl /calicoctl /usr/local/bin/
 COPY --from=builder /usr/local/bin/config-function /usr/local/bin/config-function
 CMD ["/usr/local/bin/config-function"]
