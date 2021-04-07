@@ -19,7 +19,6 @@ import (
 	"time"
 
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
-	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
@@ -61,11 +60,9 @@ type ExecutorFactory func(config ExecutorConfig) (Executor, error)
 type ExecutorConfig struct {
 	PhaseName   string
 	ClusterName string
-	BundleName  string
 
 	ClusterMap       clustermap.ClusterMap
 	ExecutorDocument document.Document
-	AirshipConfig    *config.Config
 	Helper           Helper
 	KubeConfig       kubeconfig.Interface
 	BundleFactory    document.BundleFactoryFunc
