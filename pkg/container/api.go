@@ -167,10 +167,19 @@ func (c *clientV1Alpha1) runAirship() error {
 		c.conf.Spec.Airship.Cmd)
 
 	// write logs asynchronously while waiting for for container to finish
-	go writeLogs(cont)
+	cErr := make(chan error, 1)
+	go func() {
+		cErr <- writeLogs(cont)
+	}()
 
 	err = cont.WaitUntilFinished()
 	if err != nil {
+		<-cErr
+		return err
+	}
+
+	// check writeLogs error after container is done waiting
+	if err = <-cErr; err != nil {
 		return err
 	}
 
@@ -224,20 +233,17 @@ func (c *clientV1Alpha1) runKRM() error {
 	return fns.Execute()
 }
 
-func writeLogs(cont Container) {
+func writeLogs(cont Container) error {
 	stderr, err := cont.GetContainerLogs(GetLogOptions{
 		Stderr: true,
 		Follow: true})
 	if err != nil {
-		log.Fatalf("received an error trying to attach to container to retrieve logs %e", err)
-		return
+		return err
 	}
 	defer stderr.Close()
 	parsedStdErr := dlog.NewReader(stderr)
 	_, err = io.Copy(log.Writer(), parsedStdErr)
-	if err != nil {
-		log.Fatalf("received an error while copying logs from container %e", err)
-	}
+	return err
 }
 
 // writeSink output to directory on filesystem sink

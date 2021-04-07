@@ -15,6 +15,7 @@
 package container
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -30,6 +31,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
+	specs "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 type mockConn struct {
@@ -77,6 +79,7 @@ func (mdc *mockDockerClient) ContainerCreate(
 	*container.Config,
 	*container.HostConfig,
 	*network.NetworkingConfig,
+	*specs.Platform,
 	string,
 ) (container.ContainerCreateCreatedBody, error) {
 	return container.ContainerCreateCreatedBody{ID: "testID"}, nil
@@ -364,6 +367,34 @@ func TestRunCommand(t *testing.T) {
 			mockDockerClient: mockDockerClient{
 				containerStart: func() error {
 					return containerStartError
+				},
+			},
+			expectedRunErr:  containerStartError,
+			expectedWaitErr: nil,
+			assertF:         func(t *testing.T) {},
+		},
+		{
+			// pass empty buffer to make sure we cover error when input isn't nil
+			containerInput: bytes.NewBuffer([]byte{}),
+			volumeMounts:   nil,
+			debug:          false,
+			mockDockerClient: mockDockerClient{
+				containerStart: func() error {
+					return containerStartError
+				},
+				imageList: func() ([]types.ImageSummary, error) {
+					return []types.ImageSummary{{ID: "imgid"}}, nil
+				},
+				imageInspectWithRaw: func() (types.ImageInspect, []byte, error) {
+					return types.ImageInspect{
+						Config: &container.Config{},
+					}, nil, nil
+				},
+				containerAttach: func() (types.HijackedResponse, error) {
+					conn := types.HijackedResponse{
+						Conn: mockConn{WData: make([]byte, len([]byte("testInput")))},
+					}
+					return conn, nil
 				},
 			},
 			expectedRunErr:  containerStartError,
