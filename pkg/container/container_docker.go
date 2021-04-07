@@ -202,7 +202,7 @@ func (c *DockerContainer) getConfig(opts RunCommandOptions) (container.Config, c
 		Mounts:     mounts,
 		Privileged: opts.Privileged,
 	}
-	if opts.HostNewtork {
+	if opts.HostNetwork {
 		hCfg.NetworkMode = "host"
 	}
 	return cCfg, hCfg, nil
