@@ -28,28 +28,22 @@
         password: "{{ airshipctl_image_repo_credentials.password }}"
         registry_url: "{{ image_repo }}"
 
-    - name: Push Image with Latest Tag
+    - name: Push Image with Tags
       make:
         chdir: "{{ zuul.project.src_dir }}"
         params:
-          DOCKER_IMAGE_TAG: latest
+          DOCKER_IMAGE_TAG: "{{ item }}"
           PUBLISH: "true"
           PROXY: "{{ proxy.http }}"
           NO_PROXY: "{{ proxy.noproxy }}"
           USE_PROXY: "{{ proxy.enabled | lower }}"
           DOCKER_REGISTRY: "{{ image_repo }}"
           DOCKER_IMAGE_PREFIX: "{{ image_prefix | default('airshipit') }}"
+          DOCKER_BASE_GO_IMAGE: "{{ docker.base_go_image | default(omit) }}"
+          DOCKER_BASE_RELEASE_IMAGE: "{{ docker.base_release_image | default(omit) }}"
+          DOCKER_BASE_PLUGINS_BUILD_IMAGE: "{{ docker.base_plugins_build_image | default(omit) }}"
+          DOCKER_BASE_PLUGINS_RELEASE_IMAGE: "{{ docker.base_plugins_release_image | default(omit) }}"
         target: images
-
-    - name: Push Image with Commit Tag
-      make:
-        chdir: "{{ zuul.project.src_dir }}"
-        params:
-          DOCKER_IMAGE_TAG: "{{ zuul.newrev }}"
-          PUBLISH: "true"
-          PROXY: "{{ proxy.http }}"
-          NO_PROXY: "{{ proxy.noproxy }}"
-          USE_PROXY: "{{ proxy.enabled | lower }}"
-          DOCKER_REGISTRY: "{{ image_repo }}"
-          DOCKER_IMAGE_PREFIX: "{{ image_prefix | default('airshipit') }}"
-        target: images
+      loop:
+        - "latest"
+        - "{{ zuul.newrev }}"

@@ -18,6 +18,10 @@
       PROXY: "{{ proxy.http }}"
       NO_PROXY: "{{ proxy.noproxy }}"
       USE_PROXY: "{{ proxy.enabled | lower }}"
+      DOCKER_BASE_GO_IMAGE: "{{ docker.base_go_image | default(omit) }}"
+      DOCKER_BASE_RELEASE_IMAGE: "{{ docker.base_release_image | default(omit) }}"
+      DOCKER_BASE_PLUGINS_BUILD_IMAGE: "{{ docker.base_plugins_build_image | default(omit) }}"
+      DOCKER_BASE_PLUGINS_RELEASE_IMAGE: "{{ docker.base_plugins_release_image | default(omit) }}"
 
 - name: Verify Image Exists
   shell: docker image inspect "$(make print-docker-image-tag)"

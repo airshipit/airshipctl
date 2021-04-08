@@ -19,6 +19,12 @@
         https: ""
         noproxy: ""
       image_repo: quay.io
+      docker:
+        base_go_image: ""
+        base_release_image: ""
+        base_plugins_build_image: ""
+        base_plugins_release_image: ""
+
     check:
       jobs:
         - openstack-tox-docs: &docs

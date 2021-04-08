@@ -22,6 +22,7 @@ LINTER_CONFIG       := .golangci.yaml
 
 # docker
 DOCKER_MAKE_TARGET  := build
+DOCKER_CMD_FLAGS    :=
 
 # docker image options
 DOCKER_REGISTRY     ?= quay.io
@@ -32,6 +33,13 @@ DOCKER_IMAGE_TAG    ?= latest
 DOCKER_IMAGE        ?= $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
 DOCKER_TARGET_STAGE ?= release
 PUBLISH             ?= false
+# use this variables to override base images in internal build process
+ifneq ($(strip $(DOCKER_BASE_GO_IMAGE)),)
+DOCKER_CMD_FLAGS    += --build-arg GO_IMAGE=$(strip $(DOCKER_BASE_GO_IMAGE))
+endif
+ifneq ($(strip $(DOCKER_BASE_RELEASE_IMAGE)),)
+DOCKER_CMD_FLAGS    += --build-arg RELEASE_IMAGE=$(strip $(DOCKER_BASE_RELEASE_IMAGE))
+endif
 # use this variable for image labels added in internal build process
 LABEL               ?= org.airshipit.build=community
 COMMIT              ?= $(shell git rev-parse HEAD)
@@ -50,7 +58,7 @@ NO_PROXY            ?= localhost,127.0.0.1,.svc.cluster.local
 USE_PROXY           ?= false
 
 # docker build flags
-DOCKER_CMD_FLAGS    := --network=host
+DOCKER_CMD_FLAGS    += --network=host
 DOCKER_CMD_FLAGS    += --force-rm=$(DOCKER_FORCE_CLEAN)
 
 DOCKER_PROXY_FLAGS  := --build-arg http_proxy=$(PROXY)
@@ -80,7 +88,14 @@ export KUBECTL_URL  ?= https://storage.googleapis.com/kubernetes-release/release
 PLUGINS_DIR         := krm-functions
 PLUGINS             := $(subst $(PLUGINS_DIR)/,,$(wildcard $(PLUGINS_DIR)/*))
 PLUGINS_IMAGE_TGT   := $(foreach tgt,$(PLUGINS),docker-image-$(tgt))
-PLUGINS_BASE_IMAGE  ?= alpine:3.12.0
+# use this variables to override base images in internal build process
+ifneq ($(strip $(DOCKER_BASE_PLUGINS_BUILD_IMAGE)),)
+DOCKER_CMD_FLAGS    += --build-arg PLUGINS_BUILD_IMAGE=$(strip $(DOCKER_BASE_PLUGINS_BUILD_IMAGE))
+endif
+ifneq ($(strip $(DOCKER_BASE_PLUGINS_RELEASE_IMAGE)),)
+DOCKER_CMD_FLAGS    += --build-arg PLUGINS_RELEASE_IMAGE=$(strip $(DOCKER_BASE_PLUGINS_RELEASE_IMAGE))
+endif
+
 
 $(PLUGINS):
 	 @CGO_ENABLED=0 go build -o $(BINDIR)/$@ $(GO_FLAGS) ./$(PLUGINS_DIR)/$@/
@@ -168,7 +183,6 @@ $(PLUGINS_IMAGE_TGT):
 		--target $(DOCKER_TARGET_STAGE) \
 		--build-arg MAKE_TARGET=$(plugin_name) \
 		--build-arg BINARY=$(plugin_name) \
-		--build-arg RELEASE_IMAGE=$(PLUGINS_BASE_IMAGE) \
 		--tag $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/$(plugin_name):$(DOCKER_IMAGE_TAG)
 ifeq ($(PUBLISH), true)
 	@docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/$(plugin_name):$(DOCKER_IMAGE_TAG)
