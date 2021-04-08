@@ -1,6 +1,15 @@
 ARG RELEASE_IMAGE=scratch
 FROM ${RELEASE_IMAGE} as kctl
-RUN apk add curl
+
+RUN apk update && apk add curl
+
+# Inject custom root certificate authorities if needed
+# Docker does not have a good conditional copy statement and requires that a source file exists
+# to complete the copy function without error.  Therefore the README.md file will be copied to
+# the image every time even if there are no .crt files.
+COPY ./certs/* /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+
 RUN curl -L "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl" \
       -o /kubectl
 RUN chmod +x /kubectl
@@ -14,7 +23,16 @@ COPY krm-functions/toolbox/main.go .
 RUN /usr/local/go/bin/go build -v -o /usr/local/bin/config-function ./
 
 FROM ${RELEASE_IMAGE} as calicoctl
-RUN apk add curl
+
+RUN apk update && apk add curl
+
+# Inject custom root certificate authorities if needed
+# Docker does not have a good conditional copy statement and requires that a source file exists
+# to complete the copy function without error.  Therefore the README.md file will be copied to
+# the image every time even if there are no .crt files.
+COPY ./certs/* /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+
 RUN curl -L  "https://github.com/projectcalico/calicoctl/releases/download/v3.18.1/calicoctl" \
       -o /calicoctl
 RUN chmod +x /calicoctl
