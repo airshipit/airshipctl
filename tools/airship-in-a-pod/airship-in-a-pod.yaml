@@ -181,7 +181,7 @@ spec:
         mountPath: /srv/
 
   - name: airshipctl-builder
-    image: quay.io/airshipit/aiap-airshipctl-builder:latest
+    image: quay.io/airshipit/aiap-airshipctl-builder:892bb6a16d53a0f43571284db83901bef53ed440
     command:
       - bash
       - -cex
@@ -218,7 +218,7 @@ spec:
         mountPath: /var/run
 
   - name: infra-builder
-    image: quay.io/airshipit/aiap-infra-builder:latest
+    image: quay.io/airshipit/aiap-infra-builder:892bb6a16d53a0f43571284db83901bef53ed440
     securityContext:
       privileged: true
     command:
@@ -261,7 +261,7 @@ spec:
         mountPath: /var/run
 
   - name: runner
-    image: quay.io/airshipit/aiap-runner:latest
+    image: quay.io/airshipit/aiap-runner:892bb6a16d53a0f43571284db83901bef53ed440
     command:
       - bash
       - -cex

@@ -84,14 +84,18 @@ spec:
         tag: v0.4.1
 
   images:
+    airship:
+      helm_chart_collator:
+        helm_chart_collator:
+          image: quay.io/airshipit/helm-chart-collator:053c992218601cc49fd4a595ee4873380b132408
     baremetal_operator:
       ironic: # ironic Deployment
         init_bootstrap:
           image: quay.io/centos/centos:8.3.2011
         init_images:
-          image: quay.io/airshipit/ipa:latest
+          image: quay.io/airshipit/ipa:053c992218601cc49fd4a595ee4873380b132408
         qcow_bundle:
-          image: quay.io/airshipit/qcow-bundle:latest-ubuntu_focal
+          image: quay.io/airshipit/qcow-bundle:053c992218601cc49fd4a595ee4873380b132408-ubuntu_focal
         dnsmasq:
           image: quay.io/metal3-io/ironic:capm3-v0.4.0
         httpd:
