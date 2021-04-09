@@ -1,4 +1,4 @@
-ARG GO_IMAGE=gcr.io/gcp-runtimes/go1-builder:1.13
+ARG GO_IMAGE=gcr.io/gcp-runtimes/go1-builder:1.15
 ARG RELEASE_IMAGE=scratch
 FROM ${GO_IMAGE} as builder
 
