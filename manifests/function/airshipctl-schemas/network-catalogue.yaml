@@ -35,6 +35,22 @@ spec:
                         type:
                           type: string
                         mtu:
+                          x-kubernetes-int-or-string: true
+                        bond_links:
+                          type: array
+                          items:
+                            type: string
+                        bond_mode:
+                          type: string
+                        bond_xmit_hash_policy:
+                          type: string
+                        bond_miimon:
+                          type: integer
+                        vlan_link:
+                          type: string
+                        vlan_id:
+                          type: integer
+                        vlan_mac_address:
                           type: string
                   networks:
                     type: array
