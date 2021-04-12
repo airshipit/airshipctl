@@ -103,3 +103,6 @@ airshipctl config set-manifest "${SITE}" \
 airshipctl config set-context ephemeral-cluster --manifest "${SITE}"
 airshipctl config set-context target-cluster --manifest "${SITE}"
 airshipctl config use-context ephemeral-cluster
+
+# TODO: use airshipctl for this once `airshipctl config` supports it
+sed -i "s|^    managementConfiguration:.*|    managementConfiguration: default|g" ~/.airship/config
