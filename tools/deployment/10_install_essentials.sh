@@ -25,7 +25,7 @@ if [ ! -f /var/lib/apt/periodic/update-success-stamp ] || \
   sudo -E apt -y update
 fi
 
-install_pkg curl docker.io make
+install_pkg curl docker.io make ca-certificates
 
 ./tools/deployment/provider_common/02_install_jq.sh
 ./tools/deployment/provider_common/03_install_pip.sh
