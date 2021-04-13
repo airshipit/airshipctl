@@ -95,7 +95,7 @@ spec:
         init_images:
           image: quay.io/airshipit/ipa:053c992218601cc49fd4a595ee4873380b132408
         qcow_bundle:
-          image: quay.io/airshipit/qcow-bundle:053c992218601cc49fd4a595ee4873380b132408-ubuntu_focal
+          image: quay.io/airshipit/qcow-bundle:88a2792eb5e986039502945e152617b36a188d07-ubuntu_focal
         dnsmasq:
           image: quay.io/metal3-io/ironic:capm3-v0.4.0
         httpd:
