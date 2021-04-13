@@ -63,8 +63,8 @@ fi
 ./tools/deployment/31_deploy_initinfra_target_node.sh
 ./tools/deployment/32_cluster_init_target_node.sh
 ./tools/deployment/33_cluster_move_target_node.sh
-./tools/deployment/34_deploy_worker_node.sh
-./tools/deployment/35_deploy_workload.sh
-./tools/deployment/36_verify_hwcc_profiles.sh
+./tools/deployment/35_deploy_worker_node.sh
+./tools/deployment/36_deploy_workload.sh
+./tools/deployment/37_verify_hwcc_profiles.sh
 
 /signal_complete runner
