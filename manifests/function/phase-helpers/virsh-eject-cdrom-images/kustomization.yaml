@@ -1,0 +1,6 @@
+configMapGenerator:
+- name: virsh-eject-cdrom-images
+  options:
+    disableNameSuffixHash: true
+  files:
+  - script=virsh_eject_cdrom_images.sh

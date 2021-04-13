@@ -1,0 +1,6 @@
+configMapGenerator:
+- name: virsh-destroy-vms
+  options:
+    disableNameSuffixHash: true
+  files:
+  - script=virsh_destroy_vms.sh

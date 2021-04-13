@@ -423,3 +423,40 @@ configRef:
   kind: ConfigMap
   name: kubectl-wait-cluster
   apiVersion: v1
+---
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: virsh-eject-cdrom-images
+  labels:
+    airshipit.org/deploy-k8s: "false"
+spec:
+  image: quay.io/airshipit/toolbox-virsh:latest
+  hostNetwork: true
+  mounts:
+  - type: bind
+    src: /var/run/libvirt/libvirt-sock
+    dst: /var/run/libvirt/libvirt-sock
+configRef:
+  kind: ConfigMap
+  name: virsh-eject-cdrom-images
+  apiVersion: v1
+---
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: virsh-destroy-vms
+  labels:
+    airshipit.org/deploy-k8s: "false"
+spec:
+  image: quay.io/airshipit/toolbox-virsh:latest
+  hostNetwork: true
+  mounts:
+  - type: bind
+    src: /var/run/libvirt/libvirt-sock
+    dst: /var/run/libvirt/libvirt-sock
+configRef:
+  kind: ConfigMap
+  name: virsh-destroy-vms
+  apiVersion: v1
+

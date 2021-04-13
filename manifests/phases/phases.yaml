@@ -390,3 +390,23 @@ config:
     kind: GenericContainer
     name: kubectl-wait-cluster
   documentEntryPoint: ephemeral/controlplane
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: virsh-eject-cdrom-images
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: virsh-eject-cdrom-images
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: virsh-destroy-vms
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: virsh-destroy-vms
