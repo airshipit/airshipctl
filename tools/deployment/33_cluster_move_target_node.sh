@@ -19,8 +19,12 @@ export TIMEOUT=${TIMEOUT:-3600}
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
 export KUBECONFIG_EPHEMERAL_CONTEXT=${KUBECONFIG_EPHEMERAL_CONTEXT:-"ephemeral-cluster"}
 export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
-export TARGET_NODE=${TARGET_NODE:-"node01"}
 export CLUSTER_NAMESPACE=${CLUSTER_NAMESPACE:-"default"}
+export TARGET_NODE=${TARGET_NODE:-"$(airshipctl phase render controlplane-ephemeral \
+	-k BareMetalHost -l airshipit.org/k8s-role=controlplane-host \
+	2> /dev/null | \
+	yq .metadata.name | \
+	sed 's/"//g')"}
 
 echo "Check Cluster Status"
 kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT -n $CLUSTER_NAMESPACE get cluster target-cluster -o json | jq '.status.controlPlaneReady'
