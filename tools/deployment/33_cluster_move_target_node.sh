@@ -19,6 +19,11 @@ export TIMEOUT=${TIMEOUT:-3600}
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
 export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
 export CLUSTER_NAMESPACE=${CLUSTER_NAMESPACE:-"default"}
+export TARGET_NODE=${TARGET_NODE:-"$(airshipctl phase render controlplane-ephemeral \
+	-k BareMetalHost -l airshipit.org/k8s-role=controlplane-host \
+	2> /dev/null | \
+	yq .metadata.name | \
+	sed 's/"//g')"}
 
 # Annotating BMH objects with a pause label
 # Scripts for this phase placed in manifests/function/phase-helpers/pause_bmh/
