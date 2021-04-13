@@ -278,7 +278,7 @@ Make sure the following conditions are met:
 
 8. How to deploy Workloads
     Once the Target is Operational, Workloads can be deployed on the Target Cluster.
-    A small demo workload can be deployed using ./tools/deployment/35_deploy_workload.sh.This demo includes ingress as a workload.
+    A small demo workload can be deployed using ./tools/deployment/36_deploy_workload.sh.This demo includes ingress as a workload.
     To verify execute kubectl command as below:
     ```Markdown
     $ kubectl --kubeconfig /home/user/.airship/kubeconfig --context target-cluster get pods -n ingress
