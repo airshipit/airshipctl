@@ -14,7 +14,7 @@ mark it with `deploy-k8s: true` annotation.
 Make a copy of this folder to the appropraite site for which secrets has to
 be generated and then edit the [secret-generation.yaml](secret-generation.yaml)
 with the required secret generation details.
-For example refer to [generator](../../site/test-site/target/generator/) folder.
+For example refer to [generator](../../site/test-site/target/encrypted/) folder.
 
 Once the secret definitions are in place in the site manifests, we can
 add a new phase to generate secrets pointing to the folder in site manifests.
@@ -30,7 +30,7 @@ config:
     apiVersion: airshipit.org/v1alpha1
     kind: GenericContainer
     name: encrypter
-  documentEntryPoint: target/generator
+  documentEntryPoint: target/encrypted
 ```
 
 The executorRef is of `kind: GenericContainer` and should also have the
@@ -44,7 +44,7 @@ metadata:
   name: encrypter
   labels:
     airshipit.org/deploy-k8s: "false"
-kustomizeSinkOutputDir: "target/generator/results/generated"
+kustomizeSinkOutputDir: "target/encrypted/results/generated"
 spec:
   container:
     image: gcr.io/kpt-fn-contrib/sops:v0.1.0
@@ -98,7 +98,7 @@ metadata:
   name: encrypter
   labels:
     airshipit.org/deploy-k8s: "false"
-kustomizeSinkOutputDir: "target/generator/results/generated"
+kustomizeSinkOutputDir: "target/encrypted/results/generated"
 spec:
   container:
     image: quay.io/airshipit/templater:v2
@@ -109,7 +109,7 @@ config: |
 ## Decrypt to read the secrets
 
 To decrypt the secrets for readability purposes run the kustomize build
-command on the generated secrets folder with the [kustomization.yaml](../../site/test-site/target/generator/results/kustomization.yaml) and [decrypt-secrets.yaml](../../site/test-site/target/generator/results/decrypt-secrets.yaml)
+command on the generated secrets folder with the [kustomization.yaml](../../site/test-site/target/encrypted/results/kustomization.yaml) and [decrypt-secrets.yaml](../../site/test-site/target/encrypted/results/decrypt-secrets.yaml)
 files in place in the same folder.
 
 Kustomize command to decrypt:
