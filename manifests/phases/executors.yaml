@@ -288,3 +288,33 @@ configRef:
   kind: ConfigMap
   name: kubectl-get-node
   apiVersion: v1
+---
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: kubectl-get-pods
+  labels:
+    airshipit.org/deploy-k8s: "false"
+spec:
+  type: krm
+  image: quay.io/airshipit/toolbox:latest
+  hostNetwork: true
+configRef:
+  kind: ConfigMap
+  name: kubectl-get-pods
+  apiVersion: v1
+---
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: kubectl-wait-tigera
+  labels:
+    airshipit.org/deploy-k8s: "false"
+spec:
+  type: krm
+  image: quay.io/airshipit/toolbox:latest
+  hostNetwork: true
+configRef:
+  kind: ConfigMap
+  name: kubectl-wait-tigera
+  apiVersion: v1

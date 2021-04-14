@@ -289,4 +289,25 @@ config:
     apiVersion: airshipit.org/v1alpha1
     kind: GenericContainer
     name: kubectl-get-node
-  documentEntryPoint: ephemeral/initinfra-networking
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: kubectl-get-pods-ephemeral
+  clusterName: ephemeral-cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: kubectl-get-pods
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: kubectl-wait-tigera-ephemeral
+  clusterName: ephemeral-cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: kubectl-wait-tigera
