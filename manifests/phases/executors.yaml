@@ -249,7 +249,7 @@ spec:
     - /bin/bash
     - -c
     - /usr/bin/local/entrypoint.sh 1>&2
-  image: quay.io/airshipit/image-builder:053c992218601cc49fd4a595ee4873380b132408-ubuntu_focal
+  image: quay.io/airshipit/image-builder:88a2792eb5e986039502945e152617b36a188d07-ubuntu_focal
   mounts:
   - type: bind
     src: /srv/images
