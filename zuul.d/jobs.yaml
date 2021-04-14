@@ -138,9 +138,9 @@
         - ./tools/deployment/31_deploy_initinfra_target_node.sh
         - ./tools/deployment/32_cluster_init_target_node.sh
         - ./tools/deployment/33_cluster_move_target_node.sh
-        - ./tools/deployment/34_deploy_worker_node.sh
-        - ./tools/deployment/35_deploy_workload.sh
-        - ./tools/deployment/36_verify_hwcc_profiles.sh
+        - ./tools/deployment/35_deploy_worker_node.sh
+        - ./tools/deployment/36_deploy_workload.sh
+        - ./tools/deployment/37_verify_hwcc_profiles.sh
       serve_dir: /srv/images
       serve_port: 8099
       log_roles:
@@ -188,7 +188,7 @@
         - ./tools/deployment/provider_common/30_deploy_controlplane.sh
         - ./tools/deployment/provider_common/32_cluster_init_target_node.sh
         - ./tools/deployment/provider_common/33_cluster_move_target_node.sh
-        - ./tools/deployment/provider_common/34_deploy_worker_node.sh
+        - ./tools/deployment/provider_common/35_deploy_worker_node.sh
     voting: false
 - job:
     name: airship-airshipctl-docker-kubebench-conformance
