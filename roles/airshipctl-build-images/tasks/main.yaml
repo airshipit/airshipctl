@@ -18,12 +18,15 @@
       PROXY: "{{ proxy.http }}"
       NO_PROXY: "{{ proxy.noproxy }}"
       USE_PROXY: "{{ proxy.enabled | lower }}"
+      DOCKER_REGISTRY: "{{ image_repo }}"
+      DOCKER_IMAGE_TAG: "{{ zuul.change }}"
+      DOCKER_IMAGE_PREFIX: "{{ image_prefix }}"
       DOCKER_BASE_GO_IMAGE: "{{ docker.base_go_image | default(omit) }}"
       DOCKER_BASE_RELEASE_IMAGE: "{{ docker.base_release_image | default(omit) }}"
       DOCKER_BASE_PLUGINS_BUILD_IMAGE: "{{ docker.base_plugins_build_image | default(omit) }}"
       DOCKER_BASE_PLUGINS_RELEASE_IMAGE: "{{ docker.base_plugins_release_image | default(omit) }}"
 
 - name: Verify Image Exists
-  shell: docker image inspect "$(make print-docker-image-tag)"
+  shell: docker image inspect "$(make DOCKER_REGISTRY={{ image_repo }} DOCKER_IMAGE_PREFIX={{ image_prefix }} DOCKER_IMAGE_TAG={{ zuul.change }} print-docker-image-tag)"
   args:
     chdir: "{{ zuul.project.src_dir }}"

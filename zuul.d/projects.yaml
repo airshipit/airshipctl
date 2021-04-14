@@ -19,6 +19,7 @@
         https: ""
         noproxy: ""
       image_repo: quay.io
+      image_prefix: airshipit
       docker:
         base_go_image: ""
         base_release_image: ""
