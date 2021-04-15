@@ -1,7 +1,7 @@
 apiVersion: airshipit.org/v1alpha1
 kind: ReplacementTransformer
 metadata:
-  name: baremetal-operator-versions-replacements
+  name: helm-chart-collator-versions-replacements
   annotations:
     config.kubernetes.io/function: |-
       container:
