@@ -44,10 +44,12 @@ airshipctl config get-context exampleContext
 func NewGetContextCommand(cfgFactory config.Factory) *cobra.Command {
 	o := &config.ContextOptions{}
 	cmd := &cobra.Command{
-		Use:     "get-context [NAME]",
+		Use:     "get-context CONTEXT_NAME",
 		Short:   "Get context information from the airshipctl config",
 		Long:    getContextLong[1:],
 		Example: getContextExample,
+		// Adding a maximum args cap for documentation purpose
+		Args:    cobra.MaximumNArgs(1),
 		Aliases: []string{"get-contexts"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			airconfig, err := cfgFactory()

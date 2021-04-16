@@ -1,9 +1,23 @@
-managementConfiguration: ""
-manifest: Manifest_ContextBar
+Error: accepts at most 1 arg(s), received 2
+Usage:
+  get-context CONTEXT_NAME [flags]
 
-managementConfiguration: ""
-manifest: Manifest_ContextBaz
+Aliases:
+  get-context, get-contexts
 
-managementConfiguration: ""
-manifest: Manifest_ContextFoo
+Examples:
+
+# List all contexts
+airshipctl config get-contexts
+
+# Display the current context
+airshipctl config get-context --current
+
+# Display a specific context
+airshipctl config get-context exampleContext
+
+
+Flags:
+      --current   get the current context
+  -h, --help      help for get-context
 
