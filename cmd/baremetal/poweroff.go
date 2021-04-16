@@ -32,7 +32,7 @@ Power off baremetal hosts
 %s
 `, selectorsDescription)
 
-	powerOffExample = fmt.Sprintf(bmhActionExampleTempalte, powerOffCommand)
+	powerOffExample = fmt.Sprintf(bmhActionExampleTemplate, powerOffCommand)
 )
 
 // NewPowerOffCommand provides a command to shutdown a remote host.

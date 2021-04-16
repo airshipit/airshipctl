@@ -99,7 +99,7 @@ func (p *phase) Executor() (ifc.Executor, error) {
 		WithBundle(p.helper.PhaseConfigBundle()).
 		WithClusterMap(cMap).
 		WithTempRoot(p.helper.WorkDir()).
-		WithClusterctClient(cctlClient).
+		WithClusterctlClient(cctlClient).
 		Build()
 
 	return executorFactory(

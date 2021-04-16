@@ -32,7 +32,7 @@ Eject media attached to a baremetal hosts
 %s
 `, selectorsDescription)
 
-	ejectMediaExample = fmt.Sprintf(bmhActionExampleTempalte, ejectMediaCommand)
+	ejectMediaExample = fmt.Sprintf(bmhActionExampleTemplate, ejectMediaCommand)
 )
 
 // NewEjectMediaCommand provides a command to eject media attached to a baremetal host.

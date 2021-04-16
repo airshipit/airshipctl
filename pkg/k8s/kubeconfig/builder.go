@@ -75,15 +75,15 @@ func (b *Builder) WithTempRoot(root string) *Builder {
 	return b
 }
 
-// WithClusterctClient this is used if u want to inject your own clusterctl
+// WithClusterctlClient this is used if u want to inject your own clusterctl
 // mostly needed for tests
-func (b *Builder) WithClusterctClient(c client.Interface) *Builder {
+func (b *Builder) WithClusterctlClient(c client.Interface) *Builder {
 	b.clusterctlClient = c
 	return b
 }
 
-// WithFilesytem allows to set filesystem
-func (b *Builder) WithFilesytem(fs fs.FileSystem) *Builder {
+// WithFilesystem allows to set filesystem
+func (b *Builder) WithFilesystem(fs fs.FileSystem) *Builder {
 	b.fs = fs
 	return b
 }
@@ -164,7 +164,7 @@ func (b *Builder) buildOne(clusterID string) (string, *api.Config, error) {
 		}
 		// if error, log it and ignore it. missing problem with one kubeconfig should not
 		// effect other clusters, which don't depend on it. If they do depend on it, their calls
-		// will fail because the context will be missing. Combitation with a log message will make
+		// will fail because the context will be missing. Combination with a log message will make
 		// it clear where the problem is.
 		log.Debugf("Received error while trying kubeconfig source for cluster '%s', source type '%s', error '%v'",
 			clusterID, source.Type, sourceErr)
@@ -225,7 +225,7 @@ func (b *Builder) fromClusterAPI(clusterName string, ref v1alpha1.KubeconfigSour
 			}
 		}
 
-		log.Debugf("Getting child kubeconfig from parent, parent context '%s', parent kubeconfing '%s'",
+		log.Debugf("Getting child kubeconfig from parent, parent context '%s', parent kubeconfig '%s'",
 			parentContext, f)
 		return FromSecret(b.clusterctlClient, &client.GetKubeconfigOptions{
 			ParentKubeconfigPath:    f,

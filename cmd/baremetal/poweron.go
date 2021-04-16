@@ -32,7 +32,7 @@ Power on baremetal hosts
 %s
 `, selectorsDescription)
 
-	powerOnExample = fmt.Sprintf(bmhActionExampleTempalte, powerOnCommand)
+	powerOnExample = fmt.Sprintf(bmhActionExampleTemplate, powerOnCommand)
 )
 
 // NewPowerOnCommand provides a command with the capability to power on baremetal hosts.

@@ -263,8 +263,8 @@ func TestBuilderClusterctl(t *testing.T) {
 				WithClusterName(tt.requestedClusterName).
 				WithBundle(testBundle).
 				WithTempRoot(tt.tempRoot).
-				WithClusterctClient(tt.clusterctlClient).
-				WithFilesytem(tt.fs).
+				WithClusterctlClient(tt.clusterctlClient).
+				WithFilesystem(tt.fs).
 				Build()
 			require.NotNil(t, kube)
 			filePath, cleanup, err := kube.GetFile()

@@ -51,7 +51,7 @@ var (
 based on the --%s, --%s and --%s flags provided. If no flags are
 provided airshipctl will try to select all baremetal hosts in the inventory`, flagName, flagNamespace, flagLabel)
 
-	bmhActionExampleTempalte = `
+	bmhActionExampleTemplate = `
 Perform action against hosts with name rdm9r3s3 in all namespaces where the host is found
 # airshipctl baremetal %[1]s --name rdm9r3s3
 
