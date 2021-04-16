@@ -1,13 +1,12 @@
 ## airshipctl baremetal ejectmedia
 
-Eject media attached to a baremetal hosts
+Airshipctl command to eject virtual media attached to a bare metal host
 
 ### Synopsis
 
-Eject media attached to a baremetal hosts
-The command will target baremetal hosts from airship inventory kustomize root
-based on the --name, --namespace and --labels flags provided. If no flags are
-provided airshipctl will try to select all baremetal hosts in the inventory
+Eject virtual media attached to a bare metal host. The command will target bare metal hosts from airship inventory based on the
+--name, --namespace and --labels flags provided. If no flags are provided, airshipctl will select all bare metal hosts in the
+inventory.
 
 
 ```
@@ -17,6 +16,7 @@ airshipctl baremetal ejectmedia [flags]
 ### Examples
 
 ```
+
 Perform action against hosts with name rdm9r3s3 in all namespaces where the host is found
 # airshipctl baremetal ejectmedia --name rdm9r3s3
 
@@ -36,10 +36,10 @@ Perform action against hosts with a label 'foo=bar'
 ```
       --all                specify this to target all hosts in the inventory
   -h, --help               help for ejectmedia
-  -l, --labels string      Label(s) to filter desired baremetal host documents
-      --name string        Name to filter desired baremetal host document
-  -n, --namespace string   airshipctl phase that contains the desired baremetal host document(s)
-      --timeout duration   timeout on baremetal action (default 10m0s)
+  -l, --labels string      label(s) to filter desired bare metal host documents
+      --name string        name to filter desired bare metal host document
+  -n, --namespace string   airshipctl phase that contains the desired bare metal host document(s)
+      --timeout duration   timeout on bare metal action (default 10m0s)
 ```
 
 ### Options inherited from parent commands
@@ -51,5 +51,5 @@ Perform action against hosts with a label 'foo=bar'
 
 ### SEE ALSO
 
-* [airshipctl baremetal](airshipctl_baremetal.md)	 - Perform actions on baremetal hosts
+* [airshipctl baremetal](airshipctl_baremetal.md)	 - Airshipctl command to manage bare metal host(s)
 

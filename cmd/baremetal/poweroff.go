@@ -28,8 +28,7 @@ var (
 	powerOffCommand = "poweroff"
 
 	powerOffLong = fmt.Sprintf(`
-Power off baremetal hosts
-%s
+Power off bare metal host(s). %s
 `, selectorsDescription)
 
 	powerOffExample = fmt.Sprintf(bmhActionExampleTemplate, powerOffCommand)
@@ -39,9 +38,9 @@ Power off baremetal hosts
 func NewPowerOffCommand(cfgFactory config.Factory, options *inventory.CommandOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     powerOffCommand,
-		Short:   "Shutdown a baremetal hosts",
+		Short:   "Airshipctl command to shutdown bare metal host(s)",
 		Long:    powerOffLong[1:],
-		Example: powerOffExample[1:],
+		Example: powerOffExample,
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return options.BMHAction(ifc.BaremetalOperationPowerOff)

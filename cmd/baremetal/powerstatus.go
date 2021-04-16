@@ -21,12 +21,32 @@ import (
 	"opendev.org/airship/airshipctl/pkg/inventory"
 )
 
+var (
+	powerStatusLong = `
+Retrieve the power status of a bare metal host. It targets a bare metal host from airship inventory
+based on the --name, --namespace, --label and --timeout flags provided.
+`
+
+	powerStatusExample = `
+Perform action against host with name rdm9r3s3 in all namespaces where the host is found
+# airshipctl baremetal powerstatus --name rdm9r3s3
+
+Perform action against host with name rdm9r3s3 in namespace metal3
+# airshipctl baremetal powerstatus --name rdm9r3s3 --namespace metal3
+
+Perform action against host with a label 'foo=bar'
+# airshipctl baremetal powerstatus --labels "foo=bar"
+`
+)
+
 // NewPowerStatusCommand provides a command to retrieve the power status of a baremetal host.
 func NewPowerStatusCommand(cfgFactory config.Factory, options *inventory.CommandOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "powerstatus",
-		Short: "Retrieve the power status of a baremetal host",
-		Args:  cobra.NoArgs,
+		Use:     "powerstatus",
+		Short:   "Airshipctl command to retrieve the power status of a bare metal host",
+		Long:    powerStatusLong[1:],
+		Example: powerStatusExample,
+		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return options.PowerStatus(cmd.OutOrStdout())
 		},

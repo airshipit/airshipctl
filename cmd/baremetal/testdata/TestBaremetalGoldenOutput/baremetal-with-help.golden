@@ -1,16 +1,18 @@
-Perform actions on baremetal hosts
+
+Provides commands that can be performed on bare metal host(s). The commands helps in
+performing the basic boot and power operations on the bare metal host(s).
 
 Usage:
   baremetal [command]
 
 Available Commands:
-  ejectmedia   Eject media attached to a baremetal hosts
+  ejectmedia   Airshipctl command to eject virtual media attached to a bare metal host
   help         Help about any command
-  poweroff     Shutdown a baremetal hosts
-  poweron      Power on a hosts
-  powerstatus  Retrieve the power status of a baremetal host
-  reboot       Reboot a hosts
-  remotedirect Bootstrap the ephemeral host
+  poweroff     Airshipctl command to shutdown bare metal host(s)
+  poweron      Airshipctl command to power on host(s)
+  powerstatus  Airshipctl command to retrieve the power status of a bare metal host
+  reboot       Airshipctl command to reboot host(s)
+  remotedirect Airshipctl command to bootstrap the ephemeral host
 
 Flags:
   -h, --help   help for baremetal

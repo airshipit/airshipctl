@@ -16,7 +16,7 @@ A unified entrypoint to various airship components
 
 ### SEE ALSO
 
-* [airshipctl baremetal](airshipctl_baremetal.md)	 - Perform actions on baremetal hosts
+* [airshipctl baremetal](airshipctl_baremetal.md)	 - Airshipctl command to manage bare metal host(s)
 * [airshipctl cluster](airshipctl_cluster.md)	 - Manage Kubernetes clusters
 * [airshipctl completion](airshipctl_completion.md)	 - Generate completion script for the specified shell (bash or zsh)
 * [airshipctl config](airshipctl_config.md)	 - Manage the airshipctl config file

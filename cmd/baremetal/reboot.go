@@ -28,8 +28,7 @@ var (
 	rebootCommand = "reboot"
 
 	rebootLong = fmt.Sprintf(`
-Reboot baremetal hosts
-%s
+Reboot bare metal host(s). %s
 `, selectorsDescription)
 
 	rebootExample = fmt.Sprintf(bmhActionExampleTemplate, rebootCommand)
@@ -40,8 +39,8 @@ func NewRebootCommand(cfgFactory config.Factory, options *inventory.CommandOptio
 	cmd := &cobra.Command{
 		Use:     rebootCommand,
 		Long:    rebootLong[1:],
-		Short:   "Reboot a hosts",
-		Example: rebootExample[1:],
+		Short:   "Airshipctl command to reboot host(s)",
+		Example: rebootExample,
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return options.BMHAction(ifc.BaremetalOperationReboot)
