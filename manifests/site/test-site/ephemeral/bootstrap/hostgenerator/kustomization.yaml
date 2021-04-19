@@ -14,6 +14,4 @@ transformers:
   # NOTE We can not use patchesStrategicMerge directive since Strategic Merge
   # plugin has to be executed once all replacements has been done. Therefore
   # we need to load Strategic Merge plugin as an external plugin
-  - ../../../../../function/hostgenerator-m3/cleanup
-  - ../../catalogues/cleanup
-  - ../../../../../function/hardwareprofile-example/cleanup
+  - ../../../../../function/airshipctl-cleanup/

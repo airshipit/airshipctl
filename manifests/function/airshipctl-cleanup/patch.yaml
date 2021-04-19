@@ -1,0 +1,39 @@
+apiVersion: builtin
+kind: PatchTransformer
+metadata:
+  name: delete-variable-catalogues
+target:
+ kind: VariableCatalogue
+patch: |
+  apiVersion: not-important
+  kind: not-important
+  metadata:
+    name: not-important
+  $patch: delete
+---
+apiVersion: builtin
+kind: PatchTransformer
+metadata:
+  name: delete-versions-catalogues
+target:
+ kind: VersionsCatalogue
+patch: |
+  apiVersion: not-important
+  kind: not-important
+  metadata:
+    name: not-important
+  $patch: delete
+---
+apiVersion: builtin
+kind: PatchTransformer
+metadata:
+  name: delete-network-catalogues
+target:
+ kind: NetworkCatalogue
+patch: |
+  apiVersion: not-important
+  kind: not-important
+  metadata:
+    name: not-important
+  $patch: delete
+

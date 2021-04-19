@@ -7,5 +7,4 @@ resources:
 
 transformers:
   - ../../../../function/hostgenerator-m3/replacements
-  - ../../../../function/hostgenerator-m3/cleanup
-  - ../../target/catalogues/cleanup
+  - ../../../../function/airshipctl-cleanup/
