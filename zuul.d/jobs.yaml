@@ -248,8 +248,8 @@
     voting: false
 - job:
     name: airship-airshipctl-publish-image
-    parent: airship-airshipctl-build-image
-    post-run: playbooks/airship-airshipctl-publish-images.yaml
+    nodeset: airship-airshipctl-single-node
+    run: playbooks/airship-airshipctl-publish-images.yaml
     irrelevant-files: *noncodefiles
     secrets:
       - name: airshipctl_image_repo_credentials
