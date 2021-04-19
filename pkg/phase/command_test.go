@@ -111,9 +111,11 @@ func TestRunCommand(t *testing.T) {
 
 func TestListCommand(t *testing.T) {
 	outputString1 := "NAMESPACE   RESOURCE                                  CLUSTER " +
-		"NAME          EXECUTOR              DOC ENTRYPOINT                          "
+		"NAME          EXECUTOR              DOC ENTRYPOINT                     " +
+		"                                                                 "
 	outputString2 := "            Phase/phase                               ephemeral" +
-		"-cluster     KubernetesApply       ephemeral/phase                         "
+		"-cluster     KubernetesApply       ephemeral/phase                      " +
+		"                                                               "
 	yamlOutput := `---
 - apiVersion: airshipit.org/v1alpha1
   config:
@@ -348,8 +350,13 @@ func TestPlanListCommand(t *testing.T) {
 				return conf, nil
 			},
 			expectedOut: [][]byte{
-				[]byte("NAMESPACE   RESOURCE                                  DESCRIPTION                             "),
-				[]byte("            PhasePlan/phasePlan                       Default phase plan                      "),
+				[]byte("NAMESPACE   RESOURCE                                  DESCRIPTION                                        " +
+					"                                                                                                        " +
+					"                                             "),
+				[]byte("            PhasePlan/phasePlan                       Default phase plan" +
+					"                                                                            " +
+					"                                                                            " +
+					"                              "),
 				{},
 			},
 		},

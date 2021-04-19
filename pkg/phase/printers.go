@@ -44,7 +44,12 @@ func PrintPhaseListTable(w io.Writer, phases []*v1alpha1.Phase) error {
 			if err != nil {
 				return 0, nil
 			}
-			return fmt.Fprintf(w, phase.ClusterName)
+			txt := phase.ClusterName
+			if len(txt) > width {
+				txt = txt[:width]
+			}
+			_, err = fmt.Fprintf(w, txt)
+			return len(txt), err
 		},
 	}
 	executorrefkindCol := table.ColumnDef{
@@ -57,20 +62,30 @@ func PrintPhaseListTable(w io.Writer, phases []*v1alpha1.Phase) error {
 			if err != nil {
 				return 0, nil
 			}
-			return fmt.Fprintf(w, phase.Config.ExecutorRef.Kind)
+			txt := phase.Config.ExecutorRef.Kind
+			if len(txt) > width {
+				txt = txt[:width]
+			}
+			_, err = fmt.Fprintf(w, txt)
+			return len(txt), err
 		},
 	}
 	docentrypointCol := table.ColumnDef{
 		ColumnName:   "docentrypoint",
 		ColumnHeader: "DOC ENTRYPOINT",
-		ColumnWidth:  40,
+		ColumnWidth:  100,
 		PrintResourceFunc: func(w io.Writer, width int, r table.Resource) (int,
 			error) {
 			phase, err := phaseFromResource(r)
 			if err != nil {
 				return 0, nil
 			}
-			return fmt.Fprintf(w, phase.Config.DocumentEntryPoint)
+			txt := phase.Config.DocumentEntryPoint
+			if len(txt) > width {
+				txt = txt[:width]
+			}
+			_, err = fmt.Fprintf(w, txt)
+			return len(txt), err
 		},
 	}
 	printer.Columns = append(printer.Columns, clusternameCol, executorrefkindCol, docentrypointCol)

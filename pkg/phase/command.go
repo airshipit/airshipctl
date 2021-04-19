@@ -166,7 +166,7 @@ type PlanListCommand struct {
 	Writer  io.Writer
 }
 
-// RunE runs a phase plan command
+// RunE runs a plan list command
 func (c *PlanListCommand) RunE() error {
 	cfg, err := c.Factory()
 	if err != nil {
@@ -192,7 +192,7 @@ func (c *PlanListCommand) RunE() error {
 	descriptionCol := table.ColumnDef{
 		ColumnName:   "description",
 		ColumnHeader: "DESCRIPTION",
-		ColumnWidth:  40,
+		ColumnWidth:  200,
 		PrintResourceFunc: func(w io.Writer, width int, r table.Resource) (int, error) {
 			rs := r.ResourceStatus()
 			if rs == nil {
@@ -203,7 +203,12 @@ func (c *PlanListCommand) RunE() error {
 			if err != nil {
 				return 0, err
 			}
-			return fmt.Fprint(w, plan.Description)
+			txt := plan.Description
+			if len(txt) > width {
+				txt = txt[:width]
+			}
+			_, err = fmt.Fprint(w, txt)
+			return len(txt), err
 		},
 	}
 	printer.Columns = append(printer.Columns, descriptionCol)
