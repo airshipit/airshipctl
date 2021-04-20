@@ -21,16 +21,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
-	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
-)
-
-const (
-	defaultMetadataPath = "metadata.yaml"
 )
 
 func TestRegisterExecutor(t *testing.T) {
@@ -92,19 +86,6 @@ func TestRegisterExecutor(t *testing.T) {
 			assert.True(t, found)
 		})
 	}
-}
-
-func makeDefaultHelper(t *testing.T, targetPath, metaPath string) ifc.Helper {
-	t.Helper()
-	cfg := config.NewConfig()
-	cfg.Manifests[config.AirshipDefaultManifest].TargetPath = targetPath
-	cfg.Manifests[config.AirshipDefaultManifest].MetadataPath = metaPath
-	cfg.Manifests[config.AirshipDefaultManifest].Repositories[config.DefaultTestPhaseRepo].URLString = ""
-	cfg.SetLoadedConfigPath(".")
-	helper, err := phase.NewHelper(cfg)
-	require.NoError(t, err)
-	require.NotNil(t, helper)
-	return helper
 }
 
 // executorDoc converts string to document object

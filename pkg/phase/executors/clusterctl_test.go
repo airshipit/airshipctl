@@ -106,12 +106,10 @@ func TestNewClusterctlExecutor(t *testing.T) {
 	sampleCfgDoc := executorDoc(t, fmt.Sprintf(executorConfigTmplGood, "init"))
 	testCases := []struct {
 		name        string
-		helper      ifc.Helper
 		expectedErr error
 	}{
 		{
-			name:   "New Clusterctl Executor",
-			helper: makeDefaultHelper(t, "../../clusterctl/client/testdata", defaultMetadataPath),
+			name: "New Clusterctl Executor",
 		},
 	}
 	for _, test := range testCases {
@@ -119,7 +117,6 @@ func TestNewClusterctlExecutor(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			_, actualErr := executors.NewClusterctlExecutor(ifc.ExecutorConfig{
 				ExecutorDocument: sampleCfgDoc,
-				Helper:           tt.helper,
 			})
 			assert.Equal(t, tt.expectedErr, actualErr)
 		})
@@ -199,7 +196,6 @@ func TestClusterctlExecutorRun(t *testing.T) {
 			executor, err := executors.NewClusterctlExecutor(
 				ifc.ExecutorConfig{
 					ExecutorDocument: tt.cfgDoc,
-					Helper:           makeDefaultHelper(t, "../../clusterctl/client/testdata", defaultMetadataPath),
 					KubeConfig:       kubeCfg,
 					ClusterMap:       tt.clusterMap,
 				})
@@ -275,7 +271,6 @@ func TestClusterctlExecutorValidate(t *testing.T) {
 			executor, err := executors.NewClusterctlExecutor(
 				ifc.ExecutorConfig{
 					ExecutorDocument: sampleCfgDoc,
-					Helper:           makeDefaultHelper(t, "../../clusterctl/client/testdata", defaultMetadataPath),
 				})
 			require.NoError(t, err)
 			err = executor.Validate()
@@ -293,8 +288,8 @@ func TestClusterctlExecutorRender(t *testing.T) {
 	sampleCfgDoc := executorDoc(t, fmt.Sprintf(executorConfigTmpl, "init"))
 	executor, err := executors.NewClusterctlExecutor(
 		ifc.ExecutorConfig{
+			TargetPath:       "../../clusterctl/client/testdata",
 			ExecutorDocument: sampleCfgDoc,
-			Helper:           makeDefaultHelper(t, "../../clusterctl/client/testdata", defaultMetadataPath),
 		})
 	require.NoError(t, err)
 	actualOut := &bytes.Buffer{}

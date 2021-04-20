@@ -308,8 +308,8 @@ func (helper *Helper) WorkDir() string {
 }
 
 // Inventory return inventory interface
-func (helper *Helper) Inventory() (inventoryifc.Inventory, error) {
-	return helper.inventory, nil
+func (helper *Helper) Inventory() inventoryifc.Inventory {
+	return helper.inventory
 }
 
 // PhaseConfigBundle returns bundle based on phaseBundleRoot

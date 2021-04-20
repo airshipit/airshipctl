@@ -104,13 +104,16 @@ func (p *phase) Executor() (ifc.Executor, error) {
 
 	return executorFactory(
 		ifc.ExecutorConfig{
-			ClusterMap:       cMap,
-			BundleFactory:    bundleFactory,
-			PhaseName:        p.apiObj.Name,
-			KubeConfig:       kubeconf,
-			ExecutorDocument: executorDoc,
-			ClusterName:      p.apiObj.ClusterName,
-			Helper:           p.helper,
+			ClusterMap:        cMap,
+			BundleFactory:     bundleFactory,
+			PhaseName:         p.apiObj.Name,
+			KubeConfig:        kubeconf,
+			ExecutorDocument:  executorDoc,
+			ClusterName:       p.apiObj.ClusterName,
+			PhaseConfigBundle: p.helper.PhaseConfigBundle(),
+			SinkBasePath:      p.helper.PhaseEntryPointBasePath(),
+			TargetPath:        p.helper.TargetPath(),
+			Inventory:         p.helper.Inventory(),
 		})
 }
 
@@ -196,9 +199,7 @@ func (p *phase) DocumentRoot() (string, error) {
 			PhaseNamespace: p.apiObj.Namespace,
 		}
 	}
-
-	phaseEntryPointBasePath := p.helper.PhaseEntryPointBasePath()
-	return filepath.Join(phaseEntryPointBasePath, relativePath), nil
+	return filepath.Join(p.helper.PhaseEntryPointBasePath(), relativePath), nil
 }
 
 // Details returns description of the phase

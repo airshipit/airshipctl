@@ -36,13 +36,13 @@ var _ ifc.Executor = &ContainerExecutor{}
 
 // ContainerExecutor contains resources for generic container executor
 type ContainerExecutor struct {
-	ResultsDir string
+	ResultsDir    string
+	MountBasePath string
 
 	Container        *v1alpha1.GenericContainer
 	ClientFunc       container.ClientV1Alpha1FactoryFunc
 	ExecutorBundle   document.Bundle
 	ExecutorDocument document.Document
-	Helper           ifc.Helper
 	Options          ifc.ExecutorConfig
 }
 
@@ -66,16 +66,16 @@ func NewContainerExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 
 	var resultsDir string
 	if apiObj.Spec.SinkOutputDir != "" {
-		resultsDir = filepath.Join(cfg.Helper.PhaseEntryPointBasePath(), apiObj.Spec.SinkOutputDir)
+		resultsDir = filepath.Join(cfg.SinkBasePath, apiObj.Spec.SinkOutputDir)
 	}
 
 	return &ContainerExecutor{
 		ResultsDir:       resultsDir,
+		MountBasePath:    cfg.TargetPath,
 		ExecutorBundle:   bundle,
 		ExecutorDocument: cfg.ExecutorDocument,
 		// TODO extend tests with proper client, make it interface
 		ClientFunc: container.NewClientV1Alpha1,
-		Helper:     cfg.Helper,
 		Container:  apiObj,
 		Options:    cfg,
 	}, nil
@@ -124,7 +124,7 @@ func (c *ContainerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 		return
 	}
 
-	err = c.ClientFunc(c.ResultsDir, input, output, c.Container, c.Helper.TargetPath()).Run()
+	err = c.ClientFunc(c.ResultsDir, input, output, c.Container, c.MountBasePath).Run()
 	if err != nil {
 		handleError(evtCh, err)
 		return
@@ -138,11 +138,7 @@ func (c *ContainerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 
 // SetKubeConfig adds env variable and mounts kubeconfig to container
 func (c *ContainerExecutor) SetKubeConfig() (kubeconfig.Cleanup, error) {
-	clusterMap, err := c.Helper.ClusterMap()
-	if err != nil {
-		return nil, err
-	}
-	context, err := clusterMap.ClusterKubeconfigContext(c.Options.ClusterName)
+	context, err := c.Options.ClusterMap.ClusterKubeconfigContext(c.Options.ClusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -180,13 +176,12 @@ func (c *ContainerExecutor) Render(_ io.Writer, _ ifc.RenderOptions) error {
 func (c *ContainerExecutor) setConfig() error {
 	if c.Container.ConfigRef != nil {
 		log.Debugf("Config reference is specified, looking for the object in config ref: '%v'", c.Container.ConfigRef)
-		log.Debugf("using bundle root %s", c.Helper.PhaseBundleRoot())
 		gvk := c.Container.ConfigRef.GroupVersionKind()
 		selector := document.NewSelector().
 			ByName(c.Container.ConfigRef.Name).
 			ByNamespace(c.Container.ConfigRef.Namespace).
 			ByGvk(gvk.Group, gvk.Version, gvk.Kind)
-		doc, err := c.Helper.PhaseConfigBundle().SelectOne(selector)
+		doc, err := c.Options.PhaseConfigBundle.SelectOne(selector)
 		if err != nil {
 			return err
 		}

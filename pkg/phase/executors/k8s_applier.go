@@ -43,7 +43,6 @@ type KubeApplierExecutor struct {
 	ExecutorBundle   document.Bundle
 	ExecutorDocument document.Document
 	BundleName       string
-	Helper           ifc.Helper
 
 	apiObject   *airshipv1.KubernetesApply
 	cleanup     kubeconfig.Cleanup
@@ -66,7 +65,6 @@ func NewKubeApplierExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 	return &KubeApplierExecutor{
 		ExecutorBundle:   bundle,
 		BundleName:       cfg.PhaseName,
-		Helper:           cfg.Helper,
 		ExecutorDocument: cfg.ExecutorDocument,
 		apiObject:        apiObj,
 		clusterMap:       cfg.ClusterMap,
