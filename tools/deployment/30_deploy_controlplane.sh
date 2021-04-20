@@ -15,8 +15,6 @@
 set -ex
 
 EPHEMERAL_DOMAIN_NAME="air-ephemeral"
-export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
-export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
 
 # TODO (dukov) this is needed due to sushy tools inserts cdrom image to
 # all vms. This can be removed once sushy tool is fixed
@@ -35,17 +33,13 @@ echo "Create target k8s cluster resources"
 airshipctl phase run controlplane-ephemeral --debug
 
 echo "List all nodes in target cluster"
-kubectl \
-  --kubeconfig $KUBECONFIG \
-  --context $KUBECONFIG_TARGET_CONTEXT \
-  --request-timeout 10s \
-  get node
-
+# Scripts for this phase placed in manifests/function/phase-helpers/wait_node/
+# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+# and find ConfigMap with name kubectl-get-node
+airshipctl phase run kubectl-get-node-target --debug
 
 echo "List all pods in target cluster"
-kubectl \
-  --kubeconfig  $KUBECONFIG \
-  --context $KUBECONFIG_TARGET_CONTEXT \
-  --request-timeout 10s \
-  get pods \
-  --all-namespaces
+# Scripts for this phase placed in manifests/function/phase-helpers/get_pods/
+# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+# and find ConfigMap with name kubectl-get-pods
+airshipctl phase run kubectl-get-pods-target --debug

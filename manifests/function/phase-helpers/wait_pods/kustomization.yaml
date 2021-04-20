@@ -1,6 +1,6 @@
 configMapGenerator:
-- name: kubectl-wait-node
+- name: kubectl-wait-pods
   options:
     disableNameSuffixHash: true
   files:
-  - script=kubectl_wait_node.sh
+  - script=kubectl_wait_pods.sh

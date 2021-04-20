@@ -1,6 +1,6 @@
 configMapGenerator:
-- name: kubectl-wait-node
+- name: kubectl-get-node
   options:
     disableNameSuffixHash: true
   files:
-  - script=kubectl_wait_node.sh
+  - script=kubectl_get_node.sh

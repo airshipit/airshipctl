@@ -288,6 +288,17 @@ config:
   executorRef:
     apiVersion: airshipit.org/v1alpha1
     kind: GenericContainer
+    name: kubectl-wait-node
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: kubectl-get-node-target
+  clusterName: target-cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
     name: kubectl-get-node
 ---
 apiVersion: airshipit.org/v1alpha1
@@ -295,6 +306,17 @@ kind: Phase
 metadata:
   name: kubectl-get-pods-ephemeral
   clusterName: ephemeral-cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: kubectl-get-pods
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: kubectl-get-pods-target
+  clusterName: target-cluster
 config:
   executorRef:
     apiVersion: airshipit.org/v1alpha1
@@ -315,6 +337,17 @@ config:
 apiVersion: airshipit.org/v1alpha1
 kind: Phase
 metadata:
+  name: kubectl-wait-tigera-target
+  clusterName: target-cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: kubectl-wait-tigera
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
   name: kubectl-wait-deploy-ephemeral
   clusterName: ephemeral-cluster
 config:
@@ -322,3 +355,14 @@ config:
     apiVersion: airshipit.org/v1alpha1
     kind: GenericContainer
     name: kubectl-wait-deploy
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: kubectl-wait-pods-target
+  clusterName: target-cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: kubectl-wait-pods

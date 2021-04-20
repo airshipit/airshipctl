@@ -14,12 +14,16 @@
 
 set -xe
 
-export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
-export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
-
 echo "Deploy CAPI components to target cluster"
 airshipctl phase run clusterctl-init-target --debug
 
 echo "Waiting for pods to be ready"
-kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT wait --all-namespaces --for=condition=Ready pods --all --timeout=600s
-kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get pods --all-namespaces
+# Scripts for this phase placed in manifests/function/phase-helpers/wait_pods/
+# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+# and find ConfigMap with name kubectl-wait-pods
+airshipctl phase run kubectl-wait-pods-target --debug
+
+# Scripts for this phase placed in manifests/function/phase-helpers/get_pods/
+# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+# and find ConfigMap with name kubectl-get-pods
+airshipctl phase run kubectl-get-pods-target --debug
