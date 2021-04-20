@@ -1,0 +1,6 @@
+configMapGenerator:
+- name: kubectl-wait-deploy
+  options:
+    disableNameSuffixHash: true
+  files:
+  - script=kubectl_wait_deploy.sh
