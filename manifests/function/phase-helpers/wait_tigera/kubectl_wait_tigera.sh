@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -xe
+
 echo "Wait for Calico to be deployed using tigera" 1>&2
 kubectl --kubeconfig $KUBECONFIG --context $KCTL_CONTEXT  wait --all-namespaces --for=condition=Ready pods --all --timeout=1000s 1>&2
 

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -xe
+
 N=0
 MAX_RETRY=30
 DELAY=60
