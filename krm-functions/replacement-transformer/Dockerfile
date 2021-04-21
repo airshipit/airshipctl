@@ -1,4 +1,6 @@
-FROM gcr.io/gcp-runtimes/go1-builder:1.15 as builder
+ARG GO_IMAGE=gcr.io/gcp-runtimes/go1-builder:1.15
+ARG PLUGINS_RELEASE_IMAGE=alpine:3.12.0
+FROM ${GO_IMAGE} as builder
 
 # Inject custom root certificate authorities if needed
 # Docker does not have a good conditional copy statement and requires that a source file exists
@@ -14,6 +16,6 @@ RUN /usr/local/go/bin/go mod download
 COPY main.go .
 RUN /usr/local/go/bin/go build -v -o /usr/local/bin/config-function ./
 
-FROM alpine:latest
+FROM ${PLUGINS_RELEASE_IMAGE} as release
 COPY --from=builder /usr/local/bin/config-function /usr/local/bin/config-function
 CMD ["/usr/local/bin/config-function"]

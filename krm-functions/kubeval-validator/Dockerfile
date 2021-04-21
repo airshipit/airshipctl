@@ -4,10 +4,10 @@ FROM ${GO_IMAGE} as function
 ENV PATH "/usr/local/go/bin:$PATH"
 ENV CGO_ENABLED=0
 WORKDIR /go/src/
-COPY krm-functions/kubeval-validator/image/go.mod .
-COPY krm-functions/kubeval-validator/image/go.sum .
+COPY image/go.mod .
+COPY image/go.sum .
 RUN go mod download
-COPY krm-functions/kubeval-validator/image/main.go .
+COPY image/main.go .
 RUN go build -v -o /usr/local/bin/config-function ./
 
 FROM ${PLUGINS_RELEASE_IMAGE} as release
@@ -24,5 +24,5 @@ RUN echo "**** install Python ****" && \
 
 RUN pip3 install 'ruamel.yaml==0.16.13' 'openapi2jsonschema==0.9.0' openapi-spec-validator
 COPY --from=function /usr/local/bin/config-function /usr/local/bin/config-function
-COPY krm-functions/kubeval-validator/image/extract-openapi.py /usr/local/bin/
+COPY image/extract-openapi.py /usr/local/bin/
 CMD ["config-function"]
