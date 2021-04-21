@@ -29,6 +29,7 @@
     GCP_REGION: "dXMtd2VzdDE="
     GCP_NETWORK_NAME: "ZGVmYXVsdA=="
     GCP_B64ENCODED_CREDENTIALS: "bjEtc3RhbmRhcmQtNA=="
+    AIRSHIPCTL_REF: "{{ zuul.ref | default('master') }}"
   tasks:
     - name: "set_default_gate_scripts"
       set_fact:
