@@ -84,6 +84,14 @@ spec:
         tag: v0.4.1
 
   images:
+    # images are organized by
+    #   <function>:
+    #     <component>:
+    #       <container>:
+    helm_chart_collator:
+      helm_chart_collator:
+        helm_chart_collator:
+          image: quay.io/airshipit/helm-chart-collator:latest
     baremetal_operator:
       ironic: # ironic Deployment
         init_bootstrap:
@@ -120,6 +128,10 @@ spec:
       kube_controllers: # calico-kube-controllers Deployment
         calico_kube_controllers:
           image: quay.io/calico/kube-controllers:v3.15.1
+    tigera_operator:
+      tigera_operator:
+        repository:
+          image: quay.io/tigera/operator:v1.15.0
     hwcc:
       manager: # controller-manager Deployment
         manager:
