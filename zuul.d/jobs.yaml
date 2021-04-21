@@ -50,15 +50,6 @@
     voting: false
 
 - job:
-    name: airship-airshipctl-update-github-issues
-    description: Updates and/or closes related issues on Github on merge
-    run: playbooks/airship-airshipctl-update-github-issues.yaml
-    nodeset: airship-airshipctl-single-node
-    secrets:
-      - name: github_credentials
-        secret: airship_airshipctl_airshipit_github_token
-
-- job:
     name: airship-airshipctl-build-image
     nodeset: airship-airshipctl-single-node
     run: playbooks/airship-airshipctl-build-images.yaml
