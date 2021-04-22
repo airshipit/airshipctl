@@ -10,11 +10,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: release
+name: release-image
 
-# Expects git tags in the following formats:
-#   airshipctl: v1.2.3 (no prefix)
-#   krm functions: <quay image name>-v1.2.3 e.g. replacement-transformer-v1.2.3
+# Expects release git tags in the following formats:
+#   airshipctl: v1.2.3-beta.1 (no prefix)
+#   krm functions: <quay image name>-v1.2.3-beta.1
 on:
   push:
     tags:
@@ -86,41 +86,3 @@ jobs:
           IMG: ${{ format('quay.io/airshipit/{0}', steps.semver_tags.outputs.IMG) }}
           SOURCE: ${{ github.sha }}
           TARGETS: ${{ steps.semver_tags.outputs.TAGS }}
-
-  release-github:
-    # Only create github releases for airshipctl (unprefixed semver tag), not krm functions.
-    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Download release notes utility
-        run: |
-          sudo npm install github-release-notes@0.17.1 -g
-      - name: Generate release notes
-        run: |
-          TAG_NAME=${TAG##*/}
-          gren changelog --override --generate \
-            --username airshipit --repo airshipctl \
-            --changelog-filename release-notes.md \
-            --token "$GITHUB_TOKEN" \
-            --tags "$TAG_NAME" \
-            --ignore-tags-with '^(?!v\d)' `# only consider semver tags without krm function prefix when finding previous tag` \
-            --debug
-          cat release-notes.md
-        env:
-          TAG: ${{ github.ref }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Setup Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.13.x
-      - name: Generate binaries and create github release
-        uses: goreleaser/goreleaser-action@v1
-        with:
-          version: latest
-          args: release --release-notes=release-notes.md --skip-validate --debug
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
