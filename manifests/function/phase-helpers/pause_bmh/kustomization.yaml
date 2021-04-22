@@ -1,0 +1,6 @@
+configMapGenerator:
+- name: kubectl-pause-bmh
+  options:
+    disableNameSuffixHash: true
+  files:
+  - script=kubectl_pause_bmh.sh

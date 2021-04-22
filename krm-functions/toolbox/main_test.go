@@ -17,6 +17,7 @@ package main
 import (
 	"bytes"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -24,6 +25,7 @@ import (
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/kustomize/kyaml/fn/framework"
+	"sigs.k8s.io/kustomize/kyaml/kio"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
 
@@ -165,4 +167,133 @@ func TestCmdRunCleanup(t *testing.T) {
 		require.NoError(t, cmd.Cleanup())
 	}()
 	assert.NoError(t, err)
+}
+
+func TestFilterBundle(t *testing.T) {
+	rawDocs := `---
+apiVersion: test/v1
+kind: Pod
+metadata:
+  name: t1
+---
+apiVersion: test/v1
+kind: Secret
+metadata:
+  name: t2
+---
+apiVersion: test/v1beta1
+kind: Deployment
+metadata:
+  name: t3
+`
+	docs, err := (&kio.ByteReader{Reader: bytes.NewBufferString(rawDocs)}).Read()
+	require.NoError(t, err)
+
+	testCases := []struct {
+		name          string
+		inputDocs     []*yaml.RNode
+		groupFilter   string
+		versionFilter string
+		kindFilter    string
+		errContains   string
+		expectedDocs  string
+	}{
+		{
+			name:          "Correct documents",
+			inputDocs:     docs,
+			groupFilter:   "test",
+			versionFilter: "v1",
+			kindFilter:    "Pod",
+			errContains:   "",
+			expectedDocs: `apiVersion: test/v1
+kind: Pod
+metadata:
+  name: t1
+`,
+		},
+		{
+			name:          "Empty kind",
+			inputDocs:     docs,
+			groupFilter:   "test",
+			versionFilter: "v1beta1",
+			kindFilter:    "",
+			errContains:   "",
+			expectedDocs: `apiVersion: test/v1beta1
+kind: Deployment
+metadata:
+  name: t3
+`,
+		},
+		{
+			name:          "Empty all filters",
+			inputDocs:     docs,
+			groupFilter:   "",
+			versionFilter: "",
+			kindFilter:    "",
+			errContains:   "",
+			expectedDocs: `apiVersion: test/v1
+kind: Pod
+metadata:
+  name: t1
+---
+apiVersion: test/v1
+kind: Secret
+metadata:
+  name: t2
+---
+apiVersion: test/v1beta1
+kind: Deployment
+metadata:
+  name: t3
+`,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			cMap := &v1.ConfigMap{
+				Data: map[string]string{
+					dataKey: script,
+				},
+			}
+
+			input, err := yaml.Parse(inputString)
+			require.NoError(t, err)
+
+			stderr := bytes.NewBuffer([]byte{})
+			stdout := bytes.NewBuffer([]byte{})
+
+			os.Setenv(ResourceGroupFilter, tc.groupFilter)
+			defer os.Unsetenv(ResourceGroupFilter)
+			os.Setenv(ResourceVersionFilter, tc.versionFilter)
+			defer os.Unsetenv(ResourceVersionFilter)
+			os.Setenv(ResourceKindFilter, tc.kindFilter)
+			defer os.Unsetenv(ResourceKindFilter)
+
+			cmd := &ScriptRunner{
+				ScriptFile:         targetFile,
+				WorkDir:            dir,
+				DataKey:            dataKey,
+				ErrStream:          stderr,
+				OutStream:          stdout,
+				ResourceList:       &framework.ResourceList{Items: []*yaml.RNode{input}},
+				ConfigMap:          cMap,
+				RenderedBundleFile: bundlePath,
+			}
+
+			filteredDocs, err := cmd.FilterBundle(tc.inputDocs)
+			if tc.errContains != "" {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tc.errContains)
+			} else {
+				require.NoError(t, err)
+
+				buf := &bytes.Buffer{}
+				err = kio.ByteWriter{Writer: buf}.Write(filteredDocs)
+				assert.Equal(t, tc.expectedDocs, buf.String())
+				require.NoError(t, err)
+			}
+		})
+	}
 }

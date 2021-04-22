@@ -66,6 +66,8 @@ The toolbox image has pre-installed `sh` shell,`kubectl` and `calicoctl`.
 ## Input bundle usage
 
 The KRM function writes to filesystem input bundle specified in `documentEntryPoint` in phase declaration and imports the path to this bundle in `RENDERED_BUNDLE_PATH` environment variable. For example it can be used with `calicoctl` as `calicoctl apply -f $RENDERED_BUNDLE_PATH`
+Documents can be filtered by group, version and kind. You need to set `RESOURCE_GROUP_FILTER`, `RESOURCE_VERSION_FILTER` and/or`RESOURCE_KIND_FILTER` in executor definition to enable filtering.
 
 ## Important notes
-The script must write to STDOUT valid yaml or redirect output to STDERR otherwise phase will fail with `mapping values are not allowed in this context`
+1. The script must write to STDOUT valid yaml or redirect output to STDERR otherwise phase will fail with `mapping values are not allowed in this context`
+2. All shell scripts must begin with `set -xe`. This allows errors to be passed from the container to the airshipctl itself. Without this flags the container will never fail.

@@ -5,3 +5,4 @@ resources:
 - wait_deploy
 - get_node
 - wait_pods
+- pause_bmh

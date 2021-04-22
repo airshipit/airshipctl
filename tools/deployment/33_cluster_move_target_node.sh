@@ -17,16 +17,14 @@ set -xe
 #Default wait timeout is 3600 seconds
 export TIMEOUT=${TIMEOUT:-3600}
 export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
-export KUBECONFIG_EPHEMERAL_CONTEXT=${KUBECONFIG_EPHEMERAL_CONTEXT:-"ephemeral-cluster"}
 export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
-export TARGET_NODE=${TARGET_NODE:-"node01"}
 export CLUSTER_NAMESPACE=${CLUSTER_NAMESPACE:-"default"}
 
-echo "Check Cluster Status"
-kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT -n $CLUSTER_NAMESPACE get cluster target-cluster -o json | jq '.status.controlPlaneReady'
-
-echo "Annotate BMH for target node"
-kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_EPHEMERAL_CONTEXT -n $CLUSTER_NAMESPACE annotate bmh $TARGET_NODE baremetalhost.metal3.io/paused=true
+# Annotating BMH objects with a pause label
+# Scripts for this phase placed in manifests/function/phase-helpers/pause_bmh/
+# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+# and find ConfigMap with name kubectl-get-pods
+airshipctl phase run kubectl-pause-bmh --debug
 
 echo "Move Cluster Object to Target Cluster"
 airshipctl phase run clusterctl-move
