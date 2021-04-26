@@ -32,7 +32,7 @@ Reboot baremetal hosts
 %s
 `, selectorsDescription)
 
-	rebootExample = fmt.Sprintf(bmhActionExampleTempalte, rebootCommand)
+	rebootExample = fmt.Sprintf(bmhActionExampleTemplate, rebootCommand)
 )
 
 // NewRebootCommand provides a command with the capability to reboot baremetal hosts.

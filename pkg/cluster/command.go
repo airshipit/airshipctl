@@ -85,7 +85,7 @@ func (cmd *GetKubeconfigCommand) RunE(cfgFactory config.Factory, writer io.Write
 
 	kubeconf := kubeconfig.NewBuilder().
 		WithBundle(helper.PhaseConfigBundle()).
-		WithClusterctClient(client).
+		WithClusterctlClient(client).
 		WithClusterMap(cMap).
 		WithClusterName(cmd.ClusterName).
 		WithTempRoot(helper.WorkDir()).
