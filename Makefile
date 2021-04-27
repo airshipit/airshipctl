@@ -170,8 +170,9 @@ ifeq ($(PUBLISH), true)
 	@docker push $(DOCKER_IMAGE)
 endif
 
-# Use specific Dockerfile instead of general one to make image for toolbox
+# Use specific Dockerfile instead of general one to make image for kubeval-validator and toolbox
 docker-image-toolbox: DOCKER_CMD_FLAGS+=-f krm-functions/toolbox/Dockerfile
+docker-image-kubeval-validator: DOCKER_CMD_FLAGS+=-f krm-functions/kubeval-validator/image/Dockerfile
 .PHONY: $(PLUGINS_IMAGE_TGT)
 $(PLUGINS_IMAGE_TGT):
 	$(eval plugin_name=$(subst docker-image-,,$@))

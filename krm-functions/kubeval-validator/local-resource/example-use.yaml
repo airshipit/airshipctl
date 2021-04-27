@@ -1,0 +1,53 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This kind is used as 'config' field in GenericContainer executor
+apiVersion: airshipit.org/v1alpha1
+kind: KubevalOptions
+metadata:
+  name: kubeval-options
+  labels:
+    airshipit.org/deploy-k8s: "false" # won't be deployed to k8s
+# Main config for site
+siteConfig:
+  # Disallow additional properties not in schema - default "true"
+  strict: true
+  # Version of Kubernetes to validate against - default "1.16.0"
+  kubernetesVersion: "1.16.0"
+  # Skip validation for resource definitions without a schema - default "false"
+  ignoreMissingSchemas: false
+# Current plan to validate; validator searches for the appropriate planConfig in planConfigs map
+# Uses only in case of plan validation; planName sets up automatically by templater using appropriate env variable
+planName: AIRSHIPCTL_CURRENT_PLAN
+# planConfigs is a map with validation configs for specified plans; has the following structure:
+# <plan_name1>:
+#   kindsToSkip: [] (optional)
+#   crdList: [] (optional)
+planConfigs:
+  phasePlan:
+    kindsToSkip: # list of kinds to skip from validation
+      - KindToSkip
+    crdList: # list of URLs to additional CRDs; could be a file located in manifests/ or an external URL
+      - url/to/crd.yaml
+# Current phase to validate; validator searches for the appropriate phaseConfig in phaseConfigs map
+# Uses only in case of plan validation; phaseName sets up automatically by templater using appropriate env variable
+phaseName: AIRSHIPCTL_CURRENT_PHASE
+# phaseConfigs is a map with validation configs for specified phases; has the following structure:
+# <phase_name1>:
+#   kindsToSkip: [] (optional)
+#   crdList: [] (optional)
+phaseConfigs:
+  initinfra-ephemeral:
+    kindsToSkip: # list of kinds to skip from validation
+      - KindToSkip
+    crdList: # list of URLs to additional CRDs; could be a file located in manifests/ or an external URL
+      - url/to/crd.yaml
