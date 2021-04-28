@@ -1225,6 +1225,143 @@ data:
 `,
 		expectedErr: "Error while decoding base64 encoded string: abc",
 	},
+	{
+		cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: Test_Case_25
+replacements:
+- source:
+    value: nginx:newtag
+  targets:
+  - objref:
+      kind: Deployment
+      name: deploy1
+    fieldrefs:
+    - spec.template.spec.containers[name=nginx.latest].image
+  - objref:
+      kind: Deployment
+      name: deploy2
+    fieldrefs:
+    - spec.template.spec.containers[name=nginx.latest].image
+- source:
+    value: postgres:latest
+  targets:
+  - objref:
+      kind: Deployment
+      name: deploy1
+    fieldrefs:
+    - spec.template.spec.containers.3.image
+  - objref:
+      kind: Deployment
+      name: deploy2
+    fieldrefs:
+    - spec.template.spec.containers.3.image
+`,
+
+		in: `
+apiVersion: v1
+group: apps
+kind: Deployment
+metadata:
+  name: deploy1
+spec:
+  template:
+    spec:
+      containers:
+      - image: nginx:1.7.9
+        name: nginx-tagged
+      - image: nginx:latest
+        name: nginx.latest
+      - image: foobar:1
+        name: replaced-with-digest
+      - image: postgres:1.8.0
+        name: postgresdb
+      initContainers:
+      - image: nginx
+        name: nginx-notag
+      - image: nginx@sha256:111111111111111111
+        name: nginx-sha256
+      - image: alpine:1.8.0
+        name: init-alpine
+---
+apiVersion: v1
+group: apps
+kind: Deployment
+metadata:
+  name: deploy2
+spec:
+  template:
+    spec:
+      containers:
+      - image: nginx:1.7.9
+        name: nginx-tagged
+      - image: nginx:latest
+        name: nginx.latest
+      - image: foobar:1
+        name: replaced-with-digest
+      - image: postgres:1.8.0
+        name: postgresdb
+      initContainers:
+      - image: nginx
+        name: nginx-notag
+      - image: nginx@sha256:111111111111111111
+        name: nginx-sha256
+      - image: alpine:1.8.0
+        name: init-alpine
+`,
+		expectedOut: `apiVersion: v1
+group: apps
+kind: Deployment
+metadata:
+  name: deploy1
+spec:
+  template:
+    spec:
+      containers:
+      - image: nginx:1.7.9
+        name: nginx-tagged
+      - image: nginx:newtag
+        name: nginx.latest
+      - image: foobar:1
+        name: replaced-with-digest
+      - image: postgres:latest
+        name: postgresdb
+      initContainers:
+      - image: nginx
+        name: nginx-notag
+      - image: nginx@sha256:111111111111111111
+        name: nginx-sha256
+      - image: alpine:1.8.0
+        name: init-alpine
+---
+apiVersion: v1
+group: apps
+kind: Deployment
+metadata:
+  name: deploy2
+spec:
+  template:
+    spec:
+      containers:
+      - image: nginx:1.7.9
+        name: nginx-tagged
+      - image: nginx:newtag
+        name: nginx.latest
+      - image: foobar:1
+        name: replaced-with-digest
+      - image: postgres:latest
+        name: postgresdb
+      initContainers:
+      - image: nginx
+        name: nginx-notag
+      - image: nginx@sha256:111111111111111111
+        name: nginx-sha256
+      - image: alpine:1.8.0
+        name: init-alpine
+`,
+	},
 }
 
 func TestExec(t *testing.T) {
