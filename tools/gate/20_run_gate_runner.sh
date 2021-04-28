@@ -100,7 +100,7 @@ for script in $SCRIPT_LIST; do
     fi
 
     echo -e "\033[0;32m[ *** Run script $script *** ] \033[0m "
-    cmd="sudo --preserve-env=AIRSHIPCTL_WS,AIRSHIP_CONFIG_PHASE_REPO_URL,SOPS_IMPORT_PGP,SOPS_PGP_FP $script"
+    cmd="sudo --preserve-env=AIRSHIPCTL_WS,AIRSHIP_CONFIG_PHASE_REPO_URL,SOPS_IMPORT_PGP $script"
     if [[ $OUTPUT_DIR ]]; then
       $cmd > ${OUTPUT_DIR}/${SCRIPT_NAME}.out 2>&1
     elif [[ "$MUTE" -eq "1" ]]; then

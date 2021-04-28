@@ -1,4 +1,0 @@
-generators:
-- ../../../../../type/gating/target/generator/
-transformers:
-- ../../../../../type/gating/target/generator/fileplacement/

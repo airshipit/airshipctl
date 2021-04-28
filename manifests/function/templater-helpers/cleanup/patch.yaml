@@ -1,0 +1,15 @@
+apiVersion: builtin
+kind: PatchTransformer
+metadata:
+  name: delete-templater-modules
+target:
+ group: airshipit.org
+ version: v1alpha1
+ kind: Templater
+patch: |
+  apiVersion: not-important
+  kind: not-important
+  metadata:
+    name: not-important
+  $patch: delete
+

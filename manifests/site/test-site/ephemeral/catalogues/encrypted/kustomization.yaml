@@ -1,0 +1,7 @@
+resources:
+  - ../../../../../.private-keys/
+  - secrets.yaml
+
+transformers:
+  - ../../../../../type/gating/shared/decrypt-secrets/
+  - ../../../../../type/gating/shared/decrypt-secrets/cleanup/

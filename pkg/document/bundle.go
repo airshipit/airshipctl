@@ -132,6 +132,9 @@ func NewBundle(fSys fs.FileSystem, kustomizePath string) (Bundle, error) {
 		PluginConfig: &types.PluginConfig{
 			PluginRestrictions: types.PluginRestrictionsNone,
 			BpLoadingOptions:   types.BploUseStaticallyLinked,
+			FnpLoadingOptions: types.FnPluginLoadingOptions{
+				Network: true,
+			},
 		},
 	}
 

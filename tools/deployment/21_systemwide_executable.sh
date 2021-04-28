@@ -50,7 +50,7 @@ fi
 # the version of airshipctl that they are installing via this script.
 export AIRSHIP_KRM_FUNCTION_REPO=${AIRSHIP_KRM_FUNCTION_REPO:-"quay.io/airshipit"}
 export AIRSHIP_KRM_FUNCTION_TAG=${AIRSHIP_KRM_FUNCTION_TAG:-"latest"}
-export SOPS_KRM_FUNCTION=${SOPS_KRM_FUNCTION:-"gcr.io/kpt-fn-contrib/sops:v0.1.0"}
+export SOPS_KRM_FUNCTION=${SOPS_KRM_FUNCTION:-"gcr.io/kpt-fn-contrib/sops:v0.3.0"}
 
 echo "Resolve krm function versions"
 

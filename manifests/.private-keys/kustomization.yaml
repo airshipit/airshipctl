@@ -1,0 +1,6 @@
+secretGenerator:
+  - name: decryption-key
+    options:
+      disableNameSuffixHash: true
+    files:
+    - cmd-import-pgp=my.key

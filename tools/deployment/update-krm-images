@@ -26,7 +26,7 @@ export OLD_TEMPLATER=${OLD_TEMPLATER:-"localhost/templater"}
 export OLD_CLOUD_INIT=${OLD_CLOUD_INIT:-"localhost/cloud-init"}
 export OLD_TOOLBOX=${OLD_TOOLBOX:-"localhost/toolbox"}
 export OLD_KUBEVAL_VALIDATOR=${OLD_KUBEVAL_VALIDATOR:-"localhost/kubeval-validator"}
-export OLD_SOPS=${OLD_SOPS:-"gcr.io/kpt-fn-contrib/sops:v0.1.0"}
+export OLD_SOPS=${OLD_SOPS:-"gcr.io/kpt-fn-contrib/sops:v0.3.0"}
 
 export NEW_REPLACEMENT_TRANSFORMER=${NEW_REPLACEMENT_TRANSFORMER:-$OLD_REPLACEMENT_TRANSFORMER}
 export NEW_TEMPLATER=${NEW_TEMPLATER:-$OLD_TEMPLATER}

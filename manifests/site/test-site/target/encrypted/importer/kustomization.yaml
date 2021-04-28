@@ -1,4 +1,0 @@
-resources:
-  - ../results/imported/
-transformers:
-  - ../../../../../type/gating/target/importer/fileplacement/
