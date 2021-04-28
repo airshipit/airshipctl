@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/kustomize/kyaml/kio"
 	"sigs.k8s.io/kustomize/kyaml/kio/filters"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
@@ -84,6 +85,17 @@ func (f DocumentSelector) ByNamespace(ns string) DocumentSelector {
 	return f
 }
 
+// ByLabel adds filter to filter by labelSelector.
+// For more details about syntax for labelSelector refer to Parse() function description from
+// https://github.com/kubernetes/apimachinery/blob/master/pkg/labels/selector.go
+func (f DocumentSelector) ByLabel(labelSelector string) DocumentSelector {
+	if labelSelector != "" {
+		f.filters = append(f.filters, &LabelFilter{MatchExpression: labelSelector})
+		return f
+	}
+	return f
+}
+
 // Filter RNode objects
 func (f DocumentSelector) Filter(items []*yaml.RNode) (result []*yaml.RNode, err error) {
 	result = items
@@ -94,4 +106,36 @@ func (f DocumentSelector) Filter(items []*yaml.RNode) (result []*yaml.RNode, err
 		}
 	}
 	return result, nil
+}
+
+var _ kio.Filter = &LabelFilter{}
+
+// LabelFilter allows to filter labels based on label Selectors
+// Uses kubernetes label selector library from apimachinery package undreneath
+// For syntax for MatchExpression, please refer to description of Parse() function at
+// https://github.com/kubernetes/apimachinery/blob/master/pkg/labels/selector.go
+type LabelFilter struct {
+	MatchExpression string
+}
+
+// Filter implements RNode filter interface
+func (lf *LabelFilter) Filter(input []*yaml.RNode) ([]*yaml.RNode, error) {
+	var output kio.ResourceNodeSlice
+	selector, err := labels.Parse(lf.MatchExpression)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, node := range input {
+		nodeLabels, err := node.GetLabels()
+		if err != nil {
+			return nil, err
+		}
+
+		if selector.Matches(labels.Set(nodeLabels)) {
+			output = append(output, node)
+		}
+	}
+
+	return output, nil
 }
