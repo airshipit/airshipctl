@@ -84,7 +84,8 @@ func runCmd(cmd string, opts []string) error {
 
 // printMsg is a convenient function to print output to stderr
 func printMsg(format string, a ...interface{}) {
-	if _, err := fmt.Fprintf(os.Stderr, format, a...); err != nil {}
+	if _, err := fmt.Fprintf(os.Stderr, format, a...); err != nil {
+	}
 }
 
 func main() {

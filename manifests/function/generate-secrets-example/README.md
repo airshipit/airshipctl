@@ -114,5 +114,5 @@ files in place in the same folder.
 
 Kustomize command to decrypt:
 
-`KUSTOMIZE_PLUGIN_HOME=$(pwd)/manifests SOPS_IMPORT_PGP=$(cat key.asc) kustomize build \ --enable_alpha_plugins \
+`SOPS_IMPORT_PGP=$(cat key.asc) kustomize build \ --enable-alpha-plugins \
 manifests/site/test-site/target/generator/results`

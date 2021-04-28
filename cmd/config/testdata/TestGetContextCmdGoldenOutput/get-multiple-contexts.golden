@@ -1,4 +1,3 @@
-Error: accepts at most 1 arg(s), received 2
 Usage:
   get-context CONTEXT_NAME [flags]
 

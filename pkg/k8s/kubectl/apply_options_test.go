@@ -30,7 +30,6 @@ var (
 	filenameRC = "testdata/replicationcontroller.yaml"
 
 	testStreams           = genericclioptions.NewTestIOStreamsDiscard()
-	ErrToDiscoveryError   = errors.New("ErrToDiscoveryError")
 	ErrDynamicClientError = errors.New("ErrDynamicClientError")
 	ErrValidateError      = errors.New("ErrValidateError")
 	ErrToRESTMapperError  = errors.New("ErrToRESTMapperError")
@@ -42,10 +41,6 @@ func TestNewApplyOptionsFactoryFailures(t *testing.T) {
 		f             cmdutil.Factory
 		expectedError error
 	}{
-		{
-			f:             k8stest.NewMockKubectlFactory().WithToDiscoveryClientByError(nil, ErrToDiscoveryError),
-			expectedError: ErrToDiscoveryError,
-		},
 		{
 			f:             k8stest.NewMockKubectlFactory().WithDynamicClientByError(nil, ErrDynamicClientError),
 			expectedError: ErrDynamicClientError,

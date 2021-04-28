@@ -16,11 +16,59 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/kustomize/api/types"
 )
 
 // These types have been changed in kustomize 4.0.5.
 // Copying the version from 3.9.2
+
+// Gvk identifies a Kubernetes API type.
+// https://github.com/kubernetes/community/blob/master/contributors/design-proposals/api-machinery/api-group.md
+type Gvk struct {
+	Group   string `json:"group,omitempty" yaml:"group,omitempty"`
+	Version string `json:"version,omitempty" yaml:"version,omitempty"`
+	Kind    string `json:"kind,omitempty" yaml:"kind,omitempty"`
+}
+
+// Target refers to a kubernetes object by Group, Version, Kind and Name
+// gvk.Gvk contains Group, Version and Kind
+// APIVersion is added to keep the backward compatibility of using ObjectReference
+// for Var.ObjRef
+type Target struct {
+	APIVersion string `json:"apiVersion,omitempty" yaml:"apiVersion,omitempty"`
+	Gvk        `json:",inline,omitempty" yaml:",inline,omitempty"`
+	Name       string `json:"name" yaml:"name"`
+	Namespace  string `json:"namespace,omitempty" yaml:"namespace,omitempty"`
+}
+
+// ResID is an identifier of a k8s resource object.
+type ResID struct {
+	// Gvk of the resource.
+	Gvk `json:",inline,omitempty" yaml:",inline,omitempty"`
+
+	// Name of the resource.
+	Name string `json:"name,omitempty" yaml:"name,omitempty"`
+
+	// Namespace the resource belongs to, if it can belong to a namespace.
+	Namespace string `json:"namespace,omitempty" yaml:"namespace,omitempty"`
+}
+
+// Selector specifies a set of resources.
+// Any resource that matches intersection of all conditions
+// is included in this set.
+type Selector struct {
+	// ResID refers to a GVKN/Ns of a resource.
+	ResID `json:",inline,omitempty" yaml:",inline,omitempty"`
+
+	// AnnotationSelector is a string that follows the label selection expression
+	// https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#api
+	// It matches with the resource annotations.
+	AnnotationSelector string `json:"annotationSelector,omitempty" yaml:"annotationSelector,omitempty"`
+
+	// LabelSelector is a string that follows the label selection expression
+	// https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#api
+	// It matches with the resource labels.
+	LabelSelector string `json:"labelSelector,omitempty" yaml:"labelSelector,omitempty"`
+}
 
 // Replacement defines how to perform a substitution
 // where it is from and where it is to.
@@ -35,15 +83,15 @@ type Replacement struct {
 //  - from a field of one resource
 //  - from a string
 type ReplSource struct {
-	ObjRef   *types.Target `json:"objref,omitempty" yaml:"objref,omitempty"`
-	FieldRef string        `json:"fieldref,omitempty" yaml:"fiedldref,omitempty"`
-	Value    string        `json:"value,omitempty" yaml:"value,omitempty"`
+	ObjRef   *Target `json:"objref,omitempty" yaml:"objref,omitempty"`
+	FieldRef string  `json:"fieldref,omitempty" yaml:"fiedldref,omitempty"`
+	Value    string  `json:"value,omitempty" yaml:"value,omitempty"`
 }
 
 // ReplTarget defines where a substitution is to.
 type ReplTarget struct {
-	ObjRef    *types.Selector `json:"objref,omitempty" yaml:"objref,omitempty"`
-	FieldRefs []string        `json:"fieldrefs,omitempty" yaml:"fieldrefs,omitempty"`
+	ObjRef    *Selector `json:"objref,omitempty" yaml:"objref,omitempty"`
+	FieldRefs []string  `json:"fieldrefs,omitempty" yaml:"fieldrefs,omitempty"`
 }
 
 // +kubebuilder:object:root=true

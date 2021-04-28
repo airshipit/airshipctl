@@ -22,8 +22,8 @@ import (
 	k8sv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/kustomize/api/resid"
 	"sigs.k8s.io/kustomize/api/types"
+	"sigs.k8s.io/kustomize/kyaml/resid"
 
 	airapiv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/document"
@@ -155,10 +155,12 @@ func TestSelectorToObject(t *testing.T) {
 			obj:  &airapiv1.Clusterctl{},
 			expectedSel: document.Selector{
 				Selector: types.Selector{
-					Gvk: resid.Gvk{
-						Group:   "airshipit.org",
-						Version: "v1alpha1",
-						Kind:    "Clusterctl",
+					ResId: resid.ResId{
+						Gvk: resid.Gvk{
+							Group:   "airshipit.org",
+							Version: "v1alpha1",
+							Kind:    "Clusterctl",
+						},
 					},
 				},
 			},
@@ -179,12 +181,14 @@ func TestSelectorToObject(t *testing.T) {
 			},
 			expectedSel: document.Selector{
 				Selector: types.Selector{
-					Gvk: resid.Gvk{
-						Group:   "airshipit.org",
-						Version: "v1alpha1",
-						Kind:    "Clusterctl",
+					ResId: resid.ResId{
+						Gvk: resid.Gvk{
+							Group:   "airshipit.org",
+							Version: "v1alpha1",
+							Kind:    "Clusterctl",
+						},
+						Name: "clusterctl-v1",
 					},
-					Name: "clusterctl-v1",
 				},
 			},
 			expectedErr: "",

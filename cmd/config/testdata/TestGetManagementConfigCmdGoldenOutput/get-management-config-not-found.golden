@@ -1,4 +1,3 @@
-Error: Unknown management configuration 'foo'.
 Usage:
   get-management-config MGMT_CONFIG_NAME [flags]
 

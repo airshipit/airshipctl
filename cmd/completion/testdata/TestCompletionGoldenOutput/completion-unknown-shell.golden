@@ -1,4 +1,3 @@
-Error: unsupported shell type "fish"
 Usage:
   completion SHELL [flags]
 

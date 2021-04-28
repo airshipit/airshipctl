@@ -1,7 +1,9 @@
-ARG GO_IMAGE=gcr.io/gcp-runtimes/go1-builder:1.15
-ARG PLUGINS_RELEASE_IMAGE=quay.io/airshipit/alpine:3.13.5
+ARG GO_IMAGE=amd64/golang:1.16.6-buster
+ARG RELEASE_IMAGE=quay.io/airshipit/alpine:3.13.5
 FROM ${GO_IMAGE} as builder
 ARG GOPROXY=""
+
+ENV PATH "/usr/local/go/bin:$PATH"
 
 # Inject custom root certificate authorities if needed
 # Docker does not have a good conditional copy statement and requires that a source file exists
@@ -10,13 +12,21 @@ ARG GOPROXY=""
 COPY ./certs/* /usr/local/share/ca-certificates/
 RUN update-ca-certificates
 
-ENV CGO_ENABLED=0
-WORKDIR /go/src/
-COPY image/go.mod .
-RUN /usr/local/go/bin/go mod download
-COPY main.go .
-RUN /usr/local/go/bin/go build -v -o /usr/local/bin/config-function ./
+RUN apt-get update -yq && apt-get upgrade -yq && apt-get install -y gcc make
 
-FROM ${PLUGINS_RELEASE_IMAGE} as release
-COPY --from=builder /usr/local/bin/config-function /usr/local/bin/config-function
+SHELL [ "/bin/bash", "-cex" ]
+WORKDIR /usr/src/airshipctl
+
+# Take advantage of caching for dependency acquisition
+COPY go.mod go.sum /usr/src/airshipctl/
+RUN go mod download
+
+COPY . /usr/src/airshipctl/
+ARG MAKE_TARGET=bin/cloud-init
+RUN make ${MAKE_TARGET}
+
+FROM ${RELEASE_IMAGE} as release
+ARG MAKE_TARGET=bin/cloud-init
+COPY --from=builder /usr/src/airshipctl/${MAKE_TARGET} /usr/local/bin/config-function
+USER 65534
 CMD ["/usr/local/bin/config-function"]

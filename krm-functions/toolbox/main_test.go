@@ -66,7 +66,7 @@ func TestCmdRun(t *testing.T) {
 		{
 			name:        "Wrong key in ConfigMap",
 			workdir:     dir,
-			errContains: "ConfigMap '/' doesnt' have specified script key 'script'",
+			errContains: "ConfigMap '/' doesn't have specified script key 'script'",
 			configMap: &v1.ConfigMap{
 				Data: map[string]string{
 					wrongDataKey: "",
@@ -109,11 +109,12 @@ func TestCmdRun(t *testing.T) {
 				DataKey:            dataKey,
 				ErrStream:          stderr,
 				OutStream:          stdout,
-				ResourceList:       &framework.ResourceList{Items: []*yaml.RNode{input}},
 				ConfigMap:          tt.configMap,
 				RenderedBundleFile: bundlePath,
 			}
-			err = cmd.Run()
+			err = cmd.Process(&framework.ResourceList{
+				Items: []*yaml.RNode{input},
+			})
 			defer func() {
 				require.NoError(t, cmd.Cleanup())
 			}()
@@ -156,13 +157,14 @@ func TestCmdRunCleanup(t *testing.T) {
 		DataKey:            dataKey,
 		ErrStream:          stderr,
 		OutStream:          stdout,
-		ResourceList:       &framework.ResourceList{Items: []*yaml.RNode{input}},
 		ConfigMap:          cMap,
 		RenderedBundleFile: bundlePath,
 	}
 
 	require.NoError(t, cmd.Cleanup())
-	err = cmd.Run()
+	err = cmd.Process(&framework.ResourceList{
+		Items: []*yaml.RNode{input},
+	})
 	defer func() {
 		require.NoError(t, cmd.Cleanup())
 	}()
@@ -278,9 +280,6 @@ metadata:
 				},
 			}
 
-			input, err := yaml.Parse(inputString)
-			require.NoError(t, err)
-
 			stderr := bytes.NewBuffer([]byte{})
 			stdout := bytes.NewBuffer([]byte{})
 
@@ -299,7 +298,6 @@ metadata:
 				DataKey:            dataKey,
 				ErrStream:          stderr,
 				OutStream:          stdout,
-				ResourceList:       &framework.ResourceList{Items: []*yaml.RNode{input}},
 				ConfigMap:          cMap,
 				RenderedBundleFile: bundlePath,
 			}

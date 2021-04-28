@@ -19,7 +19,7 @@ import (
 	"os"
 	"path/filepath"
 
-	kustfs "sigs.k8s.io/kustomize/api/filesys"
+	kustfs "sigs.k8s.io/kustomize/kyaml/filesys"
 )
 
 // File extends kustomize File and provide abstraction to creating temporary files

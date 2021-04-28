@@ -15,6 +15,7 @@
 package kubeconfig
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"time"
@@ -123,7 +124,7 @@ func FromSecret(c corev1.CoreV1Interface, o *v1alpha1.GetKubeconfigOptions) Kube
 
 		data, exist, secretName := new([]byte), new(bool), fmt.Sprintf("%s-kubeconfig", o.ManagedClusterName)
 		fn := func() (bool, error) {
-			secret, err := c.Secrets(o.ManagedClusterNamespace).Get(secretName, metav1.GetOptions{})
+			secret, err := c.Secrets(o.ManagedClusterNamespace).Get(context.Background(), secretName, metav1.GetOptions{})
 			if err != nil {
 				log.Printf("get kubeconfig from secret failed, retrying, reason: %v", err)
 				return false, nil
