@@ -7,7 +7,7 @@ spec:
   clusterName: "target-cluster"
   replicas: "${WORKER_MACHINE_COUNT}"
   selector:
-    matchLabels:
+    matchLabels: {}
   template:
     spec:
       clusterName: "target-cluster"

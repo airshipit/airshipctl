@@ -8,7 +8,7 @@ spec:
   clusterName: target-cluster
   replicas: 3
   selector:
-    matchLabels: null
+    matchLabels: {}
   template:
     spec:
       bootstrap:

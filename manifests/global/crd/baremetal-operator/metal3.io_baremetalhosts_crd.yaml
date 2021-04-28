@@ -177,6 +177,16 @@ spec:
                     name must be unique.
                   type: string
               type: object
+            firmware:
+              description: firmware holds the reference for creating and consuming hardware profiles
+              properties:
+                simultaneousMultithreadingDisabled:
+                  type: boolean
+                sriovEnabled:
+                  type: boolean
+                virtualizationDisabled:
+                  type: boolean
+              type: object
             online:
               description: Should the server be online?
               type: boolean

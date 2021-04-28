@@ -69,7 +69,7 @@ func TestClientPhaseExecutor(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt
-		t.Run("", func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			conf := tt.configFunc(t)
 			helper, err := phase.NewHelper(conf)
 			require.NoError(t, err)
@@ -77,7 +77,8 @@ func TestClientPhaseExecutor(t *testing.T) {
 			client := phase.NewClient(helper, phase.InjectRegistry(tt.registryFunc))
 			require.NotNil(t, client)
 			p, err := client.PhaseByID(tt.phaseID)
-			require.NotNil(t, client)
+			require.NotNil(t, p)
+			require.NoError(t, err)
 			executor, err := p.Executor()
 			if tt.errContains != "" {
 				require.Error(t, err)
@@ -150,13 +151,15 @@ func TestPhaseValidate(t *testing.T) {
 			configFunc:   testConfig,
 			phaseID:      ifc.ID{Name: "capi_init"},
 			registryFunc: fakeRegistry,
+			errContains: `document filtered by selector [Group="airshipit.org", Version="v1alpha1", ` +
+				`Kind="GenericContainer", Name="document-validation"] found no documents`,
 		},
 		{
 			name:         "Error no document entry point",
 			configFunc:   testConfig,
 			phaseID:      ifc.ID{Name: "no_entry_point"},
 			registryFunc: fakeRegistry,
-			errContains:  "documentEntryPoint is not defined for the phase 'no_entry_point' in namespace ''",
+			errContains:  "executor identified by 'airshipit.org/v1alpha1, Kind=SomeExecutor' is not found",
 		},
 		{
 			name:         "Error no executor",
@@ -391,13 +394,15 @@ func TestPlanValidate(t *testing.T) {
 			configFunc:   testConfig,
 			planID:       ifc.ID{Name: "init"},
 			registryFunc: fakeRegistry,
+			errContains: `document filtered by selector [Group="airshipit.org", Version="v1alpha1", ` +
+				`Kind="GenericContainer", Name="document-validation"] found no documents`,
 		},
 		{
 			name:         "Invalid fake executor",
 			configFunc:   testConfig,
 			planID:       ifc.ID{Name: "plan_invalid_phase"},
 			registryFunc: fakeRegistry,
-			errContains:  "documentEntryPoint is not defined for the phase 'no_entry_point' in namespace ''",
+			errContains:  "executor identified by 'airshipit.org/v1alpha1, Kind=SomeExecutor' is not found",
 		},
 		{
 			name:         "Phase does not exist",
@@ -430,7 +435,7 @@ func TestPlanValidate(t *testing.T) {
 	}
 }
 
-func fakeExecFactory(config ifc.ExecutorConfig) (ifc.Executor, error) {
+func fakeExecFactory(_ ifc.ExecutorConfig) (ifc.Executor, error) {
 	return fakeExecutor{}, nil
 }
 

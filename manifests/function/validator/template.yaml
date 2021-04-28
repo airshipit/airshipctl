@@ -1,0 +1,26 @@
+apiVersion: airshipit.org/v1alpha1
+kind: Templater
+metadata:
+  name: validator-config-patch-template
+  annotations:
+    config.kubernetes.io/function: |
+      container:
+        image: quay.io/airshipit/templater:v2
+        envs:
+        - AIRSHIPCTL_CURRENT_PHASE
+        - AIRSHIPCTL_CURRENT_PLAN
+template: |
+  {{- $currentPhase := env "AIRSHIPCTL_CURRENT_PHASE" }}
+  {{- $currentPlan := env "AIRSHIPCTL_CURRENT_PLAN" }}
+  apiVersion: builtin
+  kind: PatchStrategicMergeTransformer
+  metadata:
+    name: smp
+  patches: |-
+    ---
+    apiVersion: airshipit.org/v1alpha1
+    kind: KubevalOptions
+    metadata:
+      name: kubeval-options
+    phaseName: {{ $currentPhase }}
+    planName: {{ $currentPlan }}

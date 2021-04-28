@@ -15,8 +15,8 @@
 package phase
 
 import (
+	"bytes"
 	"io"
-	"io/ioutil"
 	"path/filepath"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -32,6 +32,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	executorerrors "opendev.org/airship/airshipctl/pkg/phase/executors/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
+	"opendev.org/airship/airshipctl/pkg/util"
 )
 
 // ExecutorRegistry returns map with executor factories
@@ -60,22 +61,33 @@ type phase struct {
 	processor events.EventProcessor
 }
 
+func (p *phase) defaultBundleFactory() document.BundleFactoryFunc {
+	return document.BundleFactoryFromDocRoot(p.DocumentRoot)
+}
+
+func (p *phase) defaultDocFactory() document.DocFactoryFunc {
+	return func() (document.Document, error) {
+		return p.helper.ExecutorDoc(ifc.ID{Name: p.apiObj.Name, Namespace: p.apiObj.Namespace})
+	}
+}
+
 // Executor returns executor interface associated with the phase
 func (p *phase) Executor() (ifc.Executor, error) {
-	executorDoc, err := p.helper.ExecutorDoc(ifc.ID{Name: p.apiObj.Name, Namespace: p.apiObj.Namespace})
+	return p.executor(p.defaultDocFactory(), p.defaultBundleFactory())
+}
+
+func (p *phase) executor(docFactory document.DocFactoryFunc,
+	bundleFactory document.BundleFactoryFunc) (ifc.Executor, error) {
+	executorDoc, err := docFactory()
 	if err != nil {
 		return nil, err
 	}
 
-	var bundleFactory document.BundleFactoryFunc = func() (document.Bundle, error) {
-		docRoot, bundleFactoryFuncErr := p.DocumentRoot()
-		if bundleFactoryFuncErr != nil {
-			return nil, bundleFactoryFuncErr
-		}
-		return document.NewBundleByPath(docRoot)
+	refGVK := schema.GroupVersionKind{
+		Group:   executorDoc.GetGroup(),
+		Version: executorDoc.GetVersion(),
+		Kind:    executorDoc.GetKind(),
 	}
-
-	refGVK := p.apiObj.Config.ExecutorRef.GroupVersionKind()
 	// Look for executor factory defined in registry
 	executorFactory, found := p.registry()[refGVK]
 	if !found {
@@ -134,18 +146,34 @@ func (p *phase) Run(ro ifc.RunOptions) error {
 
 // Validate makes sure that phase is properly configured
 func (p *phase) Validate() error {
-	// Check that we can render documents supplied to phase
-	err := p.Render(ioutil.Discard, false, ifc.RenderOptions{})
-	if err != nil {
-		return err
-	}
-
-	// Check that executor if properly configured
 	executor, err := p.Executor()
 	if err != nil {
 		return err
 	}
-	return executor.Validate()
+	if err = executor.Validate(); err != nil {
+		return err
+	}
+
+	buf := &bytes.Buffer{}
+	if err = executor.Render(buf, ifc.RenderOptions{FilterSelector: document.NewSelector()}); err != nil {
+		return err
+	}
+
+	defer p.processor.Close()
+
+	executor, err = p.executor(func() (document.Document, error) {
+		return p.helper.PhaseConfigBundle().
+			SelectOne(document.NewValidatorExecutorSelector())
+	}, document.BundleFactoryFromBytes(buf.Bytes()))
+	if err != nil {
+		return err
+	}
+
+	ch := make(chan events.Event)
+	go func() {
+		executor.Run(ch, ifc.RunOptions{})
+	}()
+	return p.processor.Process(ch)
 }
 
 // Render executor documents
@@ -219,7 +247,12 @@ type plan struct {
 
 // Validate makes sure that phase plan is properly configured
 func (p *plan) Validate() error {
-	for _, step := range p.apiObj.Phases {
+	util.Setenv(util.EnvVar{Key: v1alpha1.ValidatorPreventCleanup}, util.EnvVar{Key: v1alpha1.ValidatorPlanValidation})
+	for i, step := range p.apiObj.Phases {
+		log.Printf("validating phase: %s\n", step.Name)
+		if i == len(p.apiObj.Phases)-1 {
+			util.Unsetenv(util.EnvVar{Key: v1alpha1.ValidatorPreventCleanup})
+		}
 		phaseRunner, err := p.phaseClient.PhaseByID(ifc.ID{Name: step.Name})
 		if err != nil {
 			return err
@@ -239,7 +272,7 @@ func (p *plan) Run(ro ifc.RunOptions) error {
 			return err
 		}
 
-		log.Printf("executing phase: %s\n", step)
+		log.Printf("executing phase: %s\n", step.Name)
 		if err = phaseRunner.Run(ro); err != nil {
 			return err
 		}

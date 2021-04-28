@@ -190,6 +190,14 @@ func NewClusterctlMetadataSelector() Selector {
 		ClusterctlMetadataKind)
 }
 
+// NewValidatorExecutorSelector returns selector to get validator executor documents
+func NewValidatorExecutorSelector() Selector {
+	return NewSelector().ByGvk(DocumentValidationGroup,
+		DocumentValidationVersion,
+		DocumentValidationKind).
+		ByName(DocumentValidationName)
+}
+
 //GetSecretData returns data located with a given key of a given document
 func GetSecretData(docBundle Bundle, apiSelector types.Selector, key string) ([]byte, error) {
 	s := NewSelector()

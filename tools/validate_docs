@@ -29,8 +29,13 @@ TMP=$(KIND_URL=${KIND_URL} ./tools/document/get_kind.sh)
 export KIND=${TMP}/kind
 export KUBECTL_URL
 
+sites_to_skip=(az-test-site docker-test-site gcp-test-site openstack-test-site)
+
 for site_root in ${SITE_ROOTS}; do
   for site in $(ls ${MANIFEST_ROOT}/${site_root}); do
+      if [[ " ${sites_to_skip[@]} " =~ " ${site} " ]]; then
+         continue
+      fi
       echo -e "\nValidating site: ${MANIFEST_ROOT}/${site_root}/${site}\n****************"
       MANIFEST_ROOT=${MANIFEST_ROOT} SITE_ROOT=${site_root} SITE=${site} \
         ./tools/document/validate_site_docs.sh
