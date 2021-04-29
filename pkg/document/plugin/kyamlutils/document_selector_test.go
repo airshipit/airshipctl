@@ -33,6 +33,8 @@ func documents(t *testing.T) []*yaml.RNode {
 apiVersion: v1
 kind: Pod
 metadata:
+  labels:
+    app: pod1
   name: p1
   namespace: capi
 ---
@@ -69,6 +71,8 @@ func TestFilter(t *testing.T) {
 			expectedDocs: `apiVersion: v1
 kind: Pod
 metadata:
+  labels:
+    app: pod1
   name: p1
   namespace: capi`,
 		},
@@ -78,6 +82,8 @@ metadata:
 			expectedDocs: `apiVersion: v1
 kind: Pod
 metadata:
+  labels:
+    app: pod1
   name: p1
   namespace: capi
 ---
@@ -114,6 +120,8 @@ metadata:
 			expectedDocs: `apiVersion: v1
 kind: Pod
 metadata:
+  labels:
+    app: pod1
   name: p1
   namespace: capi
 ---
@@ -139,12 +147,70 @@ kind: Deployment
 metadata:
   name: p1`,
 		},
+		{
+			name:     "Get by label exact match",
+			selector: kyamlutils.DocumentSelector{}.ByLabel("app=pod1"),
+			expectedDocs: `apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: pod1
+  name: p1
+  namespace: capi`,
+		},
+		{
+			name:     "Get by empty label",
+			selector: kyamlutils.DocumentSelector{}.ByLabel(""),
+			expectedDocs: `apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: pod1
+  name: p1
+  namespace: capi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: p2
+  namespace: capi
+---
+apiVersion: v1beta1
+kind: Deployment
+metadata:
+  name: p1`,
+		},
+		{
+			name:     "Get by label not equal",
+			selector: kyamlutils.DocumentSelector{}.ByLabel("app!=pod1"),
+			expectedDocs: `apiVersion: v1
+kind: Pod
+metadata:
+  name: p2
+  namespace: capi
+---
+apiVersion: v1beta1
+kind: Deployment
+metadata:
+  name: p1`,
+		},
+		{
+			name:     "Get by label inclusion",
+			selector: kyamlutils.DocumentSelector{}.ByLabel("app in (pod1)"),
+			expectedDocs: `apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: pod1
+  name: p1
+  namespace: capi`,
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			filteredDocs, err := tc.selector.Filter(docs)
-			assert.Equal(t, err, tc.expectedErr)
+			assert.Equal(t, tc.expectedErr, err)
 
 			buf := &bytes.Buffer{}
 			err = kio.ByteWriter{Writer: buf}.Write(filteredDocs)
