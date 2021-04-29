@@ -39,16 +39,10 @@ builds:
     goos:
       - windows
 archives:
-  - name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+  - name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}"
     id: nix
     builds: [linux, darwin]
     format: tar.gz
-    files:
-      - none*
-  - name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-    id: windows
-    builds: [windows]
-    format: zip
     files:
       - none*
 release:
