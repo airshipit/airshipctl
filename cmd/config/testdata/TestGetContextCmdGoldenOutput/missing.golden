@@ -1,6 +1,6 @@
 Error: missing configuration: context with name 'contextMissing'
 Usage:
-  get-context [NAME] [flags]
+  get-context CONTEXT_NAME [flags]
 
 Aliases:
   get-context, get-contexts

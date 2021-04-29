@@ -8,7 +8,7 @@ Display information about contexts such as associated manifests, users, and clus
 
 
 ```
-airshipctl config get-context [NAME] [flags]
+airshipctl config get-context CONTEXT_NAME [flags]
 ```
 
 ### Examples

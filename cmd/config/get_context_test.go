@@ -50,7 +50,7 @@ func TestGetContextCmd(t *testing.T) {
 		},
 		{
 			Name:    "get-all-contexts",
-			CmdLine: fmt.Sprintf("%s %s", fooContext, barContext),
+			CmdLine: fmt.Sprintf("%s", barContext),
 			Cmd:     cmd.NewGetContextCommand(settings),
 		},
 		// This is not implemented yet
@@ -58,6 +58,7 @@ func TestGetContextCmd(t *testing.T) {
 			Name:    "get-multiple-contexts",
 			CmdLine: fmt.Sprintf("%s %s", fooContext, barContext),
 			Cmd:     cmd.NewGetContextCommand(settings),
+			Error:   fmt.Errorf("accepts at most 1 arg(s), received 2"),
 		},
 
 		{
