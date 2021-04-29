@@ -19,45 +19,44 @@ USE_PROXY           ?= false
 
 .PHONY: build
 build:
-	(cd image && go build -v -o $(GOBIN)/config-function .)
+	(go build -v -o $(GOBIN)/config-function .)
 
 .PHONY: all
 all: generate license build fix vet fmt test lint tidy
 
 .PHONY: fix
 fix:
-	(cd image && go fix ./...)
+	(go fix .)
 
 .PHONY: fmt
 fmt:
-	(cd image && go fmt ./...)
+	(go fmt .)
 
 .PHONY: generate
 generate:
 	(which $(GOBIN)/mdtogo || go get sigs.k8s.io/kustomize/cmd/mdtogo)
-	(cd image && GOBIN=$(GOBIN) go generate ./...)
+	(GOBIN=$(GOBIN) go generate .)
 
 .PHONY: tidy
 tidy:
-	(cd image && go mod tidy)
+	(go mod tidy)
 
 .PHONY: fix
 lint:
 	(which $(GOBIN)/golangci-lint || go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.19.1)
-	(cd image && $(GOBIN)/golangci-lint run ./...)
+	($(GOBIN)/golangci-lint run .)
 
 .PHONY: test
 test:
-	(cd image && go test -cover ./...)
+	(go test -cover .)
 
 .PHONY: vet
 vet:
-	(cd image && go vet ./...)
+	(go vet .)
 
 .PHONY: image
 image:
 ifeq ($(USE_PROXY), true)
-	cd image && \
 	docker build . --network=host \
 		--build-arg http_proxy=$(PROXY) \
 		--build-arg https_proxy=$(PROXY) \
@@ -68,7 +67,6 @@ ifeq ($(USE_PROXY), true)
 	  --tag $(DOCKER_IMAGE) \
 	  --force-rm=$(DOCKER_FORCE_CLEAN)
 else
-	cd image && \
 	docker build . --network=host \
 	    --tag $(DOCKER_IMAGE) \
 	    --force-rm=$(DOCKER_FORCE_CLEAN)

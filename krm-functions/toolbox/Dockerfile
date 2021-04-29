@@ -20,9 +20,9 @@ RUN chmod +x /kubectl /calicoctl
 FROM ${GO_IMAGE} as builder
 ENV CGO_ENABLED=0
 WORKDIR /go/src/
-COPY krm-functions/toolbox/image/go.mod .
+COPY image/go.mod .
 RUN /usr/local/go/bin/go mod download
-COPY krm-functions/toolbox/main.go .
+COPY main.go .
 RUN /usr/local/go/bin/go build -v -o /usr/local/bin/config-function ./
 
 FROM ${PLUGINS_RELEASE_IMAGE} as release
