@@ -158,10 +158,11 @@ func (e *KubeApplierExecutor) Status() (sts ifc.ExecutorStatus, err error) {
 		return sts, err
 	}
 	log.Debug("Getting kubeconfig file information from kubeconfig provider")
-	path, _, err := e.kubeconfig.GetFile()
+	path, cleanup, err := e.kubeconfig.GetFile()
 	if err != nil {
 		return sts, err
 	}
+	defer cleanup()
 
 	cf := provider.NewProvider(utils.FactoryFromKubeConfig(path, ctx))
 	rm, err := cf.Factory().ToRESTMapper()
