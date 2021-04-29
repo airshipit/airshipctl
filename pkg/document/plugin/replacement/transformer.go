@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/kustomize/api/types"
 	"sigs.k8s.io/kustomize/kyaml/kio"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 
@@ -57,8 +56,11 @@ func New(obj map[string]interface{}) (kio.Filter, error) {
 		if r.Source == nil {
 			return nil, ErrBadConfiguration{Msg: "`from` must be specified in one replacement"}
 		}
-		if r.Target == nil {
+		if r.Target == nil && r.Targets == nil {
 			return nil, ErrBadConfiguration{Msg: "`to` must be specified in one replacement"}
+		}
+		if r.Target != nil && r.Targets != nil {
+			return nil, ErrBadConfiguration{Msg: "only target OR targets is allowed in one replacement, not both"}
 		}
 		if r.Source.ObjRef != nil && r.Source.Value != "" {
 			return nil, ErrBadConfiguration{Msg: "only one of fieldref and value is allowed in one replacement"}
@@ -73,15 +75,22 @@ func (p *plugin) Filter(items []*yaml.RNode) ([]*yaml.RNode, error) {
 		if err != nil {
 			return nil, err
 		}
-
-		if err := replace(items, r.Target, val); err != nil {
-			return nil, err
+		if r.Target != nil {
+			if err := replace(items, r.Target, val); err != nil {
+				return nil, err
+			}
+		}
+		// range handles nil case as empty list
+		for _, t := range r.Targets {
+			if err := replace(items, t, val); err != nil {
+				return nil, err
+			}
 		}
 	}
 	return items, nil
 }
 
-func getValue(items []*yaml.RNode, source *types.ReplSource) (*yaml.RNode, error) {
+func getValue(items []*yaml.RNode, source *airshipv1.ReplSource) (*yaml.RNode, error) {
 	if source.Value != "" {
 		return yaml.NewScalarRNode(source.Value), nil
 	}
@@ -128,7 +137,7 @@ func mutateField(rnSource *yaml.RNode) func([]*yaml.RNode) error {
 	}
 }
 
-func replace(items []*yaml.RNode, target *types.ReplTarget, value *yaml.RNode) error {
+func replace(items []*yaml.RNode, target *airshipv1.ReplTarget, value *yaml.RNode) error {
 	targets, err := kyamlutils.DocumentSelector{}.
 		ByGVK(target.ObjRef.Group, target.ObjRef.Version, target.ObjRef.Kind).
 		ByName(target.ObjRef.Name).
