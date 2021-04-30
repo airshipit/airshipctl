@@ -41,8 +41,11 @@ ifneq ($(strip $(DOCKER_BASE_RELEASE_IMAGE)),)
 DOCKER_CMD_FLAGS    += --build-arg RELEASE_IMAGE=$(strip $(DOCKER_BASE_RELEASE_IMAGE))
 endif
 # use this variable for image labels added in internal build process
-LABEL               ?= org.airshipit.build=community
 COMMIT              ?= $(shell git rev-parse HEAD)
+LABEL               ?= org.airshipit.build=community
+LABEL               += --label "org.opencontainers.image.revision=$(COMMIT)"
+LABEL               += --label "org.opencontainers.image.created=$(shell date --rfc-3339=seconds --utc)"
+LABEL               += --label "org.opencontainers.image.title=$(DOCKER_IMAGE_NAME)"
 
 # go options
 PKG                 ?= ./...
@@ -87,7 +90,6 @@ export KUBECTL_URL  ?= https://storage.googleapis.com/kubernetes-release/release
 # Plugins options
 PLUGINS_DIR         := krm-functions
 PLUGINS             := $(subst $(PLUGINS_DIR)/,,$(wildcard $(PLUGINS_DIR)/*))
-PLUGINS_IMAGE_TGT   := $(foreach tgt,$(PLUGINS),docker-image-$(tgt))
 # use this variables to override base images in internal build process
 ifneq ($(strip $(DOCKER_BASE_PLUGINS_BUILD_IMAGE)),)
 DOCKER_CMD_FLAGS    += --build-arg PLUGINS_BUILD_IMAGE=$(strip $(DOCKER_BASE_PLUGINS_BUILD_IMAGE))
@@ -154,15 +156,12 @@ golint:
 
 .PHONY: images
 images: docker-image
-images: $(PLUGINS_IMAGE_TGT)
+images: docker-image-kubeval-validator docker-image-cloud-init docker-image-replacement-transformer docker-image-templater docker-image-toolbox
 
 .PHONY: docker-image
 docker-image:
 	@docker build . $(DOCKER_CMD_FLAGS) \
 		--label $(LABEL) \
-		--label "org.opencontainers.image.revision=$(COMMIT)" \
-		--label "org.opencontainers.image.created=$(shell date --rfc-3339=seconds --utc)" \
-		--label "org.opencontainers.image.title=$(DOCKER_IMAGE_NAME)" \
 		--target $(DOCKER_TARGET_STAGE) \
 		--build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET) \
 		--tag $(DOCKER_IMAGE)
@@ -170,20 +169,54 @@ ifeq ($(PUBLISH), true)
 	@docker push $(DOCKER_IMAGE)
 endif
 
-.PHONY: $(PLUGINS_IMAGE_TGT)
-$(PLUGINS_IMAGE_TGT):
-	$(eval plugin_name=$(subst docker-image-,,$@))
-	@docker build $(PLUGINS_DIR)/$(plugin_name) $(DOCKER_CMD_FLAGS) \
+.PHONY: docker-image-templater
+docker-image-templater:
+	@docker build $(PLUGINS_DIR)/templater $(DOCKER_CMD_FLAGS) \
 		--label $(LABEL) \
-		--label "org.opencontainers.image.revision=$(COMMIT)" \
-		--label "org.opencontainers.image.created=$(shell date --rfc-3339=seconds --utc)" \
-		--label "org.opencontainers.image.title=$(DOCKER_IMAGE_NAME)" \
 		--target $(DOCKER_TARGET_STAGE) \
-		--build-arg MAKE_TARGET=$(plugin_name) \
-		--build-arg BINARY=$(plugin_name) \
-		--tag $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/$(plugin_name):$(DOCKER_IMAGE_TAG)
+		--tag $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/templater:$(DOCKER_IMAGE_TAG)
 ifeq ($(PUBLISH), true)
-	@docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/$(plugin_name):$(DOCKER_IMAGE_TAG)
+	@docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/templater:$(DOCKER_IMAGE_TAG)
+endif
+
+.PHONY: docker-image-replacement-transformer
+docker-image-replacement-transformer:
+	@docker build $(PLUGINS_DIR)/replacement-transformer $(DOCKER_CMD_FLAGS) \
+		--label $(LABEL) \
+		--target $(DOCKER_TARGET_STAGE) \
+		--tag $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/replacement-transformer:$(DOCKER_IMAGE_TAG)
+ifeq ($(PUBLISH), true)
+	@docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/replacement-transformer:$(DOCKER_IMAGE_TAG)
+endif
+
+.PHONY: docker-image-cloud-init
+docker-image-cloud-init:
+	@docker build $(PLUGINS_DIR)/cloud-init $(DOCKER_CMD_FLAGS) \
+		--label $(LABEL) \
+		--target $(DOCKER_TARGET_STAGE) \
+		--tag $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/cloud-init:$(DOCKER_IMAGE_TAG)
+ifeq ($(PUBLISH), true)
+	@docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/cloud-init:$(DOCKER_IMAGE_TAG)
+endif
+
+.PHONY: docker-image-kubeval-validator
+docker-image-kubeval-validator:
+	@docker build $(PLUGINS_DIR)/kubeval-validator $(DOCKER_CMD_FLAGS) \
+		--label $(LABEL) \
+		--target $(DOCKER_TARGET_STAGE) \
+		--tag $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/kubeval-validator:$(DOCKER_IMAGE_TAG)
+ifeq ($(PUBLISH), true)
+	@docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/kubeval-validator:$(DOCKER_IMAGE_TAG)
+endif
+
+.PHONY: docker-image-toolbox
+docker-image-toolbox:
+	@docker build $(PLUGINS_DIR)/toolbox $(DOCKER_CMD_FLAGS) \
+		--label $(LABEL) \
+		--target $(DOCKER_TARGET_STAGE) \
+		--tag $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/toolbox:$(DOCKER_IMAGE_TAG)
+ifeq ($(PUBLISH), true)
+	@docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/toolbox:$(DOCKER_IMAGE_TAG)
 endif
 
 .PHONY: print-docker-image-tag
