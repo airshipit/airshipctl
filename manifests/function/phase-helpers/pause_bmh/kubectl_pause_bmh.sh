@@ -17,6 +17,5 @@ set -xe
 echo "Annotating BMH objects with a pause label in cluster with kubectl context ${KCTL_CONTEXT}" 1>&2
 kubectl annotate \
   --context $KCTL_CONTEXT \
-  --namespace $CLUSTER_NAMESPACE \
   --overwrite \
   -f $RENDERED_BUNDLE_PATH baremetalhost.metal3.io/paused=true 1>&2
