@@ -391,3 +391,22 @@ configRef:
   apiVersion: airshipit.org/v1alpha1
   kind: KubevalOptions
   name: kubeval-options
+---
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: kubectl-pause-bmh
+  labels:
+    airshipit.org/deploy-k8s: "false"
+spec:
+  image: quay.io/airshipit/toolbox:latest
+  hostNetwork: true
+  envVars:
+  - CLUSTER_NAMESPACE=default
+  - RESOURCE_GROUP_FILTER=metal3.io
+  - RESOURCE_VERSION_FILTER=v1alpha1
+  - RESOURCE_KIND_FILTER=BareMetalHost
+configRef:
+  kind: ConfigMap
+  name: kubectl-pause-bmh
+  apiVersion: v1

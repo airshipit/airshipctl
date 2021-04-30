@@ -366,3 +366,15 @@ config:
     apiVersion: airshipit.org/v1alpha1
     kind: GenericContainer
     name: kubectl-wait-pods
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: kubectl-pause-bmh
+  clusterName: ephemeral-cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: kubectl-pause-bmh
+  documentEntryPoint: ephemeral/controlplane

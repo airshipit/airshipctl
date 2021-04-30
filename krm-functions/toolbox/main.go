@@ -28,16 +28,23 @@ import (
 	"sigs.k8s.io/kustomize/kyaml/kio"
 	kyaml "sigs.k8s.io/kustomize/kyaml/yaml"
 
+	"opendev.org/airship/airshipctl/pkg/document/plugin/kyamlutils"
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 const (
 	// EnvRenderedBundlePath will be passed to the script, it will contain path to the rendered bundle
 	EnvRenderedBundlePath = "RENDERED_BUNDLE_PATH"
-	scriptPath            = "script.sh"
-	scriptKey             = "script"
-	bundleFile            = "bundle.yaml"
-	workdir               = "/tmp"
+	// ResourceGroupFilter used for filtering input bundle by document group
+	ResourceGroupFilter = "RESOURCE_GROUP_FILTER"
+	// ResourceVersionFilter used for filtering input bundle by document version
+	ResourceVersionFilter = "RESOURCE_VERSION_FILTER"
+	// ResourceKindFilter used for filtering input bundle by document kind
+	ResourceKindFilter = "RESOURCE_KIND_FILTER"
+	scriptPath         = "script.sh"
+	scriptKey          = "script"
+	bundleFile         = "bundle.yaml"
+	workdir            = "/tmp"
 )
 
 func main() {
@@ -137,6 +144,11 @@ func (c *ScriptRunner) writeBundle(path string, items []*kyaml.RNode) error {
 	}
 	defer f.Close()
 
+	items, err = c.FilterBundle(items)
+	if err != nil {
+		return err
+	}
+
 	pipeline := kio.Pipeline{
 		Outputs: []kio.Writer{
 			kio.ByteWriter{
@@ -149,4 +161,16 @@ func (c *ScriptRunner) writeBundle(path string, items []*kyaml.RNode) error {
 	}
 
 	return pipeline.Execute()
+}
+
+// FilterBundle uses for filtering input documents
+func (c *ScriptRunner) FilterBundle(items []*kyaml.RNode) ([]*kyaml.RNode, error) {
+	group := os.Getenv(ResourceGroupFilter)
+	version := os.Getenv(ResourceVersionFilter)
+	kind := os.Getenv(ResourceKindFilter)
+	log.Printf("Filtering input bundle by Group: %s, Version: %s, Kind: %s",
+		group, version, kind)
+	return kyamlutils.DocumentSelector{}.
+		ByGVK(group, version, kind).
+		Filter(items)
 }
