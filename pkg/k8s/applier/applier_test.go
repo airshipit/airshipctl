@@ -125,11 +125,18 @@ func TestApplierRun(t *testing.T) {
 				a.Poller = tt.poller
 			}
 			// start writing to channel
-			go a.ApplyBundle(tt.bundle, opts)
+			go func(bundle document.Bundle, applyOpts applier.ApplyOptions) {
+				// since applier doesn't close channel anymore, we need to close it
+				// after it applier is finished
+				defer close(eventChan)
+				a.ApplyBundle(bundle, applyOpts)
+			}(tt.bundle, opts)
+
 			var airEvents []events.Event
 			for e := range eventChan {
 				airEvents = append(airEvents, e)
 			}
+
 			var errs []error
 			for _, e := range airEvents {
 				if e.Type == events.ErrorType {
