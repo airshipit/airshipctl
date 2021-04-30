@@ -20,6 +20,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -113,6 +114,63 @@ func TestDefaultStatusFunction(t *testing.T) {
 		},
 		Config: v1alpha1.PhaseConfig{
 			ExecutorRef: &v1.ObjectReference{Kind: "test"},
+		},
+	}
+	rs := f(printable)
+	assert.Equal(t, expectedObj, rs.Resource.Object)
+}
+
+func TestPrintPlanListTable(t *testing.T) {
+	plans := []*v1alpha1.PhasePlan{
+		{
+			TypeMeta: metav1.TypeMeta{
+				Kind: "PhasePlan",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "p",
+			},
+			Description: "description",
+			Phases: []v1alpha1.PhaseStep{
+				{
+					Name: "phase",
+				},
+			},
+		},
+	}
+	tests := []struct {
+		name  string
+		plans []*v1alpha1.PhasePlan
+	}{
+		{
+			name:  "Success print plan list",
+			plans: plans,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := &bytes.Buffer{}
+			err := PrintPlanListTable(w, tt.plans)
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestDefaultStatusFunctionForPhasePlan(t *testing.T) {
+	f := util.DefaultStatusFunction()
+	expectedObj := map[string]interface{}{
+		"kind": "PhasePlan",
+		"metadata": map[string]interface{}{
+			"name":              "p1",
+			"creationTimestamp": nil,
+		},
+	}
+	printable := &v1alpha1.PhasePlan{
+		TypeMeta: metav1.TypeMeta{
+			Kind: "PhasePlan",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "p1",
 		},
 	}
 	rs := f(printable)

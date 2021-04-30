@@ -324,12 +324,25 @@ func TestTreeCommand(t *testing.T) {
 }
 
 func TestPlanListCommand(t *testing.T) {
+	yamlOutput := `---
+- apiVersion: airshipit.org/v1alpha1
+  description: Default phase plan
+  kind: PhasePlan
+  metadata:
+    creationTimestamp: null
+    name: phasePlan
+  phases:
+  - name: phase
+...
+`
 	testErr := fmt.Errorf(testFactoryErr)
 	testCases := []struct {
-		name        string
-		factory     config.Factory
-		expectedOut [][]byte
-		expectedErr string
+		name         string
+		factory      config.Factory
+		expectedOut  [][]byte
+		expectedErr  string
+		Format       string
+		expectedYaml string
 	}{
 		{
 			name: "Error config factory",
@@ -338,13 +351,27 @@ func TestPlanListCommand(t *testing.T) {
 			},
 			expectedErr: testFactoryErr,
 			expectedOut: [][]byte{{}},
+			Format:      "table",
 		},
+		{
+			name: "Error new helper",
+			factory: func() (*config.Config, error) {
+				return &config.Config{
+					CurrentContext: "does not exist",
+					Contexts:       make(map[string]*config.Context),
+				}, nil
+			},
+			expectedErr: testNewHelperErr,
+			Format:      "table",
+			expectedOut: [][]byte{{}},
+		},
+
 		{
 			name: "List phases",
 			factory: func() (*config.Config, error) {
 				conf := config.NewConfig()
 				manifest := conf.Manifests[config.AirshipDefaultManifest]
-				manifest.TargetPath = "testdata"
+				manifest.TargetPath = testTargetPath
 				manifest.MetadataPath = testMetadataPath
 				manifest.Repositories[config.DefaultTestPhaseRepo].URLString = ""
 				return conf, nil
@@ -359,6 +386,20 @@ func TestPlanListCommand(t *testing.T) {
 					"                              "),
 				{},
 			},
+			Format: "table",
+		},
+		{
+			name: "Valid yaml input format",
+			factory: func() (*config.Config, error) {
+				conf := config.NewConfig()
+				manifest := conf.Manifests[config.AirshipDefaultManifest]
+				manifest.TargetPath = testTargetPath
+				manifest.MetadataPath = "metadata.yaml"
+				manifest.Repositories[config.DefaultTestPhaseRepo].URLString = ""
+				return conf, nil
+			},
+			Format:       "yaml",
+			expectedYaml: yamlOutput,
 		},
 	}
 	for _, tc := range testCases {
@@ -368,6 +409,7 @@ func TestPlanListCommand(t *testing.T) {
 			cmd := phase.PlanListCommand{
 				Factory: tt.factory,
 				Writer:  buf,
+				Options: phase.PlanListFlags{FormatType: tt.Format},
 			}
 			err := cmd.RunE()
 			if tt.expectedErr != "" {
@@ -377,8 +419,13 @@ func TestPlanListCommand(t *testing.T) {
 				assert.NoError(t, err)
 			}
 			out, err := ioutil.ReadAll(buf)
+			fmt.Print(string(out))
 			require.NoError(t, err)
-			assert.Equal(t, tt.expectedOut, bytes.Split(out, []byte("\n")))
+			if tt.Format == "yaml" {
+				assert.Equal(t, tt.expectedYaml, string(out))
+			} else {
+				assert.Equal(t, tt.expectedOut, bytes.Split(out, []byte("\n")))
+			}
 		})
 	}
 }
@@ -415,7 +462,7 @@ func TestPlanRunCommand(t *testing.T) {
 				conf.Manifests = map[string]*config.Manifest{
 					"manifest": {
 						MetadataPath:        testMetadataPath,
-						TargetPath:          "testdata",
+						TargetPath:          testTargetPath,
 						PhaseRepositoryName: config.DefaultTestPhaseRepo,
 						Repositories: map[string]*config.Repository{
 							config.DefaultTestPhaseRepo: {

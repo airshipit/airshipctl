@@ -15,17 +15,12 @@
 package phase
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/cli-utils/pkg/print/table"
-
-	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
@@ -33,6 +28,13 @@ import (
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	"opendev.org/airship/airshipctl/pkg/util"
 	"opendev.org/airship/airshipctl/pkg/util/yaml"
+)
+
+const (
+	// TableOutputFormat table
+	TableOutputFormat = "table"
+	// YamlOutputFormat yaml
+	YamlOutputFormat = "yaml"
 )
 
 // GenericRunFlags generic options for run command
@@ -85,7 +87,7 @@ type ListCommand struct {
 
 // RunE runs a phase list command
 func (c *ListCommand) RunE() error {
-	if c.OutputFormat != "table" && c.OutputFormat != "yaml" {
+	if c.OutputFormat != TableOutputFormat && c.OutputFormat != YamlOutputFormat {
 		return phaseerrors.ErrInvalidFormat{RequestedFormat: c.OutputFormat}
 	}
 	cfg, err := c.Factory()
@@ -103,7 +105,7 @@ func (c *ListCommand) RunE() error {
 	if err != nil {
 		return err
 	}
-	if c.OutputFormat == "table" {
+	if c.OutputFormat == TableOutputFormat {
 		return PrintPhaseListTable(c.Writer, phaseList)
 	}
 	return yaml.WriteOut(c.Writer, phaseList)
@@ -160,14 +162,23 @@ func (c *TreeCommand) RunE() error {
 	return nil
 }
 
+// PlanListFlags flags given for plan list command
+type PlanListFlags struct {
+	FormatType string
+}
+
 // PlanListCommand phase list command
 type PlanListCommand struct {
+	Options PlanListFlags
 	Factory config.Factory
 	Writer  io.Writer
 }
 
 // RunE runs a plan list command
 func (c *PlanListCommand) RunE() error {
+	if c.Options.FormatType != TableOutputFormat && c.Options.FormatType != YamlOutputFormat {
+		return phaseerrors.ErrInvalidFormat{RequestedFormat: c.Options.FormatType}
+	}
 	cfg, err := c.Factory()
 	if err != nil {
 		return err
@@ -178,42 +189,18 @@ func (c *PlanListCommand) RunE() error {
 		return err
 	}
 
-	phases, err := helper.ListPlans()
+	phasePlans, err := helper.ListPlans()
 	if err != nil {
 		return err
 	}
-
-	rt, err := util.NewResourceTable(phases, util.DefaultStatusFunction())
-	if err != nil {
-		return err
+	switch {
+	case c.Options.FormatType == YamlOutputFormat:
+		return yaml.WriteOut(c.Writer, phasePlans)
+	case c.Options.FormatType == TableOutputFormat:
+		return PrintPlanListTable(c.Writer, phasePlans)
+	default:
+		return PrintPlanListTable(c.Writer, phasePlans)
 	}
-
-	printer := util.DefaultTablePrinter(c.Writer, nil)
-	descriptionCol := table.ColumnDef{
-		ColumnName:   "description",
-		ColumnHeader: "DESCRIPTION",
-		ColumnWidth:  200,
-		PrintResourceFunc: func(w io.Writer, width int, r table.Resource) (int, error) {
-			rs := r.ResourceStatus()
-			if rs == nil {
-				return 0, nil
-			}
-			plan := &v1alpha1.PhasePlan{}
-			err := runtime.DefaultUnstructuredConverter.FromUnstructured(rs.Resource.Object, plan)
-			if err != nil {
-				return 0, err
-			}
-			txt := plan.Description
-			if len(txt) > width {
-				txt = txt[:width]
-			}
-			_, err = fmt.Fprint(w, txt)
-			return len(txt), err
-		},
-	}
-	printer.Columns = append(printer.Columns, descriptionCol)
-	printer.PrintTable(rt, 0)
-	return nil
 }
 
 // PlanRunFlags options for phase run command
@@ -258,7 +245,7 @@ type ClusterListCommand struct {
 
 // RunE executes cluster list command
 func (c *ClusterListCommand) RunE() error {
-	if c.Format != "table" && c.Format != "name" {
+	if c.Format != TableOutputFormat && c.Format != "name" {
 		return phaseerrors.ErrInvalidOutputFormat{RequestedFormat: c.Format}
 	}
 	cfg, err := c.Factory()

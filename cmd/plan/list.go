@@ -25,20 +25,35 @@ const (
 	listLong = `
 List life-cycle plans which were defined in document model.
 `
+	listExample = `
+#list plan
+airshipctl plan list
+
+#list plan(yaml output format)
+airshipctl plan list -o yaml
+
+#list plan(table output format)
+airshipctl plan list -o table`
 )
 
 // NewListCommand creates a command which prints available phase plans
 func NewListCommand(cfgFactory config.Factory) *cobra.Command {
-	planCmd := &phase.PlanListCommand{Factory: cfgFactory}
+	p := &phase.PlanListCommand{Factory: cfgFactory}
 
 	listCmd := &cobra.Command{
-		Use:   "list",
-		Short: "List plans",
-		Long:  listLong[1:],
+		Use:     "list",
+		Short:   "List plans",
+		Long:    listLong[1:],
+		Example: listExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			planCmd.Writer = cmd.OutOrStdout()
-			return planCmd.RunE()
+			p.Writer = cmd.OutOrStdout()
+			return p.RunE()
 		},
 	}
+	flags := listCmd.Flags()
+	flags.StringVarP(&p.Options.FormatType,
+		"output", "o", "table", "'table' "+
+			"and 'yaml' are available "+
+			"output formats")
 	return listCmd
 }

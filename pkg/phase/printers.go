@@ -101,3 +101,38 @@ func phaseFromResource(r table.Resource) (*v1alpha1.Phase, error) {
 	phase := &v1alpha1.Phase{}
 	return phase, runtime.DefaultUnstructuredConverter.FromUnstructured(rs.Resource.Object, phase)
 }
+
+//PrintPlanListTable prints plan list table
+func PrintPlanListTable(w io.Writer, phasePlans []*v1alpha1.PhasePlan) error {
+	rt, err := util.NewResourceTable(phasePlans, util.DefaultStatusFunction())
+	if err != nil {
+		return err
+	}
+
+	printer := util.DefaultTablePrinter(w, nil)
+	descriptionCol := table.ColumnDef{
+		ColumnName:   "description",
+		ColumnHeader: "DESCRIPTION",
+		ColumnWidth:  200,
+		PrintResourceFunc: func(w io.Writer, width int, r table.Resource) (int, error) {
+			rs := r.ResourceStatus()
+			if rs == nil {
+				return 0, nil
+			}
+			plan := &v1alpha1.PhasePlan{}
+			err := runtime.DefaultUnstructuredConverter.FromUnstructured(rs.Resource.Object, plan)
+			if err != nil {
+				return 0, err
+			}
+			txt := plan.Description
+			if len(txt) > width {
+				txt = txt[:width]
+			}
+			_, err = fmt.Fprintf(w, txt)
+			return len(txt), err
+		},
+	}
+	printer.Columns = append(printer.Columns, descriptionCol)
+	printer.PrintTable(rt, 0)
+	return nil
+}
