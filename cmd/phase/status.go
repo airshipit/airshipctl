@@ -42,7 +42,7 @@ func NewStatusCommand(cfgFactory config.Factory) *cobra.Command {
 	statusCmd := &cobra.Command{
 		Use:     "status PHASE_NAME",
 		Short:   "Airshipctl command to show status of the phase",
-		Long:    statusLong,
+		Long:    statusLong[1:],
 		Args:    cobra.ExactArgs(1),
 		Example: statusExample,
 		RunE: func(cmd *cobra.Command, args []string) error {

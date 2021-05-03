@@ -41,7 +41,7 @@ func NewValidateCommand(cfgFactory config.Factory) *cobra.Command {
 	validCmd := &cobra.Command{
 		Use:     "validate PHASE_NAME",
 		Short:   "Airshipctl command to validate phase and its documents",
-		Long:    validLong,
+		Long:    validLong[1:],
 		Args:    cobra.ExactArgs(1),
 		Example: validExample,
 		RunE: func(cmd *cobra.Command, args []string) error {

@@ -76,7 +76,7 @@ func NewBaremetalCommand(cfgFactory config.Factory) *cobra.Command {
 	baremetalRootCmd := &cobra.Command{
 		Use:   "baremetal",
 		Short: "Airshipctl command to manage bare metal host(s)",
-		Long:  baremetalLong,
+		Long:  baremetalLong[1:],
 	}
 
 	baremetalRootCmd.AddCommand(NewEjectMediaCommand(cfgFactory, options))

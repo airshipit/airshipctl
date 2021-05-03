@@ -1,4 +1,3 @@
-
 Creates or modifies management config information based on the MGMT_CONFIG_NAME passed. The allowed set
 of optional flags are management-type, system-action-retries and system-reboot-delay. Use --use-proxy
 and --insecure to enable proxy and insecure options respectively.

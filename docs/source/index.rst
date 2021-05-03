@@ -32,7 +32,7 @@ Welcome to airshipctl's Documentation!
    testing-guidelines
    virtual_redfish_bmc
    hardware_profile
-   Commands <cli/airshipctl>
+   cli/index
    providers/cluster_api_docker
    providers/cluster_api_openstack
    providers/cluster_api_gcp

@@ -44,7 +44,7 @@ func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
 	runCmd := &cobra.Command{
 		Use:     "run PHASE_NAME",
 		Short:   "Airshipctl command to run phase",
-		Long:    runLong,
+		Long:    runLong[1:],
 		Args:    cobra.ExactArgs(1),
 		Example: runExample,
 		RunE: func(cmd *cobra.Command, args []string) error {

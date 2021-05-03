@@ -29,7 +29,7 @@ func NewDocumentCommand(cfgFactory config.Factory) *cobra.Command {
 	documentRootCmd := &cobra.Command{
 		Use:   "document",
 		Short: "Airshipctl command to manage site manifest documents",
-		Long:  documentLong,
+		Long:  documentLong[1:],
 	}
 
 	documentRootCmd.AddCommand(NewPullCommand(cfgFactory))

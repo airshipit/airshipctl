@@ -1,4 +1,3 @@
-
 Displays a specific management config information, or all defined management configs if no name is provided.
 The information relates to reboot-delays and retry in seconds along with management-type that has to be used.
 

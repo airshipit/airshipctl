@@ -1,4 +1,3 @@
-
 Validates phase and its documents. To list the phases associated with a site, run 'airshipctl phase list'.
 
 Usage:

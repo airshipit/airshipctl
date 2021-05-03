@@ -1,4 +1,3 @@
-
 Run a phase such as controlplane-ephemeral, remotedirect-ephemeral, initinfra-ephemeral, etc...
 To list the phases associated with a site, run 'airshipctl phase list'.
 

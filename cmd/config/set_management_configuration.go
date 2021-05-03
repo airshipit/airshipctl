@@ -62,7 +62,7 @@ func NewSetManagementConfigCommand(cfgFactory config.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "set-management-config MGMT_CONFIG_NAME",
 		Short:   "Airshipctl command to create/modify out-of-band management configuration in airshipctl config file",
-		Long:    setManagementConfigLong,
+		Long:    setManagementConfigLong[1:],
 		Example: setManagementConfigExample,
 		Args:    cobra.ExactArgs(1),
 		RunE:    setManagementConfigRunE(cfgFactory, o),

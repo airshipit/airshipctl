@@ -47,7 +47,7 @@ func NewRenderCommand(cfgFactory config.Factory) *cobra.Command {
 	renderCmd := &cobra.Command{
 		Use:     "render PHASE_NAME",
 		Short:   "Airshipctl command to render phase documents from model",
-		Long:    renderLong,
+		Long:    renderLong[1:],
 		Example: renderExample,
 		Args:    RenderArgs(filterOptions),
 		RunE: func(cmd *cobra.Command, args []string) error {

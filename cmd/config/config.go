@@ -30,7 +30,7 @@ func NewConfigCommand(cfgFactory config.Factory) *cobra.Command {
 		Use:                   "config",
 		DisableFlagsInUseLine: true,
 		Short:                 "Airshipctl command to manage airshipctl config file",
-		Long:                  configLong,
+		Long:                  configLong[1:],
 	}
 
 	configRootCmd.AddCommand(NewGetContextCommand(cfgFactory))

@@ -41,7 +41,7 @@ func NewListCommand(cfgFactory config.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "list",
 		Short:   "Airshipctl command to get and list defined clusters",
-		Long:    listLong,
+		Long:    listLong[1:],
 		Example: listExample,
 		RunE:    listRunE(o),
 	}

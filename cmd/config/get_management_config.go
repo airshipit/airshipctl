@@ -43,7 +43,7 @@ func NewGetManagementConfigCommand(cfgFactory config.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "get-management-config MGMT_CONFIG_NAME",
 		Short:   "Airshipctl command to view management config(s) defined in the airshipctl config",
-		Long:    getManagementConfigLong,
+		Long:    getManagementConfigLong[1:],
 		Example: getManagementConfigExample,
 		Args:    cobra.MaximumNArgs(1),
 		Aliases: []string{"get-management-configs"},
