@@ -147,10 +147,82 @@ func TestPhaseValidate(t *testing.T) {
 		registryFunc phase.ExecutorRegistry
 	}{
 		{
-			name:         "Success fake executor",
-			configFunc:   testConfig,
-			phaseID:      ifc.ID{Name: "capi_init"},
-			registryFunc: fakeRegistry,
+			name: "Success fake executor",
+			configFunc: func(t *testing.T) *config.Config {
+				cfg := testConfig(t)
+				cfg.Manifests["dummy_manifest"].MetadataPath = "valid_validation_site/metadata.yaml"
+				return cfg
+			},
+			phaseID: ifc.ID{Name: "kube_apply"},
+			registryFunc: func() map[schema.GroupVersionKind]ifc.ExecutorFactory {
+				gvk := schema.GroupVersionKind{
+					Group:   "airshipit.org",
+					Version: "v1alpha1",
+					Kind:    "KubernetesApply",
+				}
+				return map[schema.GroupVersionKind]ifc.ExecutorFactory{
+					gvk: fakeExecFactory,
+				}
+			},
+		},
+		{
+			name: "invalid CRD entrypoint - location not exists",
+			configFunc: func(t *testing.T) *config.Config {
+				cfg := testConfig(t)
+				cfg.Manifests["dummy_manifest"].MetadataPath = "valid_validation_site/metadata.yaml"
+				return cfg
+			},
+			phaseID: ifc.ID{Name: "kube_apply_noentrypoint"},
+			registryFunc: func() map[schema.GroupVersionKind]ifc.ExecutorFactory {
+				gvk := schema.GroupVersionKind{
+					Group:   "airshipit.org",
+					Version: "v1alpha1",
+					Kind:    "KubernetesApply",
+				}
+				return map[schema.GroupVersionKind]ifc.ExecutorFactory{
+					gvk: fakeExecFactory,
+				}
+			},
+			errContains: "evalsymlink failure",
+		},
+		{
+			name: "no CRD documents found",
+			configFunc: func(t *testing.T) *config.Config {
+				cfg := testConfig(t)
+				cfg.Manifests["dummy_manifest"].MetadataPath = "valid_validation_site/metadata.yaml"
+				return cfg
+			},
+			phaseID: ifc.ID{Name: "kube_apply"},
+			registryFunc: func() map[schema.GroupVersionKind]ifc.ExecutorFactory {
+				gvk := schema.GroupVersionKind{
+					Group:   "airshipit.org",
+					Version: "v1alpha1",
+					Kind:    "KubernetesApply",
+				}
+				return map[schema.GroupVersionKind]ifc.ExecutorFactory{
+					gvk: fakeExecFactory,
+				}
+			},
+			errContains: "",
+		},
+		{
+			name: "validator executor not found",
+			configFunc: func(t *testing.T) *config.Config {
+				cfg := testConfig(t)
+				cfg.Manifests["dummy_manifest"].MetadataPath = "invalid_validation_site/metadata.yaml"
+				return cfg
+			},
+			phaseID: ifc.ID{Name: "kube_apply"},
+			registryFunc: func() map[schema.GroupVersionKind]ifc.ExecutorFactory {
+				gvk := schema.GroupVersionKind{
+					Group:   "airshipit.org",
+					Version: "v1alpha1",
+					Kind:    "KubernetesApply",
+				}
+				return map[schema.GroupVersionKind]ifc.ExecutorFactory{
+					gvk: fakeExecFactory,
+				}
+			},
 			errContains: `document filtered by selector [Group="airshipit.org", Version="v1alpha1", ` +
 				`Kind="GenericContainer", Name="document-validation"] found no documents`,
 		},
@@ -204,7 +276,7 @@ func TestPhaseValidate(t *testing.T) {
 			err = p.Validate()
 			if tt.errContains != "" {
 				require.Error(t, err)
-				assert.Equal(t, tt.errContains, err.Error())
+				assert.Contains(t, err.Error(), tt.errContains)
 			} else {
 				require.NoError(t, err)
 			}

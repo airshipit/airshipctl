@@ -65,6 +65,7 @@ func TestDefaultStatusFunction(t *testing.T) {
 		"config": map[string]interface{}{
 			"documentEntryPoint": "",
 			"executorRef":        nil,
+			"validation":         map[string]interface{}{},
 		},
 	}
 	printable := &airapiv1.Phase{

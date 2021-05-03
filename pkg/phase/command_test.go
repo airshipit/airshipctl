@@ -124,6 +124,7 @@ func TestListCommand(t *testing.T) {
       apiVersion: airshipit.org/v1alpha1
       kind: KubernetesApply
       name: kubernetes-apply
+    validation: {}
   kind: Phase
   metadata:
     clusterName: ephemeral-cluster
@@ -333,6 +334,7 @@ func TestPlanListCommand(t *testing.T) {
     name: phasePlan
   phases:
   - name: phase
+  validation: {}
 ...
 `
 	testErr := fmt.Errorf(testFactoryErr)

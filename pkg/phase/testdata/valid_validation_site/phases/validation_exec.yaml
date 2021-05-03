@@ -1,0 +1,9 @@
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: document-validation
+  labels:
+    airshipit.org/deploy-k8s: "false"
+spec:
+  type: krm
+  hostNetwork: true

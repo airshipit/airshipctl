@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -32,20 +31,18 @@ import (
 )
 
 const (
-	manifestsMountPoint = "/manifests"
-	schemaLocationDir   = "/workdir/schemas-cache"
-	fileScheme          = "file"
-	openAPISchemaFile   = "openapischema"
-	crdKind             = "CustomResourceDefinition"
-	kubevalOptsKind     = "KubevalOptions"
-	phaseRenderedFile   = "phase-rendered.yaml"
-	crdListFile         = "crd-list"
-	cleanupEnv          = "VALIDATOR_PREVENT_CLEANUP"
-	planEnv             = "VALIDATOR_PLAN_VALIDATION"
+	schemaLocationDir = "/workdir/schemas-cache"
+	fileScheme        = "file://"
+	openAPISchemaFile = "openapischema"
+	crdKind           = "CustomResourceDefinition"
+	phaseRenderedFile = "phase-rendered.yaml"
+	crdListFile       = "crd-list"
+	cleanupEnv        = "VALIDATOR_PREVENT_CLEANUP"
 
-	defaultKubernetesVersion    = "1.16.0"
+	defaultKubernetesVersion    = "1.18.6"
 	defaultStrict               = true
 	defaultIgnoreMissingSchemas = false
+	defaultSchemaLocation       = "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/"
 )
 
 func main() {
@@ -73,49 +70,31 @@ type kubevalFilter struct {
 	rw *kio.ByteReadWriter
 }
 
-// CRDConfigMap is a map with appropriate validation configs for plans/phases
-type CRDConfigMap map[string]*CRDSpec
-
-// Config defines the input config schema as a struct
-type Config struct {
-	Spec         *Spec        `yaml:"siteConfig"`
-	PlanName     string       `yaml:"planName,omitempty"`
-	PlanConfigs  CRDConfigMap `yaml:"planConfigs,omitempty"`
-	PhaseName    string       `yaml:"phaseName,omitempty"`
-	PhaseConfigs CRDConfigMap `yaml:"phaseConfigs,omitempty"`
-}
-
 // Spec holds main kubeval parameters
 type Spec struct {
 	// Strict disallows additional properties not in schema if set
-	Strict bool `yaml:"strict,omitempty"`
+	Strict *bool `yaml:"strict,omitempty"`
 
 	// IgnoreMissingSchemas skips validation for resource
 	// definitions without a schema.
-	IgnoreMissingSchemas bool `yaml:"ignoreMissingSchemas,omitempty"`
+	IgnoreMissingSchemas *bool `yaml:"ignoreMissingSchemas,omitempty"`
 
 	// KubernetesVersion is the version of Kubernetes to validate
-	// against (default "master").
+	// against (default "1.18.6").
 	KubernetesVersion string `yaml:"kubernetesVersion,omitempty"`
 
 	// SchemaLocation is the base URL from which to search for schemas.
 	// It can be either a remote location or a local directory
 	SchemaLocation string `yaml:"schemaLocation,omitempty"`
-}
 
-// CRDSpec holds special options for plan/phase which kinds to skip and which additional CRDs to include
-type CRDSpec struct {
 	// KindsToSkip defines Kinds which will be skipped during validation
 	KindsToSkip []string `yaml:"kindsToSkip,omitempty"`
-
-	// CRDList defines additional CRD locations
-	CRDList []string `yaml:"crdList,omitempty"`
 }
 
 // CrdConfig is a small struct to process CRD list
 type CrdConfig struct {
-	SchemasLocation string   `yaml:"schemasLocation"`
-	CrdList         []string `yaml:"crdList"`
+	SchemasLocation string `yaml:"schemasLocation"`
+	CrdList         string `yaml:"crdList"`
 }
 
 // Filter checks each resource for validity, otherwise returning an error
@@ -126,27 +105,12 @@ func (f kubevalFilter) Filter(in []*yaml.RNode) ([]*yaml.RNode, error) {
 	}
 
 	kubevalConfig := kubeval.NewDefaultConfig()
-	kubevalConfig.Strict = cfg.Spec.Strict
-	kubevalConfig.IgnoreMissingSchemas = cfg.Spec.IgnoreMissingSchemas
-	kubevalConfig.KubernetesVersion = cfg.Spec.KubernetesVersion
-	kubevalConfig.SchemaLocation = cfg.Spec.SchemaLocation
-	kubevalConfig.AdditionalSchemaLocations = []string{fileScheme + "://" + schemaLocationDir}
-	kubevalConfig.KindsToSkip = []string{crdKind, kubevalOptsKind}
-	var crdList []string
-
-	if _, plan := os.LookupEnv(planEnv); plan {
-		// Setup plan specific options
-		if _, exists := cfg.PlanConfigs[cfg.PlanName]; exists {
-			kubevalConfig.KindsToSkip = append(kubevalConfig.KindsToSkip, cfg.PlanConfigs[cfg.PlanName].KindsToSkip...)
-			crdList = cfg.PlanConfigs[cfg.PlanName].CRDList
-		}
-	} else {
-		// Setup phase specific options
-		if _, exists := cfg.PhaseConfigs[cfg.PhaseName]; exists {
-			kubevalConfig.KindsToSkip = append(kubevalConfig.KindsToSkip, cfg.PhaseConfigs[cfg.PhaseName].KindsToSkip...)
-			crdList = cfg.PhaseConfigs[cfg.PhaseName].CRDList
-		}
-	}
+	kubevalConfig.Strict = *cfg.Strict
+	kubevalConfig.IgnoreMissingSchemas = *cfg.IgnoreMissingSchemas
+	kubevalConfig.KubernetesVersion = cfg.KubernetesVersion
+	kubevalConfig.SchemaLocation = cfg.SchemaLocation
+	kubevalConfig.AdditionalSchemaLocations = []string{fileScheme + schemaLocationDir}
+	kubevalConfig.KindsToSkip = append(cfg.KindsToSkip, crdKind)
 
 	// Calculate schema location directory for kubeval and openapi2jsonschema based on options
 	schemasLocation := filepath.Join(schemaLocationDir,
@@ -177,13 +141,9 @@ func (f kubevalFilter) Filter(in []*yaml.RNode) ([]*yaml.RNode, error) {
 		if err = ioutil.WriteFile(renderedCRDFile, buf.Bytes(), 0600); err != nil {
 			return nil, err
 		}
-		// Prepend rendered CRD to give them priority for processing
-		crdList = append([]string{renderedCRDFile}, crdList...)
-	}
 
-	if len(crdList) > 0 {
 		// Process each additional CRD in the list (CRD -> OpenAPIV3 Schema -> Json Schema)
-		if err := processCRDList(crdList, schemasLocation); err != nil {
+		if err := processCRDList(renderedCRDFile, schemasLocation); err != nil {
 			return nil, err
 		}
 	}
@@ -259,15 +219,15 @@ func checkResults(results []kubeval.ValidationResult) error {
 	return nil
 }
 
-// parseConfig parses the functionConfig into an Config struct.
-func (f *kubevalFilter) parseConfig() (*Config, error) {
+// parseConfig parses the functionConfig into a Spec struct.
+func (f *kubevalFilter) parseConfig() (*Spec, error) {
 	// Initialize default values
-	cfg := &Config{
-		Spec: &Spec{
-			Strict:               defaultStrict,
-			IgnoreMissingSchemas: defaultIgnoreMissingSchemas,
-			KubernetesVersion:    defaultKubernetesVersion,
-		},
+	boolPtr := func(b bool) *bool { return &b }
+	cfg := &Spec{
+		Strict:               boolPtr(defaultStrict),
+		IgnoreMissingSchemas: boolPtr(defaultIgnoreMissingSchemas),
+		KubernetesVersion:    defaultKubernetesVersion,
+		SchemaLocation:       defaultSchemaLocation,
 	}
 
 	if err := yaml.Unmarshal([]byte(f.rw.FunctionConfig.MustString()), &cfg); err != nil {
@@ -278,26 +238,10 @@ func (f *kubevalFilter) parseConfig() (*Config, error) {
 
 // processCRDList takes each CRD from crdList, converts paths to URLs,
 // saves it to file and calls conversion script
-func processCRDList(crdList []string, schemasLocation string) error {
+func processCRDList(crdList string, schemasLocation string) error {
 	configMap := CrdConfig{
 		SchemasLocation: schemasLocation,
-		CrdList:         []string{},
-	}
-	// Walk through all additional CRD
-	for _, crdPath := range crdList {
-		// Parse provided CRD path as URL
-		crdURL, err := url.Parse(crdPath)
-		if err != nil {
-			return err
-		}
-		// Add 'file' scheme if not specified and convert relative path to absolute
-		if crdURL.Scheme == "" {
-			crdURL.Scheme = fileScheme
-			if filepath.Base(crdPath) != phaseRenderedFile {
-				crdURL.Path = filepath.Join(manifestsMountPoint, crdPath)
-			}
-		}
-		configMap.CrdList = append(configMap.CrdList, crdURL.String())
+		CrdList:         crdList,
 	}
 
 	crdData, err := yaml.Marshal(configMap)

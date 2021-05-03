@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/yaml"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	cctlclient "opendev.org/airship/airshipctl/pkg/clusterctl/client"
@@ -154,16 +155,20 @@ func (p *phase) Validate() error {
 	if err != nil {
 		return err
 	}
-	if err = executor.Validate(); err != nil {
+	return validate(executor, p.helper, p.apiObj.Config.ValidationCfg)
+}
+
+func validate(executor ifc.Executor, helper ifc.Helper, validationCfg v1alpha1.ValidationConfig) error {
+	if err := executor.Validate(); err != nil {
 		return err
 	}
 
 	buf := &bytes.Buffer{}
-	if err = executor.Render(buf, ifc.RenderOptions{FilterSelector: document.NewSelector()}); err != nil {
+	if err := executor.Render(buf, ifc.RenderOptions{FilterSelector: document.NewSelector()}); err != nil {
 		return err
 	}
 
-	doc, err := p.helper.PhaseConfigBundle().SelectOne(document.NewValidatorExecutorSelector())
+	doc, err := helper.PhaseConfigBundle().SelectOne(document.NewValidatorExecutorSelector())
 	if err != nil {
 		return err
 	}
@@ -174,23 +179,27 @@ func (p *phase) Validate() error {
 		return err
 	}
 
-	gvk := apiObj.ConfigRef.GroupVersionKind()
-	selector := document.NewSelector().
-		ByName(apiObj.ConfigRef.Name).
-		ByNamespace(apiObj.ConfigRef.Namespace).
-		ByGvk(gvk.Group, gvk.Version, gvk.Kind)
-
-	doc, err = p.helper.PhaseConfigBundle().SelectOne(selector)
+	valCfg, err := yaml.Marshal(validationCfg)
 	if err != nil {
 		return err
 	}
-	config, err := doc.AsYAML()
-	if err != nil {
-		return err
-	}
-	apiObj.Config = string(config)
+	apiObj.Config = string(valCfg)
 
-	return container.NewClientV1Alpha1("", buf, os.Stdout, apiObj, p.helper.TargetPath()).Run()
+	for _, path := range validationCfg.CRDList {
+		bundle, err := document.NewBundleByPath(filepath.Join(helper.TargetPath(), path))
+		if err != nil {
+			return err
+		}
+		bundle, err = bundle.SelectBundle(document.NewCRDSelector())
+		if err != nil {
+			return err
+		}
+		if err = bundle.Write(buf); err != nil {
+			return err
+		}
+	}
+
+	return container.NewClientV1Alpha1("", buf, os.Stdout, apiObj, helper.TargetPath()).Run()
 }
 
 // Render executor documents
@@ -264,7 +273,7 @@ type plan struct {
 
 // Validate makes sure that phase plan is properly configured
 func (p *plan) Validate() error {
-	util.Setenv(util.EnvVar{Key: v1alpha1.ValidatorPreventCleanup}, util.EnvVar{Key: v1alpha1.ValidatorPlanValidation})
+	util.Setenv(util.EnvVar{Key: v1alpha1.ValidatorPreventCleanup})
 	for i, step := range p.apiObj.Phases {
 		log.Printf("validating phase: %s\n", step.Name)
 		if i == len(p.apiObj.Phases)-1 {
@@ -274,7 +283,11 @@ func (p *plan) Validate() error {
 		if err != nil {
 			return err
 		}
-		if err = phaseRunner.Validate(); err != nil {
+		executor, err := phaseRunner.Executor()
+		if err != nil {
+			return err
+		}
+		if err = validate(executor, p.helper, p.apiObj.ValidationCfg); err != nil {
 			return err
 		}
 	}

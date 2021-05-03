@@ -37,14 +37,17 @@ const (
 	ClusterctlMetadataVersion = "v1alpha3"
 	ClusterctlMetadataGroup   = "clusterctl.cluster.x-k8s.io"
 
-	// DocumentValidationGroup defines Group for document-validation container
-	DocumentValidationGroup = "airshipit.org"
-	// DocumentValidationVersion defines Version for document-validation container
-	DocumentValidationVersion = "v1alpha1"
-	// DocumentValidationKind defines Kind for document-validation container
-	DocumentValidationKind = "GenericContainer"
-	// DocumentValidationName defines Name for document-validation container
-	DocumentValidationName = "document-validation"
+	// ValidatorGroup defines Group for document-validation container
+	ValidatorGroup = "airshipit.org"
+	// ValidatorVersion defines Version for document-validation container
+	ValidatorVersion = "v1alpha1"
+	// ValidatorKind defines Kind for document-validation container
+	ValidatorKind = "GenericContainer"
+	// ValidatorName defines Name for document-validation container
+	ValidatorName = "document-validation"
+
+	// CRDKind is a kind for custom resource definition documents
+	CRDKind = "CustomResourceDefinition"
 )
 
 // KustomizationFile is used for kustomization file

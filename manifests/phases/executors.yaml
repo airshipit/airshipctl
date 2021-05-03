@@ -391,22 +391,13 @@ spec:
   image: localhost/kubeval-validator
   envVars:
     - VALIDATOR_PREVENT_CLEANUP # Validator won't cleanup its working directory after finish
-    - VALIDATOR_PLAN_VALIDATION # Validator will not use phase-specific settings for validation
     - VALIDATOR_REWRITE_SCHEMAS # Validator will rewrite schemas for kubeval if they already exist
   mounts:
-    - type: bind
-      src: airshipctl/manifests
-      dst: /manifests
-      rw: false
     - type: bind
       src: ~/.airship
       dst: /workdir
       rw: true
   hostNetwork: true
-configRef:
-  apiVersion: airshipit.org/v1alpha1
-  kind: KubevalOptions
-  name: kubeval-options
 ---
 apiVersion: airshipit.org/v1alpha1
 kind: GenericContainer
@@ -416,9 +407,9 @@ spec:
   image: localhost/toolbox
   hostNetwork: true
   envVars:
-  - RESOURCE_GROUP_FILTER=metal3.io
-  - RESOURCE_VERSION_FILTER=v1alpha1
-  - RESOURCE_KIND_FILTER=BareMetalHost
+    - RESOURCE_GROUP_FILTER=metal3.io
+    - RESOURCE_VERSION_FILTER=v1alpha1
+    - RESOURCE_KIND_FILTER=BareMetalHost
 configRef:
   kind: ConfigMap
   name: kubectl-pause-bmh

@@ -24,8 +24,9 @@ import (
 type PhasePlan struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Description       string      `json:"description,omitempty"`
-	Phases            []PhaseStep `json:"phases,omitempty"`
+	Description       string           `json:"description,omitempty"`
+	Phases            []PhaseStep      `json:"phases,omitempty"`
+	ValidationCfg     ValidationConfig `json:"validation"`
 }
 
 // PhaseStep represents phase (or step) within a phase plan

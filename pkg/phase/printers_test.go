@@ -103,6 +103,7 @@ func TestDefaultStatusFunction(t *testing.T) {
 			"executorRef": map[string]interface{}{
 				"kind": "test",
 			},
+			"validation": map[string]interface{}{},
 		},
 	}
 	printable := &v1alpha1.Phase{
@@ -164,6 +165,7 @@ func TestDefaultStatusFunctionForPhasePlan(t *testing.T) {
 			"name":              "p1",
 			"creationTimestamp": nil,
 		},
+		"validation": map[string]interface{}{},
 	}
 	printable := &v1alpha1.PhasePlan{
 		TypeMeta: metav1.TypeMeta{

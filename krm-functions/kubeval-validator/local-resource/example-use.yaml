@@ -10,44 +10,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This kind is used as 'config' field in GenericContainer executor
+# The validation config should be defined as part of appropriate "Phase" or "Plan" kind (config.validation field)
 apiVersion: airshipit.org/v1alpha1
-kind: KubevalOptions
+kind: Phase
 metadata:
-  name: kubeval-options
-  labels:
-    airshipit.org/deploy-k8s: "false" # won't be deployed to k8s
-# Main config for site
-siteConfig:
-  # Disallow additional properties not in schema - default "true"
-  strict: true
-  # Version of Kubernetes to validate against - default "1.16.0"
-  kubernetesVersion: "1.16.0"
-  # Skip validation for resource definitions without a schema - default "false"
-  ignoreMissingSchemas: false
-# Current plan to validate; validator searches for the appropriate planConfig in planConfigs map
-# Uses only in case of plan validation; planName sets up automatically by templater using appropriate env variable
-planName: AIRSHIPCTL_CURRENT_PLAN
-# planConfigs is a map with validation configs for specified plans; has the following structure:
-# <plan_name1>:
-#   kindsToSkip: [] (optional)
-#   crdList: [] (optional)
-planConfigs:
-  phasePlan:
-    kindsToSkip: # list of kinds to skip from validation
-      - KindToSkip
-    crdList: # list of URLs to additional CRDs; could be a file located in manifests/ or an external URL
-      - url/to/crd.yaml
-# Current phase to validate; validator searches for the appropriate phaseConfig in phaseConfigs map
-# Uses only in case of plan validation; phaseName sets up automatically by templater using appropriate env variable
-phaseName: AIRSHIPCTL_CURRENT_PHASE
-# phaseConfigs is a map with validation configs for specified phases; has the following structure:
-# <phase_name1>:
-#   kindsToSkip: [] (optional)
-#   crdList: [] (optional)
-phaseConfigs:
-  initinfra-ephemeral:
-    kindsToSkip: # list of kinds to skip from validation
-      - KindToSkip
-    crdList: # list of URLs to additional CRDs; could be a file located in manifests/ or an external URL
-      - url/to/crd.yaml
+  name: phase-name
+config:
+  validation:
+    # Disallow additional properties not in schema - default "true"
+    strict: true
+    # Version of Kubernetes to validate against - default "1.18.6"
+    kubernetesVersion: "1.18.6"
+    # Skip validation for resource definitions without a schema - default "false"
+    ignoreMissingSchemas: false
+    # List of kind names to skip from validation
+    kindsToSkip:
+      - Clusterctl
+      - VariableCatalogue
+    # list of kustomize entrypoints located in "TARGET_PATH" with additional CRDs
+    crdList:
+      - airshipctl/manifests/function/airshipctl-schemas
+  documentEntryPoint: ephemeral/initinfra

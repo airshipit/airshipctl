@@ -26,7 +26,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/document"
 	phaseerrors "opendev.org/airship/airshipctl/pkg/phase/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
-	"opendev.org/airship/airshipctl/pkg/util"
 	"opendev.org/airship/airshipctl/pkg/util/yaml"
 )
 
@@ -285,7 +284,6 @@ func (c *ValidateCommand) RunE() error {
 		return err
 	}
 
-	util.Setenv(util.EnvVar{Key: "AIRSHIPCTL_CURRENT_PHASE", Value: c.Options.PhaseID.Name})
 	helper, err := NewHelper(cfg)
 	if err != nil {
 		return err
@@ -352,7 +350,6 @@ func (c *PlanValidateCommand) RunE() error {
 		return err
 	}
 
-	util.Setenv(util.EnvVar{Key: "AIRSHIPCTL_CURRENT_PLAN", Value: c.Options.PlanID.Name})
 	helper, err := NewHelper(cfg)
 	if err != nil {
 		return err

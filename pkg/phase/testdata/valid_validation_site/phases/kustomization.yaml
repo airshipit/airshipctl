@@ -1,0 +1,5 @@
+resources:
+  - kube_apply.yaml
+  - kubernetes_apply.yaml
+  - cluster_map.yaml
+  - validation_exec.yaml

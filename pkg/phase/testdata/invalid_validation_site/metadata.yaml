@@ -1,0 +1,10 @@
+apiVersion: airshipit.org/v1alpha1
+kind: ManifestMetadata
+metadata:
+  name: manifest-metadata
+spec:
+  phase:
+    path: invalid_validation_site/phases
+    docEntryPointPrefix: ""
+  inventory:
+    path: ""

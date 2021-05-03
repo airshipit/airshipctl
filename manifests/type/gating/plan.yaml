@@ -131,6 +131,12 @@ phases:
   # To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
   # and find ConfigMap with name kubectl-check-ingress-ctrl
   - name: kubectl-check-ingress-ctrl-target
+validation:
+  kindsToSkip:
+    - Clusterctl
+    - VariableCatalogue
+  crdList:
+    - airshipctl/manifests/function/airshipctl-schemas
 ---
 apiVersion: airshipit.org/v1alpha1
 kind: PhasePlan
@@ -140,4 +146,10 @@ description: "Runs phases to build iso image"
 phases:
   - name: iso-cloud-init-data
   - name: iso-build-image
-
+validation:
+  kindsToSkip:
+    - RemoteDirectConfiguration
+    - VariableCatalogue
+  crdList:
+    - airshipctl/manifests/function/airshipctl-schemas
+    - airshipctl/manifests/global/crd/baremetal-operator

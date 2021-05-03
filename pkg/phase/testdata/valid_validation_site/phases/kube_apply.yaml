@@ -1,0 +1,24 @@
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: kube_apply
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: KubernetesApply
+    name: kubernetes-apply
+  documentEntryPoint: no_plan_site/phases
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: kube_apply_noentrypoint
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: KubernetesApply
+    name: kubernetes-apply
+  documentEntryPoint: no_plan_site/phases
+  validation:
+    crdList:
+      - not/exist

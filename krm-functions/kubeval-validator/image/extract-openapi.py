@@ -13,9 +13,7 @@
 # limitations under the License.
 
 from os import getenv
-from os.path import basename, isfile, join
-from urllib import request
-from urllib.parse import urlparse
+from os.path import isfile, join
 
 from openapi2jsonschema import command
 from openapi2jsonschema.command import debug, info, error
@@ -34,7 +32,6 @@ components:
 """
 crd_kind = "CustomResourceDefinition"
 crd_list = "/workdir/schemas-cache/crd-list"
-phase_rendered = "phase-rendered.yaml"
 rewrite_env = "VALIDATOR_REWRITE_SCHEMAS"
 yaml = YAML()
 
@@ -105,15 +102,14 @@ def run():
     with open(crd_list, 'r') as crd_list_file:  # read file with CRD locations
         crd_list_data = yaml.load(crd_list_file)
 
-    for crd_path in crd_list_data['crdList']:
-        crd_data = yaml.load_all(request.urlopen(crd_path).read().decode('utf-8'))  # read CRD from URL
+    with open(crd_list_data['crdList'], 'r') as yaml_file:
+        crd_data = yaml.load_all(yaml_file)  # read CRDs
         for crd in crd_data:
             try:
                 if check_yaml_kind(crd):
-                    process_crd(crd, schemas, crd_list_data["schemasLocation"],
-                                basename(urlparse(crd_path).path) == phase_rendered and getenv(rewrite_env) is not None)
+                    process_crd(crd, schemas, crd_list_data["schemasLocation"], getenv(rewrite_env) is not None)
             except Exception as exc:
-                error("An error occurred while processing CRD data from {}\n{}".format(crd_path, exc))
+                error("An error occurred while processing CRD data from phase rendered docs\n{}".format(exc))
 
     # Validate output V3 spec
     try:

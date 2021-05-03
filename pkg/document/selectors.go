@@ -192,8 +192,13 @@ func NewClusterctlMetadataSelector() Selector {
 
 // NewValidatorExecutorSelector returns selector to get validator executor documents
 func NewValidatorExecutorSelector() Selector {
-	return NewSelector().ByGvk(DocumentValidationGroup,
-		DocumentValidationVersion,
-		DocumentValidationKind).
-		ByName(DocumentValidationName)
+	return NewSelector().ByGvk(ValidatorGroup,
+		ValidatorVersion,
+		ValidatorKind).
+		ByName(ValidatorName)
+}
+
+// NewCRDSelector returns selector to get custom resource definition documents
+func NewCRDSelector() Selector {
+	return NewSelector().ByKind(CRDKind)
 }
