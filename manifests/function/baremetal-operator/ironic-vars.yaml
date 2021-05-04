@@ -30,7 +30,7 @@ data:
 
   # Additional Baremetal Operator values overridable via the `replacements` entrypoint
   # and networking catalogue
-  # IRONIC_AUTOMATED_CLEAN: “false”
+  # IRONIC_AUTOMATED_CLEAN: "false"
   # HTTP_PORT: "80"
   # IRONIC_FAST_TRACK: "false"
   # DEPLOY_KERNEL_URL: http://172.30.0.140:80/images/ipa-ubuntu-master.kernel
