@@ -1,0 +1,5 @@
+$patch: delete
+apiVersion: airshipit.org/v1alpha1
+kind: PhasePlan
+metadata:
+  name: iso

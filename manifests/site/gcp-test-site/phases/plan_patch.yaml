@@ -1,7 +1,7 @@
 apiVersion: airshipit.org/v1alpha1
 kind: PhasePlan
 metadata:
-  name: phasePlan
+  name: deploy-gating
 phases:
   - name: clusterctl-init-ephemeral
   - name: controlplane-ephemeral
@@ -9,3 +9,10 @@ phases:
   - name: clusterctl-init-target
   - name: clusterctl-move
   - name: workers-target
+validation:
+  kindsToSkip:
+    - Clusterctl
+    - VariableCatalogue
+  crdList:
+    - airshipctl/manifests/function/airshipctl-schemas
+    - airshipctl/manifests/function/cert-manager/v1.1.0/upstream
