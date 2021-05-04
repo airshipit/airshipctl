@@ -181,9 +181,6 @@ func (c *ClusterctlExecutor) Validate() error {
 			return phaseerrors.ErrInvalidPhase{Reason: "ClusterctlExecutor.InitOptions.CoreProvider is empty"}
 		}
 	case airshipv1.Move:
-		if c.options.MoveOptions.Namespace == "" {
-			return phaseerrors.ErrInvalidPhase{Reason: "ClusterctlExecutor.MoveOptions.Namespace is empty"}
-		}
 	default:
 		return errors.ErrUnknownExecutorAction{Action: string(c.options.Action)}
 	}
