@@ -34,6 +34,11 @@ import (
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
+const longRoot = `A unified entrypoint to various airship components
+
+  Find more information at: https://docs.airshipit.org/airshipctl/
+`
+
 // RootOptions stores global flags values
 type RootOptions struct {
 	Debug             bool
@@ -54,6 +59,7 @@ func NewRootCommand(out io.Writer) (*cobra.Command, *RootOptions) {
 	rootCmd := &cobra.Command{
 		Use:           "airshipctl",
 		Short:         "A unified entrypoint to various airship components",
+		Long:          longRoot,
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {

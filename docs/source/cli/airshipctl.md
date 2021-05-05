@@ -6,6 +6,9 @@ A unified entrypoint to various airship components
 
 A unified entrypoint to various airship components
 
+  Find more information at: https://docs.airshipit.org/airshipctl/
+
+
 ### Options
 
 ```
