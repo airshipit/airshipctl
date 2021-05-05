@@ -16,51 +16,40 @@ package cloudinit
 
 import (
 	"opendev.org/airship/airshipctl/pkg/document"
-
-	"sigs.k8s.io/kustomize/api/resid"
-	"sigs.k8s.io/kustomize/api/types"
 )
 
-var (
-	// Initialize defaults where we expect to find user-data and
-	// network config data in manifests
-	userDataSelectorDefaults = types.Selector{
-		Gvk:           resid.Gvk{Kind: document.SecretKind},
-		LabelSelector: document.EphemeralUserDataSelector,
-	}
-	userDataKeyDefault            = "userData"
-	networkConfigSelectorDefaults = types.Selector{
-		Gvk:           resid.Gvk{Kind: document.BareMetalHostKind},
-		LabelSelector: document.EphemeralHostSelector,
-	}
-	networkConfigKeyDefault = "networkData"
+const (
+	defaultUserDataKey      = "userData"
+	defaultNetworkConfigKey = "networkData"
 )
 
 // GetCloudData reads YAML document input and generates cloud-init data for
 // ephemeral node.
 func GetCloudData(
 	docBundle document.Bundle,
-	userDataSelector types.Selector,
+	userDataSelector document.Selector,
 	userDataKey string,
-	networkConfigSelector types.Selector,
+	networkConfigSelector document.Selector,
 	networkConfigKey string,
 ) (userData []byte, netConf []byte, err error) {
 	userDataSelectorFinal, userDataKeyFinal := applyDefaultsAndGetData(
 		userDataSelector,
-		userDataSelectorDefaults,
+		document.SecretKind,
+		document.EphemeralUserDataSelector,
 		userDataKey,
-		userDataKeyDefault,
+		defaultUserDataKey,
 	)
-	userData, err = document.GetSecretData(docBundle, userDataSelectorFinal, userDataKeyFinal)
+	userData, err = getUserData(docBundle, userDataSelectorFinal, userDataKeyFinal)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	netConfSelectorFinal, netConfKeyFinal := applyDefaultsAndGetData(
 		networkConfigSelector,
-		networkConfigSelectorDefaults,
+		document.BareMetalHostKind,
+		document.EphemeralHostSelector,
 		networkConfigKey,
-		networkConfigKeyDefault,
+		defaultNetworkConfigKey,
 	)
 	netConf, err = getNetworkData(docBundle, netConfSelectorFinal, netConfKeyFinal)
 	if err != nil {
@@ -71,18 +60,18 @@ func GetCloudData(
 }
 
 func applyDefaultsAndGetData(
-	docSelector types.Selector,
-	docSelectorDefaults types.Selector,
+	docSelector document.Selector,
+	defaultKind string,
+	defaultLabel string,
 	key string,
 	keyDefault string,
-) (types.Selector, string) {
+) (document.Selector, string) {
 	// Assign defaults if there are no user supplied overrides
 	if docSelector.Kind == "" &&
 		docSelector.Name == "" &&
 		docSelector.AnnotationSelector == "" &&
 		docSelector.LabelSelector == "" {
-		docSelector.Kind = docSelectorDefaults.Kind
-		docSelector.LabelSelector = docSelectorDefaults.LabelSelector
+		docSelector = docSelector.ByKind(defaultKind).ByLabel(defaultLabel)
 	}
 
 	keyFinal := key
@@ -93,20 +82,37 @@ func applyDefaultsAndGetData(
 	return docSelector, keyFinal
 }
 
+func getUserData(
+	docBundle document.Bundle,
+	userDataSelector document.Selector,
+	userDataKey string,
+) ([]byte, error) {
+	doc, err := docBundle.SelectOne(userDataSelector)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := document.GetSecretDataKey(doc, userDataKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return []byte(data), nil
+}
+
 func getNetworkData(
 	docBundle document.Bundle,
-	netCfgSelector types.Selector,
+	netCfgSelector document.Selector,
 	netCfgKey string,
 ) ([]byte, error) {
 	// find the baremetal host indicated as the ephemeral node
-	selector := document.NewSelector().ByKind(netCfgSelector.Kind).ByLabel(netCfgSelector.LabelSelector)
-	d, err := docBundle.SelectOne(selector)
+	d, err := docBundle.SelectOne(netCfgSelector)
 	if err != nil {
 		return nil, err
 	}
 
 	// try and find these documents in our bundle
-	selector, err = document.NewNetworkDataSelector(d)
+	selector, err := document.NewNetworkDataSelector(d)
 	if err != nil {
 		return nil, err
 	}
@@ -117,10 +123,10 @@ func getNetworkData(
 	}
 
 	// finally, try and retrieve the data we want from the document
-	netData, err := document.DecodeSecretData(d, netCfgKey)
+	netData, err := document.GetSecretDataKey(d, netCfgKey)
 	if err != nil {
 		return nil, err
 	}
 
-	return netData, nil
+	return []byte(netData), nil
 }
