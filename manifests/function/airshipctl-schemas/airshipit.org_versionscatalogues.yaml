@@ -92,10 +92,22 @@ spec:
               charts:
                 additionalProperties:
                   description: ChartProperties defines the properties of the chart
-                    like Chart and vesrion
+                    like Chart and version
                   properties:
                     chart:
                       type: string
+                    sourceRef:
+                      description: ChartSourceRef defines the properties of the Chart
+                        SourceRef like Kind and Name
+                      properties:
+                        kind:
+                          type: string
+                        name:
+                          type: string
+                      required:
+                      - kind
+                      - name
+                      type: object
                     version:
                       type: string
                   required:
@@ -215,9 +227,6 @@ spec:
                 description: Allows for the specification of the kubernetes version
                   being used.
                 type: string
-            required:
-            - capi_images
-            - images
             type: object
         type: object
     served: true
