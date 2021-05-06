@@ -23,7 +23,8 @@ import (
 
 const (
 	listLong = `
-Retrieve and list the defined clusters in the table form or display just the name as specified.
+Retrieve and list the defined clusters in table form or display just the cluster names. The contents of the
+table would include cluster name, kubeconfig context and parent cluster name.
 `
 
 	listExample = `

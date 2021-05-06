@@ -27,7 +27,7 @@ import (
 func NewVersionCommand() *cobra.Command {
 	versionCmd := &cobra.Command{
 		Use:   "version",
-		Short: "Show the version number of airshipctl",
+		Short: "Airshipctl command to display the current version number",
 		Run: func(cmd *cobra.Command, args []string) {
 			out := cmd.OutOrStdout()
 			clientV := clientVersion()

@@ -5,7 +5,7 @@ Airshipctl command to manage bare metal host(s)
 ### Synopsis
 
 
-Provides commands that can be performed on bare metal host(s). The commands helps in
+Provides commands that can be performed on bare metal host(s). The commands help in
 performing the basic boot and power operations on the bare metal host(s).
 
 
@@ -18,13 +18,13 @@ performing the basic boot and power operations on the bare metal host(s).
 ### Options inherited from parent commands
 
 ```
-      --airshipconf string   Path to file for airshipctl configuration. (default "$HOME/.airship/config")
+      --airshipconf string   path to the airshipctl configuration file. Defaults to "$HOME/.airship/config"
       --debug                enable verbose output
 ```
 
 ### SEE ALSO
 
-* [airshipctl](airshipctl.md)	 - A unified entrypoint to various airship components
+* [airshipctl](airshipctl.md)	 - A unified command line tool for management of end-to-end kubernetes cluster deployment on cloud infrastructure environments.
 * [airshipctl baremetal ejectmedia](airshipctl_baremetal_ejectmedia.md)	 - Airshipctl command to eject virtual media attached to a bare metal host
 * [airshipctl baremetal poweroff](airshipctl_baremetal_poweroff.md)	 - Airshipctl command to shutdown bare metal host(s)
 * [airshipctl baremetal poweron](airshipctl_baremetal_poweron.md)	 - Airshipctl command to power on host(s)

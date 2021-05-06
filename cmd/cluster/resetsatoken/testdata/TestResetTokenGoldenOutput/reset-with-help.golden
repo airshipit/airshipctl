@@ -1,8 +1,8 @@
 Reset/rotate the Service Account(SA) tokens and additionally restart the corresponding pods to get the latest
 token data reflected in the pod spec.
 
-Secret-namespace is a mandatory flag and secret-name is optional. If secret-name is not given, all the SA tokens
-in that particular namespace is considered, else only that particular input secret-name.
+Secret-namespace is a mandatory flag and secret-name is optional. If a secret-name is not specified, all of the SA
+tokens in the specified namespace are rotated, else only the specified secret-name.
 
 Usage:
   rotate-sa-token [flags]

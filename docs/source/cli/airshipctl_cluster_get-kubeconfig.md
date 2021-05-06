@@ -6,10 +6,10 @@ Airshipctl command to retrieve kubeconfig for a desired cluster
 
 Retrieves kubeconfig of the cluster and prints it to stdout.
 
-If you specify clusterName, kubeconfig will have a CurrentContext set to clusterName and
+If you specify CLUSTER_NAME, kubeconfig will have a CurrentContext set to CLUSTER_NAME and
 will have its context defined.
 
-If you don't specify clusterName, kubeconfig will have multiple contexts for every cluster
+If you don't specify CLUSTER_NAME, kubeconfig will have multiple contexts for every cluster
 in the airship site. Context names will correspond to cluster names. CurrentContext will be empty.
 
 
@@ -38,7 +38,7 @@ Retrieve kubeconfig for the entire site; the kubeconfig will have context for ev
 ### Options inherited from parent commands
 
 ```
-      --airshipconf string   Path to file for airshipctl configuration. (default "$HOME/.airship/config")
+      --airshipconf string   path to the airshipctl configuration file. Defaults to "$HOME/.airship/config"
       --debug                enable verbose output
 ```
 

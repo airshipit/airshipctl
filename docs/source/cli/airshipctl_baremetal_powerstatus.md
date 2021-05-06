@@ -16,13 +16,13 @@ airshipctl baremetal powerstatus [flags]
 
 ```
 
-Perform action against host with name rdm9r3s3 in all namespaces where the host is found
+To get power status of host with name rdm9r3s3 in all namespaces where the host is found
 # airshipctl baremetal powerstatus --name rdm9r3s3
 
-Perform action against host with name rdm9r3s3 in namespace metal3
+To get power status of host with name rdm9r3s3 in metal3 namespace
 # airshipctl baremetal powerstatus --name rdm9r3s3 --namespace metal3
 
-Perform action against host with a label 'foo=bar'
+To get power status of host with a label 'foo=bar'
 # airshipctl baremetal powerstatus --labels "foo=bar"
 
 ```
@@ -31,16 +31,16 @@ Perform action against host with a label 'foo=bar'
 
 ```
   -h, --help               help for powerstatus
-  -l, --labels string      label(s) to filter desired bare metal host documents
-      --name string        name to filter desired bare metal host document
-  -n, --namespace string   airshipctl phase that contains the desired bare metal host document(s)
+  -l, --labels string      label(s) to filter desired bare metal host from site manifest documents
+      --name string        name to filter desired bare metal host from site manifest document
+  -n, --namespace string   airshipctl phase that contains the desired bare metal host from site manifest document(s)
       --timeout duration   timeout on bare metal action (default 10m0s)
 ```
 
 ### Options inherited from parent commands
 
 ```
-      --airshipconf string   Path to file for airshipctl configuration. (default "$HOME/.airship/config")
+      --airshipconf string   path to the airshipctl configuration file. Defaults to "$HOME/.airship/config"
       --debug                enable verbose output
 ```
 

@@ -1,11 +1,12 @@
-Manage deployment documents
+
+Provides commands which help in management of site manifest documents.
 
 Usage:
   document [command]
 
 Available Commands:
   help        Help about any command
-  pull        Pulls documents from remote git repository
+  pull        Airshipctl command to pull manifests from remote git repositories
 
 Flags:
   -h, --help   help for document

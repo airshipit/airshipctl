@@ -1,4 +1,4 @@
-A unified entrypoint to various airship components
+Command line utility for management of end-to-end kubernetes cluster deployment.
 
   Find more information at: https://docs.airshipit.org/airshipctl/
 

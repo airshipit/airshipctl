@@ -28,13 +28,13 @@ based on the --name, --namespace, --label and --timeout flags provided.
 `
 
 	powerStatusExample = `
-Perform action against host with name rdm9r3s3 in all namespaces where the host is found
+To get power status of host with name rdm9r3s3 in all namespaces where the host is found
 # airshipctl baremetal powerstatus --name rdm9r3s3
 
-Perform action against host with name rdm9r3s3 in namespace metal3
+To get power status of host with name rdm9r3s3 in metal3 namespace
 # airshipctl baremetal powerstatus --name rdm9r3s3 --namespace metal3
 
-Perform action against host with a label 'foo=bar'
+To get power status of host with a label 'foo=bar'
 # airshipctl baremetal powerstatus --labels "foo=bar"
 `
 )

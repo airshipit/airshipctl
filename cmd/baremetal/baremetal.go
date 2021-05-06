@@ -29,43 +29,43 @@ type Action int
 
 const (
 	baremetalLong = `
-Provides commands that can be performed on bare metal host(s). The commands helps in
+Provides commands that can be performed on bare metal host(s). The commands help in
 performing the basic boot and power operations on the bare metal host(s).
 `
 	flagLabel            = "labels"
 	flagLabelShort       = "l"
-	flagLabelDescription = "label(s) to filter desired bare metal host documents"
+	flagLabelDescription = "label(s) to filter desired bare metal host from site manifest documents"
 
 	flagName            = "name"
-	flagNameDescription = "name to filter desired bare metal host document"
+	flagNameDescription = "name to filter desired bare metal host from site manifest document"
 
 	flagNamespace            = "namespace"
 	flagNamespaceSort        = "n"
-	flagNamespaceDescription = "airshipctl phase that contains the desired bare metal host document(s)"
+	flagNamespaceDescription = "airshipctl phase that contains the desired bare metal host from site manifest document(s)"
 
 	flagTimeout            = "timeout"
 	flagTimeoutDescription = "timeout on bare metal action"
 
 	flagAll            = "all"
-	flagAllDescription = "specify this to target all hosts in the inventory"
+	flagAllDescription = "specify this to target all hosts in the site inventory"
 )
 
 var (
-	selectorsDescription = fmt.Sprintf(`The command will target bare metal hosts from airship inventory based on the
---%s, --%s and --%s flags provided. If no flags are provided, airshipctl will select all bare metal hosts in the
+	selectorsDescription = fmt.Sprintf(`The command will target bare metal hosts from airship site inventory based on the
+--%s, --%s and --%s flags provided. If no flags are provided, airshipctl will select all bare metal hosts in the site
 inventory.`, flagName, flagNamespace, flagLabel)
 
 	bmhActionExampleTemplate = `
-Perform action against hosts with name rdm9r3s3 in all namespaces where the host is found
+Perform %[1]s action against hosts with name rdm9r3s3 in all namespaces where the host is found
 # airshipctl baremetal %[1]s --name rdm9r3s3
 
-Perform action against hosts with name rdm9r3s3 in namespace metal3
+Perform %[1]s action against hosts with name rdm9r3s3 in metal3 namespace
 # airshipctl baremetal %[1]s --name rdm9r3s3 --namespace metal3
 
-Perform action against all hosts defined in inventory
+Perform %[1]s action against all hosts defined in inventory
 # airshipctl baremetal %[1]s --all
 
-Perform action against hosts with a label 'foo=bar'
+Perform %[1]s action against hosts with a label 'foo=bar'
 # airshipctl baremetal %[1]s --labels "foo=bar"
 `
 )

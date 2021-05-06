@@ -1,5 +1,5 @@
 
-Provides commands that can be performed on bare metal host(s). The commands helps in
+Provides commands that can be performed on bare metal host(s). The commands help in
 performing the basic boot and power operations on the bare metal host(s).
 
 Usage:

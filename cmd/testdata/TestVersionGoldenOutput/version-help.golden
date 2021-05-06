@@ -1,4 +1,4 @@
-Show the version number of airshipctl
+Airshipctl command to display the current version number
 
 Usage:
   version [flags]

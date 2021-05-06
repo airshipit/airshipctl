@@ -27,11 +27,11 @@ Generate completion script for airshipctl for the specified shell (bash or zsh).
 `
 
 	completionExample = `
-# Save shell completion to a file
-airshipctl completion bash > $HOME/.airship_completions
+Save shell completion to a file
+# airshipctl completion bash > $HOME/.airship_completions
 
-# Apply completions to the current shell
-source <(airshipctl completion bash)
+Apply completions to the current shell
+# source <(airshipctl completion bash)
 `
 )
 
@@ -51,7 +51,7 @@ func NewCompletionCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:       "completion SHELL",
-		Short:     "Generate completion script for the specified shell (bash or zsh)",
+		Short:     "Airshipctl command to generate completion script for the specified shell (bash or zsh)",
 		Long:      completionLong[1:],
 		Example:   completionExample,
 		Args:      cobra.ExactArgs(1),

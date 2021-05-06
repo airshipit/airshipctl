@@ -5,7 +5,8 @@ Airshipctl command to get and list defined clusters
 ### Synopsis
 
 
-Retrieve and list the defined clusters in the table form or display just the name as specified.
+Retrieve and list the defined clusters in table form or display just the cluster names. The contents of the
+table would include cluster name, kubeconfig context and parent cluster name.
 
 
 ```
@@ -33,7 +34,7 @@ Retrieve list of clusters
 ### Options inherited from parent commands
 
 ```
-      --airshipconf string   Path to file for airshipctl configuration. (default "$HOME/.airship/config")
+      --airshipconf string   path to the airshipctl configuration file. Defaults to "$HOME/.airship/config"
       --debug                enable verbose output
 ```
 
