@@ -1,21 +1,24 @@
 ## airshipctl phase status
 
-Status of the phase
+Airshipctl command to show status of the phase
 
 ### Synopsis
 
-Status of the specific life-cycle phase such as ephemeral-control-plane, target-initinfra etc...
+
+Get the status of a phase such as ephemeral-control-plane, target-initinfra etc...
+To list the phases associated with a site, run 'airshipctl phase list'.
+
 
 ```
-airshipctl phase status [flags]
+airshipctl phase status PHASE_NAME [flags]
 ```
 
 ### Examples
 
 ```
 
-#Status of initinfra phase
-airshipctl phase status ephemeral-control-plane
+Status of initinfra phase
+# airshipctl phase status ephemeral-control-plane
 
 ```
 
@@ -34,5 +37,5 @@ airshipctl phase status ephemeral-control-plane
 
 ### SEE ALSO
 
-* [airshipctl phase](airshipctl_phase.md)	 - Manage phases
+* [airshipctl phase](airshipctl_phase.md)	 - Airshipctl command to manage phases
 

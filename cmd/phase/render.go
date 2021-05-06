@@ -22,20 +22,22 @@ import (
 )
 
 const (
+	renderLong = `
+Render documents for a phase.
+`
+
 	renderExample = `
-# Get all 'initinfra' phase documents containing labels "app=helm" and
-# "service=tiller"
-airshipctl phase render initinfra -l app=helm,service=tiller
+Get all 'initinfra' phase documents containing labels "app=helm" and "service=tiller"
+# airshipctl phase render initinfra -l app=helm,service=tiller
 
-# Get all phase documents containing labels "app=helm" and "service=tiller"
-# and kind 'Deployment'
-airshipctl phase render initinfra -l app=helm,service=tiller -k Deployment
+Get all phase documents containing labels "app=helm" and "service=tiller" and kind 'Deployment'
+# airshipctl phase render initinfra -l app=helm,service=tiller -k Deployment
 
-# Get all documents from config bundle
-airshipctl phase render --source config
+Get all documents from config bundle
+# airshipctl phase render --source config
 
-# Get all documents executor rendered documents for a phase
-airshipctl phase render initinfra --source executor
+Get all documents executor rendered documents for a phase
+# airshipctl phase render initinfra --source executor
 `
 )
 
@@ -44,7 +46,8 @@ func NewRenderCommand(cfgFactory config.Factory) *cobra.Command {
 	filterOptions := &phase.RenderCommand{}
 	renderCmd := &cobra.Command{
 		Use:     "render PHASE_NAME",
-		Short:   "Render phase documents from model",
+		Short:   "Airshipctl command to render phase documents from model",
+		Long:    renderLong,
 		Example: renderExample,
 		Args:    RenderArgs(filterOptions),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -60,48 +63,15 @@ func NewRenderCommand(cfgFactory config.Factory) *cobra.Command {
 func addRenderFlags(filterOptions *phase.RenderCommand, cmd *cobra.Command) {
 	flags := cmd.Flags()
 
-	flags.StringVarP(
-		&filterOptions.Label,
-		"label",
-		"l",
-		"",
-		"filter documents by Labels")
-
-	flags.StringVarP(
-		&filterOptions.Annotation,
-		"annotation",
-		"a",
-		"",
-		"filter documents by Annotations")
-
-	flags.StringVarP(
-		&filterOptions.APIVersion,
-		"apiversion",
-		"g",
-		"",
-		"filter documents by API version")
-
-	flags.StringVarP(
-		&filterOptions.Kind,
-		"kind",
-		"k",
-		"",
-		"filter documents by Kinds")
-
-	flags.StringVarP(
-		&filterOptions.Source,
-		"source",
-		"s",
-		phase.RenderSourcePhase,
-		"phase: phase entrypoint will be rendered by kustomize, if entrypoint is not specified "+
-			"error will be returned\n"+
+	flags.StringVarP(&filterOptions.Label, "label", "l", "", "filter documents by Labels")
+	flags.StringVarP(&filterOptions.Annotation, "annotation", "a", "", "filter documents by Annotations")
+	flags.StringVarP(&filterOptions.APIVersion, "apiversion", "g", "", "filter documents by API version")
+	flags.StringVarP(&filterOptions.Kind, "kind", "k", "", "filter documents by Kind")
+	flags.StringVarP(&filterOptions.Source, "source", "s", phase.RenderSourcePhase,
+		"phase: phase entrypoint will be rendered by kustomize, if entrypoint is not specified error will be returned\n"+
 			"executor: rendering will be performed by executor if the phase\n"+
 			"config: this will render bundle containing phase and executor documents")
-	flags.BoolVarP(
-		&filterOptions.FailOnDecryptionError,
-		"decrypt",
-		"d",
-		false,
+	flags.BoolVarP(&filterOptions.FailOnDecryptionError, "decrypt", "d", false,
 		"ensure that decryption of encrypted documents has finished successfully")
 }
 

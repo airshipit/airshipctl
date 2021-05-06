@@ -1,17 +1,16 @@
-This command provides capabilities for interacting with phases,
-such as getting list and applying specific one.
+Provides capabilities for interacting with phases, such as getting list of phases or applying a specific one.
 
 Usage:
   phase [command]
 
 Available Commands:
   help        Help about any command
-  list        List phases
-  render      Render phase documents from model
-  run         Run phase
-  status      Status of the phase
-  tree        Tree view of kustomize entrypoints of phase
-  validate    Assert that a phase is valid
+  list        Airshipctl command to list phases
+  render      Airshipctl command to render phase documents from model
+  run         Airshipctl command to run phase
+  status      Airshipctl command to show status of the phase
+  tree        Airshipctl command to show tree view of kustomize entrypoints of phase
+  validate    Airshipctl command to validate phase and its documents
 
 Flags:
   -h, --help   help for phase

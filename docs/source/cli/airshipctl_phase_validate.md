@@ -1,10 +1,11 @@
 ## airshipctl phase validate
 
-Assert that a phase is valid
+Airshipctl command to validate phase and its documents
 
 ### Synopsis
 
-Command which would validate that the phase contains the required documents to run the phase.
+
+Validates phase and its documents. To list the phases associated with a site, run 'airshipctl phase list'.
 
 
 ```
@@ -15,8 +16,8 @@ airshipctl phase validate PHASE_NAME [flags]
 
 ```
 
-# validate initinfra phase
-airshipctl phase validate initinfra
+To validate initinfra phase
+# airshipctl phase validate initinfra
 
 ```
 
@@ -35,5 +36,5 @@ airshipctl phase validate initinfra
 
 ### SEE ALSO
 
-* [airshipctl phase](airshipctl_phase.md)	 - Manage phases
+* [airshipctl phase](airshipctl_phase.md)	 - Airshipctl command to manage phases
 

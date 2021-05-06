@@ -1,15 +1,15 @@
-Summarized tree view of the kustomize entrypoints of a specific phase
+Get tree view of the kustomize entrypoints of a phase.
 
 Usage:
   tree PHASE_NAME [flags]
 
 Examples:
 
-# yaml explorer of a phase with relative path
-airshipctl phase tree /manifests/site/test-site/ephemeral/initinfra
+yaml explorer of a phase with relative path
+# airshipctl phase tree /manifests/site/test-site/ephemeral/initinfra
 
-#yaml explorer of a phase with phase name
-airshipctl phase tree initinfra-ephemeral
+yaml explorer of a phase with phase name
+# airshipctl phase tree initinfra-ephemeral
 
 
 Flags:

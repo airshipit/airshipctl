@@ -1,10 +1,11 @@
 ## airshipctl phase tree
 
-Tree view of kustomize entrypoints of phase
+Airshipctl command to show tree view of kustomize entrypoints of phase
 
 ### Synopsis
 
-Summarized tree view of the kustomize entrypoints of a specific phase
+Get tree view of the kustomize entrypoints of a phase.
+
 
 ```
 airshipctl phase tree PHASE_NAME [flags]
@@ -14,11 +15,11 @@ airshipctl phase tree PHASE_NAME [flags]
 
 ```
 
-# yaml explorer of a phase with relative path
-airshipctl phase tree /manifests/site/test-site/ephemeral/initinfra
+yaml explorer of a phase with relative path
+# airshipctl phase tree /manifests/site/test-site/ephemeral/initinfra
 
-#yaml explorer of a phase with phase name
-airshipctl phase tree initinfra-ephemeral
+yaml explorer of a phase with phase name
+# airshipctl phase tree initinfra-ephemeral
 
 ```
 
@@ -37,5 +38,5 @@ airshipctl phase tree initinfra-ephemeral
 
 ### SEE ALSO
 
-* [airshipctl phase](airshipctl_phase.md)	 - Manage phases
+* [airshipctl phase](airshipctl_phase.md)	 - Airshipctl command to manage phases
 

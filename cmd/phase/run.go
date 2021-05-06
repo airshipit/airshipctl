@@ -24,10 +24,13 @@ import (
 const (
 	// TODO (kkalynovskyi) when different phase executors will be implemented, and their description is more clear,
 	// add documentation here. also consider adding dynamic phase descriptions based on executors.
-	runLong    = `Run specific life-cycle phase such as ephemeral-control-plane, target-initinfra etc...`
+	runLong = `
+Run a phase such as controlplane-ephemeral, remotedirect-ephemeral, initinfra-ephemeral, etc...
+To list the phases associated with a site, run 'airshipctl phase list'.
+`
 	runExample = `
-# Run initinfra phase
-airshipctl phase run ephemeral-control-plane
+Run initinfra phase
+# airshipctl phase run ephemeral-control-plane
 `
 )
 
@@ -40,7 +43,7 @@ func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
 
 	runCmd := &cobra.Command{
 		Use:     "run PHASE_NAME",
-		Short:   "Run phase",
+		Short:   "Airshipctl command to run phase",
 		Long:    runLong,
 		Args:    cobra.ExactArgs(1),
 		Example: runExample,
@@ -50,15 +53,7 @@ func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
 		},
 	}
 	flags := runCmd.Flags()
-	flags.BoolVar(
-		&p.Options.DryRun,
-		"dry-run",
-		false,
-		"simulate phase execution")
-	flags.DurationVar(
-		&p.Options.Timeout,
-		"wait-timeout",
-		0,
-		"wait timeout")
+	flags.BoolVar(&p.Options.DryRun, "dry-run", false, "simulate phase execution")
+	flags.DurationVar(&p.Options.Timeout, "wait-timeout", 0, "wait timeout")
 	return runCmd
 }

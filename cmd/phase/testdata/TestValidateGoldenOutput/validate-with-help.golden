@@ -1,12 +1,13 @@
-Command which would validate that the phase contains the required documents to run the phase.
+
+Validates phase and its documents. To list the phases associated with a site, run 'airshipctl phase list'.
 
 Usage:
   validate PHASE_NAME [flags]
 
 Examples:
 
-# validate initinfra phase
-airshipctl phase validate initinfra
+To validate initinfra phase
+# airshipctl phase validate initinfra
 
 
 Flags:

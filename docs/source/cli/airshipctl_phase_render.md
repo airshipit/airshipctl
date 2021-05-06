@@ -1,10 +1,12 @@
 ## airshipctl phase render
 
-Render phase documents from model
+Airshipctl command to render phase documents from model
 
 ### Synopsis
 
-Render phase documents from model
+
+Render documents for a phase.
+
 
 ```
 airshipctl phase render PHASE_NAME [flags]
@@ -14,19 +16,17 @@ airshipctl phase render PHASE_NAME [flags]
 
 ```
 
-# Get all 'initinfra' phase documents containing labels "app=helm" and
-# "service=tiller"
-airshipctl phase render initinfra -l app=helm,service=tiller
+Get all 'initinfra' phase documents containing labels "app=helm" and "service=tiller"
+# airshipctl phase render initinfra -l app=helm,service=tiller
 
-# Get all phase documents containing labels "app=helm" and "service=tiller"
-# and kind 'Deployment'
-airshipctl phase render initinfra -l app=helm,service=tiller -k Deployment
+Get all phase documents containing labels "app=helm" and "service=tiller" and kind 'Deployment'
+# airshipctl phase render initinfra -l app=helm,service=tiller -k Deployment
 
-# Get all documents from config bundle
-airshipctl phase render --source config
+Get all documents from config bundle
+# airshipctl phase render --source config
 
-# Get all documents executor rendered documents for a phase
-airshipctl phase render initinfra --source executor
+Get all documents executor rendered documents for a phase
+# airshipctl phase render initinfra --source executor
 
 ```
 
@@ -37,7 +37,7 @@ airshipctl phase render initinfra --source executor
   -g, --apiversion string   filter documents by API version
   -d, --decrypt             ensure that decryption of encrypted documents has finished successfully
   -h, --help                help for render
-  -k, --kind string         filter documents by Kinds
+  -k, --kind string         filter documents by Kind
   -l, --label string        filter documents by Labels
   -s, --source string       phase: phase entrypoint will be rendered by kustomize, if entrypoint is not specified error will be returned
                             executor: rendering will be performed by executor if the phase
@@ -53,5 +53,5 @@ airshipctl phase render initinfra --source executor
 
 ### SEE ALSO
 
-* [airshipctl phase](airshipctl_phase.md)	 - Manage phases
+* [airshipctl phase](airshipctl_phase.md)	 - Airshipctl command to manage phases
 

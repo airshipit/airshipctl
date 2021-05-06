@@ -1,10 +1,13 @@
 ## airshipctl phase run
 
-Run phase
+Airshipctl command to run phase
 
 ### Synopsis
 
-Run specific life-cycle phase such as ephemeral-control-plane, target-initinfra etc...
+
+Run a phase such as controlplane-ephemeral, remotedirect-ephemeral, initinfra-ephemeral, etc...
+To list the phases associated with a site, run 'airshipctl phase list'.
+
 
 ```
 airshipctl phase run PHASE_NAME [flags]
@@ -14,8 +17,8 @@ airshipctl phase run PHASE_NAME [flags]
 
 ```
 
-# Run initinfra phase
-airshipctl phase run ephemeral-control-plane
+Run initinfra phase
+# airshipctl phase run ephemeral-control-plane
 
 ```
 
@@ -36,5 +39,5 @@ airshipctl phase run ephemeral-control-plane
 
 ### SEE ALSO
 
-* [airshipctl phase](airshipctl_phase.md)	 - Manage phases
+* [airshipctl phase](airshipctl_phase.md)	 - Airshipctl command to manage phases
 

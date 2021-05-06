@@ -22,8 +22,7 @@ import (
 
 const (
 	phaseLong = `
-This command provides capabilities for interacting with phases,
-such as getting list and applying specific one.
+Provides capabilities for interacting with phases, such as getting list of phases or applying a specific one.
 `
 )
 
@@ -31,7 +30,7 @@ such as getting list and applying specific one.
 func NewPhaseCommand(cfgFactory config.Factory) *cobra.Command {
 	phaseRootCmd := &cobra.Command{
 		Use:   "phase",
-		Short: "Manage phases",
+		Short: "Airshipctl command to manage phases",
 		Long:  phaseLong[1:],
 	}
 

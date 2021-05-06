@@ -24,14 +24,15 @@ import (
 
 const (
 	treeLong = `
-Summarized tree view of the kustomize entrypoints of a specific phase`
+Get tree view of the kustomize entrypoints of a phase.
+`
 
 	treeExample = `
-# yaml explorer of a phase with relative path
-airshipctl phase tree /manifests/site/test-site/ephemeral/initinfra
+yaml explorer of a phase with relative path
+# airshipctl phase tree /manifests/site/test-site/ephemeral/initinfra
 
-#yaml explorer of a phase with phase name
-airshipctl phase tree initinfra-ephemeral
+yaml explorer of a phase with phase name
+# airshipctl phase tree initinfra-ephemeral
 `
 )
 
@@ -39,7 +40,7 @@ airshipctl phase tree initinfra-ephemeral
 func NewTreeCommand(cfgFactory config.Factory) *cobra.Command {
 	treeCmd := &cobra.Command{
 		Use:     "tree PHASE_NAME",
-		Short:   "Tree view of kustomize entrypoints of phase",
+		Short:   "Airshipctl command to show tree view of kustomize entrypoints of phase",
 		Long:    treeLong[1:],
 		Args:    cobra.ExactArgs(1),
 		Example: treeExample,

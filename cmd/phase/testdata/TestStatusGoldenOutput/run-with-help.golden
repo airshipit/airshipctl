@@ -1,12 +1,14 @@
-Status of the specific life-cycle phase such as ephemeral-control-plane, target-initinfra etc...
+
+Get the status of a phase such as ephemeral-control-plane, target-initinfra etc...
+To list the phases associated with a site, run 'airshipctl phase list'.
 
 Usage:
-  status [flags]
+  status PHASE_NAME [flags]
 
 Examples:
 
-#Status of initinfra phase
-airshipctl phase status ephemeral-control-plane
+Status of initinfra phase
+# airshipctl phase status ephemeral-control-plane
 
 
 Flags:

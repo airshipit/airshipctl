@@ -22,10 +22,13 @@ import (
 )
 
 const (
-	statusLong    = `Status of the specific life-cycle phase such as ephemeral-control-plane, target-initinfra etc...`
+	statusLong = `
+Get the status of a phase such as ephemeral-control-plane, target-initinfra etc...
+To list the phases associated with a site, run 'airshipctl phase list'.
+`
 	statusExample = `
-#Status of initinfra phase
-airshipctl phase status ephemeral-control-plane
+Status of initinfra phase
+# airshipctl phase status ephemeral-control-plane
 `
 )
 
@@ -37,8 +40,8 @@ func NewStatusCommand(cfgFactory config.Factory) *cobra.Command {
 	}
 
 	statusCmd := &cobra.Command{
-		Use:     "status",
-		Short:   "Status of the phase",
+		Use:     "status PHASE_NAME",
+		Short:   "Airshipctl command to show status of the phase",
 		Long:    statusLong,
 		Args:    cobra.ExactArgs(1),
 		Example: statusExample,

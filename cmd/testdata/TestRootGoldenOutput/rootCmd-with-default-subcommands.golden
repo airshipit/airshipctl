@@ -12,7 +12,7 @@ Available Commands:
   config      Airshipctl command to manage airshipctl config file
   document    Manage deployment documents
   help        Help about any command
-  phase       Manage phases
+  phase       Airshipctl command to manage phases
   plan        Manage plans
   secret      Manage secrets
   version     Show the version number of airshipctl

@@ -23,25 +23,24 @@ import (
 
 const (
 	cmdLong = `
-List life-cycle phases which were defined in document model by group.
-Phases within a group are executed sequentially. Multiple phase groups
-are executed in parallel.
+List phases defined in site manifests by plan. Phases within a plan are
+executed sequentially. Multiple phase plans are executed in parallel.
 `
 	listExample = `
-# List phases of phasePlan
-airshipctl phase list --plan phasePlan
+List phases of phasePlan
+# airshipctl phase list --plan phasePlan
 
-# To output the contents to table (default operation)
-airshipctl phase list --plan phasePlan -o table
+To output the contents in table format (default operation)
+# airshipctl phase list --plan phasePlan -o table
 
-# To output the contents to yaml
-airshipctl phase list --plan phasePlan -o yaml
+To output the contents in yaml format
+# airshipctl phase list --plan phasePlan -o yaml
 
-# List all phases
-airshipctl phase list
+List all phases
+# airshipctl phase list
 
-# List phases with clustername
-airshipctl phase list --cluster-name clustername
+List phases with clustername
+# airshipctl phase list --cluster-name clustername
 `
 )
 
@@ -51,7 +50,7 @@ func NewListCommand(cfgFactory config.Factory) *cobra.Command {
 
 	planCmd := &cobra.Command{
 		Use:     "list PHASE_NAME",
-		Short:   "List phases",
+		Short:   "Airshipctl command to list phases",
 		Long:    cmdLong[1:],
 		Example: listExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -67,22 +66,8 @@ func NewListCommand(cfgFactory config.Factory) *cobra.Command {
 func addListFlags(options *phase.ListCommand, cmd *cobra.Command) {
 	flags := cmd.Flags()
 
-	flags.StringVarP(
-		&options.ClusterName,
-		"cluster-name",
-		"c",
-		"",
-		"filter documents by cluster name")
-
-	flags.StringVar(
-		&options.PlanID.Name,
-		"plan",
-		"",
-		"Plan name of a plan")
-
-	flags.StringVarP(
-		&options.OutputFormat,
-		"output", "o", "table", "'table' "+
-			"and 'yaml' are available "+
-			"output formats")
+	flags.StringVarP(&options.ClusterName, "cluster-name", "c", "", "filter documents by cluster name")
+	flags.StringVar(&options.PlanID.Name, "plan", "", "plan name of a plan")
+	flags.StringVarP(&options.OutputFormat, "output", "o", "table",
+		"output format. Supported formats are 'table' and 'yaml'")
 }

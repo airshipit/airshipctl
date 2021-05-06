@@ -22,13 +22,13 @@ import (
 )
 
 const (
-	validLong = `Command which would validate that the phase contains ` +
-		`the required documents to run the phase.
+	validLong = `
+Validates phase and its documents. To list the phases associated with a site, run 'airshipctl phase list'.
 `
 
 	validExample = `
-# validate initinfra phase
-airshipctl phase validate initinfra
+To validate initinfra phase
+# airshipctl phase validate initinfra
 `
 )
 
@@ -40,7 +40,7 @@ func NewValidateCommand(cfgFactory config.Factory) *cobra.Command {
 	}
 	validCmd := &cobra.Command{
 		Use:     "validate PHASE_NAME",
-		Short:   "Assert that a phase is valid",
+		Short:   "Airshipctl command to validate phase and its documents",
 		Long:    validLong,
 		Args:    cobra.ExactArgs(1),
 		Example: validExample,

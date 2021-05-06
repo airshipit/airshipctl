@@ -1,11 +1,10 @@
 ## airshipctl phase
 
-Manage phases
+Airshipctl command to manage phases
 
 ### Synopsis
 
-This command provides capabilities for interacting with phases,
-such as getting list and applying specific one.
+Provides capabilities for interacting with phases, such as getting list of phases or applying a specific one.
 
 
 ### Options
@@ -24,10 +23,10 @@ such as getting list and applying specific one.
 ### SEE ALSO
 
 * [airshipctl](airshipctl.md)	 - A unified entrypoint to various airship components
-* [airshipctl phase list](airshipctl_phase_list.md)	 - List phases
-* [airshipctl phase render](airshipctl_phase_render.md)	 - Render phase documents from model
-* [airshipctl phase run](airshipctl_phase_run.md)	 - Run phase
-* [airshipctl phase status](airshipctl_phase_status.md)	 - Status of the phase
-* [airshipctl phase tree](airshipctl_phase_tree.md)	 - Tree view of kustomize entrypoints of phase
-* [airshipctl phase validate](airshipctl_phase_validate.md)	 - Assert that a phase is valid
+* [airshipctl phase list](airshipctl_phase_list.md)	 - Airshipctl command to list phases
+* [airshipctl phase render](airshipctl_phase_render.md)	 - Airshipctl command to render phase documents from model
+* [airshipctl phase run](airshipctl_phase_run.md)	 - Airshipctl command to run phase
+* [airshipctl phase status](airshipctl_phase_status.md)	 - Airshipctl command to show status of the phase
+* [airshipctl phase tree](airshipctl_phase_tree.md)	 - Airshipctl command to show tree view of kustomize entrypoints of phase
+* [airshipctl phase validate](airshipctl_phase_validate.md)	 - Airshipctl command to validate phase and its documents
 
