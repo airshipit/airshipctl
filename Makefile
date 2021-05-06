@@ -12,6 +12,9 @@ else
 GOBIN = $(shell go env GOBIN 2> /dev/null)
 endif
 
+# Produce CRDs that work back to Kubernetes 1.16
+CRD_OPTIONS ?= crd:crdVersions=v1
+
 BINDIR              := bin
 EXECUTABLE_CLI      := airshipctl
 TOOLBINDIR          := tools/bin
@@ -293,3 +296,7 @@ CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
+
+# Generate manifests e.g. CRD, RBAC etc.
+manifests: controller-gen
+	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=manifests/function/airshipctl-schemas
