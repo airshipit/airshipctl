@@ -378,3 +378,15 @@ config:
     kind: GenericContainer
     name: kubectl-pause-bmh
   documentEntryPoint: ephemeral/controlplane
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: kubectl-wait-cluster-target
+  clusterName: target-cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: kubectl-wait-cluster
+  documentEntryPoint: ephemeral/controlplane

@@ -14,17 +14,6 @@
 
 set -xe
 
-#Default wait timeout is 3600 seconds
-export TIMEOUT=${TIMEOUT:-3600}
-export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
-export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
-export CLUSTER_NAMESPACE=${CLUSTER_NAMESPACE:-"default"}
-export TARGET_NODE=${TARGET_NODE:-"$(airshipctl phase render controlplane-ephemeral \
-	-k BareMetalHost -l airshipit.org/k8s-role=controlplane-host \
-	2> /dev/null | \
-	yq .metadata.name | \
-	sed 's/"//g')"}
-
 # Annotating BMH objects with a pause label
 # Scripts for this phase placed in manifests/function/phase-helpers/pause_bmh/
 # To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
@@ -34,27 +23,19 @@ airshipctl phase run kubectl-pause-bmh --debug
 echo "Move Cluster Object to Target Cluster"
 airshipctl phase run clusterctl-move
 
-echo "Waiting for pods to be ready"
-kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT wait --all-namespaces --for=condition=Ready pods --all --timeout=3000s
-kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get pods --all-namespaces
+# Waiting for pods to be ready
+# Scripts for this phase placed in manifests/function/phase-helpers/wait_pods/
+# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+# and find ConfigMap with name kubectl-wait-pods
+airshipctl phase run kubectl-wait-pods-target --debug
+
+# Scripts for this phase placed in manifests/function/phase-helpers/get_pods/
+# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+# and find ConfigMap with name kubectl-get-pods
+airshipctl phase run kubectl-get-pods-target --debug
 
 #Wait till crds are created
-end=$(($(date +%s) + $TIMEOUT))
-echo "Waiting $TIMEOUT seconds for crds to be created."
-while true; do
-    if (kubectl --request-timeout 20s --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT -n $CLUSTER_NAMESPACE get cluster target-cluster -o json | jq '.status.controlPlaneReady' | grep -q true) ; then
-        echo -e "\nGet CRD status"
-        kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT -n $CLUSTER_NAMESPACE get bmh
-        kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT -n $CLUSTER_NAMESPACE get machines
-        kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT -n $CLUSTER_NAMESPACE get clusters
-        break
-    else
-        now=$(date +%s)
-        if [ $now -gt $end ]; then
-            echo -e "\nCluster move failed and CRDs was not ready before TIMEOUT."
-            exit 1
-        fi
-        echo -n .
-        sleep 15
-    fi
-done
+# Scripts for this phase placed in manifests/function/phase-helpers/wait_cluster/
+# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+# and find ConfigMap with name kubectl-wait-cluster
+airshipctl phase run kubectl-wait-cluster-target --debug

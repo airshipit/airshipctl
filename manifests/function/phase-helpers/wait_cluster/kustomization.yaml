@@ -1,0 +1,6 @@
+configMapGenerator:
+- name: kubectl-wait-cluster
+  options:
+    disableNameSuffixHash: true
+  files:
+  - script=kubectl_wait_cluster.sh
