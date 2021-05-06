@@ -1,10 +1,10 @@
 ## airshipctl secret
 
-Manage secrets
+Airshipctl command to manage secrets
 
 ### Synopsis
 
-Manage secrets
+Commands and sub-commnads defined can be used to manage secrets.
 
 ### Options
 
@@ -22,5 +22,5 @@ Manage secrets
 ### SEE ALSO
 
 * [airshipctl](airshipctl.md)	 - A unified entrypoint to various airship components
-* [airshipctl secret generate](airshipctl_secret_generate.md)	 - Generate various secrets
+* [airshipctl secret generate](airshipctl_secret_generate.md)	 - Airshipctl command to generate secrets
 

@@ -25,7 +25,7 @@ func NewGenerateCommand() *cobra.Command {
 	generateRootCmd := &cobra.Command{
 		Use: "generate",
 		// TODO(howell): Make this more expressive
-		Short: "Generate various secrets",
+		Short: "Airshipctl command to generate secrets",
 	}
 
 	generateRootCmd.AddCommand(encryptionkey.NewGenerateEncryptionKeyCommand())

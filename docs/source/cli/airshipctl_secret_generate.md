@@ -1,10 +1,10 @@
 ## airshipctl secret generate
 
-Generate various secrets
+Airshipctl command to generate secrets
 
 ### Synopsis
 
-Generate various secrets
+Airshipctl command to generate secrets
 
 ### Options
 
@@ -21,6 +21,6 @@ Generate various secrets
 
 ### SEE ALSO
 
-* [airshipctl secret](airshipctl_secret.md)	 - Manage secrets
-* [airshipctl secret generate encryptionkey](airshipctl_secret_generate_encryptionkey.md)	 - Generates a secure encryption key or passphrase
+* [airshipctl secret](airshipctl_secret.md)	 - Airshipctl command to manage secrets
+* [airshipctl secret generate encryptionkey](airshipctl_secret_generate_encryptionkey.md)	 - Airshipctl command to generate a secure encryption key or passphrase
 

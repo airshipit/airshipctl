@@ -25,7 +25,8 @@ func NewSecretCommand() *cobra.Command {
 	secretRootCmd := &cobra.Command{
 		Use: "secret",
 		// TODO(howell): Make this more expressive
-		Short: "Manage secrets",
+		Short: "Airshipctl command to manage secrets",
+		Long:  "Commands and sub-commnads defined can be used to manage secrets.",
 	}
 
 	secretRootCmd.AddCommand(generate.NewGenerateCommand())

@@ -25,7 +25,7 @@ A unified entrypoint to various airship components
 * [airshipctl config](airshipctl_config.md)	 - Airshipctl command to manage airshipctl config file
 * [airshipctl document](airshipctl_document.md)	 - Manage deployment documents
 * [airshipctl phase](airshipctl_phase.md)	 - Airshipctl command to manage phases
-* [airshipctl plan](airshipctl_plan.md)	 - Manage plans
-* [airshipctl secret](airshipctl_secret.md)	 - Manage secrets
+* [airshipctl plan](airshipctl_plan.md)	 - Airshipctl command to manage plans
+* [airshipctl secret](airshipctl_secret.md)	 - Airshipctl command to manage secrets
 * [airshipctl version](airshipctl_version.md)	 - Show the version number of airshipctl
 

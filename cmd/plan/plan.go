@@ -22,8 +22,7 @@ import (
 
 const (
 	planLong = `
-This command provides capabilities for interacting with plan objects,
-responsible for execution phases in groups
+Provides capabilities for interacting with plan objects, responsible for execution of phases in groups.
 `
 )
 
@@ -31,7 +30,7 @@ responsible for execution phases in groups
 func NewPlanCommand(cfgFactory config.Factory) *cobra.Command {
 	planRootCmd := &cobra.Command{
 		Use:   "plan",
-		Short: "Manage plans",
+		Short: "Airshipctl command to manage plans",
 		Long:  planLong[1:],
 	}
 

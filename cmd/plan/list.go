@@ -23,17 +23,18 @@ import (
 
 const (
 	listLong = `
-List life-cycle plans which were defined in document model.
+List plans defined in site manifest.
 `
+
 	listExample = `
-#list plan
-airshipctl plan list
+List plan
+# airshipctl plan list
 
-#list plan(yaml output format)
-airshipctl plan list -o yaml
+List plan(yaml output format)
+# airshipctl plan list -o yaml
 
-#list plan(table output format)
-airshipctl plan list -o table`
+List plan(table output format)
+# airshipctl plan list -o table`
 )
 
 // NewListCommand creates a command which prints available phase plans
@@ -42,7 +43,7 @@ func NewListCommand(cfgFactory config.Factory) *cobra.Command {
 
 	listCmd := &cobra.Command{
 		Use:     "list",
-		Short:   "List plans",
+		Short:   "Airshipctl command to list plans",
 		Long:    listLong[1:],
 		Example: listExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -51,9 +52,7 @@ func NewListCommand(cfgFactory config.Factory) *cobra.Command {
 		},
 	}
 	flags := listCmd.Flags()
-	flags.StringVarP(&p.Options.FormatType,
-		"output", "o", "table", "'table' "+
-			"and 'yaml' are available "+
-			"output formats")
+	flags.StringVarP(&p.Options.FormatType, "output", "o", "table",
+		"output format. Supported formats are 'table' and 'yaml'")
 	return listCmd
 }

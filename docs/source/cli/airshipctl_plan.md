@@ -1,11 +1,10 @@
 ## airshipctl plan
 
-Manage plans
+Airshipctl command to manage plans
 
 ### Synopsis
 
-This command provides capabilities for interacting with plan objects,
-responsible for execution phases in groups
+Provides capabilities for interacting with plan objects, responsible for execution of phases in groups.
 
 
 ### Options
@@ -24,7 +23,7 @@ responsible for execution phases in groups
 ### SEE ALSO
 
 * [airshipctl](airshipctl.md)	 - A unified entrypoint to various airship components
-* [airshipctl plan list](airshipctl_plan_list.md)	 - List plans
-* [airshipctl plan run](airshipctl_plan_run.md)	 - Run plan
-* [airshipctl plan validate](airshipctl_plan_validate.md)	 - Validate plan
+* [airshipctl plan list](airshipctl_plan_list.md)	 - Airshipctl command to list plans
+* [airshipctl plan run](airshipctl_plan_run.md)	 - Airshipctl command to run plan
+* [airshipctl plan validate](airshipctl_plan_validate.md)	 - Airshipctl command to validate plan
 

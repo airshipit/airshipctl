@@ -1,6 +1,6 @@
 ## airshipctl secret generate encryptionkey
 
-Generates a secure encryption key or passphrase
+Airshipctl command to generate a secure encryption key or passphrase
 
 ### Synopsis
 
@@ -17,12 +17,11 @@ airshipctl secret generate encryptionkey [flags]
 
 ```
 
-# Generates a secure encryption key or passphrase.
-airshipctl secret generate encryptionkey
+Generates a secure encryption key or passphrase.
+# airshipctl secret generate encryptionkey
 
-# Generates a secure encryption key or passphrase matching the regular expression
-airshipctl secret generate encryptionkey \
-  --regex Xy[a-c][0-9]!a*
+Generates a secure encryption key or passphrase matching the regular expression
+# airshipctl secret generate encryptionkey --regex Xy[a-c][0-9]!a*
 
 ```
 
@@ -30,8 +29,8 @@ airshipctl secret generate encryptionkey \
 
 ```
   -h, --help           help for encryptionkey
-      --limit int      Limit number of characters for + or * regex (default 5)
-      --regex string   Regular expression string
+      --limit int      limit number of characters for + or * regex (default 5)
+      --regex string   regular expression string
 ```
 
 ### Options inherited from parent commands
@@ -43,5 +42,5 @@ airshipctl secret generate encryptionkey \
 
 ### SEE ALSO
 
-* [airshipctl secret generate](airshipctl_secret_generate.md)	 - Generate various secrets
+* [airshipctl secret generate](airshipctl_secret_generate.md)	 - Airshipctl command to generate secrets
 

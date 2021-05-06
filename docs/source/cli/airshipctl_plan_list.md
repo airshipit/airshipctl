@@ -1,10 +1,10 @@
 ## airshipctl plan list
 
-List plans
+Airshipctl command to list plans
 
 ### Synopsis
 
-List life-cycle plans which were defined in document model.
+List plans defined in site manifest.
 
 
 ```
@@ -15,21 +15,21 @@ airshipctl plan list [flags]
 
 ```
 
-#list plan
-airshipctl plan list
+List plan
+# airshipctl plan list
 
-#list plan(yaml output format)
-airshipctl plan list -o yaml
+List plan(yaml output format)
+# airshipctl plan list -o yaml
 
-#list plan(table output format)
-airshipctl plan list -o table
+List plan(table output format)
+# airshipctl plan list -o table
 ```
 
 ### Options
 
 ```
   -h, --help            help for list
-  -o, --output string   'table' and 'yaml' are available output formats (default "table")
+  -o, --output string   output format. Supported formats are 'table' and 'yaml' (default "table")
 ```
 
 ### Options inherited from parent commands
@@ -41,5 +41,5 @@ airshipctl plan list -o table
 
 ### SEE ALSO
 
-* [airshipctl plan](airshipctl_plan.md)	 - Manage plans
+* [airshipctl plan](airshipctl_plan.md)	 - Airshipctl command to manage plans
 
