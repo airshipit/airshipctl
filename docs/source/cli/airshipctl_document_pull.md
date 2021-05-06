@@ -4,7 +4,12 @@ Pulls documents from remote git repository
 
 ### Synopsis
 
-Pulls documents from remote git repository
+The remote manifests repositories as well as the target path where
+the repositories will be cloned are defined in the airship config file.
+
+By default the airship config file is initialized with the
+repository "https://opendev.org/airship/treasuremap" as a source of
+manifests and with the manifests target path "$HOME/.airship/default".
 
 ```
 airshipctl document pull [flags]

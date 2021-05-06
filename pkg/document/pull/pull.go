@@ -44,12 +44,12 @@ func cloneRepositories(cfg *config.Config, noCheckout bool) error {
 		if err != nil {
 			return err
 		}
-		repository, err := repo.NewRepository(currentManifest.TargetPath, extraRepoConfig)
+		repository, err := repo.NewRepository(currentManifest.GetTargetPath(), extraRepoConfig)
 		if err != nil {
 			return err
 		}
 		log.Printf("Downloading %s repository %s from %s into %s",
-			repoName, repository.Name, extraRepoConfig.URL(), currentManifest.TargetPath)
+			repoName, repository.Name, extraRepoConfig.URL(), currentManifest.GetTargetPath())
 		err = repository.Download(noCheckout)
 		if err != nil {
 			return err

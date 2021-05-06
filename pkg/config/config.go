@@ -333,7 +333,7 @@ func (c *Config) CurrentContextTargetPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return ccm.TargetPath, nil
+	return ccm.GetTargetPath(), nil
 }
 
 // CurrentContextPhaseRepositoryDir returns phase repository directory from current context's manifest
@@ -516,7 +516,7 @@ func (c *Config) CurrentContextManifestMetadata() (*Metadata, error) {
 		PhaseMeta: &PhaseMeta{},
 	}
 
-	data, err := c.fileSystem.ReadFile(filepath.Join(manifest.TargetPath, phaseRepoDir, manifest.MetadataPath))
+	data, err := c.fileSystem.ReadFile(filepath.Join(manifest.GetTargetPath(), phaseRepoDir, manifest.MetadataPath))
 	if err != nil {
 		return nil, err
 	}

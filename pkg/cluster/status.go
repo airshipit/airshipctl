@@ -65,7 +65,7 @@ func (o *statusOptions) GetStatusMapDocs() (*StatusMap, []document.Document, err
 		return nil, nil, err
 	}
 
-	docBundle, err := document.NewBundleByPath(manifest.TargetPath)
+	docBundle, err := document.NewBundleByPath(manifest.GetTargetPath())
 	if err != nil {
 		return nil, nil, err
 	}
