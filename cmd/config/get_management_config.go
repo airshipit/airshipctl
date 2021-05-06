@@ -23,19 +23,27 @@ import (
 	"opendev.org/airship/airshipctl/pkg/config"
 )
 
-const getManagementConfigExample = `
-# View all defined management configurations
-airshipctl config get-management-configs
-
-# View a specific management configuration named "default"
-airshipctl config get-management-config default
+const (
+	getManagementConfigLong = `
+Displays a specific management config information, or all defined management configs if no name is provided.
+The information relates to reboot-delays and retry in seconds along with management-type that has to be used.
 `
+
+	getManagementConfigExample = `
+View all management configurations
+# airshipctl config get-management-configs
+
+View a specific management configuration named "default"
+# airshipctl config get-management-config default
+`
+)
 
 // NewGetManagementConfigCommand creates a command that enables printing a management configuration to stdout.
 func NewGetManagementConfigCommand(cfgFactory config.Factory) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "get-management-config [NAME]",
-		Short:   "View a management config or all management configs defined in the airshipctl config",
+		Use:     "get-management-config MGMT_CONFIG_NAME",
+		Short:   "Airshipctl command to view management config(s) defined in the airshipctl config",
+		Long:    getManagementConfigLong,
 		Example: getManagementConfigExample,
 		Args:    cobra.MaximumNArgs(1),
 		Aliases: []string{"get-management-configs"},

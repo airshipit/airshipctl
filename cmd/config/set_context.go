@@ -23,18 +23,16 @@ import (
 
 const (
 	setContextLong = `
-Create or modify a context in the airshipctl config files.
+Creates or modifies context in the airshipctl config file based on the CONTEXT_NAME passed or for the current context
+if --current flag is specified. It accepts optional flags which include manifest name and management-config name.
 `
 
 	setContextExample = `
-# Create a new context named "exampleContext"
-airshipctl config set-context exampleContext \
-  --manifest=exampleManifest \
+To create a new context named "exampleContext"
+# airshipctl config set-context exampleContext --manifest=exampleManifest
 
-# Update the manifest of the current-context
-airshipctl config set-context \
-  --current \
-  --manifest=exampleManifest
+To update the manifest of the current-context
+# airshipctl config set-context --current --manifest=exampleManifest
 `
 
 	setContextManifestFlag         = "manifest"
@@ -47,8 +45,8 @@ airshipctl config set-context \
 func NewSetContextCommand(cfgFactory config.Factory) *cobra.Command {
 	o := &config.ContextOptions{}
 	cmd := &cobra.Command{
-		Use:     "set-context NAME",
-		Short:   "Manage contexts",
+		Use:     "set-context CONTEXT_NAME",
+		Short:   "Airshipctl command to create/modify context in airshipctl config file",
 		Long:    setContextLong[1:],
 		Example: setContextExample,
 		Args:    cobra.MaximumNArgs(1),
@@ -62,22 +60,11 @@ func NewSetContextCommand(cfgFactory config.Factory) *cobra.Command {
 func addSetContextFlags(cmd *cobra.Command, o *config.ContextOptions) {
 	flags := cmd.Flags()
 
-	flags.StringVar(
-		&o.Manifest,
-		setContextManifestFlag,
-		"",
+	flags.StringVar(&o.Manifest, setContextManifestFlag, "",
 		"set the manifest for the specified context")
-
-	flags.StringVar(
-		&o.ManagementConfiguration,
-		setContextManagementConfigFlag,
-		"",
+	flags.StringVar(&o.ManagementConfiguration, setContextManagementConfigFlag, "",
 		"set the management config for the specified context")
-
-	flags.BoolVar(
-		&o.Current,
-		setContextCurrentFlag,
-		false,
+	flags.BoolVar(&o.Current, setContextCurrentFlag, false,
 		"update the current context")
 }
 

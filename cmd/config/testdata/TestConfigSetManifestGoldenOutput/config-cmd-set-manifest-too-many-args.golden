@@ -1,25 +1,18 @@
 Error: accepts 1 arg(s), received 2
 Usage:
-  set-manifest NAME [flags]
+  set-manifest MANIFEST_NAME [flags]
 
 Examples:
 
-# Create a new manifest
-airshipctl config set-manifest exampleManifest \
-  --repo exampleRepo \
-  --url https://github.com/site \
-  --branch master \
-  --phase \
-  --target-path exampleTargetpath
+Create a new manifest
+# airshipctl config set-manifest exampleManifest --repo exampleRepo --url https://github.com/site \
+  --branch master --phase --target-path exampleTargetpath
 
-# Change the phase repo for manifest
-airshipctl config set-manifest e2e \
-  --repo exampleRepo \
-  --phase
+Change the phase repo for manifest
+# airshipctl config set-manifest e2e --repo exampleRepo --phase
 
-# Change the target-path for manifest
-airshipctl config set-manifest e2e \
-  --target-path /tmp/e2e
+Change the target-path for manifest
+# airshipctl config set-manifest e2e --target-path /tmp/e2e
 
 
 Flags:

@@ -20,12 +20,17 @@ import (
 	"opendev.org/airship/airshipctl/pkg/config"
 )
 
+const configLong = `
+Provides commands which can be used to manage the airshipctl config file.
+`
+
 // NewConfigCommand creates a command for interacting with the airshipctl configuration.
 func NewConfigCommand(cfgFactory config.Factory) *cobra.Command {
 	configRootCmd := &cobra.Command{
 		Use:                   "config",
 		DisableFlagsInUseLine: true,
-		Short:                 "Manage the airshipctl config file",
+		Short:                 "Airshipctl command to manage airshipctl config file",
+		Long:                  configLong,
 	}
 
 	configRootCmd.AddCommand(NewGetContextCommand(cfgFactory))

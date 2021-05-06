@@ -25,20 +25,20 @@ import (
 const (
 	useContextLong = `
 Switch to a different context defined in the airshipctl config file.
-This command doesn't change a context for the kubeconfig file.
+This command doesn't change the context for the kubeconfig file.
 `
 
 	useContextExample = `
-# Switch to a context named "exampleContext" in airshipctl config file
-airshipctl config use-context exampleContext
+Switch to a context named "exampleContext" in airshipctl config file
+# airshipctl config use-context exampleContext
 `
 )
 
 // NewUseContextCommand creates a command for switching to a defined airshipctl context.
 func NewUseContextCommand(cfgFactory config.Factory) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "use-context NAME",
-		Short:   "Switch to a different context",
+		Use:     "use-context CONTEXT_NAME",
+		Short:   "Airshipctl command to switch to a different context",
 		Long:    useContextLong[1:],
 		Example: useContextExample,
 		Args:    cobra.ExactArgs(1),

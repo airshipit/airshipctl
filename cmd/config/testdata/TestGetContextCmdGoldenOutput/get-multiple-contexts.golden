@@ -7,18 +7,18 @@ Aliases:
 
 Examples:
 
-# List all contexts
-airshipctl config get-contexts
+List all contexts
+# airshipctl config get-contexts
 
-# Display the current context
-airshipctl config get-context --current
+Display the current context
+# airshipctl config get-context --current
 
-# Display a specific context
-airshipctl config get-context exampleContext
+Display a specific context
+# airshipctl config get-context exampleContext
 
 
 Flags:
       --current       get the current context
-      --format yaml   choose between yaml or `table`, default is `yaml` (default "yaml")
+      --format yaml   supported output format yaml or `table`, default is `yaml` (default "yaml")
   -h, --help          help for get-context
 

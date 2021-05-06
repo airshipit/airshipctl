@@ -1,18 +1,20 @@
-View a management config or all management configs defined in the airshipctl config
+
+Displays a specific management config information, or all defined management configs if no name is provided.
+The information relates to reboot-delays and retry in seconds along with management-type that has to be used.
 
 Usage:
-  get-management-config [NAME] [flags]
+  get-management-config MGMT_CONFIG_NAME [flags]
 
 Aliases:
   get-management-config, get-management-configs
 
 Examples:
 
-# View all defined management configurations
-airshipctl config get-management-configs
+View all management configurations
+# airshipctl config get-management-configs
 
-# View a specific management configuration named "default"
-airshipctl config get-management-config default
+View a specific management configuration named "default"
+# airshipctl config get-management-config default
 
 
 Flags:

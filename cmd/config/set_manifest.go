@@ -25,26 +25,22 @@ import (
 
 const (
 	setManifestsLong = `
-Create or modify a manifests in the airshipctl config file.
+Creates or modifies a manifests in the airshipctl config file based on the MANIFEST_NAME argument passed.
+The optional flags that can be passed to the command are repo name, url, branch name, tag name, commit hash,
+target-path and metadata-path. Use --force flag to enable force checkout of the repo. And use --phase flag
+to enable phase repository.
 `
 
 	setManifestsExample = `
-# Create a new manifest
-airshipctl config set-manifest exampleManifest \
-  --repo exampleRepo \
-  --url https://github.com/site \
-  --branch master \
-  --phase \
-  --target-path exampleTargetpath
+Create a new manifest
+# airshipctl config set-manifest exampleManifest --repo exampleRepo --url https://github.com/site \
+  --branch master --phase --target-path exampleTargetpath
 
-# Change the phase repo for manifest
-airshipctl config set-manifest e2e \
-  --repo exampleRepo \
-  --phase
+Change the phase repo for manifest
+# airshipctl config set-manifest e2e --repo exampleRepo --phase
 
-# Change the target-path for manifest
-airshipctl config set-manifest e2e \
-  --target-path /tmp/e2e
+Change the target-path for manifest
+# airshipctl config set-manifest e2e --target-path /tmp/e2e
 `
 )
 
@@ -53,8 +49,8 @@ airshipctl config set-manifest e2e \
 func NewSetManifestCommand(cfgFactory config.Factory) *cobra.Command {
 	o := &config.ManifestOptions{}
 	cmd := &cobra.Command{
-		Use:     "set-manifest NAME",
-		Short:   "Manage manifests in airship config",
+		Use:     "set-manifest MANIFEST_NAME",
+		Short:   "Airshipctl command to create/modify manifests in airship config",
 		Long:    setManifestsLong[1:],
 		Example: setManifestsExample,
 		Args:    cobra.ExactArgs(1),
@@ -88,57 +84,22 @@ func NewSetManifestCommand(cfgFactory config.Factory) *cobra.Command {
 func addSetManifestFlags(o *config.ManifestOptions, cmd *cobra.Command) {
 	flags := cmd.Flags()
 
-	flags.StringVar(
-		&o.RepoName,
-		"repo",
-		"",
+	flags.StringVar(&o.RepoName, "repo", "",
 		"the name of the repository to be associated with this manifest")
-
-	flags.StringVar(
-		&o.URL,
-		"url",
-		"",
+	flags.StringVar(&o.URL, "url", "",
 		"the repository url to be associated with this manifest")
-
-	flags.StringVar(
-		&o.Branch,
-		"branch",
-		"",
+	flags.StringVar(&o.Branch, "branch", "",
 		"the branch to be associated with repository in this manifest")
-
-	flags.StringVar(
-		&o.CommitHash,
-		"commithash",
-		"",
+	flags.StringVar(&o.CommitHash, "commithash", "",
 		"the commit hash to be associated with repository in this manifest")
-
-	flags.StringVar(
-		&o.Tag,
-		"tag",
-		"",
+	flags.StringVar(&o.Tag, "tag", "",
 		"the tag to be associated with repository in this manifest")
-
-	flags.BoolVar(
-		&o.Force,
-		"force",
-		false,
+	flags.BoolVar(&o.Force, "force", false,
 		"if set, enable force checkout in repository with this manifest")
-
-	flags.BoolVar(
-		&o.IsPhase,
-		"phase",
-		false,
-		"if set, enable this repository as phase repository to be used with this manifest")
-
-	flags.StringVar(
-		&o.TargetPath,
-		"target-path",
-		"",
+	flags.StringVar(&o.TargetPath, "target-path", "",
 		"the target path to be set for this manifest")
-
-	flags.StringVar(
-		&o.MetadataPath,
-		"metadata-path",
-		"",
+	flags.StringVar(&o.MetadataPath, "metadata-path", "",
 		"the metadata path to be set for this manifest")
+	flags.BoolVar(&o.IsPhase, "phase", false,
+		"if set, enable this repository as phase repository to be used with this manifest")
 }

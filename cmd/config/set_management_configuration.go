@@ -23,20 +23,36 @@ import (
 )
 
 const (
+	setManagementConfigLong = `
+Creates or modifies management config information based on the MGMT_CONFIG_NAME passed. The allowed set
+of optional flags are management-type, system-action-retries and system-reboot-delay. Use --use-proxy
+and --insecure to enable proxy and insecure options respectively.
+`
+
+	setManagementConfigExample = `
+Create management configuration
+# airshipctl config set-management-config default
+
+Create or update management configuration named "default" with retry and to enable insecure options
+# airshipctl config set-management-config default --insecure --system-action-retries 40
+
+Enable proxy for "test" management configuration
+# airshipctl config set-management-config test --use-proxy
+`
 	flagInsecure            = "insecure"
-	flagInsecureDescription = "Ignore SSL certificate verification on out-of-band management requests"
+	flagInsecureDescription = "ignore SSL certificate verification on out-of-band management requests"
 
 	flagManagementType            = "management-type"
-	flagManagementTypeDescription = "Set the out-of-band management type"
+	flagManagementTypeDescription = "set the out-of-band management type"
 
 	flagUseProxy            = "use-proxy"
-	flagUseProxyDescription = "Use the proxy configuration specified in the local environment"
+	flagUseProxyDescription = "use the proxy configuration specified in the local environment"
 
 	flagSystemActionRetries            = "system-action-retries"
-	flagSystemActionRetriesDescription = "Set the number of attempts to poll a host for a status"
+	flagSystemActionRetriesDescription = "set the number of attempts to poll a host for a status"
 
 	flagSystemRebootDelay            = "system-reboot-delay"
-	flagSystemRebootDelayDescription = "Set the number of seconds to wait between power actions (e.g. shutdown, startup)"
+	flagSystemRebootDelayDescription = "set the number of seconds to wait between power actions (e.g. shutdown, startup)"
 )
 
 // NewSetManagementConfigCommand creates a command for creating and modifying clusters
@@ -44,10 +60,12 @@ const (
 func NewSetManagementConfigCommand(cfgFactory config.Factory) *cobra.Command {
 	o := &config.ManagementConfiguration{}
 	cmd := &cobra.Command{
-		Use:   "set-management-config NAME",
-		Short: "Modify an out-of-band management configuration",
-		Args:  cobra.ExactArgs(1),
-		RunE:  setManagementConfigRunE(cfgFactory, o),
+		Use:     "set-management-config MGMT_CONFIG_NAME",
+		Short:   "Airshipctl command to create/modify out-of-band management configuration in airshipctl config file",
+		Long:    setManagementConfigLong,
+		Example: setManagementConfigExample,
+		Args:    cobra.ExactArgs(1),
+		RunE:    setManagementConfigRunE(cfgFactory, o),
 	}
 
 	addSetManagementConfigFlags(cmd, o)

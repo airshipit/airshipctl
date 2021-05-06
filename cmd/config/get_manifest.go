@@ -22,15 +22,16 @@ import (
 
 const (
 	getManifestsLong = `
-Display a specific manifest information, or all defined manifests if no name is provided.
+Displays a specific manifest information, or all defined manifests if no name is provided. The information
+includes the repository details related to site manifest along with the local targetPath for them.
 `
 
 	getManifestsExample = `
-# List all the manifests airshipctl knows about
-airshipctl config get-manifests
+List all the manifests
+# airshipctl config get-manifests
 
-# Display a specific manifest
-airshipctl config get-manifest e2e
+Display a specific manifest
+# airshipctl config get-manifest e2e
 `
 )
 
@@ -39,8 +40,8 @@ airshipctl config get-manifest e2e
 func NewGetManifestCommand(cfgFactory config.Factory) *cobra.Command {
 	var manifestName string
 	cmd := &cobra.Command{
-		Use:     "get-manifest NAME",
-		Short:   "Get a manifest(s) information from the airshipctl config",
+		Use:     "get-manifest MANIFEST_NAME",
+		Short:   "Airshipctl command to get a specific or all manifest(s) information from the airshipctl config",
 		Long:    getManifestsLong[1:],
 		Example: getManifestsExample,
 		Args:    GetManifestNArgs(&manifestName),

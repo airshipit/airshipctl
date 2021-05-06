@@ -1,24 +1,27 @@
 ## airshipctl config get-management-config
 
-View a management config or all management configs defined in the airshipctl config
+Airshipctl command to view management config(s) defined in the airshipctl config
 
 ### Synopsis
 
-View a management config or all management configs defined in the airshipctl config
+
+Displays a specific management config information, or all defined management configs if no name is provided.
+The information relates to reboot-delays and retry in seconds along with management-type that has to be used.
+
 
 ```
-airshipctl config get-management-config [NAME] [flags]
+airshipctl config get-management-config MGMT_CONFIG_NAME [flags]
 ```
 
 ### Examples
 
 ```
 
-# View all defined management configurations
-airshipctl config get-management-configs
+View all management configurations
+# airshipctl config get-management-configs
 
-# View a specific management configuration named "default"
-airshipctl config get-management-config default
+View a specific management configuration named "default"
+# airshipctl config get-management-config default
 
 ```
 
@@ -37,5 +40,5 @@ airshipctl config get-management-config default
 
 ### SEE ALSO
 
-* [airshipctl config](airshipctl_config.md)	 - Manage the airshipctl config file
+* [airshipctl config](airshipctl_config.md)	 - Airshipctl command to manage airshipctl config file
 
