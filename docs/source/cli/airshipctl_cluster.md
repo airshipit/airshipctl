@@ -1,10 +1,10 @@
 ## airshipctl cluster
 
-Manage Kubernetes clusters
+Airshipctl command to manage kubernetes clusters
 
 ### Synopsis
 
-This command provides capabilities for interacting with a Kubernetes cluster,
+Provides capabilities for interacting with a Kubernetes cluster,
 such as getting status and deploying initial infrastructure.
 
 
@@ -24,9 +24,9 @@ such as getting status and deploying initial infrastructure.
 ### SEE ALSO
 
 * [airshipctl](airshipctl.md)	 - A unified entrypoint to various airship components
-* [airshipctl cluster check-certificate-expiration](airshipctl_cluster_check-certificate-expiration.md)	 - Check for expiring TLS certificates, secrets and kubeconfigs in the kubernetes cluster
-* [airshipctl cluster get-kubeconfig](airshipctl_cluster_get-kubeconfig.md)	 - Retrieve kubeconfig for a desired cluster
-* [airshipctl cluster list](airshipctl_cluster_list.md)	 - Retrieve the list of defined clusters
-* [airshipctl cluster rotate-sa-token](airshipctl_cluster_rotate-sa-token.md)	 - Rotate tokens of Service Accounts
+* [airshipctl cluster check-certificate-expiration](airshipctl_cluster_check-certificate-expiration.md)	 - Airshipctl command to check expiring TLS certificates, secrets and kubeconfigs in the kubernetes cluster
+* [airshipctl cluster get-kubeconfig](airshipctl_cluster_get-kubeconfig.md)	 - Airshipctl command to retrieve kubeconfig for a desired cluster
+* [airshipctl cluster list](airshipctl_cluster_list.md)	 - Airshipctl command to get and list defined clusters
+* [airshipctl cluster rotate-sa-token](airshipctl_cluster_rotate-sa-token.md)	 - Airshipctl command to rotate tokens of Service Account(s)
 * [airshipctl cluster status](airshipctl_cluster_status.md)	 - Retrieve statuses of deployed cluster components
 

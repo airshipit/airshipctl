@@ -26,5 +26,5 @@ airshipctl cluster status [flags]
 
 ### SEE ALSO
 
-* [airshipctl cluster](airshipctl_cluster.md)	 - Manage Kubernetes clusters
+* [airshipctl cluster](airshipctl_cluster.md)	 - Airshipctl command to manage kubernetes clusters
 

@@ -25,29 +25,28 @@ import (
 
 const (
 	checkLong = `
-Displays a list of certificate expirations from both the management and
-workload clusters, or in a self-managed cluster. Checks for TLS Secrets,
-kubeconf secrets (which gets created while creating the workload cluster) and
-also the node certificates present inside /etc/kubernetes/pki directory for
-each node`
+Displays a list of certificate along with expirations from both the management and workload clusters, or in a
+self-managed cluster. Checks for TLS Secrets, kubeconf secrets (which gets created while creating the
+workload cluster) and also the node certificates present inside /etc/kubernetes/pki directory for each node.
+`
 
 	checkExample = `
-# To display all the expiring entities in the cluster
-airshipctl cluster check-certificate-expiration --kubeconfig testconfig
+To display all the expiring entities in the cluster
+# airshipctl cluster check-certificate-expiration --kubeconfig testconfig
 
-# To display the entities whose expiration is within threshold of 30 days
-airshipctl cluster check-certificate-expiration -t 30 --kubeconfig testconfig
+To display the entities whose expiration is within threshold of 30 days
+# airshipctl cluster check-certificate-expiration -t 30 --kubeconfig testconfig
 
-# To output the contents to json (default operation)
-airshipctl cluster check-certificate-expiration -o json --kubeconfig testconfig
+To output the contents to json (default operation)
+# airshipctl cluster check-certificate-expiration -o json --kubeconfig testconfig
 or
-airshipctl cluster check-certificate-expiration --kubeconfig testconfig
+# airshipctl cluster check-certificate-expiration --kubeconfig testconfig
 
-# To output the contents to yaml
-airshipctl cluster check-certificate-expiration -o yaml --kubeconfig testconfig
+To output the contents to yaml
+# airshipctl cluster check-certificate-expiration -o yaml --kubeconfig testconfig
 
-# To output the contents whose expiration is within 30 days to yaml
-airshipctl cluster check-certificate-expiration -t 30 -o yaml --kubeconfig testconfig
+To output the contents whose expiration is within 30 days to yaml
+# airshipctl cluster check-certificate-expiration -t 30 -o yaml --kubeconfig testconfig
 `
 
 	kubeconfigFlag = "kubeconfig"
@@ -62,8 +61,9 @@ func NewCheckCommand(cfgFactory config.Factory) *cobra.Command {
 	}
 
 	checkCmd := &cobra.Command{
-		Use:     "check-certificate-expiration",
-		Short:   "Check for expiring TLS certificates, secrets and kubeconfigs in the kubernetes cluster",
+		Use: "check-certificate-expiration",
+		Short: "Airshipctl command to check expiring TLS certificates, " +
+			"secrets and kubeconfigs in the kubernetes cluster",
 		Long:    checkLong[1:],
 		Example: checkExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -71,15 +71,12 @@ func NewCheckCommand(cfgFactory config.Factory) *cobra.Command {
 		},
 	}
 
-	checkCmd.Flags().IntVarP(&c.Options.Threshold, "threshold", "t", -1,
-		"The max expiration threshold in days before a certificate is"+
-			" expiring. Displays all the certificates by default")
-	checkCmd.Flags().StringVarP(&c.Options.FormatType, "output", "o", "json", "Convert "+
-		"output to yaml or json")
+	checkCmd.Flags().StringVarP(&c.Options.FormatType, "output", "o", "json", "convert output to yaml or json")
+	checkCmd.Flags().StringVar(&c.Options.KubeContext, "kubecontext", "", "kubeconfig context to be used")
 	checkCmd.Flags().StringVar(&c.Options.Kubeconfig, kubeconfigFlag, "",
-		"Path to kubeconfig associated with cluster being managed")
-	checkCmd.Flags().StringVar(&c.Options.KubeContext, "kubecontext", "",
-		"Kubeconfig context to be used")
+		"path to kubeconfig associated with cluster being managed")
+	checkCmd.Flags().IntVarP(&c.Options.Threshold, "threshold", "t", -1,
+		"the max expiration threshold in days before a certificate is expiring. Displays all the certificates by default")
 
 	err := checkCmd.MarkFlagRequired(kubeconfigFlag)
 	if err != nil {

@@ -1,10 +1,12 @@
 ## airshipctl cluster list
 
-Retrieve the list of defined clusters
+Airshipctl command to get and list defined clusters
 
 ### Synopsis
 
-Retrieve the list of defined clusters
+
+Retrieve and list the defined clusters in the table form or display just the name as specified.
+
 
 ```
 airshipctl cluster list [flags]
@@ -13,10 +15,11 @@ airshipctl cluster list [flags]
 ### Examples
 
 ```
-# Retrieve cluster list
-airshipctl cluster list --airshipconf /tmp/airconfig
-airshipctl cluster list -o table
-airshipctl cluster list -o name
+
+Retrieve list of clusters
+# airshipctl cluster list --airshipconf /tmp/airconfig
+# airshipctl cluster list -o table
+# airshipctl cluster list -o name
 
 ```
 
@@ -24,7 +27,7 @@ airshipctl cluster list -o name
 
 ```
   -h, --help            help for list
-  -o, --output string   'table' and 'name' are available output formats (default "name")
+  -o, --output string   output formats. Supported options are 'table' and 'name' (default "name")
 ```
 
 ### Options inherited from parent commands
@@ -36,5 +39,5 @@ airshipctl cluster list -o name
 
 ### SEE ALSO
 
-* [airshipctl cluster](airshipctl_cluster.md)	 - Manage Kubernetes clusters
+* [airshipctl cluster](airshipctl_cluster.md)	 - Airshipctl command to manage kubernetes clusters
 

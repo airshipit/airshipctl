@@ -23,18 +23,20 @@ import (
 
 const (
 	getKubeconfigLong = `
-Retrieve cluster kubeconfig and print it to stdout
+Retrieves kubeconfig of the cluster and prints it to stdout.
+
 If you specify clusterName, kubeconfig will have a CurrentContext set to clusterName and
-will have this context defined
+will have its context defined.
+
 If you don't specify clusterName, kubeconfig will have multiple contexts for every cluster
-in the airship site. Context names will correspond to cluster names. CurrentContext will be empty
+in the airship site. Context names will correspond to cluster names. CurrentContext will be empty.
 `
 	getKubeconfigExample = `
-# Retrieve target-cluster kubeconfig
-airshipctl cluster get-kubeconfig target-cluster
+Retrieve target-cluster kubeconfig
+# airshipctl cluster get-kubeconfig target-cluster
 
-# Retrieve kubeconfig for the entire site; the kubeconfig will have context for every cluster
-airshipctl cluster get-kubeconfig
+Retrieve kubeconfig for the entire site; the kubeconfig will have context for every cluster
+# airshipctl cluster get-kubeconfig
 `
 )
 
@@ -42,11 +44,11 @@ airshipctl cluster get-kubeconfig
 func NewGetKubeconfigCommand(cfgFactory config.Factory) *cobra.Command {
 	opts := &cluster.GetKubeconfigCommand{}
 	cmd := &cobra.Command{
-		Use:     "get-kubeconfig [clusterName]",
-		Short:   "Retrieve kubeconfig for a desired cluster",
+		Use:     "get-kubeconfig CLUSTER_NAME",
+		Short:   "Airshipctl command to retrieve kubeconfig for a desired cluster",
 		Long:    getKubeconfigLong[1:],
 		Args:    GetKubeconfArgs(opts),
-		Example: getKubeconfigExample[1:],
+		Example: getKubeconfigExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return opts.RunE(cfgFactory, cmd.OutOrStdout())
 		},
