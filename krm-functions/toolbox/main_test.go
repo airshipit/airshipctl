@@ -174,6 +174,8 @@ func TestFilterBundle(t *testing.T) {
 apiVersion: test/v1
 kind: Pod
 metadata:
+  labels:
+    app: nginx
   name: t1
 ---
 apiVersion: test/v1
@@ -195,6 +197,7 @@ metadata:
 		groupFilter   string
 		versionFilter string
 		kindFilter    string
+		labelFilter   string
 		errContains   string
 		expectedDocs  string
 	}{
@@ -208,6 +211,8 @@ metadata:
 			expectedDocs: `apiVersion: test/v1
 kind: Pod
 metadata:
+  labels:
+    app: nginx
   name: t1
 `,
 		},
@@ -234,6 +239,8 @@ metadata:
 			expectedDocs: `apiVersion: test/v1
 kind: Pod
 metadata:
+  labels:
+    app: nginx
   name: t1
 ---
 apiVersion: test/v1
@@ -245,6 +252,19 @@ apiVersion: test/v1beta1
 kind: Deployment
 metadata:
   name: t3
+`,
+		},
+		{
+			name:        "Filter by label only documents",
+			inputDocs:   docs,
+			labelFilter: "app=nginx",
+			errContains: "",
+			expectedDocs: `apiVersion: test/v1
+kind: Pod
+metadata:
+  labels:
+    app: nginx
+  name: t1
 `,
 		},
 	}
@@ -270,6 +290,8 @@ metadata:
 			defer os.Unsetenv(ResourceVersionFilter)
 			os.Setenv(ResourceKindFilter, tc.kindFilter)
 			defer os.Unsetenv(ResourceKindFilter)
+			os.Setenv(ResourceLabelFilter, tc.labelFilter)
+			defer os.Unsetenv(ResourceLabelFilter)
 
 			cmd := &ScriptRunner{
 				ScriptFile:         targetFile,

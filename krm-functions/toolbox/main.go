@@ -41,10 +41,13 @@ const (
 	ResourceVersionFilter = "RESOURCE_VERSION_FILTER"
 	// ResourceKindFilter used for filtering input bundle by document kind
 	ResourceKindFilter = "RESOURCE_KIND_FILTER"
-	scriptPath         = "script.sh"
-	scriptKey          = "script"
-	bundleFile         = "bundle.yaml"
-	workdir            = "/tmp"
+	// ResourceLabelFilter used for filtering input bundle by label selector
+	// example airshipit.org/ephemeral=true
+	ResourceLabelFilter = "RESOURCE_LABEL_FILTER"
+	scriptPath          = "script.sh"
+	scriptKey           = "script"
+	bundleFile          = "bundle.yaml"
+	workdir             = "/tmp"
 )
 
 func main() {
@@ -168,9 +171,11 @@ func (c *ScriptRunner) FilterBundle(items []*kyaml.RNode) ([]*kyaml.RNode, error
 	group := os.Getenv(ResourceGroupFilter)
 	version := os.Getenv(ResourceVersionFilter)
 	kind := os.Getenv(ResourceKindFilter)
+	labelSelector := os.Getenv(ResourceLabelFilter)
 	log.Printf("Filtering input bundle by Group: %s, Version: %s, Kind: %s",
 		group, version, kind)
 	return kyamlutils.DocumentSelector{}.
 		ByGVK(group, version, kind).
+		ByLabel(labelSelector).
 		Filter(items)
 }
