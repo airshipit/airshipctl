@@ -75,10 +75,10 @@ func NewKubeApplierExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 
 // Run executor, should be performed in separate go routine
 func (e *KubeApplierExecutor) Run(ch chan events.Event, runOpts ifc.RunOptions) {
+	defer close(ch)
 	applier, filteredBundle, err := e.prepareApplier(ch)
 	if err != nil {
 		handleError(ch, err)
-		close(ch)
 		return
 	}
 	defer e.cleanup()

@@ -71,7 +71,6 @@ func NewApplier(eventCh chan events.Event, f cmdutil.Factory) *Applier {
 
 // ApplyBundle apply bundle to kubernetes cluster
 func (a *Applier) ApplyBundle(bundle document.Bundle, ao ApplyOptions) {
-	defer close(a.eventChannel)
 	log.Debugf("Getting infos for bundle, inventory id is %s", ao.BundleName)
 	objects, err := a.getObjects(ao.BundleName, bundle, ao.DryRunStrategy)
 	if err != nil {
