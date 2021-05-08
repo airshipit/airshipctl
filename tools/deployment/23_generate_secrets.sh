@@ -48,13 +48,13 @@ if [[ -z "${decrypted1}" ]]; then
 fi
 
 #make sure that generated file has right FP
-grep "${SOPS_PGP_FP}" "${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})/manifests/site/$SITE/target/generator/results/generated/secrets.yaml"
+grep "${SOPS_PGP_FP}" "${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})/manifests/site/$SITE/target/encrypted/results/generated/secrets.yaml"
 
 #set new FP and reencrypt
 export SOPS_PGP_FP=${SOPS_PGP_FP_REENCRYPT}
 airshipctl phase run secret-reencrypt
 #make sure that generated file has right FP
-grep "${SOPS_PGP_FP}" "${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})/manifests/site/$SITE/target/generator/results/generated/secrets.yaml"
+grep "${SOPS_PGP_FP}" "${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})/manifests/site/$SITE/target/encrypted/results/generated/secrets.yaml"
 
 #make sure that decrypted valus stay the same
 decrypted2=$(airshipctl phase run secret-show)

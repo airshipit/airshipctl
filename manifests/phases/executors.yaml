@@ -55,7 +55,7 @@ metadata:
     airshipit.org/deploy-k8s: "false"
 spec:
   type: krm
-  sinkOutputDir: "target/generator/results/generated"
+  sinkOutputDir: "target/encrypted/results"
   image: gcr.io/kpt-fn-contrib/sops:v0.1.0
   envVars:
     - SOPS_IMPORT_PGP

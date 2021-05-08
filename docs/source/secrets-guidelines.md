@@ -12,7 +12,7 @@ Airshipctl uses kustomize along with different krm-functions that extend its fun
 Replacement krm-function that is needed to avoid duplication of data in documents
 Templater krm-function that is needed to produce new yaml documents based on the provided parameters.
 There is a standard catalog of [krm-functions](https://github.com/GoogleContainerTools/kpt-functions-catalog).
-It includes the standard krm-function: `gcr.io/kpt-functions/sops` that can be used to perform decryption and encryption right in kustomize. Please refer to the example configurations that can be used to encrypt and decrypt the set of [existing yamls](https://github.com/GoogleContainerTools/kpt-functions-catalog/blob/master/examples/sops/local-configs/function.yaml).
+It includes the standard krm-function: `gcr.io/kpt-fn-contrib/sops` that can be used to perform decryption and encryption right in kustomize. Please refer to the example configurations that can be used to encrypt and decrypt the set of [existing yamls](https://github.com/GoogleContainerTools/kpt-functions-catalog/blob/master/examples/contrib/sops/function.yaml).
 
 Please note that to make that krm-function work it’s necessary to provide the following ENV variables:
 
@@ -57,9 +57,11 @@ In order to implement all that functionality it was necessary to introduce a new
 
 Krm-functions accept a set of yamls and config as input and return a modified set of yamls.
 GenericContainer executor may just output it to stdout. Or it may store it as `kpt fn sink` does.
-In particular we’re using the second option to store our generated and encrypted yamls to the specific place from which other manifests will take [that file](manifests/site/test-site/target/generator/results/generated/secrets.yaml).
+In particular we’re using the second option to store our generated and encrypted yamls to the specific place from which other manifests will take [that file](manifests/site/test-site/target/encrypted/results/generated/secrets.yaml).
 
-As it’s possible to see [generator kustomization](manifests/site/test-site/target/generator/results/kustomization.yaml) performs decryption using sops krm-function.
+There is a way to provide external secrets, that shouldn't be generated. That secrets must be stored in encrypted way in [another file](manifests/site/test-site/target/encrypted/results/imported/secrets.yaml).
+
+As it’s possible to see [encrypted kustomization](manifests/site/test-site/target/encrypted/results/kustomization.yaml) performs decryption using sops krm-function.
 
 # Step-by-step Operator instructions
 
@@ -130,7 +132,7 @@ We hope that it won’t be necessary to do these actions manually, because airsh
 sops <file name>
 ```
 
-This will decrypt the file and will open it in the editor. It will be possible to perform needed modifications. Once finished just close the editor and sops will encrypt the modified document and put it back. This may be a really-really useful command for some users and very simple at the same time.
+This will decrypt the file and will open it in the editor. It will be possible to perform needed modifications. Once finished just close the editor and sops will encrypt the modified document and put it back. This may be a really-really useful command for some users and very simple at the same time. This approach may be used in order to modify [imported secrets](manifests/site/test-site/target/encrypted/results/imported/secrets.yaml).
 
 ## Generation/Regeneration and encryption of secrets in manifests
 
@@ -167,8 +169,6 @@ This config file defines the following structure of VariableCatalogue:
     labels:
       airshipit.org/deploy-k8s: "false"
     name: generated-secrets
-    annotations:
-      config.kubernetes.io/path: secrets.yaml
   ephemeralClusterCa:...
   ephemeralKubeconfig:..
   targetClusterCa:...
@@ -179,6 +179,8 @@ This config file defines the following structure of VariableCatalogue:
 Please pay attention to the annotation `config.kubernetes.io/path` - it defines the name of the file where this document will be stored by phase. It’s possible to define several VariableCatalogues with unique names of files (it even may contain directories).
 
 When this template is executed it generates keys/certs/passwords and renders them as a Variable catalog with the name `generated-secrets`.
+
+Please pay attention that the special annotation `config.kubernetes.io/path` is getting added in the fileplacement transformer - it defines the name of the file where this document will be stored by phase. It’s possible to define several VariableCatalogues with unique names of files (it even may contain directories).
 
 Now if we refer back to the Phase descritption we’ll see that it’s type is GenericContainer with the name `encrypter`.
 
@@ -192,7 +194,7 @@ metadata:
   labels:
     airshipit.org/deploy-k8s: "false"
 spec:
-  sinkOutputDir: "target/generator/results/generated"
+  sinkOutputDir: "target/generator/results"
   image: gcr.io/kpt-fn-contrib/sops:v0.1.0
   envVars:
   - SOPS_IMPORT_PGP
@@ -205,28 +207,29 @@ config: |
     unencrypted-regex: '^(kind|apiVersion|group|metadata)$'
 ```
 
-Basically this executor accepts the bundle, runs krm-function `gcr.io/kpt-fn-contrib/sops:v0.1.0` with configuration from `config` field and stores the result to the directory `target/generator/results/generated` based on the filenames/hierarchy defined by annotation `config.kubernetes.io/path`. Sops krm-function in its turn encrypts documents and that means that `target/generator/results/generated` will contain encrypted yamls. To make that work the user will need just to specify 2 environment variables:
+Basically this executor accepts the bundle, runs krm-function `gcr.io/kpt-fn-contrib/sops:v0.1.0` with configuration from `config` field and stores the result to the directory `target/generator/results` based on the filenames/hierarchy defined by annotation `config.kubernetes.io/path`. Sops krm-function in its turn encrypts documents and that means that `target/generator/results/` will contain encrypted yamls. To make that work the user will need just to specify 2 environment variables:
 
 - `SOPS_IMPORT_PGP`
 - `SOPS_PGP_FP`
 
-Possible option how to encrypt `externally provided secrets`
-First of all - it’s possible to make as many phases as needed, each phase will cover its separate procedure, e.g.: change of LDAP credentials, update some external passwords.
+Possible option how to encrypt `externally provided secrets`:
+This feature is already in place - it's possible to update improted secrtets manually.
+Futher possible improvements are to make as many phases as needed, each phase will cover its separate procedure, e.g.: change of LDAP credentials, update some external passwords.
 The only limitation is that each procedure has to have it’s own VariableCatalogues - that just allows not to decrypte/re-encrypt values from all VariableCatalogues.
 
-For `Externally provided secrets` we should use some unencrypted VariableCatalogue as a resource instead of templater. The encryption executor configuration will look the same.
+We should use some unencrypted VariableCatalogue as a resource and be able to encrypt that and put to imported secrets.
 
 Moreover, it’s possible to combine several secret sources in 1 phase, e.g. if we need to encrypt generated and externally provided secrets, just create another directory with kustomization, and put there different resources:
 
 1. Local files with `externally provided secrets` in form of unencrypted variable catalogues
-2. Directory `target/generator`.
+2. Directory `target/encrypted`.
 
 Update phase’s documentEntryPoint with the new path to the created directory. Now when you run the phase - all these files along with newly generated secrets will be encrypted.
 
 ## Decryption of secrets and using them
 
 The current implementation of manifests doesn’t require explicit decryption of files. All secrets are decrypted on the spot. Here are the details of how it was achieved:
-All encrypted documents are listed in the [following kustomization file](https://github.com/airshipit/airshipctl/blob/master/manifests/site/test-site/target/generator/results/kustomization.yaml).
+All encrypted documents are listed in the [following kustomization file](https://github.com/airshipit/airshipctl/blob/master/manifests/site/test-site/target/encrypted/results/kustomization.yaml).
 This kustomization file performs decryption by invoking `decrypt-secrets` transformer, that is just a sops krm-function configuration that decrypts all encrypted documents.
 Note: we made a special kustomization for decrypt-secrets configuration just to be able to modify it a bit depending on the environment variable `TOLERATE_DECRYPTION_FAILURES` value. If it’s true we’re adding parameter `cmd-tolerate-failures: true` to sops configuration.
 
