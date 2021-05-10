@@ -112,9 +112,9 @@ spec:
         baremetal_operator:
           image: quay.io/metal3-io/baremetal-operator:capm3-v0.4.0
         ironic_proxy:
-          image: alpine/socat
+          image: quay.io/airshipit/socat:1.7.4.1
         ironic_inspector_proxy:
-          image: alpine/socat
+          image: quay.io/airshipit/socat:1.7.4.1
     calico_v3:
       node: # calico-node DaemonSet
         upgrade_ipam:
