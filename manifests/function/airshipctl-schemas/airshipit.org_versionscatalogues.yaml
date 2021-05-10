@@ -1,0 +1,230 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.5
+  creationTimestamp: null
+  name: versionscatalogues.airshipit.org
+spec:
+  group: airshipit.org
+  names:
+    kind: VersionsCatalogue
+    listKind: VersionsCatalogueList
+    plural: versionscatalogues
+    singular: versionscatalogue
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: VersionsCatalogue is the Schema for the versions catalogs API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: VersionsCatalogueSpec defines the default versions catalog
+              for functions hosted in the airshipctl project
+            properties:
+              capi_images:
+                additionalProperties:
+                  description: CAPIImageProperties defines the spec for CAPI images
+                  properties:
+                    auth_proxy:
+                      description: ImageURLSpec defines the properties of Image URL
+                        like repository and tag
+                      properties:
+                        repository:
+                          type: string
+                        tag:
+                          type: string
+                      required:
+                      - repository
+                      - tag
+                      type: object
+                    ipam-manager:
+                      description: ImageURLSpec defines the properties of Image URL
+                        like repository and tag
+                      properties:
+                        repository:
+                          type: string
+                        tag:
+                          type: string
+                      required:
+                      - repository
+                      - tag
+                      type: object
+                    manager:
+                      description: ImageURLSpec defines the properties of Image URL
+                        like repository and tag
+                      properties:
+                        repository:
+                          type: string
+                        tag:
+                          type: string
+                      required:
+                      - repository
+                      - tag
+                      type: object
+                  required:
+                  - auth_proxy
+                  - manager
+                  type: object
+                description: capi_images defines collections of images used by cluster
+                  API. The name of each key in this section should correspond to the
+                  airshipctl function in which the images will be used, such as "capm3".
+                  Each capi_image object must have a "manager" and "auth_proxy" object,
+                  each of which must have "repository" and "tag" properties defined.
+                  capi_images may also include an optional "ipam-manager" object,
+                  which must also have "repository" and "tag" properties defined.
+                type: object
+              charts:
+                additionalProperties:
+                  description: ChartProperties defines the properties of the chart
+                    like Chart and vesrion
+                  properties:
+                    chart:
+                      type: string
+                    version:
+                      type: string
+                  required:
+                  - chart
+                  - version
+                  type: object
+                description: charts defines collections of Helm charts. i The name
+                  of each key in this section should identify a specific chart, and
+                  each chart object must have "chart" and "version" properties defined.
+                type: object
+              files:
+                additionalProperties:
+                  additionalProperties:
+                    description: FileProperties The name of each key defined at this
+                      level should identify a single file. Each file object is required
+                      to have a "url" property defined, and may also define a "checksum"
+                      property.
+                    properties:
+                      checksum:
+                        type: string
+                      url:
+                        type: string
+                    required:
+                    - url
+                    type: object
+                  description: AirshipctlFunctionFileMap The name of each key defined
+                    at this level should identify a single file. Each file object
+                    is required to have a "url" property defined, and may also define
+                    a "checksum" property.
+                  type: object
+                description: files defines collections of files required by airshipctl
+                  functions.
+                type: object
+              helm_repositories:
+                additionalProperties:
+                  description: RepoProperties The name of each key defined at this
+                    level should identify a Helm repository. Each helm_repository
+                    object is required to have a "url" key that specifies the location
+                    of the repository.
+                  properties:
+                    url:
+                      type: string
+                  required:
+                  - url
+                  type: object
+                description: helm_repositories defines Helm repositories required
+                  by HelmReleases.
+                type: object
+              image_components:
+                additionalProperties:
+                  additionalProperties:
+                    description: ImageRepositorySpec defines the spec for a repository
+                      that includes repository URL, Name and one of Hash/Tag/SHA/Digest.
+                    properties:
+                      digest:
+                        type: string
+                      hash:
+                        type: string
+                      name:
+                        description: Name is an optional property that is used to
+                          specify the name of an image. Typically, this format is
+                          only needed for charts such as dex-aio, which uses "repo",
+                          "name", and "tag" properties to declare images, rather than
+                          the more commonly used "repository" and "tag". In such cases,
+                          "repository" should contain only the name of the repository
+                          (e.g. "quay.io") and the "name" property should contain
+                          the image name (e.g. "metal3-io/ironic").
+                        type: string
+                      repository:
+                        type: string
+                      sha:
+                        type: string
+                      tag:
+                        type: string
+                    required:
+                    - repository
+                    type: object
+                  description: AirshipctlFunctionImageComponentMap The name of each
+                    key defined at this level should identify a single image. Each
+                    image object must have a "repository" property, and must have
+                    a property named "tag", "hash", "sha", or "digest".
+                  type: object
+                description: image_components defines images that are declared using
+                  the Helm-style format that breaks image URLs into discrete parts,
+                  such as "repository" and "tag". Images in this section of the catalog
+                  are grouped by airshipctl function -> images in function.
+                type: object
+              images:
+                additionalProperties:
+                  additionalProperties:
+                    additionalProperties:
+                      description: ImageURL defines the URL for an image
+                      properties:
+                        image:
+                          type: string
+                      required:
+                      - image
+                      type: object
+                    description: KubernetesResourceMap The name of each key defined
+                      at this level should identify a single image. Each image object
+                      is required to have an "image" property which specifies the
+                      full URL for the image (i.e. repository/image:tag) as a single
+                      string.
+                    type: object
+                  description: AirshipctlFunctionImageRepoMap The name of each key
+                    defined here should refer to the Kubernetes resource document
+                    into which an image will be substituted, such as a Deployment
+                    or DaemonSet.
+                  type: object
+                description: images defines collections of images that are declared
+                  as complete URLs rather than as a collection of discrete parts,
+                  such as "repository" and "tag" or "sha". This section of the catalog
+                  is organized by airshipctl function -> Deployments in function ->
+                  images in Deployment.
+                type: object
+              kubernetes:
+                description: Allows for the specification of the kubernetes version
+                  being used.
+                type: string
+            required:
+            - capi_images
+            - images
+            type: object
+        type: object
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

@@ -15,8 +15,8 @@ planConfigs:
       - Clusterctl
       - VariableCatalogue
     crdList:
-      - function/airshipctl-schemas/versions-catalogue.yaml
-      - function/airshipctl-schemas/network-catalogue.yaml
+      - function/airshipctl-schemas/airshipit.org_versionscatalogues.yaml
+      - function/airshipctl-schemas/airshipit.org_networkcatalogues.yaml
 phaseName: AIRSHIPCTL_CURRENT_PHASE
 phaseConfigs:
   initinfra-ephemeral:
@@ -24,8 +24,8 @@ phaseConfigs:
       - Clusterctl
       - VariableCatalogue
     crdList:
-      - function/airshipctl-schemas/versions-catalogue.yaml
-      - function/airshipctl-schemas/network-catalogue.yaml
+      - function/airshipctl-schemas/airshipit.org_versionscatalogues.yaml
+      - function/airshipctl-schemas/airshipit.org_networkcatalogues.yaml
   clusterctl-init-ephemeral:
     crdList:
       - function/cert-manager/v1.1.0/upstream/cert-manager.yaml
@@ -33,8 +33,8 @@ phaseConfigs:
     kindsToSkip:
       - VariableCatalogue
     crdList:
-      - function/airshipctl-schemas/network-catalogue.yaml
-      - function/airshipctl-schemas/versions-catalogue.yaml
+      - function/airshipctl-schemas/airshipit.org_versionscatalogues.yaml
+      - function/airshipctl-schemas/airshipit.org_networkcatalogues.yaml
       - function/capi/v0.3.7/crd/bases/cluster.x-k8s.io_clusters.yaml
       - function/cacpk/v0.3.7/crd/bases/controlplane.cluster.x-k8s.io_kubeadmcontrolplanes.yaml
       - function/capm3/v0.4.0/crd/bases/infrastructure.cluster.x-k8s.io_metal3clusters.yaml
@@ -48,8 +48,8 @@ phaseConfigs:
       - Clusterctl
       - VariableCatalogue
     crdList:
-      - function/airshipctl-schemas/network-catalogue.yaml
-      - function/airshipctl-schemas/versions-catalogue.yaml
+      - function/airshipctl-schemas/airshipit.org_networkcatalogues.yaml
+      - function/airshipctl-schemas/airshipit.org_versionscatalogues.yaml
   workers-target:
     crdList:
       - global/crd/baremetal-operator/metal3.io_baremetalhosts_crd.yaml
@@ -57,8 +57,8 @@ phaseConfigs:
     kindsToSkip:
       - VariableCatalogue
     crdList:
-      - function/airshipctl-schemas/network-catalogue.yaml
-      - function/airshipctl-schemas/versions-catalogue.yaml
+      - function/airshipctl-schemas/airshipit.org_networkcatalogues.yaml
+      - function/airshipctl-schemas/airshipit.org_versionscatalogues.yaml
       - function/cabpk/v0.3.7/crd/bases/bootstrap.cluster.x-k8s.io_kubeadmconfigtemplates.yaml
       - function/capi/v0.3.7/crd/bases/cluster.x-k8s.io_machinedeployments.yaml
       - function/capm3/v0.4.0/crd/bases/infrastructure.cluster.x-k8s.io_metal3machinetemplates.yaml
@@ -67,7 +67,7 @@ phaseConfigs:
     kindsToSkip:
       - VariableCatalogue
     crdList:
-      - function/airshipctl-schemas/network-catalogue.yaml
-      - function/airshipctl-schemas/versions-catalogue.yaml
+      - function/airshipctl-schemas/airshipit.org_networkcatalogues.yaml
+      - function/airshipctl-schemas/airshipit.org_versionscatalogues.yaml
       - function/flux/helm-controller/upstream/crd/bases/helm.toolkit.fluxcd.io_helmreleases.yaml
       - function/flux/source-controller/upstream/crd/bases/source.toolkit.fluxcd.io_helmrepositories.yaml
