@@ -21,17 +21,23 @@ set -xe
 
 export MANIFEST_DIR=${MANIFEST_DIR:-"$(pwd)"}
 
-export OLD_REPLACEMENT_TRANSFORMER=${OLD_REPLACEMENT_TRANSFORMER:-"quay.io/airshipit/replacement-transformer:v2"}
-export OLD_TEMPLATER=${OLD_TEMPLATER:-"quay.io/airshipit/templater:v2"}
-export OLD_CLOUD_INIT=${OLD_CLOUD_INIT:-"quay.io/airshipit/cloud-init:v2"}
+export OLD_REPLACEMENT_TRANSFORMER=${OLD_REPLACEMENT_TRANSFORMER:-"localhost/replacement-transformer"}
+export OLD_TEMPLATER=${OLD_TEMPLATER:-"localhost/templater"}
+export OLD_CLOUD_INIT=${OLD_CLOUD_INIT:-"localhost/cloud-init"}
+export OLD_TOOLBOX=${OLD_TOOLBOX:-"localhost/toolbox"}
+export OLD_KUBEVAL_VALIDATOR=${OLD_KUBEVAL_VALIDATOR:-"localhost/kubeval-validator"}
 export OLD_SOPS=${OLD_SOPS:-"gcr.io/kpt-fn-contrib/sops:v0.1.0"}
 
 export NEW_REPLACEMENT_TRANSFORMER=${NEW_REPLACEMENT_TRANSFORMER:-$OLD_REPLACEMENT_TRANSFORMER}
 export NEW_TEMPLATER=${NEW_TEMPLATER:-$OLD_TEMPLATER}
 export NEW_CLOUD_INIT=${NEW_CLOUD_INIT:-$OLD_CLOUD_INIT}
+export NEW_TOOLBOX=${NEW_TOOLBOX:-$OLD_TOOLBOX}
+export NEW_KUBEVAL_VALIDATOR=${NEW_KUBEVAL_VALIDATOR:-$OLD_KUBEVAL_VALIDATOR}
 export NEW_SOPS=${NEW_SOPS:-$OLD_SOPS}
 
 find "$MANIFEST_DIR" -type f -exec sed -i -e "s#$OLD_REPLACEMENT_TRANSFORMER#$NEW_REPLACEMENT_TRANSFORMER#g" {} \;
 find "$MANIFEST_DIR" -type f -exec sed -i -e "s#$OLD_TEMPLATER#$NEW_TEMPLATER#g" {} \;
 find "$MANIFEST_DIR" -type f -exec sed -i -e "s#$OLD_CLOUD_INIT#$NEW_CLOUD_INIT#g" {} \;
+find "$MANIFEST_DIR" -type f -exec sed -i -e "s#$OLD_TOOLBOX#$NEW_TOOLBOX#g" {} \;
+find "$MANIFEST_DIR" -type f -exec sed -i -e "s#$OLD_KUBEVAL_VALIDATOR#$NEW_KUBEVAL_VALIDATOR#g" {} \;
 find "$MANIFEST_DIR" -type f -exec sed -i -e "s#$OLD_SOPS#$NEW_SOPS#g" {} \;

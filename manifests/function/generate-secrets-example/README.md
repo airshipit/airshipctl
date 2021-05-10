@@ -101,7 +101,7 @@ metadata:
 kustomizeSinkOutputDir: "target/encrypted/results/generated"
 spec:
   container:
-    image: quay.io/airshipit/templater:v2
+    image: localhost/templater
 config: |
   foo: bar
 ```

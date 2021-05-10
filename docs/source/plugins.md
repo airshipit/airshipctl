@@ -220,7 +220,7 @@ metadata:
   annotations:
     config.kubernetes.io/function: |
       container:
-        image: quay.io/airshipit/templater:v2
+        image: localhost/templater
 values:
   hosts:
   - macAddress: 00:aa:bb:cc:dd
