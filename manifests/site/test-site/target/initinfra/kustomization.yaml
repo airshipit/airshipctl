@@ -10,5 +10,4 @@ commonLabels:
 
 transformers:
   - ../../../../function/baremetal-operator/replacements
-  - ../../../../function/flux/source-controller/replacements
-  - ../../../../function/flux/helm-controller/replacements
+  - ../../../../composite/flux-helm/replacements
