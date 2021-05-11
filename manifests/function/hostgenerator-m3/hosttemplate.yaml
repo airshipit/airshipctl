@@ -36,6 +36,12 @@ template: |
   {{- $_ := set $host "hardwareProfile" "default" }}
   {{- end }}
   {{- $hardwareProfile := index $envAll.hardwareProfiles $host.hardwareProfile }}
+  {{- if not $hardwareProfile -}}
+  {{-   fail (printf "can't find hardwareProfile %s" $host.hardwareProfile) -}}
+  {{- end -}}
+  {{- if not $hardwareProfile.firmware -}}
+  {{-   fail (printf "hardwareProfile %s doesn't have firmware field" $host.hardwareProfile) -}}
+  {{- end -}}
   ---
   apiVersion: metal3.io/v1alpha1
   kind: BareMetalHost
@@ -53,7 +59,7 @@ template: |
     bmc:
       address: {{ $host.bmcAddress }}
       credentialsName: {{ $hostName }}-bmc-secret
-      disableCertificateVerification: {{ $host.disableCertificateVerification }}
+      disableCertificateVerification: {{ default false $host.disableCertificateVerification }}
     firmware:
   {{ toYaml $hardwareProfile.firmware | indent 4 }}
   {{- /* If no raid is defined for a host, simply skip. There is no default setting for raid */ -}}
