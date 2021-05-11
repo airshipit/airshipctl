@@ -19,13 +19,14 @@ set -xe
 : ${MANIFEST_ROOT:="$(basename "${PWD}")/manifests"}
 # The location of sites whose manifests should be validated.
 # This are relative to MANIFEST_ROOT above
-: ${SITE_ROOT:="$(basename "${PWD}")/manifests/site"}
+: ${MANIFEST_PATH:="manifests/site"}
+: ${SITE_ROOT:="$(basename "${PWD}")/${MANIFEST_PATH}"}
 : ${MANIFEST_REPO_URL:="https://review.opendev.org/airship/airshipctl"}
 : ${SITE:="test-workload"}
 : ${CONTEXT:="kind-airship"}
 : ${AIRSHIPKUBECONFIG:="${HOME}/.airship/kubeconfig"}
 : ${AIRSHIPKUBECONFIG_BACKUP:="${AIRSHIPKUBECONFIG}-backup"}
-
+: ${TOOLS_PATH:="${MANIFEST_ROOT}/airshipctl/tools"}
 
 : ${KUBECTL:="/usr/local/bin/kubectl"}
 TMP=$(mktemp -d)
@@ -76,7 +77,7 @@ manifests:
           tag: ""
         url: ${MANIFEST_REPO_URL}
     targetPath: ${MANIFEST_ROOT}
-    metadataPath: manifests/site/${SITE}/metadata.yaml
+    metadataPath: ${MANIFEST_PATH}/${SITE}/metadata.yaml
 EOL
 }
 
@@ -113,7 +114,7 @@ for plan in $phase_plans; do
     export CLUSTER="${cluster}"
 
     # Start a fresh, empty kind cluster for validating documents
-    ./tools/document/start_kind.sh
+    ${TOOLS_PATH}/document/start_kind.sh
 
     generate_airshipconf ${cluster}
 

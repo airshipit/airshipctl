@@ -21,11 +21,14 @@ set -xe
 : ${MANIFEST_ROOT:="$(dirname "${PWD}")"}
 # The space-separated locations of sites whose manifests should be validated.
 # These are relative to MANIFEST_ROOT above
-: ${SITE_ROOTS:="$(basename "${PWD}")/manifests/site"}
+: ${MANIFEST_PATH:="manifests/site"}
+: ${SITE_ROOTS:="$(basename "${PWD}")/${MANIFEST_PATH}"}
+: ${MANIFEST_REPO_URL:="https://review.opendev.org/airship/airshipctl"}
+: ${TOOLS_PATH:="${MANIFEST_ROOT}/airshipctl/tools"}
 
 # get kind
 echo "Fetching kind from ${KIND_URL}..."
-TMP=$(KIND_URL=${KIND_URL} ./tools/document/get_kind.sh)
+TMP=$(KIND_URL=${KIND_URL} ${TOOLS_PATH}/document/get_kind.sh)
 export KIND=${TMP}/kind
 export KUBECTL_URL
 
@@ -38,7 +41,9 @@ for site_root in ${SITE_ROOTS}; do
       fi
       echo -e "\nValidating site: ${MANIFEST_ROOT}/${site_root}/${site}\n****************"
       MANIFEST_ROOT=${MANIFEST_ROOT} SITE_ROOT=${site_root} SITE=${site} \
-        ./tools/document/validate_site_docs.sh
+      MANIFEST_REPO_URL=${MANIFEST_REPO_URL} MANIFEST_PATH=${MANIFEST_PATH} MANIFEST_REPO_URL=${MANIFEST_REPO_URL} \
+      TOOLS_PATH=${TOOLS_PATH} \
+        ${TOOLS_PATH}/document/validate_site_docs.sh
       echo "Validation of site ${site} is successful!"
   done
 done
