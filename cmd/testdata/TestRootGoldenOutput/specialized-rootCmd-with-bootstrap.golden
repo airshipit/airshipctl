@@ -4,7 +4,7 @@ Usage:
   airshipctl [command]
 
 Available Commands:
-  baremetal   Perform actions on baremetal hosts
+  baremetal   Airshipctl command to manage bare metal host(s)
   help        Help about any command
 
 Flags:

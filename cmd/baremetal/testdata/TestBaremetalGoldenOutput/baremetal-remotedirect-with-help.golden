@@ -1,12 +1,25 @@
-Bootstrap the ephemeral host
+Bootstrap bare metal host. It targets bare metal host from airship inventory based
+on the --iso-url, --name, --namespace, --label and --timeout flags provided.
 
 Usage:
   remotedirect [flags]
 
+Examples:
+
+Perform action against hosts with name rdm9r3s3 in all namespaces where the host is found
+# airshipctl baremetal remotedirect --name rdm9r3s3
+
+Perform action against hosts with name rdm9r3s3 in namespace metal3
+# airshipctl baremetal remotedirect --name rdm9r3s3 --namespace metal3
+
+Perform action against hosts with a label 'foo=bar'
+# airshipctl baremetal remotedirect --labels "foo=bar"
+
+
 Flags:
   -h, --help               help for remotedirect
       --iso-url string     specify iso url for host to boot from
-  -l, --labels string      Label(s) to filter desired baremetal host documents
-      --name string        Name to filter desired baremetal host document
-  -n, --namespace string   airshipctl phase that contains the desired baremetal host document(s)
-      --timeout duration   timeout on baremetal action (default 10m0s)
+  -l, --labels string      label(s) to filter desired bare metal host documents
+      --name string        name to filter desired bare metal host document
+  -n, --namespace string   airshipctl phase that contains the desired bare metal host document(s)
+      --timeout duration   timeout on bare metal action (default 10m0s)

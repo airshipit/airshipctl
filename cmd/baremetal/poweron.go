@@ -28,8 +28,7 @@ var (
 	powerOnCommand = "poweron"
 
 	powerOnLong = fmt.Sprintf(`
-Power on baremetal hosts
-%s
+Power on bare metal host(s). %s
 `, selectorsDescription)
 
 	powerOnExample = fmt.Sprintf(bmhActionExampleTemplate, powerOnCommand)
@@ -39,9 +38,9 @@ Power on baremetal hosts
 func NewPowerOnCommand(cfgFactory config.Factory, options *inventory.CommandOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     powerOnCommand,
-		Short:   "Power on a hosts",
+		Short:   "Airshipctl command to power on host(s)",
 		Long:    powerOnLong[1:],
-		Example: powerOnExample[1:],
+		Example: powerOnExample,
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return options.BMHAction(ifc.BaremetalOperationPowerOn)

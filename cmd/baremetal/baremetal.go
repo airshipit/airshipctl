@@ -28,28 +28,32 @@ import (
 type Action int
 
 const (
+	baremetalLong = `
+Provides commands that can be performed on bare metal host(s). The commands helps in
+performing the basic boot and power operations on the bare metal host(s).
+`
 	flagLabel            = "labels"
 	flagLabelShort       = "l"
-	flagLabelDescription = "Label(s) to filter desired baremetal host documents"
+	flagLabelDescription = "label(s) to filter desired bare metal host documents"
 
 	flagName            = "name"
-	flagNameDescription = "Name to filter desired baremetal host document"
+	flagNameDescription = "name to filter desired bare metal host document"
 
 	flagNamespace            = "namespace"
 	flagNamespaceSort        = "n"
-	flagNamespaceDescription = "airshipctl phase that contains the desired baremetal host document(s)"
+	flagNamespaceDescription = "airshipctl phase that contains the desired bare metal host document(s)"
 
 	flagTimeout            = "timeout"
-	flagTimeoutDescription = "timeout on baremetal action"
+	flagTimeoutDescription = "timeout on bare metal action"
 
 	flagAll            = "all"
 	flagAllDescription = "specify this to target all hosts in the inventory"
 )
 
 var (
-	selectorsDescription = fmt.Sprintf(`The command will target baremetal hosts from airship inventory kustomize root
-based on the --%s, --%s and --%s flags provided. If no flags are
-provided airshipctl will try to select all baremetal hosts in the inventory`, flagName, flagNamespace, flagLabel)
+	selectorsDescription = fmt.Sprintf(`The command will target bare metal hosts from airship inventory based on the
+--%s, --%s and --%s flags provided. If no flags are provided, airshipctl will select all bare metal hosts in the
+inventory.`, flagName, flagNamespace, flagLabel)
 
 	bmhActionExampleTemplate = `
 Perform action against hosts with name rdm9r3s3 in all namespaces where the host is found
@@ -71,7 +75,8 @@ func NewBaremetalCommand(cfgFactory config.Factory) *cobra.Command {
 	options := inventory.NewOptions(inventory.NewInventory(cfgFactory))
 	baremetalRootCmd := &cobra.Command{
 		Use:   "baremetal",
-		Short: "Perform actions on baremetal hosts",
+		Short: "Airshipctl command to manage bare metal host(s)",
+		Long:  baremetalLong,
 	}
 
 	baremetalRootCmd.AddCommand(NewEjectMediaCommand(cfgFactory, options))

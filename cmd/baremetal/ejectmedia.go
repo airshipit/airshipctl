@@ -28,8 +28,7 @@ var (
 	ejectMediaCommand = "ejectmedia"
 
 	ejectMediaLong = fmt.Sprintf(`
-Eject media attached to a baremetal hosts
-%s
+Eject virtual media attached to a bare metal host. %s
 `, selectorsDescription)
 
 	ejectMediaExample = fmt.Sprintf(bmhActionExampleTemplate, ejectMediaCommand)
@@ -39,9 +38,9 @@ Eject media attached to a baremetal hosts
 func NewEjectMediaCommand(cfgFactory config.Factory, options *inventory.CommandOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     ejectMediaCommand,
-		Short:   "Eject media attached to a baremetal hosts",
+		Short:   "Airshipctl command to eject virtual media attached to a bare metal host",
 		Long:    ejectMediaLong[1:],
-		Example: ejectMediaExample[1:],
+		Example: ejectMediaExample,
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return options.BMHAction(ifc.BaremetalOperationEjectVirtualMedia)

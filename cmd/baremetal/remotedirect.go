@@ -21,11 +21,31 @@ import (
 	"opendev.org/airship/airshipctl/pkg/inventory"
 )
 
+var (
+	remoteDirectLong = `
+Bootstrap bare metal host. It targets bare metal host from airship inventory based
+on the --iso-url, --name, --namespace, --label and --timeout flags provided.
+`
+
+	remoteDirectExample = `
+Perform action against hosts with name rdm9r3s3 in all namespaces where the host is found
+# airshipctl baremetal remotedirect --name rdm9r3s3
+
+Perform action against hosts with name rdm9r3s3 in namespace metal3
+# airshipctl baremetal remotedirect --name rdm9r3s3 --namespace metal3
+
+Perform action against hosts with a label 'foo=bar'
+# airshipctl baremetal remotedirect --labels "foo=bar"
+`
+)
+
 // NewRemoteDirectCommand provides a command with the capability to perform remote direct operations.
 func NewRemoteDirectCommand(cfgFactory config.Factory, options *inventory.CommandOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "remotedirect",
-		Short: "Bootstrap the ephemeral host",
+		Use:     "remotedirect",
+		Short:   "Airshipctl command to bootstrap the ephemeral host",
+		Long:    remoteDirectLong[1:],
+		Example: remoteDirectExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return options.RemoteDirect()
 		},
