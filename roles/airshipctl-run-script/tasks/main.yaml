@@ -27,4 +27,4 @@
     set -xe;
     {{ gate_script_path }}
   args:
-    chdir: "{{ zuul.project.src_dir }}"
+    chdir: "{{ zuul.project.src_dir }}/{{ relative_script_path | default('') }}"
