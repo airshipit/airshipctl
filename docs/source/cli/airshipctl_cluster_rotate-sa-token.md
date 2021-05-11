@@ -1,15 +1,15 @@
 ## airshipctl cluster rotate-sa-token
 
-Rotate tokens of Service Accounts
+Airshipctl command to rotate tokens of Service Account(s)
 
 ### Synopsis
 
-Use to reset/rotate the Service Account(SA) tokens and additionally restart the
-corresponding pods to get the latest token data reflected in the pod spec
+Reset/rotate the Service Account(SA) tokens and additionally restart the corresponding pods to get the latest
+token data reflected in the pod spec.
 
-Secret-namespace is a mandatory field and secret-name is optional. If secret-
-name is not given, all the SA tokens in that particular namespace is considered,
-else only that particular input secret-name
+Secret-namespace is a mandatory flag and secret-name is optional. If secret-name is not given, all the SA tokens
+in that particular namespace is considered, else only that particular input secret-name.
+
 
 ```
 airshipctl cluster rotate-sa-token [flags]
@@ -19,11 +19,11 @@ airshipctl cluster rotate-sa-token [flags]
 
 ```
 
-# To rotate a particular SA token
-airshipctl cluster rotate-sa-token -n cert-manager -s cert-manager-token-vvn9p
+To rotate a particular SA token
+# airshipctl cluster rotate-sa-token -n cert-manager -s cert-manager-token-vvn9p
 
-# To rotate all the SA tokens in cert-manager namespace
-airshipctl cluster rotate-sa-token -n cert-manager
+To rotate all the SA tokens in cert-manager namespace
+# airshipctl cluster rotate-sa-token -n cert-manager
 
 ```
 
@@ -31,7 +31,7 @@ airshipctl cluster rotate-sa-token -n cert-manager
 
 ```
   -h, --help                      help for rotate-sa-token
-      --kubeconfig string         Path to kubeconfig associated with cluster being managed
+      --kubeconfig string         path to kubeconfig associated with cluster being managed
   -s, --secret-name string        name of the secret containing Service Account Token
   -n, --secret-namespace string   namespace of the Service Account Token
 ```
@@ -45,5 +45,5 @@ airshipctl cluster rotate-sa-token -n cert-manager
 
 ### SEE ALSO
 
-* [airshipctl cluster](airshipctl_cluster.md)	 - Manage Kubernetes clusters
+* [airshipctl cluster](airshipctl_cluster.md)	 - Airshipctl command to manage kubernetes clusters
 

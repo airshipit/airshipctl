@@ -1,15 +1,15 @@
-This command provides capabilities for interacting with a Kubernetes cluster,
+Provides capabilities for interacting with a Kubernetes cluster,
 such as getting status and deploying initial infrastructure.
 
 Usage:
   cluster [command]
 
 Available Commands:
-  check-certificate-expiration Check for expiring TLS certificates, secrets and kubeconfigs in the kubernetes cluster
-  get-kubeconfig               Retrieve kubeconfig for a desired cluster
+  check-certificate-expiration Airshipctl command to check expiring TLS certificates, secrets and kubeconfigs in the kubernetes cluster
+  get-kubeconfig               Airshipctl command to retrieve kubeconfig for a desired cluster
   help                         Help about any command
-  list                         Retrieve the list of defined clusters
-  rotate-sa-token              Rotate tokens of Service Accounts
+  list                         Airshipctl command to get and list defined clusters
+  rotate-sa-token              Airshipctl command to rotate tokens of Service Account(s)
   status                       Retrieve statuses of deployed cluster components
 
 Flags:

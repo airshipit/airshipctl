@@ -25,7 +25,7 @@ import (
 const (
 	// TODO: (kkalynovskyi) Add more description when more subcommands are added
 	clusterLong = `
-This command provides capabilities for interacting with a Kubernetes cluster,
+Provides capabilities for interacting with a Kubernetes cluster,
 such as getting status and deploying initial infrastructure.
 `
 )
@@ -34,7 +34,7 @@ such as getting status and deploying initial infrastructure.
 func NewClusterCommand(cfgFactory config.Factory) *cobra.Command {
 	clusterRootCmd := &cobra.Command{
 		Use:   "cluster",
-		Short: "Manage Kubernetes clusters",
+		Short: "Airshipctl command to manage kubernetes clusters",
 		Long:  clusterLong[1:],
 	}
 

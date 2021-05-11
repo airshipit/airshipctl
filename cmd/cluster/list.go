@@ -22,12 +22,15 @@ import (
 )
 
 const (
-	listShort   = "Retrieve the list of defined clusters"
+	listLong = `
+Retrieve and list the defined clusters in the table form or display just the name as specified.
+`
+
 	listExample = `
-# Retrieve cluster list
-airshipctl cluster list --airshipconf /tmp/airconfig
-airshipctl cluster list -o table
-airshipctl cluster list -o name
+Retrieve list of clusters
+# airshipctl cluster list --airshipconf /tmp/airconfig
+# airshipctl cluster list -o table
+# airshipctl cluster list -o name
 `
 )
 
@@ -36,15 +39,13 @@ func NewListCommand(cfgFactory config.Factory) *cobra.Command {
 	o := &phase.ClusterListCommand{Factory: cfgFactory}
 	cmd := &cobra.Command{
 		Use:     "list",
-		Short:   listShort,
-		Example: listExample[1:],
+		Short:   "Airshipctl command to get and list defined clusters",
+		Long:    listLong,
+		Example: listExample,
 		RunE:    listRunE(o),
 	}
 	flags := cmd.Flags()
-	flags.StringVarP(&o.Format,
-		"output", "o", "name", "'table' "+
-			"and 'name' are available "+
-			"output formats")
+	flags.StringVarP(&o.Format, "output", "o", "name", "output formats. Supported options are 'table' and 'name'")
 
 	return cmd
 }

@@ -5,7 +5,7 @@ Usage:
 
 Available Commands:
   baremetal   Airshipctl command to manage bare metal host(s)
-  cluster     Manage Kubernetes clusters
+  cluster     Airshipctl command to manage kubernetes clusters
   completion  Generate completion script for the specified shell (bash or zsh)
   config      Manage the airshipctl config file
   document    Manage deployment documents
