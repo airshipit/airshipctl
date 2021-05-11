@@ -10,14 +10,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+- name: Set default_zuul_dir
+  set_fact:
+    default_zuul_dir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
+
+- name: Set env facts
+  set_fact:
+    local_environment:
+      AIRSHIP_CONFIG_PHASE_REPO_URL: "{{ remote_work_dir | default(local_src_dir) | default(default_zuul_dir) }}"
+      SITE: "{{ site | default('test-site') }}"
+    job_environment: "{{ job_environment | default({}) }}"
+
 - name: "Run script {{ gate_script_path }}"
+  environment: "{{ local_environment | combine(job_environment) }}"
   shell: |
     set -xe;
     {{ gate_script_path }}
   args:
     chdir: "{{ zuul.project.src_dir }}"
-  vars:
-    default_zuul_dir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
-  environment:
-    AIRSHIP_CONFIG_PHASE_REPO_URL: "{{ remote_work_dir | default(local_src_dir) | default(default_zuul_dir) }}"
-    SITE: "{{ site | default('test-site') }}"
