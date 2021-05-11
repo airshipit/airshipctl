@@ -1,6 +1,6 @@
 ## airshipctl config get-manifest
 
-Get a manifest information from the airshipctl config
+Get a manifest(s) information from the airshipctl config
 
 ### Synopsis
 

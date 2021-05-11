@@ -246,3 +246,68 @@ func TestRunSetManifest(t *testing.T) {
 		assert.Equal(t, "/tmp/default", conf.Manifests["dummy_manifest"].TargetPath)
 	})
 }
+
+func TestRunGetManifest(t *testing.T) {
+	ioBuffer := bytes.NewBuffer(nil)
+	tests := []struct {
+		name         string
+		cfgFactory   config.Factory
+		manifestName string
+		expectedOut  string
+		err          error
+	}{
+		{
+			name: "bad config",
+			cfgFactory: func() (*config.Config, error) {
+				return nil, config.ErrInvalidConfig{}
+			},
+			err: config.ErrInvalidConfig{},
+		},
+		{
+			name:         "no such manifest",
+			cfgFactory:   prepareConfig(),
+			manifestName: "missing_manifest",
+			err:          config.ErrMissingConfig{What: "manifest with name 'missing_manifest'"},
+		},
+		{
+			name:       "get all manifests",
+			cfgFactory: prepareConfig(),
+			err:        nil,
+			expectedOut: `dummy_manifest:
+  inventoryRepositoryName: primary
+  metadataPath: metadata.yaml
+  phaseRepositoryName: primary
+  repositories:
+    primary:
+      auth:
+        sshKey: testdata/test-key.pem
+        type: ssh-key
+      checkout:
+        branch: ""
+        commitHash: ""
+        force: false
+        localBranch: false
+        tag: v1.0.1
+      url: http://dummy.url.com/manifests.git
+  targetPath: /var/tmp/
+`,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			ioBuffer.Reset()
+			err := config.RunGetManifest(tt.cfgFactory, tt.manifestName, ioBuffer)
+			if tt.err != nil {
+				require.Error(t, err)
+				require.Equal(t, tt.err, err)
+			} else {
+				require.NoError(t, err)
+			}
+			if tt.expectedOut != "" {
+				require.Equal(t, tt.expectedOut, ioBuffer.String())
+			}
+		})
+	}
+}

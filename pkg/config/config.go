@@ -368,6 +368,15 @@ func (c *Config) CurrentContextInventoryRepositoryName() (string, error) {
 	return util.GitDirNameFromURL(repo.URL()), nil
 }
 
+// GetManifest returns a Manifest instance
+func (c *Config) GetManifest(name string) (*Manifest, error) {
+	manifest, exists := c.Manifests[name]
+	if !exists {
+		return nil, ErrMissingConfig{What: fmt.Sprintf("manifest with name '%s'", name)}
+	}
+	return manifest, nil
+}
+
 // GetManifests returns all of the Manifests associated with the Config sorted by name
 func (c *Config) GetManifests() []*Manifest {
 	keys := make([]string, 0, len(c.Manifests))
