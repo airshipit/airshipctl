@@ -41,7 +41,14 @@ type PhaseStatus struct {
 type Plan interface {
 	Validate() error
 	Run(RunOptions) error
+	Status(StatusOptions) (PlanStatus, error)
 }
+
+// StatusOptions is used to define status options
+type StatusOptions struct{}
+
+// PlanStatus is a struct which defines status of PLAN
+type PlanStatus struct{}
 
 // ID uniquely identifies the phase
 type ID struct {

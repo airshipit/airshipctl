@@ -280,6 +280,20 @@ func (p *plan) Run(ro ifc.RunOptions) error {
 	return nil
 }
 
+// Status returns the status of phases in a given plan
+func (p *plan) Status(options ifc.StatusOptions) (ifc.PlanStatus, error) {
+	for _, step := range p.apiObj.Phases {
+		phase, err := p.phaseClient.PhaseByID(ifc.ID{Name: step.Name})
+		if err != nil {
+			return ifc.PlanStatus{}, err
+		}
+		if _, err = phase.Status(); err != nil {
+			return ifc.PlanStatus{}, err
+		}
+	}
+	return ifc.PlanStatus{}, nil
+}
+
 var _ ifc.Client = &client{}
 
 type client struct {
