@@ -4,6 +4,8 @@ FROM ${GO_IMAGE} as builder
 
 ENV PATH "/usr/local/go/bin:$PATH"
 
+ARG GOPROXY=""
+
 # Inject custom root certificate authorities if needed
 # Docker does not have a good conditional copy statement and requires that a source file exists
 # to complete the copy function without error.  Therefore the README.md file will be copied to

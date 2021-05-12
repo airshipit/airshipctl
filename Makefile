@@ -46,6 +46,9 @@ endif
 ifneq ($(strip $(DOCKER_IMAGE_ENTRYPOINT)),)
 DOCKER_CMD_FLAGS    += --build-arg ENTRYPOINT=$(strip $(DOCKER_IMAGE_ENTRYPOINT))
 endif
+ifneq ($(strip $(GOPROXY)),)
+DOCKER_CMD_FLAGS    += --build-arg GOPROXY=$(strip $(GOPROXY))
+endif
 # use this variable for image labels added in internal build process
 COMMIT              ?= $(shell git rev-parse HEAD)
 LABEL               ?= org.airshipit.build=community

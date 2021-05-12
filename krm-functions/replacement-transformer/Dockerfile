@@ -1,6 +1,7 @@
 ARG GO_IMAGE=gcr.io/gcp-runtimes/go1-builder:1.15
 ARG PLUGINS_RELEASE_IMAGE=alpine:3.12.0
 FROM ${GO_IMAGE} as builder
+ARG GOPROXY=""
 
 # Inject custom root certificate authorities if needed
 # Docker does not have a good conditional copy statement and requires that a source file exists

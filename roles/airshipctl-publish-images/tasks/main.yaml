@@ -37,6 +37,7 @@
           PROXY: "{{ proxy.http }}"
           NO_PROXY: "{{ proxy.noproxy }}"
           USE_PROXY: "{{ proxy.enabled | lower }}"
+          GOPROXY: "{{ goproxy | default(omit) }}"
           DOCKER_REGISTRY: "{{ image_repo }}"
           DOCKER_IMAGE_PREFIX: "{{ image_prefix }}"
           DOCKER_BASE_GO_IMAGE: "{{ docker.base_go_image | default(omit) }}"
