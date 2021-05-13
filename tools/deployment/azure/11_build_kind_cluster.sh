@@ -23,7 +23,7 @@ REMOTE_WORK_DIR=/tmp
 
 # get kind
 echo "Fetching kind from ${KIND_URL}..."
-TMP=$(KIND_URL=${KIND_URL} ./tools/document/get_kind.sh)
+TMP=$(KIND_URL=${KIND_URL} ./tools/deployment/kind/get_kind.sh)
 export KIND=${TMP}/kind
 
 $KIND delete cluster --name capi-azure

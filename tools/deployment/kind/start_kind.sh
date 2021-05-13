@@ -18,21 +18,21 @@ set -xe
 # Usage
 # example 1: create a kind cluster, with name as airship
 #
-#              ./tools/document/start_kind.sh
+#              ./tools/deployment/kind/start_kind.sh
 #
 # example 2: create a kind cluster, with a custom name
 #
-#              CLUSTER=ephemeral-cluster ./tools/document/start_kind.sh
+#              CLUSTER=ephemeral-cluster ./tools/deployment/kind/start_kind.sh
 #
 # example 3: create a kind cluster, using custom name and config
 #
 #              CLUSTER=ephemeral-cluster KIND_CONFIG=./tools/deployment/templates/kind-cluster-with-extramounts.yaml \
-#              ./tools/document/start_kind.sh
+#              ./tools/deployment/kind/start_kind.sh
 #
 # example 4: create a kind cluster with name as airship, using custom config
 #
 #              KIND_CONFIG=./tools/deployment/templates/kind-cluster-with-extramounts.yaml \
-#              ./tools/document/start_kind.sh
+#              ./tools/deployment/kind/start_kind.sh
 
 : ${KIND:="/usr/local/bin/kind"}
 : ${CLUSTER:="airship"} # NB: kind prepends "kind-"
