@@ -97,6 +97,10 @@ type Spec struct {
 	// KubernetesVersion is the version of Kubernetes to validate
 	// against (default "master").
 	KubernetesVersion string `yaml:"kubernetesVersion,omitempty"`
+
+	// SchemaLocation is the base URL from which to search for schemas.
+	// It can be either a remote location or a local directory
+	SchemaLocation string `yaml:"schemaLocation,omitempty"`
 }
 
 // CRDSpec holds special options for plan/phase which kinds to skip and which additional CRDs to include
@@ -125,6 +129,7 @@ func (f kubevalFilter) Filter(in []*yaml.RNode) ([]*yaml.RNode, error) {
 	kubevalConfig.Strict = cfg.Spec.Strict
 	kubevalConfig.IgnoreMissingSchemas = cfg.Spec.IgnoreMissingSchemas
 	kubevalConfig.KubernetesVersion = cfg.Spec.KubernetesVersion
+	kubevalConfig.SchemaLocation = cfg.Spec.SchemaLocation
 	kubevalConfig.AdditionalSchemaLocations = []string{fileScheme + "://" + schemaLocationDir}
 	kubevalConfig.KindsToSkip = []string{crdKind, kubevalOptsKind}
 	var crdList []string
