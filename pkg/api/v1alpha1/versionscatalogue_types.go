@@ -31,10 +31,17 @@ type RepoProperties struct {
 // RepositorySpec defines the additional properties for repository
 type RepositorySpec map[string]RepoProperties
 
-// ChartProperties defines the properties of the chart like Chart and vesrion
+// ChartSourceRef defines the properties of the Chart SourceRef like Kind and Name
+type ChartSourceRef struct {
+	Kind string `json:"kind"`
+	Name string `json:"name"`
+}
+
+// ChartProperties defines the properties of the chart like Chart and version
 type ChartProperties struct {
-	Chart   string `json:"chart"`
-	Version string `json:"version"`
+	Chart     string         `json:"chart"`
+	Version   string         `json:"version"`
+	SourceRef ChartSourceRef `json:"sourceRef,omitempty"`
 }
 
 // ChartSpec defines the spec for charts
@@ -140,13 +147,13 @@ type VersionsCatalogueSpec struct {
 	// "repository" and "tag" properties defined. capi_images may also include an
 	// optional "ipam-manager" object, which must also have "repository" and "tag"
 	// properties defined.
-	CAPIImages CAPIImageSpec `json:"capi_images,omtiempty"`
+	CAPIImages CAPIImageSpec `json:"capi_images,omitempty"`
 
 	// images defines collections of images that are declared as complete
 	// URLs rather than as a collection of discrete parts, such as "repository" and
 	// "tag" or "sha". This section of the catalog is organized by
 	// airshipctl function -> Deployments in function -> images in Deployment.
-	Images ImageSpec `json:"images,omtiempty"`
+	Images ImageSpec `json:"images,omitempty"`
 
 	// image_components defines images that are declared using the Helm-style
 	// format that breaks image URLs into discrete parts, such as "repository" and "tag".

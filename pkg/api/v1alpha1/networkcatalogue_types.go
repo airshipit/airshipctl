@@ -35,16 +35,17 @@ type HostNetworkingSpec struct {
 
 // Link defines the properties of the network link
 type Link struct {
-	ID             string   `json:"id,omitempty"`
-	Name           string   `json:"name,omitempty"`
-	Type           string   `json:"type,omitempty"`
-	MTU            string   `json:"mtu,omitempty"`
-	BondLinks      []string `json:"bond_links,omitempty"`
-	BondMode       string   `json:"bond_mode,omitempty"`
-	BondMiimon     int      `json:"bond_miimon,omitempty"`
-	VlanLink       string   `json:"vlan_link,omitempty"`
-	VlanID         int      `json:"vlan_id,omitempty"`
-	VlanMacAddress string   `json:"vlan_mac_address,omitempty"`
+	ID                 string   `json:"id,omitempty"`
+	Name               string   `json:"name,omitempty"`
+	Type               string   `json:"type,omitempty"`
+	MTU                string   `json:"mtu,omitempty"`
+	BondLinks          []string `json:"bond_links,omitempty"`
+	BondMode           string   `json:"bond_mode,omitempty"`
+	BondMiimon         int      `json:"bond_miimon,omitempty"`
+	BondXmitHashPolicy string   `json:"bond_xmit_hash_policy,omitempty"`
+	VlanLink           string   `json:"vlan_link,omitempty"`
+	VlanID             int      `json:"vlan_id,omitempty"`
+	VlanMacAddress     string   `json:"vlan_mac_address,omitempty"`
 }
 
 // IPFormat Regex to support both IPV4 and IPV6 format
