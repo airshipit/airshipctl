@@ -112,6 +112,11 @@ func (c *clientV1Alpha1) runAirship() error {
 	if err != nil {
 		return err
 	}
+	defer func(container Container) {
+		if rmErr := container.RmContainer(); rmErr != nil {
+			log.Printf("Failed to remove container with id '%s', err is '%s'", container.GetID(), rmErr.Error())
+		}
+	}(cont)
 
 	// this will split the env vars into the ones to be exported and the ones that have values
 	contEnv := runtimeutil.NewContainerEnvFromStringSlice(c.conf.Spec.EnvVars)
