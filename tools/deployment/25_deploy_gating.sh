@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,24 +14,5 @@
 
 set -xe
 
-N=0
-MAX_RETRY=30
-DELAY=60
-until [ "$N" -ge ${MAX_RETRY} ]
-do
-    if [ "$(timeout 20 \
-              kubectl --context $KCTL_CONTEXT \
-              get node -o name | wc -l)" -ge "1" ]; then
-      timeout 20 kubectl --context $KCTL_CONTEXT get node
-      break
-  fi
-
-  N=$((N+1))
-  echo "$N: Retrying to reach the apiserver" 1>&2
-  sleep ${DELAY}
-done
-
-if [ "$N" -ge ${MAX_RETRY} ]; then
-  echo "Could not reach the apiserver" 1>&2
-  exit 1
-fi
+echo "Deploy gating"
+airshipctl plan run deploy-gating --debug

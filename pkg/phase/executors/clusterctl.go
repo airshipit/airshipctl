@@ -178,7 +178,7 @@ func (c *ClusterctlExecutor) Validate() error {
 		return phaseerrors.ErrInvalidPhase{Reason: "ClusterctlExecutor.Action is empty"}
 	case airshipv1.Init:
 		if c.options.InitOptions.CoreProvider == "" {
-			return phaseerrors.ErrInvalidPhase{Reason: "ClusterctlExecutor.InitOptions.CoreProvider is empty"}
+			log.Printf("ClusterctlExecutor.InitOptions.CoreProvider is empty")
 		}
 	case airshipv1.Move:
 	default:

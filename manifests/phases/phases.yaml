@@ -358,13 +358,24 @@ config:
 apiVersion: airshipit.org/v1alpha1
 kind: Phase
 metadata:
-  name: kubectl-wait-pods-target
+  name: kubectl-wait-pods-any-ephemeral
+  clusterName: ephemeral-cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: kubectl-wait-pods-any
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: kubectl-wait-pods-ready-target
   clusterName: target-cluster
 config:
   executorRef:
     apiVersion: airshipit.org/v1alpha1
     kind: GenericContainer
-    name: kubectl-wait-pods
+    name: kubectl-wait-pods-ready
 ---
 apiVersion: airshipit.org/v1alpha1
 kind: Phase

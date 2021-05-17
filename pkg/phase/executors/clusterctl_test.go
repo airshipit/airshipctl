@@ -76,19 +76,6 @@ providers:
     versions:
       v0.3.3: manifests/function/capi/v0.3.3`
 
-	executorConfigTmplBad = `
-apiVersion: airshipit.org/v1alpha1
-kind: Clusterctl
-metadata:
-  name: clusterctl-v1
-action: %s
-somefield: %s
-providers:
-  - name: "cluster-api"
-    type: "CoreProvider"
-    versions:
-      v0.3.2: functions/capi/infrastructure/v0.3.2`
-
 	renderedDocs = `---
 apiVersion: v1
 kind: Namespace
@@ -245,12 +232,6 @@ func TestClusterctlExecutorValidate(t *testing.T) {
 			actionType:         "",
 			executorConfigTmpl: executorConfigTmplGood,
 			expectedErrString:  "invalid phase: ClusterctlExecutor.Action is empty",
-		},
-		{
-			name:               "Error empty init option",
-			actionType:         "init",
-			executorConfigTmpl: executorConfigTmplBad,
-			expectedErrString:  "invalid phase: ClusterctlExecutor.InitOptions.CoreProvider is empty",
 		},
 	}
 	for _, test := range testCases {

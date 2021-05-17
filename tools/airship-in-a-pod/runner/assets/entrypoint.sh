@@ -57,14 +57,6 @@ else
   tar -czf "$ARTIFACTS_DIR/iso.tar.gz" --directory=/srv/images .
 fi
 
-./tools/deployment/25_deploy_ephemeral_node.sh
-./tools/deployment/26_deploy_capi_ephemeral_node.sh
-./tools/deployment/30_deploy_controlplane.sh
-./tools/deployment/31_deploy_initinfra_target_node.sh
-./tools/deployment/32_cluster_init_target_node.sh
-./tools/deployment/33_cluster_move_target_node.sh
-./tools/deployment/35_deploy_worker_node.sh
-./tools/deployment/36_deploy_workload.sh
-./tools/deployment/37_verify_hwcc_profiles.sh
+./tools/deployment/25_deploy_gating.sh
 
 /signal_complete runner

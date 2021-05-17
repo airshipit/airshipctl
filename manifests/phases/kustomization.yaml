@@ -1,6 +1,6 @@
 resources:
   - phases.yaml
-  - plan.yaml
+  - ../type/gating
   - executors.yaml
   - cluster-map.yaml
   - ../function/clusterctl

@@ -166,7 +166,8 @@ func bundleReader(bundle document.Bundle) (io.Reader, error) {
 
 // Validate executor configuration and documents
 func (c *ContainerExecutor) Validate() error {
-	return commonerrors.ErrNotImplemented{}
+	log.Printf("Method Validate() for container isn't implemented")
+	return nil
 }
 
 // Render executor documents

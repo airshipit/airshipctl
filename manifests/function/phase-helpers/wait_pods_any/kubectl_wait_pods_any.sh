@@ -19,19 +19,20 @@ MAX_RETRY=30
 DELAY=60
 until [ "$N" -ge ${MAX_RETRY} ]
 do
-    if [ "$(timeout 20 \
-              kubectl --context $KCTL_CONTEXT \
-              get node -o name | wc -l)" -ge "1" ]; then
-      timeout 20 kubectl --context $KCTL_CONTEXT get node
+    if [ "$(kubectl --context $KCTL_CONTEXT \
+              --request-timeout 10s \
+              get pods \
+              --all-namespaces -o name | wc -l)" -ge "1" ]; then
+      kubectl --context $KCTL_CONTEXT --request-timeout 10s get pods --all-namespaces 1>&2
       break
   fi
 
   N=$((N+1))
-  echo "$N: Retrying to reach the apiserver" 1>&2
+  echo "$N: Retrying to get any pods" 1>&2
   sleep ${DELAY}
 done
 
 if [ "$N" -ge ${MAX_RETRY} ]; then
-  echo "Could not reach the apiserver" 1>&2
+  echo "Could not get any pods" 1>&2
   exit 1
 fi

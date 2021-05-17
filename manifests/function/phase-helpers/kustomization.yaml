@@ -4,7 +4,8 @@ resources:
 - wait_tigera
 - wait_deploy
 - get_node
-- wait_pods
+- wait_pods_ready
+- wait_pods_any
 - pause_bmh
 - wait_cluster
 - virsh-eject-cdrom-images
