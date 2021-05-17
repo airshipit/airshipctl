@@ -437,6 +437,7 @@ func TestPlanRunCommand(t *testing.T) {
 		name        string
 		factory     config.Factory
 		expectedErr string
+		planID      ifc.ID
 	}{
 		{
 			name: "Error config factory",
@@ -456,7 +457,10 @@ func TestPlanRunCommand(t *testing.T) {
 			expectedErr: "missing configuration: context with name 'does not exist'",
 		},
 		{
-			name: "Error phase by id",
+			name: "Error plan by id",
+			planID: ifc.ID{
+				Name: "doesn't exist",
+			},
 			factory: func() (*config.Config, error) {
 				conf := config.NewConfig()
 				conf.Manifests = map[string]*config.Manifest{
@@ -479,7 +483,7 @@ func TestPlanRunCommand(t *testing.T) {
 				}
 				return conf, nil
 			},
-			expectedErr: `context "ephemeral-cluster" does not exist`,
+			expectedErr: `found no documents`,
 		},
 	}
 	for _, tc := range testCases {
@@ -490,6 +494,7 @@ func TestPlanRunCommand(t *testing.T) {
 					GenericRunFlags: phase.GenericRunFlags{
 						DryRun: true,
 					},
+					PlanID: tt.planID,
 				},
 				Factory: tt.factory,
 			}

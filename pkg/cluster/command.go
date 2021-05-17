@@ -83,12 +83,18 @@ func (cmd *GetKubeconfigCommand) RunE(cfgFactory config.Factory, writer io.Write
 		return err
 	}
 
+	var siteWide bool
+	if cmd.ClusterName == "" {
+		siteWide = true
+	}
+
 	kubeconf := kubeconfig.NewBuilder().
 		WithBundle(helper.PhaseConfigBundle()).
 		WithClusterctlClient(client).
 		WithClusterMap(cMap).
 		WithClusterName(cmd.ClusterName).
 		WithTempRoot(helper.WorkDir()).
+		SiteWide(siteWide).
 		Build()
 
 	return kubeconf.Write(writer)

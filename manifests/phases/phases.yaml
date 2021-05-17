@@ -126,6 +126,7 @@ metadata:
   name: clusterctl-move
   clusterName: target-cluster
 config:
+  siteWideKubeconfig: true
   executorRef:
     apiVersion: airshipit.org/v1alpha1
     kind: Clusterctl

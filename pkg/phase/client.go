@@ -114,6 +114,8 @@ func (p *phase) executor(docFactory document.DocFactoryFunc,
 		WithClusterMap(cMap).
 		WithTempRoot(p.helper.WorkDir()).
 		WithClusterctlClient(cctlClient).
+		WithClusterName(p.apiObj.ClusterName).
+		SiteWide(p.apiObj.Config.SiteWideKubeconfig).
 		Build()
 
 	return executorFactory(

@@ -41,6 +41,7 @@ func NewBuilder() *Builder {
 // Builder is an object that allows to build a kubeconfig based on various provided sources
 // such as path to kubeconfig, path to bundle that should contain kubeconfig and parent cluster
 type Builder struct {
+	siteWide    bool
 	clusterName string
 	root        string
 
@@ -88,11 +89,21 @@ func (b *Builder) WithFilesystem(fs fs.FileSystem) *Builder {
 	return b
 }
 
+// SiteWide allows to build kubeconfig for the entire site.
+// If set to true ClusterName will be ignored, since all clusters are requested.
+func (b *Builder) SiteWide(t bool) *Builder {
+	b.siteWide = t
+	return b
+}
+
 // Build site kubeconfig, ignores, but logs, errors that happen when building individual
 // kubeconfigs. We need this behavior because, some clusters may not yet be deployed
 // and their kubeconfig is inaccessible yet, but will be accessible at later phases
 // If builder can't build kubeconfig for specific cluster, its context will not be present
 // in final kubeconfig. User of kubeconfig, will receive error stating that context doesn't exist
+// To request site-wide kubeconfig use builder method SiteWide(true).
+// To request a single cluster kubeconfig use methods WithClusterName("my-cluster").SiteWide(false)
+// ClusterName is ignored if SiteWide(true) is used.
 func (b *Builder) Build() Interface {
 	return NewKubeConfig(b.build, InjectFileSystem(b.fs), InjectTempRoot(b.root))
 }
@@ -101,19 +112,19 @@ func (b *Builder) build() ([]byte, error) {
 	// Set current context to clustername if it was provided
 	var result *api.Config
 	var err error
-	var kubeContext string
-	if b.clusterName != "" {
+	if !b.siteWide {
+		var kubeContext string
 		kubeContext, result, err = b.buildOne(b.clusterName)
 		if err != nil {
 			return nil, err
 		}
+		b.siteKubeconf.CurrentContext = kubeContext
 	} else {
 		result, err = b.builtSiteKubeconf()
 		if err != nil {
 			return nil, err
 		}
 	}
-	b.siteKubeconf.CurrentContext = kubeContext
 	return clientcmd.Write(*result)
 }
 
