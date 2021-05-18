@@ -43,6 +43,7 @@
           DOCKER_BASE_RELEASE_IMAGE: "{{ docker.base_release_image | default(omit) }}"
           DOCKER_BASE_PLUGINS_BUILD_IMAGE: "{{ docker.base_plugins_build_image | default(omit) }}"
           DOCKER_BASE_PLUGINS_RELEASE_IMAGE: "{{ docker.base_plugins_release_image | default(omit) }}"
+          DOCKER_IMAGE_ENTRYPOINT: "{{ docker.entrypoint | default(omit) }}"
         target: images
       loop:
         - "latest"

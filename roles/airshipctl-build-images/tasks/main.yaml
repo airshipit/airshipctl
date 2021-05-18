@@ -10,7 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Buid airshipctl Image
+- name: Build airshipctl Image
   make:
     chdir: "{{ zuul.project.src_dir }}"
     target: images
@@ -25,6 +25,7 @@
       DOCKER_BASE_RELEASE_IMAGE: "{{ docker.base_release_image | default(omit) }}"
       DOCKER_BASE_PLUGINS_BUILD_IMAGE: "{{ docker.base_plugins_build_image | default(omit) }}"
       DOCKER_BASE_PLUGINS_RELEASE_IMAGE: "{{ docker.base_plugins_release_image | default(omit) }}"
+      DOCKER_IMAGE_ENTRYPOINT: "{{ docker.entrypoint | default(omit) }}"
 
 - name: Verify Image Exists
   shell: docker image inspect "$(make DOCKER_REGISTRY={{ image_repo }} DOCKER_IMAGE_PREFIX={{ image_prefix }} DOCKER_IMAGE_TAG={{ zuul.change }} print-docker-image-tag)"
