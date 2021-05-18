@@ -17,12 +17,14 @@ package phase
 import (
 	"bytes"
 	"io"
+	"os"
 	"path/filepath"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	cctlclient "opendev.org/airship/airshipctl/pkg/clusterctl/client"
+	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
@@ -159,21 +161,34 @@ func (p *phase) Validate() error {
 		return err
 	}
 
-	defer p.processor.Close()
-
-	executor, err = p.executor(func() (document.Document, error) {
-		return p.helper.PhaseConfigBundle().
-			SelectOne(document.NewValidatorExecutorSelector())
-	}, document.BundleFactoryFromBytes(buf.Bytes()))
+	doc, err := p.helper.PhaseConfigBundle().SelectOne(document.NewValidatorExecutorSelector())
 	if err != nil {
 		return err
 	}
 
-	ch := make(chan events.Event)
-	go func() {
-		executor.Run(ch, ifc.RunOptions{})
-	}()
-	return p.processor.Process(ch)
+	apiObj := v1alpha1.DefaultGenericContainer()
+	err = doc.ToAPIObject(apiObj, v1alpha1.Scheme)
+	if err != nil {
+		return err
+	}
+
+	gvk := apiObj.ConfigRef.GroupVersionKind()
+	selector := document.NewSelector().
+		ByName(apiObj.ConfigRef.Name).
+		ByNamespace(apiObj.ConfigRef.Namespace).
+		ByGvk(gvk.Group, gvk.Version, gvk.Kind)
+
+	doc, err = p.helper.PhaseConfigBundle().SelectOne(selector)
+	if err != nil {
+		return err
+	}
+	config, err := doc.AsYAML()
+	if err != nil {
+		return err
+	}
+	apiObj.Config = string(config)
+
+	return container.NewClientV1Alpha1("", buf, os.Stdout, apiObj, p.helper.TargetPath()).Run()
 }
 
 // Render executor documents
