@@ -13,7 +13,7 @@
 
 : ${KIND_VERSION:="v0.9.0"}
 export KIND_URL="https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-$(uname)-amd64"
-TMP=$(KIND_URL=${KIND_URL} tools/document/get_kind.sh)
+TMP=$(KIND_URL=${KIND_URL} tools/deployment/kind/get_kind.sh)
 export KIND=${TMP}/kind
 sudo cp ${KIND} /usr/local/bin/
 ${KIND} version

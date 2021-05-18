@@ -24,26 +24,67 @@ set -xe
 : ${MANIFEST_PATH:="manifests/site"}
 : ${SITE_ROOTS:="$(basename "${PWD}")/${MANIFEST_PATH}"}
 : ${MANIFEST_REPO_URL:="https://review.opendev.org/airship/airshipctl"}
-: ${TOOLS_PATH:="${MANIFEST_ROOT}/airshipctl/tools"}
 
-# get kind
-echo "Fetching kind from ${KIND_URL}..."
-TMP=$(KIND_URL=${KIND_URL} ${TOOLS_PATH}/document/get_kind.sh)
-export KIND=${TMP}/kind
-export KUBECTL_URL
+# Name of specific site to be validated
+SITE_NAME=${SITE_NAME:-$1}
+TMP=$(mktemp -d)
 
-sites_to_skip=(az-test-site docker-test-site gcp-test-site openstack-test-site)
+# TODO: use `airshipctl config` to do this once all the needed knobs are exposed
+function generate_airshipconf() {
+  cat <<EOL >"${TMP}/$1.cfg"
+apiVersion: airshipit.org/v1alpha1
+contexts:
+  default_context:
+    manifest: default_manifest
+    managementConfiguration: default_mgmt_config
+currentContext: default_context
+kind: Config
+managementConfiguration:
+  default_mgmt_config:
+    insecure: true
+    systemActionRetries: 30
+    systemRebootDelay: 30
+    type: redfish
+manifests:
+  default_manifest:
+    phaseRepositoryName: primary
+    repositories:
+      primary:
+        checkout:
+          branch: master
+          commitHash: ""
+          force: false
+          tag: ""
+        url: ${MANIFEST_REPO_URL}
+    targetPath: ${MANIFEST_ROOT}
+    metadataPath: ${MANIFEST_PATH}/$1/metadata.yaml
+EOL
+}
 
 for site_root in ${SITE_ROOTS}; do
   for site in $(ls ${MANIFEST_ROOT}/${site_root}); do
-      if [[ " ${sites_to_skip[@]} " =~ " ${site} " ]]; then
-         continue
+    # TODO (raliev) remove this condition later
+    # Temporary solution to disable validation for outdated sites, this list will be removed eventually
+    sites_to_skip=(az-test-site docker-test-site gcp-test-site openstack-test-site)
+    if [[ " ${sites_to_skip[@]} " =~ " ${site} " ]]; then
+      continue
+    fi
+
+    # Validate only specific site if set
+    if [ ! -z "$SITE_NAME" ] && [ "$site" != "$SITE_NAME" ]; then
+      continue
+    fi
+
+    echo -e "\nValidating site: ${MANIFEST_ROOT}/${site_root}/${site}\n****************"
+    generate_airshipconf $site
+    phase_plans=$(airshipctl --airshipconf "${TMP}/$site.cfg" plan list | awk -F'/' '/PhasePlan/ {print $2}' | awk '{print $1}')
+    for plan in $phase_plans; do
+      # Perform static validation, add support of all plans later
+      # TODO (raliev) remove this condition later
+      if [ "$plan" = "phasePlan" ]; then
+        airshipctl --airshipconf "${TMP}/$site.cfg" plan validate $plan
       fi
-      echo -e "\nValidating site: ${MANIFEST_ROOT}/${site_root}/${site}\n****************"
-      MANIFEST_ROOT=${MANIFEST_ROOT} SITE_ROOT=${site_root} SITE=${site} \
-      MANIFEST_REPO_URL=${MANIFEST_REPO_URL} MANIFEST_PATH=${MANIFEST_PATH} MANIFEST_REPO_URL=${MANIFEST_REPO_URL} \
-      TOOLS_PATH=${TOOLS_PATH} \
-        ${TOOLS_PATH}/document/validate_site_docs.sh
       echo "Validation of site ${site} is successful!"
+    done
   done
 done
