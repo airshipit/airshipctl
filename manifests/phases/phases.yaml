@@ -229,6 +229,17 @@ config:
 apiVersion: airshipit.org/v1alpha1
 kind: Phase
 metadata:
+  name: secret-import
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: encrypter
+  documentEntryPoint: target/encrypted/importer
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
   name: secret-show
 config:
   executorRef:

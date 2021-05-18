@@ -212,19 +212,14 @@ Basically this executor accepts the bundle, runs krm-function `gcr.io/kpt-fn-con
 - `SOPS_IMPORT_PGP`
 - `SOPS_PGP_FP`
 
-Possible option how to encrypt `externally provided secrets`:
-This feature is already in place - it's possible to update improted secrtets manually.
-Futher possible improvements are to make as many phases as needed, each phase will cover its separate procedure, e.g.: change of LDAP credentials, update some external passwords.
-The only limitation is that each procedure has to have it’s own VariableCatalogues - that just allows not to decrypte/re-encrypt values from all VariableCatalogues.
+There is another a separate set of secrets that are provided externally and that shouldn't be generated. They're called `externally provided secrets`.
+For that set there is a separate folder in the target/encrypted/results, called `imported`.
 
-We should use some unencrypted VariableCatalogue as a resource and be able to encrypt that and put to imported secrets.
+There is a speical phase called `secret-import` that may be used to update the set of externally provided secrets:
+just put a new unencrypted secrets.yaml to target/encrypted/results/imported/ instead of encrypted one and run that phase.
+This phase will encrypt that file using provided public key set by `SOPS_IMPORT_PGP` and `SOPS_PGP_FP`.
 
-Moreover, it’s possible to combine several secret sources in 1 phase, e.g. if we need to encrypt generated and externally provided secrets, just create another directory with kustomization, and put there different resources:
-
-1. Local files with `externally provided secrets` in form of unencrypted variable catalogues
-2. Directory `target/encrypted`.
-
-Update phase’s documentEntryPoint with the new path to the created directory. Now when you run the phase - all these files along with newly generated secrets will be encrypted.
+Note: if you try to run this phase for already encrypted secrets.yaml this phase will return error saying that file is already encrypted.
 
 ## Decryption of secrets and using them
 

@@ -1,8 +1,8 @@
 resources:
-  - generated/secrets.yaml
-  - imported/secrets.yaml
+  - generated/
+  - imported/
 
 transformers:
-  - decrypt-secrets
-  - ../generator/overrideplacement
-  - ../importer/overrideplacement
+  - ../../../../../type/gating/target/decrypt-secrets/
+  - ../../../../../type/gating/target/generator/fileplacement/
+  - ../../../../../type/gating/target/importer/fileplacement/
