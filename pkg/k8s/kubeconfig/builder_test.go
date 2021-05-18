@@ -95,6 +95,7 @@ func TestBuilderClusterctl(t *testing.T) {
 		errString            string
 		requestedClusterName string
 		tempRoot             string
+		siteWide             bool
 
 		expectedContexts, expectedClusters, expectedAuthInfos []string
 		clusterMap                                            clustermap.ClusterMap
@@ -106,6 +107,7 @@ func TestBuilderClusterctl(t *testing.T) {
 			expectedContexts:  []string{parentClusterID},
 			expectedClusters:  []string{parentParentCluster},
 			expectedAuthInfos: []string{parentParentUser},
+			siteWide:          true,
 			clusterMap: clustermap.NewClusterMap(&v1alpha1.ClusterMap{
 				Map: map[string]*v1alpha1.Cluster{
 					childClusterID: {
@@ -134,6 +136,7 @@ func TestBuilderClusterctl(t *testing.T) {
 			expectedContexts:  []string{parentClusterID, parentParentClusterID},
 			expectedClusters:  []string{"dummycluster_ephemeral", parentParentCluster},
 			expectedAuthInfos: []string{"kubernetes-admin", parentParentUser},
+			siteWide:          true,
 			clusterMap: clustermap.NewClusterMap(&v1alpha1.ClusterMap{
 				Map: map[string]*v1alpha1.Cluster{
 					parentParentClusterID: {
@@ -165,6 +168,7 @@ func TestBuilderClusterctl(t *testing.T) {
 			expectedContexts:  []string{parentClusterID, childClusterID, parentParentClusterID},
 			expectedClusters:  []string{parentCluster, parentParentCluster, childCluster},
 			expectedAuthInfos: []string{parentUser, parentParentUser, childUser},
+			siteWide:          true,
 			clusterMap: clustermap.NewClusterMap(&v1alpha1.ClusterMap{
 				Map: map[string]*v1alpha1.Cluster{
 					childClusterID: {
@@ -265,6 +269,7 @@ func TestBuilderClusterctl(t *testing.T) {
 				WithTempRoot(tt.tempRoot).
 				WithClusterctlClient(tt.clusterctlClient).
 				WithFilesystem(tt.fs).
+				SiteWide(tt.siteWide).
 				Build()
 			require.NotNil(t, kube)
 			filePath, cleanup, err := kube.GetFile()

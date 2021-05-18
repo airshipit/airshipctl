@@ -32,6 +32,7 @@ type Phase struct {
 // phase runner object which should contain runner configuration
 type PhaseConfig struct {
 	ExecutorRef        *corev1.ObjectReference `json:"executorRef"`
+	SiteWideKubeconfig bool                    `json:"siteWideKubeconfig,omitempty"`
 	DocumentEntryPoint string                  `json:"documentEntryPoint"`
 }
 

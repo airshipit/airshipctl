@@ -94,6 +94,7 @@ func (c *ContainerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 		cleanup, err := c.SetKubeConfig()
 		if err != nil {
 			handleError(evtCh, err)
+			return
 		}
 		defer cleanup()
 	}
