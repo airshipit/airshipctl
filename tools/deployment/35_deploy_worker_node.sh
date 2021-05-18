@@ -22,13 +22,10 @@ WORKER_NODE=${WORKER_NODE:-"node03"}
 EPHEMERAL_DOMAIN_NAME="air-ephemeral"
 
 # all vms. This can be removed once sushy tool is fixed
-if type "virsh" > /dev/null; then
-  for vm in $(sudo virsh list --all --name --state-running |grep ${EPHEMERAL_DOMAIN_NAME})
-  do
-    echo "Stop ephemeral node '$vm'"
-    sudo virsh destroy $vm
-  done
-fi
+# Scripts for this phase placed in manifests/function/phase-helpers/virsh-destroy-vms/
+# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+# and find ConfigMap with name virsh-destroy-vms
+airshipctl phase run virsh-destroy-vms --debug
 
 node_timeout () {
   end=$(($(date +%s) + $TIMEOUT))

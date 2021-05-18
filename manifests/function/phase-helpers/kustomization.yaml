@@ -7,3 +7,5 @@ resources:
 - wait_pods
 - pause_bmh
 - wait_cluster
+- virsh-eject-cdrom-images
+- virsh-destroy-vms

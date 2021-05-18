@@ -18,16 +18,10 @@ EPHEMERAL_DOMAIN_NAME="air-ephemeral"
 
 # TODO (dukov) this is needed due to sushy tools inserts cdrom image to
 # all vms. This can be removed once sushy tool is fixed
-if type "virsh" > /dev/null; then
-  echo "Ensure all cdrom images are ejected."
-  for vm in $(sudo virsh list --all --name |grep -v ${EPHEMERAL_DOMAIN_NAME})
-  do
-    sudo virsh domblklist $vm |
-      awk 'NF==2 {print $1}' |
-      grep -v Target |
-      xargs -I{} sudo virsh change-media $vm {} --eject || :
-  done
-fi
+# Scripts for this phase placed in manifests/function/phase-helpers/virsh-eject-cdrom-images/
+# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+# and find ConfigMap with name virsh-eject-cdrom-images
+airshipctl phase run virsh-eject-cdrom-images --debug
 
 echo "Create target k8s cluster resources"
 airshipctl phase run controlplane-ephemeral --debug
