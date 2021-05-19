@@ -61,7 +61,7 @@ func main() {
 		ResourceList:       resourceList,
 		ConfigMap:          cfg,
 		ErrStream:          os.Stderr,
-		OutStream:          os.Stdout,
+		OutStream:          os.Stderr,
 	}
 	cmd := framework.Command(resourceList, runner.Run)
 	if err := cmd.Execute(); err != nil {
