@@ -1,4 +1,11 @@
-inventory:
-  path: "manifests/site/inventory"
-phase:
-  path: "valid_site/phases"
+apiVersion: airshipit.org/v1alpha1
+kind: ManifestMetadata
+metadata:
+  name: manifest-metadata
+spec:
+  inventory:
+    path: "manifests/site/inventory"
+  phase:
+    path: "valid_site/phases"
+    docEntryPointPrefix: "valid_site"
+

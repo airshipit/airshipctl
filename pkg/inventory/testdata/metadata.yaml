@@ -1,2 +1,10 @@
-inventory:
-  path: "."
+apiVersion: airshipit.org/v1alpha1
+kind: ManifestMetadata
+metadata:
+  name: manifest-metadata
+spec:
+  phase:
+    path: ""
+    docEntryPointPrefix: ""
+  inventory:
+    path: "."

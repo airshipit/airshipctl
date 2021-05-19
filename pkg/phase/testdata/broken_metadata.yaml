@@ -1,2 +1,10 @@
-phase:
-  path: "doesnot-exist"
+apiVersion: airshipit.org/v1alpha1
+kind: ManifestMetadata
+metadata:
+  name: manifest-metadata
+spec:
+  phase:
+    path: "doesnot-exist"
+    docEntryPointPrefix: ""
+  inventory:
+    path: ""

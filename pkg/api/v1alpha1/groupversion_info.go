@@ -53,6 +53,7 @@ func init() {
 		&BootConfiguration{},
 		&GenericContainer{},
 		&BaremetalManager{},
+		&ManifestMetadata{},
 	)
 	_ = AddToScheme(Scheme) //nolint:errcheck
 }

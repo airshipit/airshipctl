@@ -1,0 +1,5 @@
+phase:
+  path: manifests/site/test-site/phases
+  docEntryPointPrefix: manifests/site/test-site
+inventory:
+  path: manifests/site/test-site/host-inventory
