@@ -37,4 +37,5 @@ ARG BINARY=airshipctl
 ENV BINARY=${BINARY}
 COPY --from=builder /usr/src/airshipctl/bin/${BINARY} /usr/local/bin/${BINARY}
 USER 65534
-ENTRYPOINT /usr/local/bin/${BINARY}
+ARG ENTRYPOINT=/usr/local/bin/${BINARY}
+ENTRYPOINT ${ENTRYPOINT}
