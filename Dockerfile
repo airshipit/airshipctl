@@ -37,5 +37,10 @@ ARG BINARY=airshipctl
 ENV BINARY=${BINARY}
 COPY --from=builder /usr/src/airshipctl/bin/${BINARY} /usr/local/bin/${BINARY}
 USER 65534
+# ENTRYPOINT instruction does not expand args from both ENV and ARG.
+# Since variable defined with ENV is available at runtime it will be
+# consumed this way. This also means it may be overridden by passing
+# --env ENTRYPOINT=... to docker run
 ARG ENTRYPOINT=/usr/local/bin/${BINARY}
+ENV ENTRYPOINT=${ENTRYPOINT}
 ENTRYPOINT ${ENTRYPOINT}
