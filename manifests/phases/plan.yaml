@@ -12,7 +12,6 @@ phases:
   - name: initinfra-target
   - name: initinfra-networking-target
   - name: workers-target
-  - name: workers-classification
   - name: workload-target
 
 ---
