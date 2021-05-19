@@ -23,7 +23,7 @@ if type "virsh" > /dev/null; then
     virsh domblklist $vm |
       awk 'NF==2 {print $1}' |
       grep -v Target |
-      xargs -I{} virsh change-media $vm {} --eject || : 1>&2
+      xargs -I{} virsh change-media $vm {} --eject 1>&2 || : 1>&2
   done
 else
   echo "Can't find virsh" 1>&2
