@@ -108,11 +108,18 @@ type IronicSpec struct {
 	IronicInspectorEndpoint string   `json:"ironicInspectorEndpoint,omitempty"`
 }
 
+// NtpSpec defines the spec for NTP servers
+type NtpSpec struct {
+	Enabled bool     `json:"enabled,omitempty"`
+	Servers []string `json:"servers,omitempty"`
+}
+
 // NetworkCatalogueSpec defines the default networking catalogs hosted in airshipctl
 type NetworkCatalogueSpec struct {
 	CommonHostNetworking HostNetworkingSpec `json:"commonHostNetworking,omitempty"`
 	Kubernetes           KubernetesSpec     `json:"kubernetes,omitempty"`
 	Ironic               IronicSpec         `json:"ironic,omitempty"`
+	Ntp                  NtpSpec            `json:"ntp,omitempty"`
 }
 
 // +kubebuilder:object:root=true

@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - workers-env-vars.yaml
   - generated-secrets.yaml
+  - networking.yaml

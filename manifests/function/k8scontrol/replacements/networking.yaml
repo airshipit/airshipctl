@@ -43,3 +43,14 @@ replacements:
     objref:
       kind: Metal3Cluster
     fieldrefs: ["spec.controlPlaneEndpoint"]
+
+# Replace the k8s controlplane NTP servers
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ntp
+  target:
+    objref:
+      kind: KubeadmControlPlane
+    fieldrefs: ["spec.kubeadmConfigSpec.ntp"]

@@ -1,0 +1,19 @@
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: workers-networking-replacements
+  annotations:
+    config.kubernetes.io/function: |-
+      container:
+        image: quay.io/airshipit/replacement-transformer:latest
+replacements:
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ntp
+  target:
+    objref:
+      kind: KubeadmConfigTemplate
+      name: worker-1
+    fieldrefs: ["spec.template.spec.ntp"]
