@@ -15,6 +15,7 @@
 # The makefile entrypoint driver for document validation
 # Expected to be run from the project root
 set -xe
+set -o pipefail
 
 # The root of the manifest structure to be validated.
 # This corresponds to the targetPath in an airshipctl config
@@ -83,8 +84,8 @@ for site_root in ${SITE_ROOTS}; do
       # TODO (raliev) remove this condition later
       if [ "$plan" = "phasePlan" ]; then
         airshipctl --airshipconf "${TMP}/$site.cfg" plan validate $plan
+        echo "Validation of site ${site} is successful!"
       fi
-      echo "Validation of site ${site} is successful!"
     done
   done
 done
