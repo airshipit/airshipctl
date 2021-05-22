@@ -1,13 +1,7 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: collator
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: helm-chart-collator
-  namespace: collator
 spec:
   selector:
     matchLabels:
@@ -33,7 +27,6 @@ metadata:
   labels:
     app: helm-chart-collator
   name: helm-chart-collator
-  namespace: collator
 spec:
   ports:
   - port: 8080
