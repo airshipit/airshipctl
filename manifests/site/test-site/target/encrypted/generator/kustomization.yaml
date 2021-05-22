@@ -1,4 +1,4 @@
 generators:
-- overridegeneration
+- ../../../../../type/gating/target/generator/
 transformers:
-- overrideplacement
+- ../../../../../type/gating/target/generator/fileplacement/
