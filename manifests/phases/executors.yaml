@@ -459,4 +459,37 @@ configRef:
   kind: ConfigMap
   name: virsh-destroy-vms
   apiVersion: v1
-
+---
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: kubectl-wait-bmh
+spec:
+  image: quay.io/airshipit/toolbox:latest
+  hostNetwork: true
+  envVars:
+  - RESOURCE_GROUP_FILTER=metal3.io
+  - RESOURCE_VERSION_FILTER=v1alpha1
+  - RESOURCE_KIND_FILTER=BareMetalHost
+  - RESOURCE_LABEL_FILTER=airshipit.org/k8s-role=worker
+configRef:
+  kind: ConfigMap
+  name: kubectl-wait-bmh
+  apiVersion: v1
+---
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: kubectl-wait-label-node
+spec:
+  image: quay.io/airshipit/toolbox:latest
+  hostNetwork: true
+  envVars:
+  - RESOURCE_GROUP_FILTER=metal3.io
+  - RESOURCE_VERSION_FILTER=v1alpha1
+  - RESOURCE_KIND_FILTER=BareMetalHost
+  - RESOURCE_LABEL_FILTER=airshipit.org/k8s-role=worker
+configRef:
+  kind: ConfigMap
+  name: kubectl-wait-label-node
+  apiVersion: v1
