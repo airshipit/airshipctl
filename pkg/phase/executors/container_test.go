@@ -13,6 +13,7 @@
 package executors_test
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"testing"
@@ -285,6 +286,56 @@ func TestSetKubeConfig(t *testing.T) {
 			}
 			_, err := e.SetKubeConfig()
 			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
+
+func TestContainerRender(t *testing.T) {
+	testCases := []struct {
+		name        string
+		bundleData  []byte
+		opts        ifc.RenderOptions
+		expectedErr error
+		expectedOut string
+	}{
+		{
+			name:        "empty bundle",
+			bundleData:  []byte{},
+			opts:        ifc.RenderOptions{},
+			expectedOut: "",
+			expectedErr: nil,
+		},
+		{
+			name: "valid bundle",
+			bundleData: []byte(`apiVersion: unittest.org/v1alpha1
+kind: Test
+metadata:
+  name: TestName`),
+			opts: ifc.RenderOptions{FilterSelector: document.NewSelector().ByKind("Test").ByName("TestName")},
+			expectedOut: `---
+apiVersion: unittest.org/v1alpha1
+kind: Test
+metadata:
+  name: TestName
+...
+`,
+			expectedErr: nil,
+		},
+	}
+
+	buf := &bytes.Buffer{}
+	for _, tc := range testCases {
+		tt := tc
+		t.Run(tt.name, func(t *testing.T) {
+			bundle, err := document.NewBundleFromBytes(tt.bundleData)
+			require.NoError(t, err)
+			e := executors.ContainerExecutor{
+				ExecutorBundle: bundle,
+			}
+			err = e.Render(buf, tt.opts)
+			assert.Equal(t, tt.expectedErr, err)
+			assert.Equal(t, tt.expectedOut, buf.String())
+			buf.Reset()
 		})
 	}
 }
