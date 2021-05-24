@@ -15,6 +15,14 @@ limitations under the License.
 package config
 
 import (
+	"fmt"
+	"io"
+	"sort"
+	"strings"
+
+	"k8s.io/cli-runtime/pkg/printers"
+	"sigs.k8s.io/yaml"
+
 	"opendev.org/airship/airshipctl/pkg/errors"
 )
 
@@ -25,6 +33,7 @@ type ContextOptions struct {
 	Manifest                string
 	Current                 bool
 	ManagementConfiguration string
+	Format                  string
 }
 
 // ManifestOptions holds all configurable options for manifest configuration
@@ -64,6 +73,76 @@ func (o *ContextOptions) Validate() error {
 	}
 
 	// TODO Manifest, Cluster could be validated against the existing config maps
+	return nil
+}
+
+// Print prints the config contexts using one of formats `yaml` or `table` to a given output
+func (o *ContextOptions) Print(cfg *Config, w io.Writer) error {
+	if o.CurrentContext {
+		o.Name = cfg.CurrentContext
+	}
+
+	switch o.Format {
+	case "yaml":
+		type reducedConfig struct {
+			Contexts       map[string]*Context `json:"contexts"`
+			CurrentContext string              `json:"currentContext,omitempty"`
+		}
+		contexts := &reducedConfig{
+			Contexts:       cfg.Contexts,
+			CurrentContext: cfg.CurrentContext,
+		}
+		if o.Name != "" {
+			c, err := cfg.GetContext(o.Name)
+			if err != nil {
+				return err
+			}
+			contexts = &reducedConfig{
+				Contexts: map[string]*Context{o.Name: c},
+			}
+		}
+		data, err := yaml.Marshal(contexts)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(w, string(data))
+	case "table":
+		out := printers.GetNewTabWriter(w)
+		defer out.Flush()
+
+		toPrint := []string{}
+		if o.Name != "" {
+			toPrint = append(toPrint, o.Name)
+		} else {
+			for name := range cfg.Contexts {
+				toPrint = append(toPrint, name)
+			}
+		}
+
+		columnNames := []string{"CURRENT", "NAME", "MANIFEST", "MANAGEMENTCONFIGURATION"}
+		_, err := fmt.Fprintf(out, "%s\n", strings.Join(columnNames, "\t"))
+		if err != nil {
+			return err
+		}
+
+		sort.Strings(toPrint)
+		for _, name := range toPrint {
+			prefix := " "
+			if cfg.CurrentContext == name {
+				prefix = "*"
+			}
+			context, err := cfg.GetContext(name)
+			if err != nil {
+				return err
+			}
+			_, err = fmt.Fprintf(out, "%s\t%s\t%s\t%s\n", prefix, name, context.Manifest, context.ManagementConfiguration)
+			if err != nil {
+				return err
+			}
+		}
+	default:
+		return ErrWrongOutputFormat{Wrong: o.Format, Possible: []string{"yaml", "table"}}
+	}
 	return nil
 }
 

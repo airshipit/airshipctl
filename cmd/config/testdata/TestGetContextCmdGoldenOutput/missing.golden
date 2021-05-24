@@ -18,6 +18,7 @@ airshipctl config get-context exampleContext
 
 
 Flags:
-      --current   get the current context
-  -h, --help      help for get-context
+      --current       get the current context
+      --format yaml   choose between yaml or `table`, default is `yaml` (default "yaml")
+  -h, --help          help for get-context
 

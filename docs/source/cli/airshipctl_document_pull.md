@@ -11,6 +11,7 @@ By default the airship config file is initialized with the
 repository "https://opendev.org/airship/treasuremap" as a source of
 manifests and with the manifests target path "$HOME/.airship/default".
 
+
 ```
 airshipctl document pull [flags]
 ```

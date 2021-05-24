@@ -59,26 +59,12 @@ func NewGetContextCommand(cfgFactory config.Factory) *cobra.Command {
 			if len(args) == 1 {
 				o.Name = args[0]
 			}
-			if o.Name == "" && !o.CurrentContext {
-				contexts := airconfig.GetContexts()
-				if len(contexts) == 0 {
-					fmt.Fprintln(cmd.OutOrStdout(), "No Contexts found in the configuration.")
-				}
-				for _, context := range contexts {
-					fmt.Fprintln(cmd.OutOrStdout(), context.String())
-				}
-				return nil
-			}
 
-			if o.CurrentContext {
-				o.Name = airconfig.CurrentContext
+			if len(airconfig.GetContexts()) == 0 {
+				fmt.Fprintln(cmd.OutOrStdout(), "No Contexts found in the configuration.")
+			} else {
+				return o.Print(airconfig, cmd.OutOrStdout())
 			}
-
-			context, err := airconfig.GetContext(o.Name)
-			if err != nil {
-				return err
-			}
-			fmt.Fprintln(cmd.OutOrStdout(), context.String())
 			return nil
 		},
 	}
@@ -95,4 +81,10 @@ func addGetContextFlags(o *config.ContextOptions, cmd *cobra.Command) {
 		"current",
 		false,
 		"get the current context")
+
+	flags.StringVar(
+		&o.Format,
+		"format",
+		"yaml",
+		"choose between `yaml` or `table`, default is `yaml`")
 }

@@ -94,6 +94,5 @@ func getNamedTestContext(contextName string) *config.Context {
 	newContext := &config.Context{
 		Manifest: fmt.Sprintf("Manifest_%s", contextName),
 	}
-
 	return newContext
 }
