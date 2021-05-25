@@ -14,29 +14,41 @@ spec:
       apiServer:
         timeoutForControlPlane: 1000s
     files:
-      - path: "/etc/systemd/system/docker.service.d/http-proxy.conf"
+      - path: "/etc/systemd/system/containerd.service.d/http-proxy.conf"
         content: |
           [Service]
           Environment="HTTP_PROXY=REPLACEMENT_HTTP_PROXY"
           Environment="HTTPS_PROXY=REPLACEMENT_HTTPS_PROXY"
           Environment="NO_PROXY=REPLACEMENT_NO_PROXY"
+      # Since we are using containerd as a default CRI, we do not need
+      # any adjustments and settings for docker anymore. However, if for
+      # some reason docker has to be presented in the system, we need to
+      # create http-proxy.conf.
     # TODO: add download sources to the versions catalogue
     preKubeadmCommands:
       # Restart docker to apply any proxy settings
       - export HOME=/root
+      - mkdir -p /etc/containerd
+      - containerd config default | sed -r -e '/\[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc\]$/a\          SystemdCgroup = true' | tee /etc/containerd/config.toml
       - systemctl daemon-reload
-      - systemctl restart docker
+      - systemctl restart containerd
     initConfiguration:
       nodeRegistration:
         name: '{{ ds.meta_data.local_hostname }}'
         kubeletExtraArgs:
           node-labels: 'metal3.io/uuid={{ ds.meta_data.uuid }},node-type=controlplane'
+          cgroup-driver: "systemd"
+          container-runtime: remote
+        criSocket: "unix:///run/containerd/containerd.sock"
     joinConfiguration:
       controlPlane: {}
       nodeRegistration:
         name: '{{ ds.meta_data.local_hostname }}'
         kubeletExtraArgs:
           node-labels: 'metal3.io/uuid={{ ds.meta_data.uuid }},node-type=controlplane'
+          cgroup-driver: "systemd"
+          container-runtime: remote
+        criSocket: "unix:///run/containerd/containerd.sock"
     ntp:
        servers:
           - 0.pool.ntp.org
