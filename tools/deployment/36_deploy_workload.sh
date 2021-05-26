@@ -14,23 +14,11 @@
 
 set -xe
 
-#Default wait timeout is 600 seconds
-export TIMEOUT=${TIMEOUT:-600s}
-export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
-export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
-export TARGET_IP=${TARGET_IP:-"10.23.25.102"}
-export TARGET_PORT=${TARGET_PORT:-"30000"}
-
 echo "Deploy workload"
 airshipctl phase run workload-target --debug
 
-echo "Ensure we can reach ingress controller default backend"
-if [ "404" != "$(curl --head --write-out '%{http_code}' --silent --output /dev/null $TARGET_IP:$TARGET_PORT/should-404)" ]; then
-    echo -e "\nFailed to reach ingress controller default backend."
-
-    kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get all -n flux-system
-    kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT logs -n flux-system -l app=helm-controller
-    kubectl --kubeconfig $KUBECONFIG --context $KUBECONFIG_TARGET_CONTEXT get hr --all-namespaces -o yaml
-
-    exit 1
-fi
+# Ensure we can reach ingress controller default backend
+# Scripts for this phase placed in manifests/function/phase-helpers/check_ingress_ctrl/
+# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+# and find ConfigMap with name kubectl-check-ingress-ctrl
+airshipctl phase run kubectl-check-ingress-ctrl-target --debug

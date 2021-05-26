@@ -11,3 +11,4 @@ resources:
 - virsh-destroy-vms
 - wait_bmh
 - wait_label_node
+- check_ingress_ctrl
