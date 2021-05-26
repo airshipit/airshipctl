@@ -27,7 +27,7 @@ do
     if [ "$(kubectl --request-timeout 20s \
               --context $KCTL_CONTEXT \
               get bmh $worker \
-              -o jsonpath='{.status.provisioning.state}')" == "ready" ] ; then
+              -o jsonpath='{.status.provisioning.state}')" == "provisioned" ] ; then
 
       echo "Get BMHs status" 1>&2
       kubectl \
