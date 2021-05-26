@@ -23,12 +23,6 @@ airshipctl phase run virsh-destroy-vms --debug
 echo "Deploy worker node"
 airshipctl phase run workers-target --debug
 
-# Waiting for bmh to be in ready state
-# Scripts for this phase placed in manifests/function/phase-helpers/wait_bmh/
-# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
-# and find ConfigMap with name kubectl-wait-bmh
-airshipctl phase run kubectl-wait-bmh-target --debug
-
 # Waiting for node to be provisioned."
 # Scripts for this phase placed in manifests/function/phase-helpers/wait_label_node/
 # To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
