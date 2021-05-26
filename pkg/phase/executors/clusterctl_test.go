@@ -235,11 +235,6 @@ func TestClusterctlExecutorValidate(t *testing.T) {
 			executorConfigTmpl: executorConfigTmplGood,
 		},
 		{
-			name:               "Success move action",
-			actionType:         "move",
-			executorConfigTmpl: executorConfigTmplGood,
-		},
-		{
 			name:               "Error any other action",
 			actionType:         "any",
 			executorConfigTmpl: executorConfigTmplGood,
@@ -256,12 +251,6 @@ func TestClusterctlExecutorValidate(t *testing.T) {
 			actionType:         "init",
 			executorConfigTmpl: executorConfigTmplBad,
 			expectedErrString:  "invalid phase: ClusterctlExecutor.InitOptions.CoreProvider is empty",
-		},
-		{
-			name:               "Error empty move option",
-			actionType:         "move",
-			executorConfigTmpl: executorConfigTmplBad,
-			expectedErrString:  "invalid phase: ClusterctlExecutor.MoveOptions.Namespace is empty",
 		},
 	}
 	for _, test := range testCases {
