@@ -10,6 +10,8 @@ spec:
   helm_repositories:
     ingress-nginx:
       url: https://kubernetes.github.io/ingress-nginx
+    helm_chart_collator:
+      url: http://helm-chart-collator.collator.svc:8080
 
   charts:
     ingress-nginx:
