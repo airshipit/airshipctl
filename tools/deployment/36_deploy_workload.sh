@@ -17,6 +17,12 @@ set -xe
 echo "Deploy workload"
 airshipctl phase run workload-target --debug
 
+echo "List all pods in target cluster"
+# Scripts for this phase placed in manifests/function/phase-helpers/get_pods/
+# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
+# and find ConfigMap with name kubectl-get-pods
+airshipctl phase run kubectl-get-pods-target --debug
+
 # Ensure we can reach ingress controller default backend
 # Scripts for this phase placed in manifests/function/phase-helpers/check_ingress_ctrl/
 # To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`

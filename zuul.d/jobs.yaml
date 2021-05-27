@@ -178,7 +178,7 @@
         - ./tools/deployment/provider_common/30_deploy_controlplane.sh
         - ./tools/deployment/provider_common/32_cluster_init_target_node.sh
         - ./tools/deployment/provider_common/33_cluster_move_target_node.sh
-        - ./tools/deployment/provider_common/35_deploy_worker_node.sh
+        - ./tools/deployment/provider_common/34_deploy_worker_node.sh
     voting: false
 - job:
     name: airship-airshipctl-docker-kubebench-conformance
