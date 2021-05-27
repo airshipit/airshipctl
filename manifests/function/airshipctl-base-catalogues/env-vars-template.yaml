@@ -7,7 +7,7 @@ metadata:
   annotations:
     config.kubernetes.io/function: |-
       container:
-        image: quay.io/airshipit/templater:v2
+        image: localhost/templater
         envs:
           - HTTP_PROXY
           - HTTPS_PROXY

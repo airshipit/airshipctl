@@ -30,7 +30,7 @@ The toolbox image has pre-installed `sh` shell,`kubectl` and `calicoctl`.
             airshipit.org/deploy-k8s: "false"
         spec:
           type: krm
-          image: quay.io/airshipit/toolbox:latest
+          image: localhost/toolbox
           hostNetwork: true
           envVars
             MY_ENV # airshipctl will populate this value from your current env, you can pass credentials like this

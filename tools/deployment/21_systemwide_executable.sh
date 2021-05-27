@@ -35,3 +35,31 @@ else
   echo "Airshipctl version"
   airshipctl version
 fi
+
+# Outside of releases, the airshipctl/treasuremap manifests reference krm functions via
+# local-only image tags, specifically `localhost/<function name>`, so that we can
+# set them externally in a single place (below parameters/logic), rather than maintaining
+# explicit versions directly in the manifests. By default, these parameters
+# reference the krm functions built above via `make images`, so that treasuremap
+# and other downstream consumers can easily use the krm function versions matching
+# the version of airshipctl that they are installing via this script.
+export AIRSHIP_KRM_FUNCTION_REPO=${AIRSHIP_KRM_FUNCTION_REPO:-"quay.io/airshipit"}
+export AIRSHIP_KRM_FUNCTION_TAG=${AIRSHIP_KRM_FUNCTION_TAG:-"latest"}
+export SOPS_KRM_FUNCTION=${SOPS_KRM_FUNCTION:-"gcr.io/kpt-fn-contrib/sops:v0.1.0"}
+
+echo "Resolve krm function versions"
+
+set_krm_function () {
+  if [[ "$(docker images -q "$2" 2> /dev/null)" == "" ]]; then
+    docker pull "$2"
+  fi
+  docker tag "$2" "localhost/$1"
+}
+
+for FUNC in $(cd krm-functions; echo */ | tr -d /)
+do
+  IMG="${AIRSHIP_KRM_FUNCTION_REPO}/${FUNC}:${AIRSHIP_KRM_FUNCTION_TAG}"
+  set_krm_function "$FUNC" "$IMG"
+done
+
+set_krm_function "sops" "$SOPS_KRM_FUNCTION"
