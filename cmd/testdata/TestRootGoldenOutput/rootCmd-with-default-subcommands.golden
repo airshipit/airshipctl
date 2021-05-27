@@ -14,7 +14,6 @@ Available Commands:
   help        Help about any command
   phase       Airshipctl command to manage phases
   plan        Airshipctl command to manage plans
-  secret      Airshipctl command to manage secrets
   version     Airshipctl command to display the current version number
 
 Flags:

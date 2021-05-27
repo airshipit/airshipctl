@@ -33,6 +33,5 @@ SEE ALSO
 * :ref:`airshipctl document <airshipctl_document>` 	 - Airshipctl command to manage site manifest documents
 * :ref:`airshipctl phase <airshipctl_phase>` 	 - Airshipctl command to manage phases
 * :ref:`airshipctl plan <airshipctl_plan>` 	 - Airshipctl command to manage plans
-* :ref:`airshipctl secret <airshipctl_secret>` 	 - Airshipctl command to manage secrets
 * :ref:`airshipctl version <airshipctl_version>` 	 - Airshipctl command to display the current version number
 
