@@ -29,7 +29,7 @@ import (
 func TestDefaultManifestFactory(t *testing.T) {
 	bundle, err := document.NewBundleByPath("testdata/source_bundle")
 	require.NoError(t, err)
-	mapper, err := FactoryFromKubeConfig("testdata/kubeconfig.yaml", "").ToRESTMapper()
+	mapper, err := FactoryFromKubeConfig("testdata/kubeconfig.yaml", "", SetTimeout("30s")).ToRESTMapper()
 	require.NoError(t, err)
 	reader := DefaultManifestReaderFactory(false, bundle, mapper)
 	require.NotNil(t, reader)

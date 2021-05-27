@@ -30,12 +30,26 @@ import (
 	"opendev.org/airship/airshipctl/pkg/document"
 )
 
+// ClientOption is a function that allows to modify ConfigFlags object which is used to create Client
+type ClientOption func(*genericclioptions.ConfigFlags)
+
+// SetTimeout sets Timeout option in ConfigFlags object
+func SetTimeout(timeout string) ClientOption {
+	return func(co *genericclioptions.ConfigFlags) {
+		*co.Timeout = timeout
+	}
+}
+
 // FactoryFromKubeConfig returns a factory with the
 // default Kubernetes resources for the given kube config path and context
-func FactoryFromKubeConfig(path, context string) cmdutil.Factory {
+func FactoryFromKubeConfig(path, context string, opts ...ClientOption) cmdutil.Factory {
 	kf := genericclioptions.NewConfigFlags(false)
 	kf.KubeConfig = &path
 	kf.Context = &context
+	for _, o := range opts {
+		o(kf)
+	}
+
 	return cmdutil.NewFactory(cmdutil.NewMatchVersionFlags(&factory.CachingRESTClientGetter{
 		Delegate: kf,
 	}))
