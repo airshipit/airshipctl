@@ -44,7 +44,8 @@ apiVersion: airshipit.org/v1alpha1
 kind: Clusterctl
 metadata:
   name: clusterctl_move
-move-options: {}
+move-options:
+  namespace: target-infra
 action: move
 ---
 apiVersion: airshipit.org/v1alpha1
@@ -223,6 +224,7 @@ config: |
   builder:
     userDataSelector:
       kind: Secret
+      namespace: target-infra
       labelSelector: airshipit.org/ephemeral-user-data
     userDataKey: userData
     networkConfigSelector:

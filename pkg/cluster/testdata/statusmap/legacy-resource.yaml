@@ -4,4 +4,4 @@ apiVersion: "example.com/v1"
 kind: Legacy
 metadata:
   name: stable-legacy
-  namespace: default
+  namespace: target-infra

@@ -55,7 +55,7 @@ template: |
     bootMode: {{ $host.bootMode }}
     networkData:
       name: {{ $hostName }}-network-data
-      namespace: default
+      namespace: target-infra
     bmc:
       address: {{ $host.bmcAddress }}
       credentialsName: {{ $hostName }}-bmc-secret

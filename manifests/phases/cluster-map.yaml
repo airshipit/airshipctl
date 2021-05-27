@@ -20,7 +20,7 @@ map:
         clusterAPI:
           clusterNamespacedName:
             name: target-cluster
-            namespace: default
+            namespace: target-infra
   ephemeral-cluster:
     kubeconfigSources:
       - type: "filesystem"

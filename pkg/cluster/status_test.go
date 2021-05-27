@@ -218,7 +218,7 @@ func TestReadStatus(t *testing.T) {
 	statusMap, err := cluster.NewStatusMap(c)
 	require.NoError(t, err)
 	ctx := context.Background()
-	resource := object.ObjMetadata{Namespace: "default",
+	resource := object.ObjMetadata{Namespace: "target-infra",
 		Name: "pending-resource", GroupKind: schema.GroupKind{Group: "example.com", Kind: "Resource"}}
 	result := statusMap.ReadStatus(ctx, resource)
 	assert.Equal(t, "Pending", result.Status.String())
@@ -231,7 +231,7 @@ func makeResource(name, state string) *unstructured.Unstructured {
 			"kind":       "Resource",
 			"metadata": map[string]interface{}{
 				"name":      name,
-				"namespace": "default",
+				"namespace": "target-infra",
 			},
 			"status": map[string]interface{}{
 				"state": state,

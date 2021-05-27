@@ -25,7 +25,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: first-map
-  namespace: default
+  namespace: target-infra
   labels:
     cli-utils.sigs.k8s.io/inventory-id: "some id"
 ---
@@ -33,7 +33,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: second-map
-  namespace: default
+  namespace: target-infra
   labels:
     cli-utils.sigs.k8s.io/inventory-id: "some id"
 
