@@ -18,8 +18,6 @@ import (
 	"fmt"
 	"io"
 
-	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
-	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/log"
@@ -78,11 +76,6 @@ func (cmd *GetKubeconfigCommand) RunE(cfgFactory config.Factory, writer io.Write
 		return err
 	}
 
-	client, err := client.NewClient(helper.TargetPath(), log.DebugEnabled(), airshipv1.DefaultClusterctl())
-	if err != nil {
-		return err
-	}
-
 	var siteWide bool
 	if cmd.ClusterName == "" {
 		siteWide = true
@@ -90,7 +83,6 @@ func (cmd *GetKubeconfigCommand) RunE(cfgFactory config.Factory, writer io.Write
 
 	kubeconf := kubeconfig.NewBuilder().
 		WithBundle(helper.PhaseConfigBundle()).
-		WithClusterctlClient(client).
 		WithClusterMap(cMap).
 		WithClusterName(cmd.ClusterName).
 		WithTempRoot(helper.WorkDir()).

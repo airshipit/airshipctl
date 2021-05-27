@@ -48,3 +48,20 @@ type ErrUnknownKubeconfigSourceType struct {
 func (e *ErrUnknownKubeconfigSourceType) Error() string {
 	return fmt.Sprintf("unknown source type %s", e.Type)
 }
+
+// ErrClusterNameEmpty returned when cluster name is not provided
+type ErrClusterNameEmpty struct {
+}
+
+func (e ErrClusterNameEmpty) Error() string {
+	return "cluster name is not defined"
+}
+
+// ErrMalformedKubeconfig error returned if kubeconfig is empty
+type ErrMalformedKubeconfig struct {
+	ClusterName string
+}
+
+func (e ErrMalformedKubeconfig) Error() string {
+	return fmt.Sprintf("retrieved kubeconfig for cluster '%s' is empty", e.ClusterName)
+}

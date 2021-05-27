@@ -24,7 +24,6 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
-	cctlclient "opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
@@ -102,19 +101,10 @@ func (p *phase) executor(docFactory document.DocFactoryFunc,
 		return nil, err
 	}
 
-	cctlClient, err := cctlclient.NewClient(
-		p.helper.PhaseBundleRoot(),
-		log.DebugEnabled(),
-		v1alpha1.DefaultClusterctl())
-	if err != nil {
-		return nil, err
-	}
-
 	kubeconf := kubeconfig.NewBuilder().
 		WithBundle(p.helper.PhaseConfigBundle()).
 		WithClusterMap(cMap).
 		WithTempRoot(p.helper.WorkDir()).
-		WithClusterctlClient(cctlClient).
 		WithClusterName(p.apiObj.ClusterName).
 		SiteWide(p.apiObj.Config.SiteWideKubeconfig).
 		Build()
@@ -311,7 +301,7 @@ func (p *plan) Run(ro ifc.RunOptions) error {
 }
 
 // Status returns the status of phases in a given plan
-func (p *plan) Status(options ifc.StatusOptions) (ifc.PlanStatus, error) {
+func (p *plan) Status(_ ifc.StatusOptions) (ifc.PlanStatus, error) {
 	for _, step := range p.apiObj.Phases {
 		phase, err := p.phaseClient.PhaseByID(ifc.ID{Name: step.Name})
 		if err != nil {

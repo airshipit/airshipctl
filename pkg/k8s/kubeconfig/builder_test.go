@@ -22,15 +22,16 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
-	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
-	"opendev.org/airship/airshipctl/testutil/clusterctl"
 	testfs "opendev.org/airship/airshipctl/testutil/fs"
 )
 
@@ -99,7 +100,7 @@ func TestBuilderClusterctl(t *testing.T) {
 
 		expectedContexts, expectedClusters, expectedAuthInfos []string
 		clusterMap                                            clustermap.ClusterMap
-		clusterctlClient                                      client.Interface
+		client                                                corev1.CoreV1Interface
 		fs                                                    fs.FileSystem
 	}{
 		{
@@ -219,23 +220,18 @@ func TestBuilderClusterctl(t *testing.T) {
 					}, nil
 				},
 			},
-			clusterctlClient: func() client.Interface {
-				c := &clusterctl.MockInterface{
+			client: func() MockCoreV1Interface {
+				ms := &SecretMockInterface{
 					Mock: mock.Mock{},
 				}
-				c.On("GetKubeconfig", &client.GetKubeconfigOptions{
-					ParentKubeconfigPath:    kubeconfigPath,
-					ParentKubeconfigContext: parentClusterID,
-					ManagedClusterNamespace: clustermap.DefaultClusterAPIObjNamespace,
-					ManagedClusterName:      childClusterID,
-				}).Once().Return(testKubeconfigString, nil)
-				c.On("GetKubeconfig", &client.GetKubeconfigOptions{
-					ParentKubeconfigPath:    kubeconfigPath,
-					ParentKubeconfigContext: parentParentClusterID,
-					ManagedClusterNamespace: clustermap.DefaultClusterAPIObjNamespace,
-					ManagedClusterName:      parentClusterID,
-				}).Once().Return(testKubeconfigStringSecond, nil)
-				return c
+				ms.On("Get", parentClusterID+"-kubeconfig", metav1.GetOptions{}).
+					Once().Return(&apiv1.Secret{Data: map[string][]byte{"value": []byte(testKubeconfigString)}}, nil)
+				ms.On("Get", childClusterID+"-kubeconfig", metav1.GetOptions{}).
+					Once().Return(&apiv1.Secret{Data: map[string][]byte{"value": []byte(testKubeconfigStringSecond)}}, nil)
+				mc := MockCoreV1Interface{MockSecrets: func(s string) corev1.SecretInterface {
+					return ms
+				}}
+				return mc
 			}(),
 		},
 		{
@@ -267,7 +263,7 @@ func TestBuilderClusterctl(t *testing.T) {
 				WithClusterName(tt.requestedClusterName).
 				WithBundle(testBundle).
 				WithTempRoot(tt.tempRoot).
-				WithClusterctlClient(tt.clusterctlClient).
+				WithCoreV1Client(tt.client).
 				WithFilesystem(tt.fs).
 				SiteWide(tt.siteWide).
 				Build()
