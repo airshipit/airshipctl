@@ -14,12 +14,6 @@
 
 set -xe
 
-# Annotating BMH objects with a pause label
-# Scripts for this phase placed in manifests/function/phase-helpers/pause_bmh/
-# To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
-# and find ConfigMap with name kubectl-get-pods
-airshipctl phase run kubectl-pause-bmh --debug
-
 echo "Move Cluster Object to Target Cluster"
 airshipctl phase run clusterctl-move
 
