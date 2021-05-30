@@ -202,3 +202,11 @@ func NewValidatorExecutorSelector() Selector {
 func NewCRDSelector() Selector {
 	return NewSelector().ByKind(CRDKind)
 }
+
+// NewClusterctlContainerExecutorSelector returns selector to get executor documents for clusterctl container
+func NewClusterctlContainerExecutorSelector() Selector {
+	return NewSelector().ByGvk(ClusterctlContainerGroup,
+		ClusterctlContainerVersion,
+		ClusterctlContainerKind).
+		ByName(ClusterctlContainerName)
+}

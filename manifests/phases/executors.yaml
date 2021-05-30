@@ -512,3 +512,14 @@ configRef:
   kind: ConfigMap
   name: kubectl-check-ingress-ctrl
   apiVersion: v1
+---
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: clusterctl
+  labels:
+    airshipit.org/deploy-k8s: "false"
+spec:
+  type: krm
+  image: localhost/clusterctl:latest
+  hostNetwork: true

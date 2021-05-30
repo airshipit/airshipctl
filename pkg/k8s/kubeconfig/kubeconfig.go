@@ -28,7 +28,6 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
-	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/log"
@@ -113,7 +112,7 @@ func FromAPIalphaV1(apiObj *v1alpha1.KubeConfig) KubeSourceFunc {
 }
 
 // FromSecret returns KubeSource type, uses client interface to kubernetes cluster
-func FromSecret(c corev1.CoreV1Interface, o *client.GetKubeconfigOptions) KubeSourceFunc {
+func FromSecret(c corev1.CoreV1Interface, o *v1alpha1.GetKubeconfigOptions) KubeSourceFunc {
 	return func() ([]byte, error) {
 		if o.ManagedClusterName == "" {
 			return nil, ErrClusterNameEmpty{}

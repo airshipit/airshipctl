@@ -6,33 +6,22 @@ metadata:
   name: clusterctl_init
 init-options:
   core-provider: "cluster-api:v0.3.7"
-  bootstrap-providers:
-    - "kubeadm:v0.3.7"
-  infrastructure-providers:
-    - "metal3:v0.4.0"
-  control-plane-providers:
-    - "kubeadm:v0.3.7"
+  bootstrap-providers: "kubeadm:v0.3.7"
+  infrastructure-providers: "metal3:v0.4.0"
+  control-plane-providers: "kubeadm:v0.3.7"
 providers:
   - name: "metal3"
     type: "InfrastructureProvider"
-    variable-substitution: true
-    versions:
-      v0.4.0: airshipctl/manifests/function/capm3/v0.4.0
+    url: airshipctl/manifests/function/capm3/v0.4.0
   - name: "kubeadm"
     type: "BootstrapProvider"
-    variable-substitution: true
-    versions:
-      v0.3.7: airshipctl/manifests/function/cabpk/v0.3.7
+    url: airshipctl/manifests/function/cabpk/v0.3.7
   - name: "cluster-api"
     type: "CoreProvider"
-    variable-substitution: true
-    versions:
-      v0.3.7: airshipctl/manifests/function/capi/v0.3.7
+    url: airshipctl/manifests/function/capi/v0.3.7
   - name: "kubeadm"
     type: "ControlPlaneProvider"
-    variable-substitution: true
-    versions:
-      v0.3.7: airshipctl/manifests/function/cacpk/v0.3.7
+    url: airshipctl/manifests/function/cacpk/v0.3.7
 
 # The default image repository and tag for a specific component
 # can be overriden here

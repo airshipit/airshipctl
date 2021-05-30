@@ -1,0 +1,46 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+kind: Clusterctl
+metadata:
+  annotations:
+    config.kubernetes.io/path: clusterctl_clusterctl_init.yaml
+  labels:
+    airshipit.org/deploy-k8s: "false"
+  name: clusterctl_init
+images:
+  bootstrap-kubeadm/kube-rbac-proxy:
+    repository: gcr.io/kubebuilder
+    tag: v0.4.1
+  bootstrap-kubeadm/kubeadm-bootstrap-controller:
+    repository: us.gcr.io/k8s-artifacts-prod/cluster-api
+    tag: v0.3.7
+  cert-manager:
+    repository: quay.io/jetstack
+init-options:
+  bootstrap-providers: kubeadm:v0.3.7
+  control-plane-providers: kubeadm:v0.3.7
+  core-provider: cluster-api:v0.3.7
+  infrastructure-providers: metal3:v0.4.0
+providers:
+  - name: metal3
+    type: InfrastructureProvider
+    url: airshipctl/manifests/function/capm3/v0.4.0
+  - name: kubeadm
+    type: BootstrapProvider
+    url: airshipctl/manifests/function/cabpk/v0.3.7
+  - name: cluster-api
+    type: CoreProvider
+    url: airshipctl/manifests/function/capi/v0.3.7
+  - name: kubeadm
+    type: ControlPlaneProvider
+    url: airshipctl/manifests/function/cacpk/v0.3.7

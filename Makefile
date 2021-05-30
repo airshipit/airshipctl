@@ -165,7 +165,7 @@ golint:
 
 .PHONY: images
 images: docker-image
-images: docker-image-kubeval-validator docker-image-cloud-init docker-image-replacement-transformer docker-image-templater docker-image-toolbox
+images: docker-image-clusterctl docker-image-kubeval-validator docker-image-cloud-init docker-image-replacement-transformer docker-image-templater docker-image-toolbox
 
 .PHONY: docker-image
 docker-image:
@@ -206,6 +206,16 @@ docker-image-cloud-init:
 		--tag $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/cloud-init:$(DOCKER_IMAGE_TAG)
 ifeq ($(PUBLISH), true)
 	@docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/cloud-init:$(DOCKER_IMAGE_TAG)
+endif
+
+.PHONY: docker-image-clusterctl
+docker-image-clusterctl:
+	@docker build $(PLUGINS_DIR)/clusterctl $(DOCKER_CMD_FLAGS) \
+		--label $(LABEL) \
+		--target $(DOCKER_TARGET_STAGE) \
+		--tag $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/clusterctl:$(DOCKER_IMAGE_TAG)
+ifeq ($(PUBLISH), true)
+	@docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/clusterctl:$(DOCKER_IMAGE_TAG)
 endif
 
 .PHONY: docker-image-kubeval-validator

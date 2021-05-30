@@ -48,6 +48,15 @@ const (
 
 	// CRDKind is a kind for custom resource definition documents
 	CRDKind = "CustomResourceDefinition"
+
+	// ClusterctlContainerGroup defines Group for clustertctl container
+	ClusterctlContainerGroup = "airshipit.org"
+	// ClusterctlContainerVersion defines Version for clustertctl container
+	ClusterctlContainerVersion = "v1alpha1"
+	// ClusterctlContainerKind defines Kind for clustertctl container
+	ClusterctlContainerKind = "GenericContainer"
+	// ClusterctlContainerName defines Name for clustertctl container
+	ClusterctlContainerName = "clusterctl"
 )
 
 // KustomizationFile is used for kustomization file

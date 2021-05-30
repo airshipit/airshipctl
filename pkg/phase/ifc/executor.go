@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
+	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
 	inventoryifc "opendev.org/airship/airshipctl/pkg/inventory/ifc"
@@ -70,4 +71,5 @@ type ExecutorConfig struct {
 	BundleFactory     document.BundleFactoryFunc
 	PhaseConfigBundle document.Bundle
 	Inventory         inventoryifc.Inventory
+	ContainerFunc     container.ClientV1Alpha1FactoryFunc
 }
