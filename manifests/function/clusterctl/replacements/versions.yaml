@@ -193,7 +193,7 @@ replacements:
     objref:
       kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.spec.capi_images.cert-manager.repository}"
+    fieldref: "{.spec.images.cert-manager.cert-manager.repository.image}"
   target:
     objref:
       kind: Clusterctl
