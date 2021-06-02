@@ -25,16 +25,19 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
+	"k8s.io/kubectl/pkg/scheme"
 	cliapply "sigs.k8s.io/cli-utils/pkg/apply"
 	applyevent "sigs.k8s.io/cli-utils/pkg/apply/event"
 	"sigs.k8s.io/cli-utils/pkg/apply/poller"
 	clicommon "sigs.k8s.io/cli-utils/pkg/common"
 	"sigs.k8s.io/cli-utils/pkg/manifestreader"
 	"sigs.k8s.io/cli-utils/pkg/provider"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
+	airpoller "opendev.org/airship/airshipctl/pkg/k8s/poller"
 	"opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/pkg/log"
 )
@@ -86,6 +89,7 @@ func (a *Applier) ApplyBundle(bundle document.Bundle, ao ApplyOptions) {
 			ApplierEvent: e,
 		}
 	}
+	log.Debugf("applier channel closed")
 }
 
 func (a *Applier) getObjects(
@@ -125,14 +129,31 @@ func (a *Applier) getObjects(
 	} else if err != nil {
 		return nil, err
 	}
-	if err = a.Driver.Initialize(a.Poller); err != nil {
-		return nil, err
-	}
-	restMapper, err := a.Factory.ToRESTMapper()
+
+	mapper, err := a.Factory.ToRESTMapper()
 	if err != nil {
 		return nil, err
 	}
-	return a.ManifestReaderFactory(false, bundle, restMapper).Read()
+
+	if a.Poller == nil {
+		var pErr error
+		config, pErr := a.Factory.ToRESTConfig()
+		if pErr != nil {
+			return nil, pErr
+		}
+
+		c, pErr := client.New(config, client.Options{Scheme: scheme.Scheme, Mapper: mapper})
+		if pErr != nil {
+			return nil, pErr
+		}
+		a.Poller = airpoller.NewStatusPoller(c, mapper)
+	}
+
+	if err = a.Driver.Initialize(a.Poller); err != nil {
+		return nil, err
+	}
+
+	return a.ManifestReaderFactory(false, bundle, mapper).Read()
 }
 
 func (a *Applier) ensureNamespaceExists(name string, dryRun clicommon.DryRunStrategy) error {

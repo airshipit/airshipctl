@@ -16,9 +16,12 @@ package poller
 
 import (
 	"context"
+	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/cli-utils/pkg/kstatus/polling"
 	"sigs.k8s.io/cli-utils/pkg/kstatus/polling/clusterreader"
@@ -28,25 +31,25 @@ import (
 	"sigs.k8s.io/cli-utils/pkg/object"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"opendev.org/airship/airshipctl/pkg/cluster"
+	"opendev.org/airship/airshipctl/pkg/log"
 )
+
+const allowedApplyErrors = 3
 
 // NewStatusPoller creates a new StatusPoller using the given clusterreader and mapper. The StatusPoller
 // will use the client for all calls to the cluster.
-func NewStatusPoller(reader client.Reader, mapper meta.RESTMapper, statusmap *cluster.StatusMap) *StatusPoller {
+func NewStatusPoller(reader client.Reader, mapper meta.RESTMapper) *StatusPoller {
 	return &StatusPoller{
 		engine: &engine.PollerEngine{
 			Reader: reader,
 			Mapper: mapper,
 		},
-		statusmap: statusmap,
 	}
 }
 
 // StatusPoller provides functionality for polling a cluster for status for a set of resources.
 type StatusPoller struct {
-	engine    *engine.PollerEngine
-	statusmap *cluster.StatusMap
+	engine *engine.PollerEngine
 }
 
 // Poll will create a new statusPollerRunner that will poll all the resources provided and report their status
@@ -78,9 +81,6 @@ func (s *StatusPoller) createStatusReaders(reader engine.ClusterReader, mapper m
 		appsv1.SchemeGroupVersion.WithKind("StatefulSet").GroupKind(): statefulSetStatusReader,
 		appsv1.SchemeGroupVersion.WithKind("ReplicaSet").GroupKind():  replicaSetStatusReader,
 	}
-	for _, gk := range s.statusmap.GkMapping {
-		statusReaders[gk] = s.statusmap
-	}
 	return statusReaders, defaultStatusReader
 }
 
@@ -92,8 +92,53 @@ func (s *StatusPoller) createStatusReaders(reader engine.ClusterReader, mapper m
 func clusterReaderFactoryFunc(useCache bool) engine.ClusterReaderFactoryFunc {
 	return func(r client.Reader, mapper meta.RESTMapper, identifiers []object.ObjMetadata) (engine.ClusterReader, error) {
 		if useCache {
-			return clusterreader.NewCachingClusterReader(r, mapper, identifiers)
+			cr, err := clusterreader.NewCachingClusterReader(r, mapper, identifiers)
+			if err != nil {
+				return nil, err
+			}
+			return &CachingClusterReader{Cr: cr}, nil
 		}
 		return &clusterreader.DirectClusterReader{Reader: r}, nil
 	}
+}
+
+// CachingClusterReader is wrapper for kstatus.CachingClusterReader implementation
+type CachingClusterReader struct {
+	Cr          *clusterreader.CachingClusterReader
+	applyErrors []error
+}
+
+// Get is a wrapper for kstatus.CachingClusterReader Get method
+func (c *CachingClusterReader) Get(ctx context.Context, key client.ObjectKey, obj *unstructured.Unstructured) error {
+	return c.Cr.Get(ctx, key, obj)
+}
+
+// ListNamespaceScoped is a wrapper for kstatus.CachingClusterReader ListNamespaceScoped method
+func (c *CachingClusterReader) ListNamespaceScoped(
+	ctx context.Context,
+	list *unstructured.UnstructuredList,
+	namespace string,
+	selector labels.Selector) error {
+	return c.Cr.ListNamespaceScoped(ctx, list, namespace, selector)
+}
+
+// ListClusterScoped is a wrapper for kstatus.CachingClusterReader ListClusterScoped method
+func (c *CachingClusterReader) ListClusterScoped(
+	ctx context.Context,
+	list *unstructured.UnstructuredList,
+	selector labels.Selector) error {
+	return c.Cr.ListClusterScoped(ctx, list, selector)
+}
+
+// Sync is a wrapper for kstatus.CachingClusterReader Sync method, allows to filter specific errors
+func (c *CachingClusterReader) Sync(ctx context.Context) error {
+	err := c.Cr.Sync(ctx)
+	if err != nil && strings.Contains(err.Error(), "request timed out") {
+		c.applyErrors = append(c.applyErrors, err)
+		if len(c.applyErrors) < allowedApplyErrors {
+			log.Printf("timeout error occurred during sync: '%v', skipping", err)
+			return nil
+		}
+	}
+	return err
 }

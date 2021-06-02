@@ -21,15 +21,11 @@ import (
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"opendev.org/airship/airshipctl/pkg/cluster"
-	"opendev.org/airship/airshipctl/pkg/k8s/client/fake"
 	"opendev.org/airship/airshipctl/pkg/k8s/poller"
 	k8sutils "opendev.org/airship/airshipctl/pkg/k8s/utils"
 )
 
 func TestNewStatusPoller(t *testing.T) {
-	airClient := fake.NewClient()
-
 	f := k8sutils.FactoryFromKubeConfig("testdata/kubeconfig.yaml", "")
 	restConfig, err := f.ToRESTConfig()
 	require.NoError(t, err)
@@ -37,9 +33,7 @@ func TestNewStatusPoller(t *testing.T) {
 	require.NoError(t, err)
 	restClient, err := client.New(restConfig, client.Options{Mapper: restMapper})
 	require.NoError(t, err)
-	statusmap, err := cluster.NewStatusMap(airClient)
-	require.NoError(t, err)
 
-	a := poller.NewStatusPoller(restClient, restMapper, statusmap)
+	a := poller.NewStatusPoller(restClient, restMapper)
 	assert.NotNil(t, a)
 }
