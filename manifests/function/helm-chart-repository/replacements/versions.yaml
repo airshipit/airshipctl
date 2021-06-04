@@ -15,5 +15,5 @@ replacements:
   target:
     objref:
       kind: HelmRepository
-      name: helm-repo
+      name: collator
     fieldrefs: ["{.spec.url}"]
