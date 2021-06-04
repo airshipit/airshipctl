@@ -38,8 +38,6 @@ spec:
           - configMapRef:
               name: ironic-vars
           env:
-            - name: WATCH_NAMESPACE
-              value: default
             - name: POD_NAME
               valueFrom:
                 fieldRef:
