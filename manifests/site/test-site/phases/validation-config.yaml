@@ -10,13 +10,21 @@ siteConfig:
   ignoreMissingSchemas: false
 planName: AIRSHIPCTL_CURRENT_PLAN
 planConfigs:
-  phasePlan:
+  deploy-gating:
     kindsToSkip:
       - Clusterctl
       - VariableCatalogue
     crdList:
       - function/airshipctl-schemas/airshipit.org_versionscatalogues.yaml
       - function/airshipctl-schemas/airshipit.org_networkcatalogues.yaml
+  iso:
+    kindsToSkip:
+      - VariableCatalogue
+      - RemoteDirectConfiguration
+    crdList:
+      - function/airshipctl-schemas/airshipit.org_versionscatalogues.yaml
+      - function/airshipctl-schemas/airshipit.org_networkcatalogues.yaml
+      - global/crd/baremetal-operator/metal3.io_baremetalhosts_crd.yaml
 phaseName: AIRSHIPCTL_CURRENT_PHASE
 phaseConfigs:
   initinfra-ephemeral:

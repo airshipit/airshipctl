@@ -27,7 +27,7 @@ set -o pipefail
 : ${MANIFEST_REPO_URL:="https://review.opendev.org/airship/airshipctl"}
 
 # Name of specific site to be validated
-SITE_NAME=${SITE_NAME:-$1}
+SITE=${SITE:-$1}
 TMP=$(mktemp -d)
 
 # TODO: use `airshipctl config` to do this once all the needed knobs are exposed
@@ -72,7 +72,7 @@ for site_root in ${SITE_ROOTS}; do
     fi
 
     # Validate only specific site if set
-    if [ ! -z "$SITE_NAME" ] && [ "$site" != "$SITE_NAME" ]; then
+    if [ ! -z "$SITE" ] && [ "$site" != "$SITE" ]; then
       continue
     fi
 
@@ -80,12 +80,8 @@ for site_root in ${SITE_ROOTS}; do
     generate_airshipconf $site
     phase_plans=$(airshipctl --airshipconf "${TMP}/$site.cfg" plan list | awk -F'/' '/PhasePlan/ {print $2}' | awk '{print $1}')
     for plan in $phase_plans; do
-      # Perform static validation, add support of all plans later
-      # TODO (raliev) remove this condition later
-      if [ "$plan" = "phasePlan" ]; then
-        airshipctl --airshipconf "${TMP}/$site.cfg" plan validate $plan
-        echo "Validation of site ${site} is successful!"
-      fi
+      airshipctl --airshipconf "${TMP}/$site.cfg" plan validate $plan
     done
+    echo "Validation of site ${site} is successful!"
   done
 done
