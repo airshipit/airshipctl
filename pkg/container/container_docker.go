@@ -99,11 +99,11 @@ type DockerClient interface {
 
 // DockerContainer docker container object wrapper
 type DockerContainer struct {
-	tag          string
-	imageURL     string
-	id           string
-	dockerClient DockerClient
-	ctx          context.Context
+	Tag          string
+	ImageURL     string
+	ID           string
+	DockerClient DockerClient
+	Ctx          context.Context
 }
 
 // NewDockerClient returns instance of DockerClient.
@@ -131,11 +131,11 @@ func NewDockerContainer(ctx context.Context, url string, cli DockerClient) (*Doc
 	}
 
 	cnt := &DockerContainer{
-		tag:          t,
-		imageURL:     url,
-		id:           "",
-		dockerClient: cli,
-		ctx:          ctx,
+		Tag:          t,
+		ImageURL:     url,
+		ID:           "",
+		DockerClient: cli,
+		Ctx:          ctx,
 	}
 	if err := cnt.ImagePull(); err != nil {
 		return nil, err
@@ -143,7 +143,7 @@ func NewDockerContainer(ctx context.Context, url string, cli DockerClient) (*Doc
 	return cnt, nil
 }
 
-// getCmd identifies container command. Accepts list of strings each element
+// GetCmd identifies container command. Accepts list of strings each element
 // represents command part (e.g "sample cmd --key" should be transformed to
 // []string{"sample", "command", "--key"})
 //
@@ -153,17 +153,17 @@ func NewDockerContainer(ctx context.Context, url string, cli DockerClient) (*Doc
 // If input parameter is empty list method identifies container image and
 // tries to extract Cmd option from this image description (i.e. tries to
 // identify default command specified in Dockerfile)
-func (c *DockerContainer) getCmd(cmd []string) ([]string, error) {
+func (c *DockerContainer) GetCmd(cmd []string) ([]string, error) {
 	if len(cmd) > 0 {
 		return cmd, nil
 	}
 
-	id, err := c.getImageID(c.imageURL)
+	id, err := c.GetImageID(c.ImageURL)
 	if err != nil {
 		return nil, err
 	}
 
-	insp, _, err := c.dockerClient.ImageInspectWithRaw(c.ctx, id)
+	insp, _, err := c.DockerClient.ImageInspectWithRaw(c.Ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -173,12 +173,12 @@ func (c *DockerContainer) getCmd(cmd []string) ([]string, error) {
 
 // getConfig creates configuration structures for Docker API client.
 func (c *DockerContainer) getConfig(opts RunCommandOptions) (container.Config, container.HostConfig, error) {
-	cmd, err := c.getCmd(opts.Cmd)
+	cmd, err := c.GetCmd(opts.Cmd)
 	if err != nil {
 		return container.Config{}, container.HostConfig{}, err
 	}
 
-	mounts := []mount.Mount{}
+	mounts := make([]mount.Mount, 0)
 	for _, mnt := range opts.Mounts {
 		mounts = append(mounts, mount.Mount{
 			Type:     mount.Type(mnt.Type),
@@ -189,7 +189,7 @@ func (c *DockerContainer) getConfig(opts RunCommandOptions) (container.Config, c
 	}
 
 	cCfg := container.Config{
-		Image: c.imageURL,
+		Image: c.ImageURL,
 		Cmd:   cmd,
 
 		AttachStdin:  true,
@@ -210,9 +210,9 @@ func (c *DockerContainer) getConfig(opts RunCommandOptions) (container.Config, c
 	return cCfg, hCfg, nil
 }
 
-// getImageID return ID of container image specified by URL. Method executes
+// GetImageID return ID of container image specified by URL. Method executes
 // ImageList function supplied with "reference" filter
-func (c *DockerContainer) getImageID(url string) (string, error) {
+func (c *DockerContainer) GetImageID(url string) (string, error) {
 	kv := filters.KeyValuePair{
 		Key:   "reference",
 		Value: url,
@@ -222,7 +222,7 @@ func (c *DockerContainer) getImageID(url string) (string, error) {
 		All:     false,
 		Filters: filter,
 	}
-	img, err := c.dockerClient.ImageList(c.ctx, opts)
+	img, err := c.DockerClient.ImageList(c.Ctx, opts)
 	if err != nil {
 		return "", err
 	}
@@ -236,7 +236,7 @@ func (c *DockerContainer) getImageID(url string) (string, error) {
 
 // GetID returns ID of the container
 func (c *DockerContainer) GetID() string {
-	return c.id
+	return c.ID
 }
 
 // ImagePull downloads image for container
@@ -244,12 +244,12 @@ func (c *DockerContainer) ImagePull() error {
 	// skip image download if already downloaded
 	// ImageInspectWithRaw returns err when image not found local and
 	//     in this case it will proceed for ImagePull.
-	_, _, err := c.dockerClient.ImageInspectWithRaw(c.ctx, c.imageURL)
+	_, _, err := c.DockerClient.ImageInspectWithRaw(c.Ctx, c.ImageURL)
 	if err == nil {
 		log.Debug("Image Already exists, skip download")
 		return nil
 	}
-	resp, err := c.dockerClient.ImagePull(c.ctx, c.imageURL, types.ImagePullOptions{})
+	resp, err := c.DockerClient.ImagePull(c.Ctx, c.ImageURL, types.ImagePullOptions{})
 	if err != nil {
 		return err
 	}
@@ -268,8 +268,8 @@ func (c *DockerContainer) RunCommand(opts RunCommandOptions) (err error) {
 	if err != nil {
 		return err
 	}
-	resp, err := c.dockerClient.ContainerCreate(
-		c.ctx,
+	resp, err := c.DockerClient.ContainerCreate(
+		c.Ctx,
 		&containerConfig,
 		&hostConfig,
 		nil,
@@ -280,10 +280,10 @@ func (c *DockerContainer) RunCommand(opts RunCommandOptions) (err error) {
 		return err
 	}
 
-	c.id = resp.ID
+	c.ID = resp.ID
 
 	if opts.Input != nil {
-		conn, attachErr := c.dockerClient.ContainerAttach(c.ctx, c.id, types.ContainerAttachOptions{
+		conn, attachErr := c.DockerClient.ContainerAttach(c.Ctx, c.ID, types.ContainerAttachOptions{
 			Stream: true,
 			Stdin:  true,
 		})
@@ -294,7 +294,7 @@ func (c *DockerContainer) RunCommand(opts RunCommandOptions) (err error) {
 
 		defer conn.Close()
 
-		// This code is smiplified version of docker cli code
+		// This code is simplified version of docker cli code
 		cErr := make(chan error, 1)
 
 		// Write to stdin asynchronously
@@ -303,7 +303,7 @@ func (c *DockerContainer) RunCommand(opts RunCommandOptions) (err error) {
 			cErr <- copyErr
 		}()
 
-		if err = c.dockerClient.ContainerStart(c.ctx, c.id, types.ContainerStartOptions{}); err != nil {
+		if err = c.DockerClient.ContainerStart(c.Ctx, c.ID, types.ContainerStartOptions{}); err != nil {
 			<-cErr
 			return err
 		}
@@ -311,7 +311,7 @@ func (c *DockerContainer) RunCommand(opts RunCommandOptions) (err error) {
 		return <-cErr
 	}
 
-	if err = c.dockerClient.ContainerStart(c.ctx, c.id, types.ContainerStartOptions{}); err != nil {
+	if err = c.DockerClient.ContainerStart(c.Ctx, c.ID, types.ContainerStartOptions{}); err != nil {
 		return err
 	}
 
@@ -321,7 +321,7 @@ func (c *DockerContainer) RunCommand(opts RunCommandOptions) (err error) {
 
 // GetContainerLogs returns logs from the container as io.ReadCloser
 func (c *DockerContainer) GetContainerLogs(opts GetLogOptions) (io.ReadCloser, error) {
-	return c.dockerClient.ContainerLogs(c.ctx, c.id, types.ContainerLogsOptions{
+	return c.DockerClient.ContainerLogs(c.Ctx, c.ID, types.ContainerLogsOptions{
 		ShowStderr: opts.Stderr,
 		Follow:     opts.Follow,
 		ShowStdout: opts.Stdout,
@@ -330,9 +330,9 @@ func (c *DockerContainer) GetContainerLogs(opts GetLogOptions) (io.ReadCloser, e
 
 // RmContainer kills and removes a container from the docker host.
 func (c *DockerContainer) RmContainer() error {
-	return c.dockerClient.ContainerRemove(
-		c.ctx,
-		c.id,
+	return c.DockerClient.ContainerRemove(
+		c.Ctx,
+		c.ID,
 		types.ContainerRemoveOptions{
 			Force: true,
 		},
@@ -341,7 +341,7 @@ func (c *DockerContainer) RmContainer() error {
 
 // InspectContainer inspect the running container
 func (c *DockerContainer) InspectContainer() (State, error) {
-	json, err := c.dockerClient.ContainerInspect(context.Background(), c.id)
+	json, err := c.DockerClient.ContainerInspect(context.Background(), c.ID)
 	if err != nil {
 		log.Debug("Failed to inspect container status")
 		return State{}, err
@@ -356,7 +356,7 @@ func (c *DockerContainer) InspectContainer() (State, error) {
 
 // WaitUntilFinished waits unit container command is finished, return an error if failed
 func (c *DockerContainer) WaitUntilFinished() error {
-	statusCh, errCh := c.dockerClient.ContainerWait(c.ctx, c.id, container.WaitConditionNotRunning)
+	statusCh, errCh := c.DockerClient.ContainerWait(c.Ctx, c.ID, container.WaitConditionNotRunning)
 	log.Debugf("waiting until command is finished...")
 	select {
 	case err := <-errCh:
@@ -365,7 +365,7 @@ func (c *DockerContainer) WaitUntilFinished() error {
 		}
 	case retCode := <-statusCh:
 		if retCode.StatusCode != 0 {
-			logsCmd := fmt.Sprintf("docker logs %s", c.id)
+			logsCmd := fmt.Sprintf("docker logs %s", c.ID)
 			return ErrRunContainerCommand{Cmd: logsCmd}
 		}
 	}

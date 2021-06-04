@@ -12,29 +12,31 @@
  limitations under the License.
 */
 
-package container
+package container_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"opendev.org/airship/airshipctl/pkg/container"
 )
 
 func TestNewContainer(t *testing.T) {
-	assert := assert.New(t)
+	a := assert.New(t)
 
 	ctx := context.Background()
 
 	t.Run("not-supported-container", func(t *testing.T) {
-		cnt, err := NewContainer(ctx, "test_drv", "")
-		assert.Equal(nil, cnt)
-		assert.Equal(ErrContainerDrvNotSupported{Driver: "test_drv"}, err)
+		cnt, err := container.NewContainer(ctx, "test_drv", "")
+		a.Equal(nil, cnt)
+		a.Equal(container.ErrContainerDrvNotSupported{Driver: "test_drv"}, err)
 	})
 
 	t.Run("empty-container", func(t *testing.T) {
-		cnt, err := NewContainer(ctx, "", "")
-		assert.Equal(nil, cnt)
-		assert.Equal(ErrNoContainerDriver{}, err)
+		cnt, err := container.NewContainer(ctx, "", "")
+		a.Equal(nil, cnt)
+		a.Equal(container.ErrNoContainerDriver{}, err)
 	})
 }

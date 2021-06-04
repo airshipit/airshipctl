@@ -51,17 +51,19 @@ type ClientV1Alpha1FactoryFunc func(
 	conf *v1alpha1.GenericContainer,
 	targetPath string) ClientV1Alpha1
 
-type clientV1Alpha1 struct {
+// V1Alpha1 reflects inner struct of ClientV1Alpha1 Interface
+type V1Alpha1 struct {
 	resultsDir string
 	input      io.Reader
 	output     io.Writer
 	conf       *v1alpha1.GenericContainer
 	targetPath string
 
-	containerFunc containerFunc
+	containerFunc Func
 }
 
-type containerFunc func(ctx context.Context, driver string, url string) (Container, error)
+// Func is type of function which returns Container object
+type Func func(ctx context.Context, driver string, url string) (Container, error)
 
 // NewClientV1Alpha1 constructor for ClientV1Alpha1
 func NewClientV1Alpha1(
@@ -70,7 +72,7 @@ func NewClientV1Alpha1(
 	output io.Writer,
 	conf *v1alpha1.GenericContainer,
 	targetPath string) ClientV1Alpha1 {
-	return &clientV1Alpha1{
+	return &V1Alpha1{
 		resultsDir:    resultsDir,
 		output:        output,
 		input:         input,
@@ -80,8 +82,25 @@ func NewClientV1Alpha1(
 	}
 }
 
+// NewV1Alpha1 returns V1Alpha1 struct with desired parameters
+func NewV1Alpha1(resultsDir string,
+	input io.Reader,
+	output io.Writer,
+	conf *v1alpha1.GenericContainer,
+	targetPath string,
+	containerFunc Func) V1Alpha1 {
+	return V1Alpha1{
+		resultsDir:    resultsDir,
+		input:         input,
+		output:        output,
+		conf:          conf,
+		targetPath:    targetPath,
+		containerFunc: containerFunc,
+	}
+}
+
 // Run will perform container run action based on the configuration
-func (c *clientV1Alpha1) Run() error {
+func (c *V1Alpha1) Run() error {
 	// expand Src paths for mount if they are relative
 	ExpandSourceMounts(c.conf.Spec.StorageMounts, c.targetPath)
 	// set default runtime
@@ -95,9 +114,9 @@ func (c *clientV1Alpha1) Run() error {
 	}
 }
 
-func (c *clientV1Alpha1) runAirship() error {
+func (c *V1Alpha1) runAirship() error {
 	if c.conf.Spec.Airship.ContainerRuntime == "" {
-		c.conf.Spec.Airship.ContainerRuntime = ContainerDriverDocker
+		c.conf.Spec.Airship.ContainerRuntime = DriverDocker
 	}
 
 	var cont Container
@@ -121,7 +140,7 @@ func (c *clientV1Alpha1) runAirship() error {
 	// this will split the env vars into the ones to be exported and the ones that have values
 	contEnv := runtimeutil.NewContainerEnvFromStringSlice(c.conf.Spec.EnvVars)
 
-	envs := []string{}
+	envs := make([]string, 0)
 	for _, key := range contEnv.VarsToExport {
 		envs = append(envs, strings.Join([]string{key, os.Getenv(key)}, "="))
 	}
@@ -199,7 +218,7 @@ func (c *clientV1Alpha1) runAirship() error {
 	return writeSink(c.resultsDir, parsedOut, c.output)
 }
 
-func (c *clientV1Alpha1) runKRM() error {
+func (c *V1Alpha1) runKRM() error {
 	mounts := convertKRMMount(c.conf.Spec.StorageMounts)
 	fns := &runfn.RunFns{
 		Network:               c.conf.Spec.HostNetwork,

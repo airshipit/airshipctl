@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package container
+package container_test
 
 import (
 	"bytes"
@@ -25,13 +25,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
 	specs "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	aircontainer "opendev.org/airship/airshipctl/pkg/container"
 )
 
 type mockConn struct {
@@ -130,11 +131,11 @@ func (mdc *mockDockerClient) ContainerInspect(context.Context, string) (types.Co
 	return types.ContainerJSON{}, nil
 }
 
-func getDockerContainerMock(mdc mockDockerClient) *DockerContainer {
+func getDockerContainerMock(mdc mockDockerClient) *aircontainer.DockerContainer {
 	ctx := context.Background()
-	cnt := &DockerContainer{
-		dockerClient: &mdc,
-		ctx:          ctx,
+	cnt := &aircontainer.DockerContainer{
+		DockerClient: &mdc,
+		Ctx:          ctx,
 	}
 	return cnt
 }
@@ -187,7 +188,7 @@ func TestGetCmd(t *testing.T) {
 
 	for _, tt := range tests {
 		cnt := getDockerContainerMock(tt.mockDockerClient)
-		actualRes, actualErr := cnt.getCmd(tt.cmd)
+		actualRes, actualErr := cnt.GetCmd(tt.cmd)
 
 		assert.Equal(t, tt.expectedErr, actualErr)
 		assert.Equal(t, tt.expectedResult, actualRes)
@@ -220,12 +221,12 @@ func TestGetImageId(t *testing.T) {
 				},
 			},
 			expectedResult: "",
-			expectedErr:    ErrEmptyImageList{},
+			expectedErr:    aircontainer.ErrEmptyImageList{},
 		},
 	}
 	for _, tt := range tests {
 		cnt := getDockerContainerMock(tt.mockDockerClient)
-		actualRes, actualErr := cnt.getImageID(tt.url)
+		actualRes, actualErr := cnt.GetImageID(tt.url)
 
 		assert.Equal(t, tt.expectedErr, actualErr)
 		assert.Equal(t, tt.expectedResult, actualRes)
@@ -271,7 +272,7 @@ func TestImagePull(t *testing.T) {
 
 func TestGetId(t *testing.T) {
 	cnt := getDockerContainerMock(mockDockerClient{})
-	err := cnt.RunCommand(RunCommandOptions{
+	err := cnt.RunCommand(aircontainer.RunCommandOptions{
 		Cmd: []string{"testCmd"},
 	})
 	require.NoError(t, err)
@@ -289,7 +290,7 @@ func TestRunCommand(t *testing.T) {
 		cmd              []string
 		containerInput   io.Reader
 		volumeMounts     []string
-		mounts           []Mount
+		mounts           []aircontainer.Mount
 		debug            bool
 		mockDockerClient mockDockerClient
 		expectedRunErr   error
@@ -334,7 +335,7 @@ func TestRunCommand(t *testing.T) {
 				},
 			},
 			expectedRunErr: nil,
-			mounts: []Mount{
+			mounts: []aircontainer.Mount{
 				{
 					ReadOnly: true,
 					Type:     "bind",
@@ -434,7 +435,7 @@ func TestRunCommand(t *testing.T) {
 				},
 			},
 			expectedRunErr:  nil,
-			expectedWaitErr: ErrRunContainerCommand{Cmd: "docker logs testID"},
+			expectedWaitErr: aircontainer.ErrRunContainerCommand{Cmd: "docker logs testID"},
 			assertF:         func(t *testing.T) {},
 		},
 		{
@@ -455,13 +456,13 @@ func TestRunCommand(t *testing.T) {
 				},
 			},
 			expectedRunErr:  nil,
-			expectedWaitErr: ErrRunContainerCommand{Cmd: "docker logs testID"},
+			expectedWaitErr: aircontainer.ErrRunContainerCommand{Cmd: "docker logs testID"},
 			assertF:         func(t *testing.T) {},
 		},
 	}
 	for _, tt := range tests {
 		cnt := getDockerContainerMock(tt.mockDockerClient)
-		actualErr := cnt.RunCommand(RunCommandOptions{
+		actualErr := cnt.RunCommand(aircontainer.RunCommandOptions{
 			Input:  tt.containerInput,
 			Cmd:    tt.cmd,
 			Binds:  tt.volumeMounts,
@@ -508,13 +509,13 @@ func TestRunCommandOutput(t *testing.T) {
 	}
 	for _, tt := range tests {
 		cnt := getDockerContainerMock(tt.mockDockerClient)
-		actualErr := cnt.RunCommand(RunCommandOptions{
+		actualErr := cnt.RunCommand(aircontainer.RunCommandOptions{
 			Input: tt.containerInput,
 			Cmd:   tt.cmd,
 			Binds: tt.volumeMounts,
 		})
 		assert.Equal(t, tt.expectedErr, actualErr)
-		actualRes, actualErr := cnt.GetContainerLogs(GetLogOptions{Stdout: true, Follow: true})
+		actualRes, actualErr := cnt.GetContainerLogs(aircontainer.GetLogOptions{Stdout: true, Follow: true})
 		require.NoError(t, actualErr)
 
 		var actualResBytes []byte
@@ -579,7 +580,7 @@ func TestNewDockerContainer(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		actualRes, actualErr := NewDockerContainer((tt.ctx), tt.url, &(tt.cli))
+		actualRes, actualErr := aircontainer.NewDockerContainer(tt.ctx, tt.url, &(tt.cli))
 
 		assert.Equal(t, tt.expectedErr, actualErr)
 
@@ -588,9 +589,9 @@ func TestNewDockerContainer(t *testing.T) {
 			actualResStruct = resultStruct{}
 		} else {
 			actualResStruct = resultStruct{
-				tag:      actualRes.tag,
-				imageURL: actualRes.imageURL,
-				id:       actualRes.id,
+				tag:      actualRes.Tag,
+				imageURL: actualRes.ImageURL,
+				id:       actualRes.ID,
 			}
 		}
 		assert.Equal(t, tt.expectedResult, actualResStruct)
@@ -618,7 +619,7 @@ func TestRmContainer(t *testing.T) {
 func TestInspectContainer(t *testing.T) {
 	tests := []struct {
 		cli           mockDockerClient
-		expectedState State
+		expectedState aircontainer.State
 		expectedErr   error
 	}{
 		{
@@ -630,13 +631,13 @@ func TestInspectContainer(t *testing.T) {
 					json.ContainerJSONBase = &types.ContainerJSONBase{}
 					json.ContainerJSONBase.State = &types.ContainerState{}
 					json.ContainerJSONBase.State.ExitCode = 0
-					json.ContainerJSONBase.State.Status = CreatedContainerStatus
+					json.ContainerJSONBase.State.Status = aircontainer.CreatedContainerStatus
 					return json, nil
 				},
 			},
-			expectedState: State{
+			expectedState: aircontainer.State{
 				ExitCode: 0,
-				Status:   CreatedContainerStatus,
+				Status:   aircontainer.CreatedContainerStatus,
 			},
 			expectedErr: nil,
 		},
@@ -649,13 +650,13 @@ func TestInspectContainer(t *testing.T) {
 					json.ContainerJSONBase = &types.ContainerJSONBase{}
 					json.ContainerJSONBase.State = &types.ContainerState{}
 					json.ContainerJSONBase.State.ExitCode = 0
-					json.ContainerJSONBase.State.Status = RunningContainerStatus
+					json.ContainerJSONBase.State.Status = aircontainer.RunningContainerStatus
 					return json, nil
 				},
 			},
-			expectedState: State{
+			expectedState: aircontainer.State{
 				ExitCode: 0,
-				Status:   RunningContainerStatus,
+				Status:   aircontainer.RunningContainerStatus,
 			},
 			expectedErr: nil,
 		},
@@ -668,13 +669,13 @@ func TestInspectContainer(t *testing.T) {
 					json.ContainerJSONBase = &types.ContainerJSONBase{}
 					json.ContainerJSONBase.State = &types.ContainerState{}
 					json.ContainerJSONBase.State.ExitCode = 0
-					json.ContainerJSONBase.State.Status = ExitedContainerStatus
+					json.ContainerJSONBase.State.Status = aircontainer.ExitedContainerStatus
 					return json, nil
 				},
 			},
-			expectedState: State{
+			expectedState: aircontainer.State{
 				ExitCode: 0,
-				Status:   ExitedContainerStatus,
+				Status:   aircontainer.ExitedContainerStatus,
 			},
 			expectedErr: nil,
 		},
@@ -687,13 +688,13 @@ func TestInspectContainer(t *testing.T) {
 					json.ContainerJSONBase = &types.ContainerJSONBase{}
 					json.ContainerJSONBase.State = &types.ContainerState{}
 					json.ContainerJSONBase.State.ExitCode = 1
-					json.ContainerJSONBase.State.Status = ExitedContainerStatus
+					json.ContainerJSONBase.State.Status = aircontainer.ExitedContainerStatus
 					return json, nil
 				},
 			},
-			expectedState: State{
+			expectedState: aircontainer.State{
 				ExitCode: 1,
-				Status:   ExitedContainerStatus,
+				Status:   aircontainer.ExitedContainerStatus,
 			},
 			expectedErr: nil,
 		},

@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package container
+package container_test
 
 import (
 	"bytes"
@@ -29,6 +29,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	aircontainer "opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	"opendev.org/airship/airshipctl/pkg/util"
@@ -54,7 +55,7 @@ func TestGenericContainer(t *testing.T) {
 
 		output         io.Writer
 		containerAPI   *v1alpha1.GenericContainer
-		execFunc       containerFunc
+		execFunc       aircontainer.Func
 		executorConfig ifc.ExecutorConfig
 	}{
 		{
@@ -65,7 +66,7 @@ func TestGenericContainer(t *testing.T) {
 					Type: "unknown",
 				},
 			},
-			execFunc: NewContainer,
+			execFunc: aircontainer.NewContainer,
 		},
 		{
 			name: "error kyaml can't parse config",
@@ -75,7 +76,7 @@ func TestGenericContainer(t *testing.T) {
 				},
 				Config: "~:~",
 			},
-			execFunc:    NewContainer,
+			execFunc:    aircontainer.NewContainer,
 			expectedErr: "wrong Node Kind",
 		},
 		{
@@ -93,7 +94,7 @@ func TestGenericContainer(t *testing.T) {
 				},
 				Config: `kind: ConfigMap`,
 			},
-			execFunc:    NewContainer,
+			execFunc:    aircontainer.NewContainer,
 			expectedErr: "no such file or directory",
 			outputPath:  "directory doesn't exist",
 		},
@@ -115,7 +116,7 @@ func TestGenericContainer(t *testing.T) {
 				Config: `kind: ConfigMap`,
 			},
 			expectedErr: "no such file or directory",
-			execFunc: func(ctx context.Context, driver, url string) (Container, error) {
+			execFunc: func(ctx context.Context, driver, url string) (aircontainer.Container, error) {
 				return getDockerContainerMock(mockDockerClient{
 					containerAttach: func() (types.HijackedResponse, error) {
 						conn := types.HijackedResponse{
@@ -158,7 +159,7 @@ func TestGenericContainer(t *testing.T) {
 				},
 				Config: `kind: ConfigMap`,
 			},
-			execFunc: func(ctx context.Context, driver, url string) (Container, error) {
+			execFunc: func(ctx context.Context, driver, url string) (aircontainer.Container, error) {
 				return getDockerContainerMock(mockDockerClient{
 					containerAttach: func() (types.HijackedResponse, error) {
 						conn := types.HijackedResponse{
@@ -203,7 +204,7 @@ func TestGenericContainer(t *testing.T) {
 				},
 				Config: `kind: ConfigMap`,
 			},
-			execFunc: func(ctx context.Context, driver, url string) (Container, error) {
+			execFunc: func(ctx context.Context, driver, url string) (aircontainer.Container, error) {
 				return getDockerContainerMock(mockDockerClient{
 					containerAttach: func() (types.HijackedResponse, error) {
 						conn := types.HijackedResponse{
@@ -240,7 +241,7 @@ func TestGenericContainer(t *testing.T) {
 				},
 				Config: `kind: ConfigMap`,
 			},
-			execFunc: func(ctx context.Context, driver, url string) (Container, error) {
+			execFunc: func(ctx context.Context, driver, url string) (aircontainer.Container, error) {
 				return getDockerContainerMock(mockDockerClient{
 					containerAttach: func() (types.HijackedResponse, error) {
 						conn := types.HijackedResponse{
@@ -266,13 +267,7 @@ func TestGenericContainer(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			input := bundlePathToInput(t, "testdata/single")
-			client := &clientV1Alpha1{
-				input:         input,
-				resultsDir:    tt.outputPath,
-				output:        tt.output,
-				conf:          tt.containerAPI,
-				containerFunc: tt.execFunc,
-			}
+			client := aircontainer.NewV1Alpha1(tt.outputPath, input, tt.output, tt.containerAPI, "", tt.execFunc)
 
 			err := client.Run()
 
@@ -288,7 +283,7 @@ func TestGenericContainer(t *testing.T) {
 
 // Dummy test to keep up with coverage.
 func TestNewClientV1alpha1(t *testing.T) {
-	client := NewClientV1Alpha1("", nil, nil, v1alpha1.DefaultGenericContainer(), "")
+	client := aircontainer.NewClientV1Alpha1("", nil, nil, v1alpha1.DefaultGenericContainer(), "")
 	require.NotNil(t, client)
 }
 
@@ -322,7 +317,7 @@ func TestExpandSourceMounts(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			ExpandSourceMounts(tt.inputMounts, tt.targetPath)
+			aircontainer.ExpandSourceMounts(tt.inputMounts, tt.targetPath)
 			require.Equal(t, tt.expectedMounts, tt.inputMounts)
 		})
 	}
