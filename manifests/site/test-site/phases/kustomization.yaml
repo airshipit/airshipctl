@@ -1,8 +1,10 @@
 resources:
   - ../kubeconfig
   - ../../../phases
+  - ../target/catalogues
   - catalogue.yaml
   - validation-config.yaml
 transformers:
+  - ../../../function/clusterctl/replacements
   - ../../../function/bootstrap/replacements
   - ../../../function/validator
