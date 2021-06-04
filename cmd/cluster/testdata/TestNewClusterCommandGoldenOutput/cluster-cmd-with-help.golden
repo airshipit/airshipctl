@@ -5,7 +5,7 @@ Usage:
   cluster [command]
 
 Available Commands:
-  get-kubeconfig Airshipctl command to retrieve kubeconfig for a desired cluster
+  get-kubeconfig Airshipctl command to retrieve kubeconfig for a desired cluster(s)
   help           Help about any command
   list           Airshipctl command to get and list defined clusters
   status         Retrieve statuses of deployed cluster components

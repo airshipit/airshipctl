@@ -56,9 +56,9 @@ func StatusRunner(o StatusOptions, w io.Writer) error {
 
 // GetKubeconfigCommand holds options for get kubeconfig command
 type GetKubeconfigCommand struct {
-	ClusterName string
-	File        string
-	Merge       bool
+	ClusterNames []string
+	File         string
+	Merge        bool
 }
 
 // RunE creates new kubeconfig interface object from secret, options hold the writer and merge(bool)
@@ -80,14 +80,14 @@ func (cmd *GetKubeconfigCommand) RunE(cfgFactory config.Factory, writer io.Write
 	}
 
 	var siteWide bool
-	if cmd.ClusterName == "" {
+	if len(cmd.ClusterNames) == 0 {
 		siteWide = true
 	}
 
 	kubeconf := kubeconfig.NewBuilder().
 		WithBundle(helper.PhaseConfigBundle()).
 		WithClusterMap(cMap).
-		WithClusterName(cmd.ClusterName).
+		WithClusterNames(cmd.ClusterNames...).
 		WithTempRoot(helper.WorkDir()).
 		SiteWide(siteWide).
 		Build()

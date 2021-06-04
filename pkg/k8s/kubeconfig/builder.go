@@ -39,9 +39,9 @@ func NewBuilder() *Builder {
 // Builder is an object that allows to build a kubeconfig based on various provided sources
 // such as path to kubeconfig, path to bundle that should contain kubeconfig and parent cluster
 type Builder struct {
-	siteWide    bool
-	clusterName string
-	root        string
+	siteWide     bool
+	clusterNames []string
+	root         string
 
 	bundle       document.Bundle
 	client       corev1.CoreV1Interface
@@ -62,9 +62,9 @@ func (b *Builder) WithClusterMap(cMap clustermap.ClusterMap) *Builder {
 	return b
 }
 
-// WithClusterName allows to reach to a cluster to download kubeconfig from there
-func (b *Builder) WithClusterName(clusterName string) *Builder {
-	b.clusterName = clusterName
+// WithClusterNames allows to reach to a cluster to download kubeconfig from there
+func (b *Builder) WithClusterNames(clusterNames ...string) *Builder {
+	b.clusterNames = clusterNames
 	return b
 }
 
@@ -106,40 +106,31 @@ func (b *Builder) Build() Interface {
 }
 
 func (b *Builder) build() ([]byte, error) {
-	// Set current context to clustername if it was provided
-	var result *api.Config
-	var err error
-	if !b.siteWide {
-		var kubeContext string
-		kubeContext, result, err = b.buildOne(b.clusterName)
-		if err != nil {
-			return nil, err
-		}
-		b.siteKubeconf.CurrentContext = kubeContext
-	} else {
-		result, err = b.builtSiteKubeconf()
-		if err != nil {
-			return nil, err
-		}
+	if err := b.buildKubeconfig(); err != nil {
+		return nil, err
 	}
-	return clientcmd.Write(*result)
+
+	return clientcmd.Write(*b.siteKubeconf)
 }
 
-func (b *Builder) builtSiteKubeconf() (*api.Config, error) {
-	log.Debugf("Getting site kubeconfig")
-	for _, clusterID := range b.clusterMap.AllClusters() {
-		log.Debugf("Getting kubeconfig for cluster '%s' to build site kubeconfig", clusterID)
+func (b *Builder) buildKubeconfig() error {
+	log.Debugf("Getting requested kubeconfig")
+	for _, clusterID := range (map[bool][]string{true: b.clusterMap.AllClusters(), false: b.clusterNames})[b.siteWide] {
+		log.Debugf("Getting kubeconfig for cluster '%s'", clusterID)
 		// buildOne merges context into site kubeconfig
-		_, _, err := b.buildOne(clusterID)
+		ctx, _, err := b.buildOne(clusterID)
+		if !b.siteWide && len(b.clusterNames) == 1 {
+			b.siteKubeconf.CurrentContext = ctx
+		}
 		if IsErrAllSourcesFailedErr(err) {
 			log.Debugf("All kubeconfig sources failed for cluster '%s', error '%v', skipping it",
 				clusterID, err)
 			continue
 		} else if err != nil {
-			return nil, err
+			return err
 		}
 	}
-	return b.siteKubeconf, nil
+	return nil
 }
 
 func (b *Builder) buildOne(clusterID string) (string, *api.Config, error) {

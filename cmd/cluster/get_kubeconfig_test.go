@@ -40,23 +40,23 @@ func TestNewKubeConfigCommandCmd(t *testing.T) {
 
 func TestGetKubeconfArgs(t *testing.T) {
 	tests := []struct {
-		name                string
-		args                []string
-		expectedErrStr      string
-		expectedClusterName string
+		name                 string
+		args                 []string
+		expectedErrStr       string
+		expectedClusterNames []string
 	}{
 		{
-			name:                "success one cluster specified",
-			args:                []string{"cluster01"},
-			expectedClusterName: "cluster01",
+			name:                 "success one cluster specified",
+			args:                 []string{"cluster01"},
+			expectedClusterNames: []string{"cluster01"},
 		},
 		{
 			name: "success no cluster specified",
 		},
 		{
-			name:           "error two cluster specified",
-			expectedErrStr: "accepts at most 1 arg(s)",
-			args:           []string{"cluster01", "cluster02"},
+			name:                 "success two cluster specified",
+			args:                 []string{"cluster01", "cluster02"},
+			expectedClusterNames: []string{"cluster01", "cluster02"},
 		},
 	}
 	for _, tt := range tests {
@@ -70,7 +70,7 @@ func TestGetKubeconfArgs(t *testing.T) {
 				assert.Contains(t, err.Error(), tt.expectedErrStr)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, tt.expectedClusterName, cmd.ClusterName)
+				assert.Equal(t, tt.expectedClusterNames, cmd.ClusterNames)
 			}
 		})
 	}

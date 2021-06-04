@@ -23,10 +23,13 @@ import (
 
 const (
 	getKubeconfigLong = `
-Retrieves kubeconfig of the cluster and prints it to stdout.
+Retrieves kubeconfig of the cluster(s) and prints it to stdout.
 
-If you specify CLUSTER_NAME, kubeconfig will have a CurrentContext set to CLUSTER_NAME and
+If you specify single CLUSTER_NAME, kubeconfig will have a CurrentContext set to CLUSTER_NAME and
 will have its context defined.
+
+If you specify multiple CLUSTER_NAME args, kubeconfig will contain contexts for all of them, but current one
+won't be specified.
 
 If you don't specify CLUSTER_NAME, kubeconfig will have multiple contexts for every cluster
 in the airship site. Context names will correspond to cluster names. CurrentContext will be empty.
@@ -52,8 +55,8 @@ Airshipctl will overwrite the contents of the file, if you want merge with exist
 func NewGetKubeconfigCommand(cfgFactory config.Factory) *cobra.Command {
 	opts := &cluster.GetKubeconfigCommand{}
 	cmd := &cobra.Command{
-		Use:     "get-kubeconfig CLUSTER_NAME",
-		Short:   "Airshipctl command to retrieve kubeconfig for a desired cluster",
+		Use:     "get-kubeconfig [CLUSTER_NAME...]",
+		Short:   "Airshipctl command to retrieve kubeconfig for a desired cluster(s)",
 		Long:    getKubeconfigLong[1:],
 		Args:    GetKubeconfArgs(opts),
 		Example: getKubeconfigExample,
@@ -82,9 +85,10 @@ func NewGetKubeconfigCommand(cfgFactory config.Factory) *cobra.Command {
 // GetKubeconfArgs extracts one or less arguments from command line, and saves it as name
 func GetKubeconfArgs(opts *cluster.GetKubeconfigCommand) cobra.PositionalArgs {
 	return func(cmd *cobra.Command, args []string) error {
-		if len(args) == 1 {
-			opts.ClusterName = args[0]
+		for _, arg := range args {
+			opts.ClusterNames = append(opts.ClusterNames, arg)
 		}
-		return cobra.MaximumNArgs(1)(cmd, args)
+
+		return cobra.MinimumNArgs(0)(cmd, args)
 	}
 }
