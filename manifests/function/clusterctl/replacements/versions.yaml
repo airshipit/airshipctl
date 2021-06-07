@@ -187,15 +187,3 @@ replacements:
       kind: Clusterctl
       name: clusterctl_init
     fieldrefs: ["{.images.infrastructure-azure/kube-rbac-proxy}"]
-
-# Replace the cert-manager image repository in the Clusterctl
-- source:
-    objref:
-      kind: VersionsCatalogue
-      name: versions-airshipctl
-    fieldref: "{.spec.images.cert-manager.cert-manager.repository.image}"
-  target:
-    objref:
-      kind: Clusterctl
-      name: clusterctl_init
-    fieldrefs: ["{.images.cert-manager.repository}"]

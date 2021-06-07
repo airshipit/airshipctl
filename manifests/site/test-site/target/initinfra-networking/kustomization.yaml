@@ -1,5 +1,10 @@
 resources:
+  - ../catalogues
   - ../../../../composite/infra/
 
 commonLabels:
   airshipit.org/stage: initinfra
+
+transformers:
+  - ../../../../composite/infra/replacements
+
