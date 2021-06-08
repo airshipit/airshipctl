@@ -36,6 +36,7 @@ type WriteOptions struct {
 // TODO use typed cluster names
 type ClusterMap interface {
 	ParentCluster(string) (string, error)
+	ValidateClusterMap() error
 	AllClusters() []string
 	ClusterKubeconfigContext(string) (string, error)
 	Sources(string) ([]v1alpha1.KubeconfigSource, error)
@@ -64,6 +65,33 @@ func (cm clusterMap) ParentCluster(child string) (string, error) {
 		return "", ErrParentNotFound{Child: child, Map: cm.apiMap}
 	}
 	return currentCluster.Parent, nil
+}
+
+// Validates a clustermap has valid parent-child map structure
+func (cm clusterMap) ValidateClusterMap() error {
+	clusterMap := cm.AllClusters()
+	for _, childCluster := range clusterMap {
+		var parentClusters []string
+		var currentChild string = childCluster
+		for {
+			currentCluster, _ := cm.apiMap.Map[currentChild]
+			for _, c := range parentClusters {
+				if c == currentCluster.Parent {
+					// Quit on parent whos also child
+					return ErrClusterCircularDependency{Parent: childCluster, Map: cm.apiMap}
+				}
+			}
+			// Quit loop once top level of current cluster is reached
+			if currentCluster.Parent == "" {
+				break
+			}
+			parentClusters = append(parentClusters, currentCluster.Parent)
+			currentChild = currentCluster.Parent
+		}
+	}
+
+	// Return success if there are no conflicts
+	return nil
 }
 
 // AllClusters returns all clusters in a map

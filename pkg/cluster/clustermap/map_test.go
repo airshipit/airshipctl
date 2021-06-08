@@ -97,6 +97,27 @@ func TestClusterMap(t *testing.T) {
 		assert.Equal(t, "", parent)
 	})
 
+	t.Run("Validate Circular Clustermap", func(t *testing.T) {
+		// Create new map with circular dependency
+		circularAPIMap := &v1alpha1.ClusterMap{
+			Map: map[string]*v1alpha1.Cluster{},
+		}
+		for key, value := range apiMap.Map {
+			newValue := *value
+			circularAPIMap.Map[key] = &newValue
+		}
+		circularAPIMap.Map["ephemeral"].Parent = "workload"
+		cMapCircular := clustermap.NewClusterMap(circularAPIMap)
+		err := cMapCircular.ValidateClusterMap()
+		assert.Error(t, err)
+	})
+
+	t.Run("Validate all Clustermaps", func(t *testing.T) {
+		// Check child clusterID against map of parent clusterID map
+		err := cMap.ValidateClusterMap()
+		assert.NoError(t, err)
+	})
+
 	t.Run("all clusters", func(t *testing.T) {
 		clusters := cMap.AllClusters()
 		assert.Len(t, clusters, 4)

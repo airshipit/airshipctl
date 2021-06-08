@@ -39,3 +39,13 @@ type ErrClusterNotInMap struct {
 func (e ErrClusterNotInMap) Error() string {
 	return fmt.Sprintf("cluster '%s' is not defined in cluster map %v", e.Child, e.Map)
 }
+
+// ErrClusterCircularDependency returned for circular dependencies
+type ErrClusterCircularDependency struct {
+	Parent string
+	Map    *v1alpha1.ClusterMap
+}
+
+func (e ErrClusterCircularDependency) Error() string {
+	return fmt.Sprintf("%v contains cluster referenced as both parent and child: %s", e.Map, e.Parent)
+}
