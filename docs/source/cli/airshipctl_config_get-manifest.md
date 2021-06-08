@@ -1,25 +1,26 @@
 ## airshipctl config get-manifest
 
-Get a manifest(s) information from the airshipctl config
+Airshipctl command to get a specific or all manifest(s) information from the airshipctl config
 
 ### Synopsis
 
-Display a specific manifest information, or all defined manifests if no name is provided.
+Displays a specific manifest information, or all defined manifests if no name is provided. The information
+includes the repository details related to site manifest along with the local targetPath for them.
 
 
 ```
-airshipctl config get-manifest NAME [flags]
+airshipctl config get-manifest MANIFEST_NAME [flags]
 ```
 
 ### Examples
 
 ```
 
-# List all the manifests airshipctl knows about
-airshipctl config get-manifests
+List all the manifests
+# airshipctl config get-manifests
 
-# Display a specific manifest
-airshipctl config get-manifest e2e
+Display a specific manifest
+# airshipctl config get-manifest e2e
 
 ```
 
@@ -38,5 +39,5 @@ airshipctl config get-manifest e2e
 
 ### SEE ALSO
 
-* [airshipctl config](airshipctl_config.md)	 - Manage the airshipctl config file
+* [airshipctl config](airshipctl_config.md)	 - Airshipctl command to manage airshipctl config file
 

@@ -1,26 +1,22 @@
-Create or modify a manifests in the airshipctl config file.
+Creates or modifies a manifests in the airshipctl config file based on the MANIFEST_NAME argument passed.
+The optional flags that can be passed to the command are repo name, url, branch name, tag name, commit hash,
+target-path and metadata-path. Use --force flag to enable force checkout of the repo. And use --phase flag
+to enable phase repository.
 
 Usage:
-  set-manifest NAME [flags]
+  set-manifest MANIFEST_NAME [flags]
 
 Examples:
 
-# Create a new manifest
-airshipctl config set-manifest exampleManifest \
-  --repo exampleRepo \
-  --url https://github.com/site \
-  --branch master \
-  --phase \
-  --target-path exampleTargetpath
+Create a new manifest
+# airshipctl config set-manifest exampleManifest --repo exampleRepo --url https://github.com/site \
+  --branch master --phase --target-path exampleTargetpath
 
-# Change the phase repo for manifest
-airshipctl config set-manifest e2e \
-  --repo exampleRepo \
-  --phase
+Change the phase repo for manifest
+# airshipctl config set-manifest e2e --repo exampleRepo --phase
 
-# Change the target-path for manifest
-airshipctl config set-manifest e2e \
-  --target-path /tmp/e2e
+Change the target-path for manifest
+# airshipctl config set-manifest e2e --target-path /tmp/e2e
 
 
 Flags:

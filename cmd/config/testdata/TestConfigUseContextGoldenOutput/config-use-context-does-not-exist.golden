@@ -1,11 +1,11 @@
 Error: missing configuration: context with name 'foo'
 Usage:
-  use-context NAME [flags]
+  use-context CONTEXT_NAME [flags]
 
 Examples:
 
-# Switch to a context named "exampleContext" in airshipctl config file
-airshipctl config use-context exampleContext
+Switch to a context named "exampleContext" in airshipctl config file
+# airshipctl config use-context exampleContext
 
 
 Flags:

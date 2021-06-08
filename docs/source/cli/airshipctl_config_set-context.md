@@ -1,28 +1,26 @@
 ## airshipctl config set-context
 
-Manage contexts
+Airshipctl command to create/modify context in airshipctl config file
 
 ### Synopsis
 
-Create or modify a context in the airshipctl config files.
+Creates or modifies context in the airshipctl config file based on the CONTEXT_NAME passed or for the current context
+if --current flag is specified. It accepts optional flags which include manifest name and management-config name.
 
 
 ```
-airshipctl config set-context NAME [flags]
+airshipctl config set-context CONTEXT_NAME [flags]
 ```
 
 ### Examples
 
 ```
 
-# Create a new context named "exampleContext"
-airshipctl config set-context exampleContext \
-  --manifest=exampleManifest \
+To create a new context named "exampleContext"
+# airshipctl config set-context exampleContext --manifest=exampleManifest
 
-# Update the manifest of the current-context
-airshipctl config set-context \
-  --current \
-  --manifest=exampleManifest
+To update the manifest of the current-context
+# airshipctl config set-context --current --manifest=exampleManifest
 
 ```
 
@@ -44,5 +42,5 @@ airshipctl config set-context \
 
 ### SEE ALSO
 
-* [airshipctl config](airshipctl_config.md)	 - Manage the airshipctl config file
+* [airshipctl config](airshipctl_config.md)	 - Airshipctl command to manage airshipctl config file
 

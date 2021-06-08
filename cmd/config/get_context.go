@@ -24,18 +24,19 @@ import (
 
 const (
 	getContextLong = `
-Display information about contexts such as associated manifests, users, and clusters.
+Displays information about contexts such as associated manifests, users, and clusters. It would display a specific
+context information, or all defined context information if no name is provided.
 `
 
 	getContextExample = `
-# List all contexts
-airshipctl config get-contexts
+List all contexts
+# airshipctl config get-contexts
 
-# Display the current context
-airshipctl config get-context --current
+Display the current context
+# airshipctl config get-context --current
 
-# Display a specific context
-airshipctl config get-context exampleContext
+Display a specific context
+# airshipctl config get-context exampleContext
 `
 )
 
@@ -45,10 +46,9 @@ func NewGetContextCommand(cfgFactory config.Factory) *cobra.Command {
 	o := &config.ContextOptions{}
 	cmd := &cobra.Command{
 		Use:     "get-context CONTEXT_NAME",
-		Short:   "Get context information from the airshipctl config",
+		Short:   "Airshipctl command to get context(s) information from the airshipctl config",
 		Long:    getContextLong[1:],
 		Example: getContextExample,
-		// Adding a maximum args cap for documentation purpose
 		Args:    cobra.MaximumNArgs(1),
 		Aliases: []string{"get-contexts"},
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -76,15 +76,7 @@ func NewGetContextCommand(cfgFactory config.Factory) *cobra.Command {
 func addGetContextFlags(o *config.ContextOptions, cmd *cobra.Command) {
 	flags := cmd.Flags()
 
-	flags.BoolVar(
-		&o.CurrentContext,
-		"current",
-		false,
-		"get the current context")
-
-	flags.StringVar(
-		&o.Format,
-		"format",
-		"yaml",
-		"choose between `yaml` or `table`, default is `yaml`")
+	flags.BoolVar(&o.CurrentContext, "current", false, "get the current context")
+	flags.StringVar(&o.Format, "format", "yaml",
+		"supported output format `yaml` or `table`, default is `yaml`")
 }

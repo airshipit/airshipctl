@@ -22,20 +22,20 @@ import (
 
 const (
 	initLong = `
-Generate an airshipctl config file. This file by default will be written to the $HOME/.airship directory,
-and will contain default configuration. In case if flag --airshipconf provided - the file will be
-written to the specified location instead. If a configuration file already exists at the specified path,
-an error will be thrown; to overwrite it, specify the --overwrite flag.
+Generates airshipctl config file. This file by default will be written to the $HOME/.airship directory,
+and will contain default configuration. In case if flag --airshipconf provided - the default configuration
+will be written to the file in the specified location instead. If a configuration file already exists
+at the specified path, an error will be thrown; to overwrite it, specify the --overwrite flag.
 `
 	initExample = `
-# Create new airshipctl config file at the default location
-airshipctl config init
+To create new airshipctl config file at the default location
+# airshipctl config init
 
-# Create new airshipctl config file at the custom location
-airshipctl config init --airshipconf path/to/config
+To create new airshipctl config file at the custom location
+# airshipctl config init --airshipconf path/to/config
 
-# Create new airshipctl config file at custom location and overwrite it
-airshipctl config init --overwrite --airshipconf path/to/config
+To create new airshipctl config file at the custom location and overwrite it
+# airshipctl config init --overwrite --airshipconf path/to/config
 `
 )
 
@@ -44,7 +44,7 @@ func NewInitCommand() *cobra.Command {
 	var overwrite bool
 	cmd := &cobra.Command{
 		Use:     "init",
-		Short:   "Generate initial configuration file for airshipctl",
+		Short:   "Airshipctl command to generate initial configuration file for airshipctl",
 		Long:    initLong[1:],
 		Example: initExample,
 		RunE: func(cmd *cobra.Command, args []string) error {

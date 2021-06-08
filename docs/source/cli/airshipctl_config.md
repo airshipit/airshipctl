@@ -1,10 +1,12 @@
 ## airshipctl config
 
-Manage the airshipctl config file
+Airshipctl command to manage airshipctl config file
 
 ### Synopsis
 
-Manage the airshipctl config file
+
+Provides commands which can be used to manage the airshipctl config file.
+
 
 ### Options
 
@@ -22,12 +24,12 @@ Manage the airshipctl config file
 ### SEE ALSO
 
 * [airshipctl](airshipctl.md)	 - A unified entrypoint to various airship components
-* [airshipctl config get-context](airshipctl_config_get-context.md)	 - Get context information from the airshipctl config
-* [airshipctl config get-management-config](airshipctl_config_get-management-config.md)	 - View a management config or all management configs defined in the airshipctl config
-* [airshipctl config get-manifest](airshipctl_config_get-manifest.md)	 - Get a manifest(s) information from the airshipctl config
-* [airshipctl config init](airshipctl_config_init.md)	 - Generate initial configuration file for airshipctl
-* [airshipctl config set-context](airshipctl_config_set-context.md)	 - Manage contexts
-* [airshipctl config set-management-config](airshipctl_config_set-management-config.md)	 - Modify an out-of-band management configuration
-* [airshipctl config set-manifest](airshipctl_config_set-manifest.md)	 - Manage manifests in airship config
-* [airshipctl config use-context](airshipctl_config_use-context.md)	 - Switch to a different context
+* [airshipctl config get-context](airshipctl_config_get-context.md)	 - Airshipctl command to get context(s) information from the airshipctl config
+* [airshipctl config get-management-config](airshipctl_config_get-management-config.md)	 - Airshipctl command to view management config(s) defined in the airshipctl config
+* [airshipctl config get-manifest](airshipctl_config_get-manifest.md)	 - Airshipctl command to get a specific or all manifest(s) information from the airshipctl config
+* [airshipctl config init](airshipctl_config_init.md)	 - Airshipctl command to generate initial configuration file for airshipctl
+* [airshipctl config set-context](airshipctl_config_set-context.md)	 - Airshipctl command to create/modify context in airshipctl config file
+* [airshipctl config set-management-config](airshipctl_config_set-management-config.md)	 - Airshipctl command to create/modify out-of-band management configuration in airshipctl config file
+* [airshipctl config set-manifest](airshipctl_config_set-manifest.md)	 - Airshipctl command to create/modify manifests in airship config
+* [airshipctl config use-context](airshipctl_config_use-context.md)	 - Airshipctl command to switch to a different context
 

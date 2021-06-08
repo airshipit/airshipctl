@@ -1,18 +1,19 @@
-Manage the airshipctl config file
+
+Provides commands which can be used to manage the airshipctl config file.
 
 Usage:
   config [command]
 
 Available Commands:
-  get-context           Get context information from the airshipctl config
-  get-management-config View a management config or all management configs defined in the airshipctl config
-  get-manifest          Get a manifest(s) information from the airshipctl config
+  get-context           Airshipctl command to get context(s) information from the airshipctl config
+  get-management-config Airshipctl command to view management config(s) defined in the airshipctl config
+  get-manifest          Airshipctl command to get a specific or all manifest(s) information from the airshipctl config
   help                  Help about any command
-  init                  Generate initial configuration file for airshipctl
-  set-context           Manage contexts
-  set-management-config Modify an out-of-band management configuration
-  set-manifest          Manage manifests in airship config
-  use-context           Switch to a different context
+  init                  Airshipctl command to generate initial configuration file for airshipctl
+  set-context           Airshipctl command to create/modify context in airshipctl config file
+  set-management-config Airshipctl command to create/modify out-of-band management configuration in airshipctl config file
+  set-manifest          Airshipctl command to create/modify manifests in airship config
+  use-context           Airshipctl command to switch to a different context
 
 Flags:
   -h, --help   help for config
