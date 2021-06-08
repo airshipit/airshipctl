@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: source-controller
+spec:
+  template:
+    spec:
+      containers:
+      - name: manager
+        env:
+          - name: http_proxy
+            value: REPLACEMENT_HTTP_PROXY
+          - name: https_proxy
+            value: REPLACEMENT_HTTPS_PROXY
+          - name: no_proxy
+            value: REPLACEMENT_NO_PROXY

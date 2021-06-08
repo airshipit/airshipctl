@@ -5,3 +5,4 @@ resources:
 - upstream/manager
 patchesStrategicMerge:
 - deployment_toleration_patch.yaml
+- deployment_proxyvar_patch.yaml
