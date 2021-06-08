@@ -1,0 +1,7 @@
+apiVersion: airshipit.org/v1alpha1
+kind: Clusterctl
+metadata:
+  name: clusterctl_move
+move-options:
+  namespace: default
+action: move

@@ -187,7 +187,7 @@
     timeout: 3600
     pre-run: playbooks/airship-airshipctl-deploy-docker.yaml
     run: playbooks/airshipctl-gate-runner.yaml
-    nodeset: airship-airshipctl-single-node
+    nodeset: airship-airshipctl-single-16GB-bionic-node
     irrelevant-files: *noncodefiles
     dependencies:
       - name: openstack-tox-docs
@@ -211,14 +211,10 @@
         - ./tools/deployment/provider_common/02_install_jq.sh
         - ./tools/deployment/provider_common/03_install_pip.sh
         - ./tools/deployment/provider_common/04_install_yq.sh
-        - CLUSTER=ephemeral-cluster KIND_CONFIG=./tools/deployment/templates/kind-cluster-with-extramounts ./tools/deployment/kind/start_kind.sh
         - AIRSHIP_CONFIG_METADATA_PATH=manifests/site/docker-test-site/metadata.yaml SITE=docker-test-site EXTERNAL_KUBECONFIG="true" ./tools/deployment/22_test_configs.sh
+        - CLUSTER=ephemeral-cluster KIND_CONFIG=./tools/deployment/templates/kind-cluster-with-extramounts ./tools/deployment/kind/start_kind.sh
         - ./tools/deployment/23_pull_documents.sh
-        - PROVIDER=default SITE=docker-test-site ./tools/deployment/26_deploy_capi_ephemeral_node.sh
-        - ./tools/deployment/provider_common/30_deploy_controlplane.sh
-        - ./tools/deployment/provider_common/32_cluster_init_target_node.sh
-        - ./tools/deployment/provider_common/33_cluster_move_target_node.sh
-        - ./tools/deployment/provider_common/34_deploy_worker_node.sh
+        - ./tools/deployment/25_deploy_gating.sh
     voting: false
 - job:
     name: airship-airshipctl-docker-kubebench-conformance

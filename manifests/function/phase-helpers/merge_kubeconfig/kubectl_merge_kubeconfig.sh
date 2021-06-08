@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,16 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -xe
+set -ex
 
-export KUBECONFIG=${KUBECONFIG:-"$HOME/.airship/kubeconfig"}
-export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
+KUBECONFIG=${KUBECONFIG}:${TGT_KUBECONFIG} kubectl config view --flatten > /tmp/kubeconfig-trans
 
-echo "Stop/Delete ephemeral node"
-kind delete cluster --name "ephemeral-cluster"
+cat /tmp/kubeconfig-trans > ${TGT_KUBECONFIG}
 
-echo "Deploy worker node"
-airshipctl phase run  workers-target --debug
-
-#Wait till node is created
-kubectl wait --for=condition=ready node --all --timeout=1000s --context $KUBECONFIG_TARGET_CONTEXT --kubeconfig $KUBECONFIG -A
