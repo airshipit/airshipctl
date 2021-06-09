@@ -81,3 +81,8 @@ func (m *Manifest) String() string {
 func (m *Manifest) GetTargetPath() string {
 	return m.TargetPath
 }
+
+// GetMetadataPath returns MetadataPath field
+func (m *Manifest) GetMetadataPath() string {
+	return m.MetadataPath
+}

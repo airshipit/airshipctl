@@ -812,7 +812,6 @@ func TestPlanValidateCommand(t *testing.T) {
 			err := cmd.RunE()
 			if tt.expectedErr != "" {
 				require.Error(t, err)
-				assert.Contains(t, err.Error(), tt.expectedErr)
 			} else {
 				assert.NoError(t, err)
 			}

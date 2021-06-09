@@ -24,6 +24,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/document/metadata"
 	"opendev.org/airship/airshipctl/pkg/inventory"
 	inventoryifc "opendev.org/airship/airshipctl/pkg/inventory/ifc"
 	"opendev.org/airship/airshipctl/pkg/log"
@@ -36,12 +37,13 @@ type Helper struct {
 	phaseBundleRoot         string
 	inventoryRoot           string
 	targetPath              string
+	metadataPath            string
 	phaseRepoDir            string
 	phaseEntryPointBasePath string
 	workDir                 string
+	docEntryPointPrefix     string
 
 	inventory         inventoryifc.Inventory
-	metadata          *config.Metadata
 	phaseConfigBundle document.Bundle
 }
 
@@ -58,18 +60,28 @@ func NewHelper(cfg *config.Config) (ifc.Helper, error) {
 	if err != nil {
 		return nil, err
 	}
-	helper.metadata, err = cfg.CurrentContextManifestMetadata()
+
+	helper.metadataPath, err = cfg.CurrentContextMetadataPath()
 	if err != nil {
 		return nil, err
 	}
+
+	metadataFilePath := filepath.Join(helper.targetPath, helper.phaseRepoDir, helper.metadataPath)
+
+	meta, err := metadata.Config(metadataFilePath)
+	if err != nil {
+		return nil, err
+	}
+
 	helper.workDir, err = cfg.WorkDir()
 	if err != nil {
 		return nil, err
 	}
-	helper.phaseBundleRoot = filepath.Join(helper.targetPath, helper.phaseRepoDir, helper.metadata.PhaseMeta.Path)
-	helper.inventoryRoot = filepath.Join(helper.targetPath, helper.phaseRepoDir, helper.metadata.Inventory.Path)
+	helper.docEntryPointPrefix = meta.DocEntryPointPrefix
+	helper.phaseBundleRoot = filepath.Join(helper.targetPath, helper.phaseRepoDir, meta.MetadataPhasePath)
+	helper.inventoryRoot = filepath.Join(helper.targetPath, helper.phaseRepoDir, meta.InventoryPath)
 	helper.phaseEntryPointBasePath = filepath.Join(helper.targetPath, helper.phaseRepoDir,
-		helper.metadata.PhaseMeta.DocEntryPointPrefix)
+		helper.docEntryPointPrefix)
 	helper.inventory = inventory.NewInventory(func() (*config.Config, error) { return cfg, nil })
 	if helper.phaseConfigBundle, err = document.NewBundleByPath(helper.phaseBundleRoot); err != nil {
 		return nil, err
@@ -289,7 +301,7 @@ func (helper *Helper) PhaseRepoDir() string {
 // DocumentEntryPoint field in the phase struct
 // so the full entry point is DocEntryPointPrefix + DocumentEntryPoint
 func (helper *Helper) DocEntryPointPrefix() string {
-	return helper.metadata.PhaseMeta.DocEntryPointPrefix
+	return helper.docEntryPointPrefix
 }
 
 // PhaseBundleRoot returns path to document root with phase documents

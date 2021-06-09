@@ -1,3 +1,10 @@
-phase:
-  path: "valid_site_with_doc_prefix/phases"
-  docEntryPointPrefix: "valid_site_with_doc_prefix/phases"
+apiVersion: airshipit.org/v1alpha1
+kind: ManifestMetadata
+metadata:
+  name: manifest-metadata
+spec:
+  phase:
+    path: "valid_site_with_doc_prefix/phases"
+    docEntryPointPrefix: "valid_site_with_doc_prefix"
+  inventory:
+    path: ""

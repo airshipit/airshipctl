@@ -1,3 +1,10 @@
-phase:
-  path: manifests/site/gcp-test-site/phases
-  docEntryPointPrefix: manifests/site/gcp-test-site
+apiVersion: airshipit.org/v1alpha1
+kind: ManifestMetadata
+metadata:
+  name: manifest-metadata
+spec:
+  phase:
+    path: manifests/site/gcp-test-site/phases
+    docEntryPointPrefix: manifests/site/gcp-test-site
+  inventory:
+    path: ""

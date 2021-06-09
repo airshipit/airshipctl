@@ -19,6 +19,7 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/document/metadata"
 	"opendev.org/airship/airshipctl/pkg/inventory/baremetal"
 	"opendev.org/airship/airshipctl/pkg/inventory/ifc"
 )
@@ -59,13 +60,19 @@ func (i Inventory) BaremetalInventory() (ifc.BaremetalInventory, error) {
 		return nil, err
 	}
 
-	metadata, err := cfg.CurrentContextManifestMetadata()
+	metadataPath, err := cfg.CurrentContextMetadataPath()
 	if err != nil {
 		return nil, err
 	}
 
-	inventoryBundle := filepath.Join(targetPath, phaseDir, metadata.Inventory.Path)
+	metadataBundle := filepath.Join(targetPath, phaseDir, metadataPath)
 
+	meta, err := metadata.Config(metadataBundle)
+	if err != nil {
+		return nil, err
+	}
+
+	inventoryBundle := filepath.Join(targetPath, phaseDir, meta.InventoryPath)
 	bundle, err := document.NewBundleByPath(inventoryBundle)
 	if err != nil {
 		return nil, err

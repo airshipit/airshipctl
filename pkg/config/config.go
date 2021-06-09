@@ -327,6 +327,15 @@ func (c *Config) CurrentContextManifest() (*Manifest, error) {
 	return manifest, nil
 }
 
+// CurrentContextMetadataPath returns metadata path from current context's manifest
+func (c *Config) CurrentContextMetadataPath() (string, error) {
+	ccm, err := c.CurrentContextManifest()
+	if err != nil {
+		return "", err
+	}
+	return ccm.GetMetadataPath(), nil
+}
+
 // CurrentContextTargetPath returns target path from current context's manifest
 func (c *Config) CurrentContextTargetPath() (string, error) {
 	ccm, err := c.CurrentContextManifest()
@@ -507,34 +516,6 @@ func (c *Config) CurrentContextManagementConfig() (*ManagementConfiguration, err
 // Purge removes the config file
 func (c *Config) Purge() error {
 	return c.fileSystem.RemoveAll(c.loadedConfigPath)
-}
-
-// CurrentContextManifestMetadata gets manifest metadata
-func (c *Config) CurrentContextManifestMetadata() (*Metadata, error) {
-	manifest, err := c.CurrentContextManifest()
-	if err != nil {
-		return nil, err
-	}
-	phaseRepoDir, err := c.CurrentContextPhaseRepositoryDir()
-	if err != nil {
-		return nil, err
-	}
-	meta := &Metadata{
-		// Populate with empty values to avoid nil pointers
-		Inventory: &InventoryMeta{},
-		PhaseMeta: &PhaseMeta{},
-	}
-
-	data, err := c.fileSystem.ReadFile(filepath.Join(manifest.GetTargetPath(), phaseRepoDir, manifest.MetadataPath))
-	if err != nil {
-		return nil, err
-	}
-
-	err = yaml.Unmarshal(data, meta)
-	if err != nil {
-		return nil, err
-	}
-	return meta, nil
 }
 
 // WorkDir returns working directory for airshipctl. Creates if it doesn't exist
