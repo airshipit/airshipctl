@@ -10,8 +10,6 @@ spec:
   helm_repositories:
     ingress-nginx:
       url: https://kubernetes.github.io/ingress-nginx
-    helm_chart_collator:
-      url: http://helm-chart-collator.collator.svc:8080
 
   charts:
     ingress-nginx:
@@ -90,10 +88,6 @@ spec:
     #   <function>:
     #     <component>:
     #       <container>:
-    helm_chart_collator:
-      helm_chart_collator:
-        helm_chart_collator:
-          image: quay.io/airshipit/helm-chart-collator:latest
     baremetal_operator:
       ironic: # ironic Deployment
         init_bootstrap:
