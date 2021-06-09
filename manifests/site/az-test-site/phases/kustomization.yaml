@@ -12,3 +12,4 @@ patchesJson6902:
     path: infrastructure-providers.json
 transformers:
   - ../../../function/clusterctl/replacements
+  - ../../../phases/replacements

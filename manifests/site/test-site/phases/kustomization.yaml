@@ -6,3 +6,4 @@ resources:
 transformers:
   - ../../../function/clusterctl/replacements
   - ../../../function/bootstrap/replacements
+  - ../../../phases/replacements

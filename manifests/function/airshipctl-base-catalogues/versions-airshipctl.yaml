@@ -155,5 +155,9 @@ spec:
       webhook:
         manager:
           image: quay.io/jetstack/cert-manager-webhook:v1.1.0
+    image_builder:
+      image_builder:
+        image_builder:
+          image: quay.io/airshipit/image-builder:latest-ubuntu_focal
 
   kubernetes: v1.18.6
