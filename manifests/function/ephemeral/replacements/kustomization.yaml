@@ -4,3 +4,5 @@ resources:
   - ephemeral-env-vars.yaml
   - networking.yaml
   - generated-secrets.yaml
+  - stringData-encode.yaml
+  - cleanup.yaml

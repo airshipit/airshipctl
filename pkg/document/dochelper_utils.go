@@ -37,7 +37,7 @@ func GetSecretDataKey(cfg Document, key string) (string, error) {
 		if err != nil {
 			return "", ErrDocumentMalformed{
 				DocName: docName,
-				Message: "The secret document lacks a data or stringData top level field",
+				Message: "The data or stringData structure is missing or malformed.",
 			}
 		}
 	}
