@@ -4,4 +4,4 @@ apiVersion: "example.com/v1"
 kind: Resource
 metadata:
   name: pending-resource
-  namespace: default
+  namespace: target-infra

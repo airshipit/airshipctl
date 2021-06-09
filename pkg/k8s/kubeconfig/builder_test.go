@@ -179,7 +179,7 @@ func TestBuilderClusterctl(t *testing.T) {
 								ClusterAPI: v1alpha1.KubeconfigSourceClusterAPI{
 									NamespacedName: v1alpha1.NamespacedName{
 										Name:      childClusterID,
-										Namespace: "default",
+										Namespace: "target-infra",
 									},
 								},
 							},
@@ -192,7 +192,7 @@ func TestBuilderClusterctl(t *testing.T) {
 								ClusterAPI: v1alpha1.KubeconfigSourceClusterAPI{
 									NamespacedName: v1alpha1.NamespacedName{
 										Name:      parentClusterID,
-										Namespace: "default",
+										Namespace: "target-infra",
 									},
 								},
 							},

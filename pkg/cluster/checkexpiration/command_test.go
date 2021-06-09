@@ -45,7 +45,7 @@ const (
 		"tlsSecrets": [
 			{
 				"name": "test-cluster-etcd",
-				"namespace": "default",
+				"namespace": "target-infra",
 				"certificate": {
 					"ca.crt": "2030-08-31 10:12:49 +0000 UTC",
 					"tls.crt": "2030-08-31 10:12:49 +0000 UTC"
@@ -55,7 +55,7 @@ const (
 		"kubeconfs": [
 			{
 				"secretName": "test-cluster-kubeconfig",
-				"secretNamespace": "default",
+				"secretNamespace": "target-infra",
 				"cluster": [
 					{
 						"name": "workload-cluster",
@@ -102,7 +102,7 @@ kubeconfs:
     expirationDate: 2030-08-31 10:12:48 +0000 UTC
     name: workload-cluster
   secretName: test-cluster-kubeconfig
-  secretNamespace: default
+  secretNamespace: target-infra
   user:
   - certificateName: ClientCertificateData
     expirationDate: 2021-09-02 10:12:50 +0000 UTC
@@ -112,7 +112,7 @@ tlsSecrets:
     ca.crt: 2030-08-31 10:12:49 +0000 UTC
     tls.crt: 2030-08-31 10:12:49 +0000 UTC
   name: test-cluster-etcd
-  namespace: default
+  namespace: target-infra
 nodeCerts:
 - name: test-node
   certificate:

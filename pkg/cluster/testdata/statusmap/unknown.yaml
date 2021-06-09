@@ -5,4 +5,4 @@ apiVersion: "example.com/v1"
 kind: Resource
 metadata:
   name: unknown
-  namespace: default
+  namespace: target-infra

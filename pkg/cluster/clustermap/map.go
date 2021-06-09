@@ -24,7 +24,7 @@ import (
 )
 
 // DefaultClusterAPIObjNamespace is a default namespace used for cluster-api cluster object
-const DefaultClusterAPIObjNamespace = "default"
+const DefaultClusterAPIObjNamespace = "target-infra"
 
 // WriteOptions has format in which we want to print the output(table/yaml/cluster name)
 type WriteOptions struct {

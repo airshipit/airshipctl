@@ -5,5 +5,7 @@ resources:
   - ../../../../function/workers-capm3/
   - nodes
 
+namespace: target-infra
+
 transformers:
   - ../../../../function/workers-capm3/replacements

@@ -7,6 +7,8 @@ resources:
   - ../../../../function/k8scontrol
   - ../catalogues
 
+namespace: target-infra
+
 commonLabels:
   airshipit.org/stage: initinfra
 
