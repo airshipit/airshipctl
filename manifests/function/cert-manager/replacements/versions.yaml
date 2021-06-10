@@ -11,7 +11,7 @@ replacements:
     objref:
       kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: spec.images.cert-manager.cainjector.image
+    fieldref: spec.images.cert-manager.cainjector.manager.image
   target:
     objref:
       kind: Deployment
@@ -21,7 +21,7 @@ replacements:
     objref:
       kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: spec.images.cert-manager.controller.image
+    fieldref: spec.images.cert-manager.controller.manager.image
   target:
     objref:
       kind: Deployment
@@ -31,7 +31,7 @@ replacements:
     objref:
       kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: spec.images.cert-manager.webhook.image
+    fieldref: spec.images.cert-manager.webhook.manager.image
   target:
     objref:
       kind: Deployment

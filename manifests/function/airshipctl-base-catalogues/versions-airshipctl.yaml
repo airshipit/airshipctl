@@ -147,10 +147,13 @@ spec:
           image: ghcr.io/fluxcd/source-controller:v0.5.3
     cert-manager:
       cainjector:
-        image: quay.io/jetstack/cert-manager-cainjector:v1.1.0
+        manager:
+          image: quay.io/jetstack/cert-manager-cainjector:v1.1.0
       controller:
-        image: quay.io/jetstack/cert-manager-controller:v1.1.0
+        manager:
+          image: quay.io/jetstack/cert-manager-controller:v1.1.0
       webhook:
-        image: quay.io/jetstack/cert-manager-webhook:v1.1.0
+        manager:
+          image: quay.io/jetstack/cert-manager-webhook:v1.1.0
 
   kubernetes: v1.18.6
