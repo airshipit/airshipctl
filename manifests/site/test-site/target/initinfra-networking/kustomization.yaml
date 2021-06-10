@@ -1,6 +1,11 @@
 resources:
+  - ../catalogues
   - ../../../../composite/infra/
   - namespace.yaml
 
 commonLabels:
   airshipit.org/stage: initinfra
+
+transformers:
+  - ../../../../composite/infra/replacements
+

@@ -1,0 +1,39 @@
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: cert-manager-versions-replacements
+  annotations:
+    config.kubernetes.io/function: |-
+      container:
+        image: localhost/replacement-transformer
+replacements:
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: spec.images.cert-manager.cainjector.image
+  target:
+    objref:
+      kind: Deployment
+      name: cert-manager-cainjector
+    fieldrefs: ["spec.template.spec.containers[name=cert-manager].image"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: spec.images.cert-manager.controller.image
+  target:
+    objref:
+      kind: Deployment
+      name: cert-manager
+    fieldrefs: ["spec.template.spec.containers[name=cert-manager].image"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: spec.images.cert-manager.webhook.image
+  target:
+    objref:
+      kind: Deployment
+      name: cert-manager-webhook
+    fieldrefs: ["spec.template.spec.containers[name=cert-manager].image"]
