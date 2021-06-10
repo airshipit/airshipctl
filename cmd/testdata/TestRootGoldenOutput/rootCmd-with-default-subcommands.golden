@@ -13,8 +13,8 @@ Available Commands:
   document    Manage deployment documents
   help        Help about any command
   phase       Airshipctl command to manage phases
-  plan        Manage plans
-  secret      Manage secrets
+  plan        Airshipctl command to manage plans
+  secret      Airshipctl command to manage secrets
   version     Show the version number of airshipctl
 
 Flags:

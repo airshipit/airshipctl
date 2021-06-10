@@ -1,19 +1,19 @@
-List life-cycle plans which were defined in document model.
+List plans defined in site manifest.
 
 Usage:
   list [flags]
 
 Examples:
 
-#list plan
-airshipctl plan list
+List plan
+# airshipctl plan list
 
-#list plan(yaml output format)
-airshipctl plan list -o yaml
+List plan(yaml output format)
+# airshipctl plan list -o yaml
 
-#list plan(table output format)
-airshipctl plan list -o table
+List plan(table output format)
+# airshipctl plan list -o table
 
 Flags:
   -h, --help            help for list
-  -o, --output string   'table' and 'yaml' are available output formats (default "table")
+  -o, --output string   output format. Supported formats are 'table' and 'yaml' (default "table")

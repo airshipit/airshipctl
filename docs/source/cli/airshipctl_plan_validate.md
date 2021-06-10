@@ -1,14 +1,24 @@
 ## airshipctl plan validate
 
-Validate plan
+Airshipctl command to validate plan
 
 ### Synopsis
 
-Run life-cycle phase validation which was defined in document model.
+Validate a plan defined in the site manifest. Specify the plan using the mandatory parameter PLAN_NAME.
+To get list of plans associated for a site, run 'airshipctl plan list'.
 
 
 ```
 airshipctl plan validate PLAN_NAME [flags]
+```
+
+### Examples
+
+```
+
+Validate plan named iso
+# airshipctl plan validate iso
+
 ```
 
 ### Options
@@ -26,5 +36,5 @@ airshipctl plan validate PLAN_NAME [flags]
 
 ### SEE ALSO
 
-* [airshipctl plan](airshipctl_plan.md)	 - Manage plans
+* [airshipctl plan](airshipctl_plan.md)	 - Airshipctl command to manage plans
 

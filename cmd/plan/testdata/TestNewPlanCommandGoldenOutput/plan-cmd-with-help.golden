@@ -1,14 +1,13 @@
-This command provides capabilities for interacting with plan objects,
-responsible for execution phases in groups
+Provides capabilities for interacting with plan objects, responsible for execution of phases in groups.
 
 Usage:
   plan [command]
 
 Available Commands:
   help        Help about any command
-  list        List plans
-  run         Run plan
-  validate    Validate plan
+  list        Airshipctl command to list plans
+  run         Airshipctl command to run plan
+  validate    Airshipctl command to validate plan
 
 Flags:
   -h, --help   help for plan

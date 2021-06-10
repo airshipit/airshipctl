@@ -1,14 +1,27 @@
 ## airshipctl plan run
 
-Run plan
+Airshipctl command to run plan
 
 ### Synopsis
 
-Run life-cycle phase plan which was defined in document model.
+Run a plan defined in the site manifest. Specify the plan using the mandatory parameter PLAN_NAME.
+To get list of plans associated for a site, run 'airshipctl plan list'.
 
 
 ```
 airshipctl plan run PLAN_NAME [flags]
+```
+
+### Examples
+
+```
+
+Run plan named iso
+# airshipctl plan run iso
+
+Perform a dry run of a plan
+# airshipctl plan run iso --dry-run
+
 ```
 
 ### Options
@@ -28,5 +41,5 @@ airshipctl plan run PLAN_NAME [flags]
 
 ### SEE ALSO
 
-* [airshipctl plan](airshipctl_plan.md)	 - Manage plans
+* [airshipctl plan](airshipctl_plan.md)	 - Airshipctl command to manage plans
 

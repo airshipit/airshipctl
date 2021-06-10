@@ -23,7 +23,15 @@ import (
 
 const (
 	runLong = `
-Run life-cycle phase plan which was defined in document model.
+Run a plan defined in the site manifest. Specify the plan using the mandatory parameter PLAN_NAME.
+To get list of plans associated for a site, run 'airshipctl plan list'.
+`
+	runExample = `
+Run plan named iso
+# airshipctl plan run iso
+
+Perform a dry run of a plan
+# airshipctl plan run iso --dry-run
 `
 )
 
@@ -34,10 +42,11 @@ func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
 		Options: phase.PlanRunFlags{},
 	}
 	runCmd := &cobra.Command{
-		Use:   "run PLAN_NAME",
-		Short: "Run plan",
-		Long:  runLong[1:],
-		Args:  cobra.ExactArgs(1),
+		Use:     "run PLAN_NAME",
+		Short:   "Airshipctl command to run plan",
+		Long:    runLong[1:],
+		Example: runExample,
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			r.Options.PlanID.Name = args[0]
 			return r.RunE()
@@ -45,15 +54,7 @@ func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
 	}
 
 	flags := runCmd.Flags()
-	flags.BoolVar(
-		&r.Options.DryRun,
-		"dry-run",
-		false,
-		"simulate phase execution")
-	flags.DurationVar(
-		&r.Options.Timeout,
-		"wait-timeout",
-		0,
-		"wait timeout")
+	flags.BoolVar(&r.Options.DryRun, "dry-run", false, "simulate phase execution")
+	flags.DurationVar(&r.Options.Timeout, "wait-timeout", 0, "wait timeout")
 	return runCmd
 }

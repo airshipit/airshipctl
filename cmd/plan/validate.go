@@ -23,7 +23,13 @@ import (
 
 const (
 	validateLong = `
-Run life-cycle phase validation which was defined in document model.
+Validate a plan defined in the site manifest. Specify the plan using the mandatory parameter PLAN_NAME.
+To get list of plans associated for a site, run 'airshipctl plan list'.
+`
+
+	validateExample = `
+Validate plan named iso
+# airshipctl plan validate iso
 `
 )
 
@@ -34,10 +40,11 @@ func NewValidateCommand(cfgFactory config.Factory) *cobra.Command {
 		Options: phase.PlanValidateFlags{},
 	}
 	runCmd := &cobra.Command{
-		Use:   "validate PLAN_NAME",
-		Short: "Validate plan",
-		Long:  validateLong[1:],
-		Args:  cobra.ExactArgs(1),
+		Use:     "validate PLAN_NAME",
+		Short:   "Airshipctl command to validate plan",
+		Long:    validateLong[1:],
+		Example: validateExample,
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			r.Options.PlanID.Name = args[0]
 			return r.RunE()

@@ -1,7 +1,14 @@
-Run life-cycle phase validation which was defined in document model.
+Validate a plan defined in the site manifest. Specify the plan using the mandatory parameter PLAN_NAME.
+To get list of plans associated for a site, run 'airshipctl plan list'.
 
 Usage:
   validate PLAN_NAME [flags]
+
+Examples:
+
+Validate plan named iso
+# airshipctl plan validate iso
+
 
 Flags:
   -h, --help   help for validate

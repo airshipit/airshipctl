@@ -31,12 +31,11 @@ If regex arguments are passed the encryption key created would match the regular
 `
 
 	cmdExample = `
-# Generates a secure encryption key or passphrase.
-airshipctl secret generate encryptionkey
+Generates a secure encryption key or passphrase.
+# airshipctl secret generate encryptionkey
 
-# Generates a secure encryption key or passphrase matching the regular expression
-airshipctl secret generate encryptionkey \
-  --regex Xy[a-c][0-9]!a*
+Generates a secure encryption key or passphrase matching the regular expression
+# airshipctl secret generate encryptionkey --regex Xy[a-c][0-9]!a*
 `
 )
 
@@ -47,7 +46,7 @@ func NewGenerateEncryptionKeyCommand() *cobra.Command {
 
 	encryptionKeyCmd := &cobra.Command{
 		Use:     "encryptionkey",
-		Short:   "Generates a secure encryption key or passphrase",
+		Short:   "Airshipctl command to generate a secure encryption key or passphrase",
 		Long:    cmdLong[1:],
 		Example: cmdExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -64,10 +63,7 @@ func NewGenerateEncryptionKeyCommand() *cobra.Command {
 		},
 	}
 
-	encryptionKeyCmd.Flags().StringVar(&regex, "regex", "",
-		"Regular expression string")
-
-	encryptionKeyCmd.Flags().IntVar(&limit, "limit", 5,
-		"Limit number of characters for + or * regex")
+	encryptionKeyCmd.Flags().StringVar(&regex, "regex", "", "regular expression string")
+	encryptionKeyCmd.Flags().IntVar(&limit, "limit", 5, "limit number of characters for + or * regex")
 	return encryptionKeyCmd
 }

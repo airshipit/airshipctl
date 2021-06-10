@@ -1,7 +1,17 @@
-Run life-cycle phase plan which was defined in document model.
+Run a plan defined in the site manifest. Specify the plan using the mandatory parameter PLAN_NAME.
+To get list of plans associated for a site, run 'airshipctl plan list'.
 
 Usage:
   run PLAN_NAME [flags]
+
+Examples:
+
+Run plan named iso
+# airshipctl plan run iso
+
+Perform a dry run of a plan
+# airshipctl plan run iso --dry-run
+
 
 Flags:
       --dry-run                 simulate phase execution
