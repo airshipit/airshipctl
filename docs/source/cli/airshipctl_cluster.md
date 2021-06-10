@@ -17,13 +17,13 @@ such as getting status and deploying initial infrastructure.
 ### Options inherited from parent commands
 
 ```
-      --airshipconf string   Path to file for airshipctl configuration. (default "$HOME/.airship/config")
+      --airshipconf string   path to the airshipctl configuration file. Defaults to "$HOME/.airship/config"
       --debug                enable verbose output
 ```
 
 ### SEE ALSO
 
-* [airshipctl](airshipctl.md)	 - A unified entrypoint to various airship components
+* [airshipctl](airshipctl.md)	 - A unified command line tool for management of end-to-end kubernetes cluster deployment on cloud infrastructure environments.
 * [airshipctl cluster check-certificate-expiration](airshipctl_cluster_check-certificate-expiration.md)	 - Airshipctl command to check expiring TLS certificates, secrets and kubeconfigs in the kubernetes cluster
 * [airshipctl cluster get-kubeconfig](airshipctl_cluster_get-kubeconfig.md)	 - Airshipctl command to retrieve kubeconfig for a desired cluster
 * [airshipctl cluster list](airshipctl_cluster_list.md)	 - Airshipctl command to get and list defined clusters

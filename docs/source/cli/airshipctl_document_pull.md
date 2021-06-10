@@ -1,6 +1,6 @@
 ## airshipctl document pull
 
-Pulls documents from remote git repository
+Airshipctl command to pull manifests from remote git repositories
 
 ### Synopsis
 
@@ -16,21 +16,31 @@ manifests and with the manifests target path "$HOME/.airship/default".
 airshipctl document pull [flags]
 ```
 
+### Examples
+
+```
+
+Pull manifests from remote repos
+# airshipctl document pull
+>>>>>>> Updating cmd files for documentation
+
+```
+
 ### Options
 
 ```
   -h, --help          help for pull
-  -n, --no-checkout   No checkout is performed after the clone is complete.
+  -n, --no-checkout   no checkout is performed after the clone is complete.
 ```
 
 ### Options inherited from parent commands
 
 ```
-      --airshipconf string   Path to file for airshipctl configuration. (default "$HOME/.airship/config")
+      --airshipconf string   path to the airshipctl configuration file. Defaults to "$HOME/.airship/config"
       --debug                enable verbose output
 ```
 
 ### SEE ALSO
 
-* [airshipctl document](airshipctl_document.md)	 - Manage deployment documents
+* [airshipctl document](airshipctl_document.md)	 - Airshipctl command to manage site manifest documents
 

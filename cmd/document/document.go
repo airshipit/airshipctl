@@ -20,11 +20,16 @@ import (
 	"opendev.org/airship/airshipctl/pkg/config"
 )
 
+const documentLong = `
+Provides commands which help in management of site manifest documents.
+`
+
 // NewDocumentCommand creates a new command for managing airshipctl documents
 func NewDocumentCommand(cfgFactory config.Factory) *cobra.Command {
 	documentRootCmd := &cobra.Command{
 		Use:   "document",
-		Short: "Manage deployment documents",
+		Short: "Airshipctl command to manage site manifest documents",
+		Long:  documentLong,
 	}
 
 	documentRootCmd.AddCommand(NewPullCommand(cfgFactory))

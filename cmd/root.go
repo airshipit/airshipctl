@@ -34,7 +34,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
-const longRoot = `A unified entrypoint to various airship components
+const longRoot = `Command line utility for management of end-to-end kubernetes cluster deployment.
 
   Find more information at: https://docs.airshipit.org/airshipctl/
 `
@@ -57,8 +57,10 @@ func NewAirshipCTLCommand(out io.Writer) *cobra.Command {
 func NewRootCommand(out io.Writer) (*cobra.Command, *RootOptions) {
 	options := &RootOptions{}
 	rootCmd := &cobra.Command{
-		Use:           "airshipctl",
-		Short:         "A unified entrypoint to various airship components",
+		Use: "airshipctl",
+		Short: "A unified command line tool for management of end-to-end " +
+			"kubernetes cluster deployment on cloud infrastructure " +
+			"environments.",
 		Long:          longRoot,
 		SilenceErrors: true,
 		SilenceUsage:  true,
@@ -95,9 +97,6 @@ func initFlags(options *RootOptions, cmd *cobra.Command) {
 	defaultAirshipConfigDir := filepath.Join(cfg.HomeEnvVar, cfg.AirshipConfigDir)
 
 	defaultAirshipConfigPath := filepath.Join(defaultAirshipConfigDir, cfg.AirshipConfig)
-	flags.StringVar(
-		&options.AirshipConfigPath,
-		"airshipconf",
-		"",
-		`Path to file for airshipctl configuration. (default "`+defaultAirshipConfigPath+`")`)
+	flags.StringVar(&options.AirshipConfigPath, "airshipconf", "",
+		`path to the airshipctl configuration file. Defaults to "`+defaultAirshipConfigPath+`"`)
 }

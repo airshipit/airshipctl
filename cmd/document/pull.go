@@ -33,23 +33,30 @@ By default the airship config file is initialized with the
 repository "https://opendev.org/airship/treasuremap" as a source of
 manifests and with the manifests target path "%s".
 `
+
+	pullExample = `
+Pull manifests from remote repos
+# airshipctl document pull
+>>>>>>> Updating cmd files for documentation
+`
 )
 
 // NewPullCommand creates a new command for pulling airship document repositories
 func NewPullCommand(cfgFactory config.Factory) *cobra.Command {
 	var noCheckout bool
 	documentPullCmd := &cobra.Command{
-		Use:   "pull",
-		Short: "Pulls documents from remote git repository",
+		Use: "pull",
 		Long: fmt.Sprintf(long[1:], filepath.Join(
 			config.HomeEnvVar, config.AirshipConfigDir, config.AirshipDefaultManifest)),
+		Short:   "Airshipctl command to pull manifests from remote git repositories",
+		Example: pullExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return pull.Pull(cfgFactory, noCheckout)
 		},
 	}
 
 	documentPullCmd.Flags().BoolVarP(&noCheckout, "no-checkout", "n", false,
-		"No checkout is performed after the clone is complete.")
+		"no checkout is performed after the clone is complete.")
 
 	return documentPullCmd
 }

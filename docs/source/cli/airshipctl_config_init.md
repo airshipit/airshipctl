@@ -39,7 +39,7 @@ To create new airshipctl config file at the custom location and overwrite it
 ### Options inherited from parent commands
 
 ```
-      --airshipconf string   Path to file for airshipctl configuration. (default "$HOME/.airship/config")
+      --airshipconf string   path to the airshipctl configuration file. Defaults to "$HOME/.airship/config"
       --debug                enable verbose output
 ```
 

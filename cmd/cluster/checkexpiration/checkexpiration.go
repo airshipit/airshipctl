@@ -31,21 +31,21 @@ workload cluster) and also the node certificates present inside /etc/kubernetes/
 `
 
 	checkExample = `
-To display all the expiring entities in the cluster
+To display all the expiring certificates in the cluster
 # airshipctl cluster check-certificate-expiration --kubeconfig testconfig
 
-To display the entities whose expiration is within threshold of 30 days
+To display the certificates whose expiration is within threshold of 30 days
 # airshipctl cluster check-certificate-expiration -t 30 --kubeconfig testconfig
 
-To output the contents to json (default operation)
+To output the contents in json format (default operation)
 # airshipctl cluster check-certificate-expiration -o json --kubeconfig testconfig
 or
 # airshipctl cluster check-certificate-expiration --kubeconfig testconfig
 
-To output the contents to yaml
+To output the contents in yaml format
 # airshipctl cluster check-certificate-expiration -o yaml --kubeconfig testconfig
 
-To output the contents whose expiration is within 30 days to yaml
+To output the contents whose expiration is within 30 days in yaml format
 # airshipctl cluster check-certificate-expiration -t 30 -o yaml --kubeconfig testconfig
 `
 

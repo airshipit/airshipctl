@@ -4,11 +4,11 @@ Usage:
 
 Examples:
 
-# Save shell completion to a file
-airshipctl completion bash > $HOME/.airship_completions
+Save shell completion to a file
+# airshipctl completion bash > $HOME/.airship_completions
 
-# Apply completions to the current shell
-source <(airshipctl completion bash)
+Apply completions to the current shell
+# source <(airshipctl completion bash)
 
 
 Flags:

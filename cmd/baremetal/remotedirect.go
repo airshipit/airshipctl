@@ -28,13 +28,13 @@ on the --iso-url, --name, --namespace, --label and --timeout flags provided.
 `
 
 	remoteDirectExample = `
-Perform action against hosts with name rdm9r3s3 in all namespaces where the host is found
+Perform bootstrap action against hosts with name rdm9r3s3 in all namespaces where the host is found
 # airshipctl baremetal remotedirect --name rdm9r3s3
 
-Perform action against hosts with name rdm9r3s3 in namespace metal3
+Perform bootstrap action against hosts with name rdm9r3s3 in metal3 namespace
 # airshipctl baremetal remotedirect --name rdm9r3s3 --namespace metal3
 
-Perform action against hosts with a label 'foo=bar'
+Perform bootstrap action against hosts with a label 'foo=bar'
 # airshipctl baremetal remotedirect --labels "foo=bar"
 `
 )

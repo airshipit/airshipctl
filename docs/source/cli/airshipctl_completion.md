@@ -1,6 +1,6 @@
 ## airshipctl completion
 
-Generate completion script for the specified shell (bash or zsh)
+Airshipctl command to generate completion script for the specified shell (bash or zsh)
 
 ### Synopsis
 
@@ -15,11 +15,11 @@ airshipctl completion SHELL [flags]
 
 ```
 
-# Save shell completion to a file
-airshipctl completion bash > $HOME/.airship_completions
+Save shell completion to a file
+# airshipctl completion bash > $HOME/.airship_completions
 
-# Apply completions to the current shell
-source <(airshipctl completion bash)
+Apply completions to the current shell
+# source <(airshipctl completion bash)
 
 ```
 
@@ -32,11 +32,11 @@ source <(airshipctl completion bash)
 ### Options inherited from parent commands
 
 ```
-      --airshipconf string   Path to file for airshipctl configuration. (default "$HOME/.airship/config")
+      --airshipconf string   path to the airshipctl configuration file. Defaults to "$HOME/.airship/config"
       --debug                enable verbose output
 ```
 
 ### SEE ALSO
 
-* [airshipctl](airshipctl.md)	 - A unified entrypoint to various airship components
+* [airshipctl](airshipctl.md)	 - A unified command line tool for management of end-to-end kubernetes cluster deployment on cloud infrastructure environments.
 

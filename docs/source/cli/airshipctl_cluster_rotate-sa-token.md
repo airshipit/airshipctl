@@ -7,8 +7,8 @@ Airshipctl command to rotate tokens of Service Account(s)
 Reset/rotate the Service Account(SA) tokens and additionally restart the corresponding pods to get the latest
 token data reflected in the pod spec.
 
-Secret-namespace is a mandatory flag and secret-name is optional. If secret-name is not given, all the SA tokens
-in that particular namespace is considered, else only that particular input secret-name.
+Secret-namespace is a mandatory flag and secret-name is optional. If a secret-name is not specified, all of the SA
+tokens in the specified namespace are rotated, else only the specified secret-name.
 
 
 ```
@@ -39,7 +39,7 @@ To rotate all the SA tokens in cert-manager namespace
 ### Options inherited from parent commands
 
 ```
-      --airshipconf string   Path to file for airshipctl configuration. (default "$HOME/.airship/config")
+      --airshipconf string   path to the airshipctl configuration file. Defaults to "$HOME/.airship/config"
       --debug                enable verbose output
 ```
 

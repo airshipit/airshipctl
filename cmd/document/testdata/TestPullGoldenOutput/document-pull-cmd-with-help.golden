@@ -8,6 +8,13 @@ manifests and with the manifests target path "$HOME/.airship/default".
 Usage:
   pull [flags]
 
+Examples:
+
+Pull manifests from remote repos
+# airshipctl document pull
+>>>>>>> Updating cmd files for documentation
+
+
 Flags:
   -h, --help          help for pull
-  -n, --no-checkout   No checkout is performed after the clone is complete.
+  -n, --no-checkout   no checkout is performed after the clone is complete.
