@@ -41,10 +41,10 @@ Get multiple contexts for every cluster in the airship site
 Initialize CNI on target cluster`
 > airshipctl phase run initinfra-networking-target
 
-Initialize Target Cluster with cluster api and docker proivder components
+Initialize Target Cluster with cluster api and docker provider components
 > airshipctl phase run clusterctl-init-target
 
-Move managment CRDs from kind management cluster to target management cluster
+Move management CRDs from kind management cluster to target management cluster
 > airshipctl phase run clusterctl-move
 
 Use target management cluster to deploy workers
@@ -229,7 +229,7 @@ software and version, provided in this section.
 
 #### Virtual Machine Specification
 
-All the instructions in the document were perfomed on a Oracle Virtual Box(6.1)
+All the instructions in the document were performed on a Oracle Virtual Box(6.1)
 VM running Ubuntu 18.04.4 LTS (Bionic Beaver) with 16G of memory and 4 VCPUs
 
 #### Docker

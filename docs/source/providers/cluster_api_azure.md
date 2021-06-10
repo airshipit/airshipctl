@@ -36,7 +36,7 @@ CAPZ components.
 $ airshipctl cluster init
 ```
 ## Deploy Target cluster on Azure
-To deploy the Target cluster on Azure cloude execute the following command.
+To deploy the Target cluster on Azure cloud execute the following command.
 ```bash
 $ airshipctl phase apply azure-target
 ```
@@ -122,7 +122,7 @@ Now we can trigger the configuration of Calico on the Target Cluster
 $ airshipctl phase apply calico --kubeconfig az-target-cluster.kubeconfig
 ```
 
-Once the Calico provisionning has been completed you should see all the nodes instantiated for the
+Once the Calico provisioning has been completed you should see all the nodes instantiated for the
 Target cluster in Ready state.
 ```bash
 $ kubectl --kubeconfig=./az-target-cluster.kubeconfig get nodes

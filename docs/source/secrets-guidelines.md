@@ -182,7 +182,7 @@ When this template is executed it generates keys/certs/passwords and renders the
 
 Please pay attention that the special annotation `config.kubernetes.io/path` is getting added in the fileplacement transformer - it defines the name of the file where this document will be stored by phase. It’s possible to define several VariableCatalogues with unique names of files (it even may contain directories).
 
-Now if we refer back to the Phase descritption we’ll see that it’s type is GenericContainer with the name `encrypter`.
+Now if we refer back to the Phase description we’ll see that it’s type is GenericContainer with the name `encrypter`.
 
 The definition of that executor is the following:
 
@@ -215,7 +215,7 @@ Basically this executor accepts the bundle, runs krm-function `gcr.io/kpt-fn-con
 There is another a separate set of secrets that are provided externally and that shouldn't be generated. They're called `externally provided secrets`.
 For that set there is a separate folder in the target/encrypted/results, called `imported`.
 
-There is a speical phase called `secret-import` that may be used to update the set of externally provided secrets:
+There is a special phase called `secret-import` that may be used to update the set of externally provided secrets:
 just put a new unencrypted secrets.yaml to target/encrypted/results/imported/ instead of encrypted one and run that phase.
 This phase will encrypt that file using provided public key set by `SOPS_IMPORT_PGP` and `SOPS_PGP_FP`.
 
@@ -250,7 +250,7 @@ There are 2 different approaches that may be used:
 
 Both approaches are possible taking into account that fact that SOPS allows you to have several private keys to decrypt data and it selects the needed one automatically.
 
-Nevertheless for the sake of simplicity we're currently implemented the first approach in our manifests. There is a phase called `secret-reecnrypt` that allows to perform master key rotation.
+Nevertheless for the sake of simplicity we're currently implemented the first approach in our manifests. There is a phase called `secret-reencrypt` that allows to perform master key rotation.
 
 In order to do so please follow the following steps:
 
@@ -262,16 +262,16 @@ gpg --full-generate-key
 ```
 Note: please make sure you know the fingerprint of the newly generated key.
 
-2. append the env variable `SOPS_IMPORT_PGP` with the new keypair (don't delete the prvious one at this step, because it's needed for decryption).
+2. append the env variable `SOPS_IMPORT_PGP` with the new keypair (don't delete the previous one at this step, because it's needed for decryption).
 3. set the env variable `SOPS_PGP_FP` to the value of the NEW private key fingerprint. That means that the new key will be used for encryption.
-4. run `airshipctl phase run secret-reecnrypt`. make sure it runs successfully.
+4. run `airshipctl phase run secret-reencrypt`. make sure it runs successfully.
 5. check that all encrypted files were updated and that pgp.fp field for all of them equal to the value you specified in `SOPS_PGP_FP`.
 6. now it's possible to delete the old master key from `SOPS_IMPORT_PGP`. Once done it's possible to run `airshipctl phase run secret-show` to ensure that the keys will be decrypted properly.
 8. commit the changes to the site manifests.
 
 # Troubleshooting typical cases
 
-Note: In order to make troubleshotting possible please set env variable `DEBUG_SOPS_GPG=true` to see all debug output.
+Note: In order to make troubleshooting possible please set env variable `DEBUG_SOPS_GPG=true` to see all debug output.
 
 ## Validate keys fingerprints
 

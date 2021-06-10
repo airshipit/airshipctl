@@ -51,7 +51,7 @@ components:
 
 ### Credentials
 
-In order to comunicate with openstack cloud environment, following set of credentials are
+In order to communicate with openstack cloud environment, following set of credentials are
 needed to be generated.
 
 The [env.rc](<https://github.com/kubernetes-sigs/cluster-api-provider-openstack/blob/master/docs/env.rc>) script
@@ -97,7 +97,7 @@ openstack network list --external
 ### Floating IP
 
 A floating IP is automatically created and associated with the load balancer or controller node, however floating IP can also be
-specified explicitly by setting the `spec.apiServerLoadBalancerFlotingIP` of `OpenStackCluster` CRD.
+specified explicitly by setting the `spec.apiServerLoadBalancerFloatingIP` of `OpenStackCluster` CRD.
 
 Floating ip can be created using `openstack floating ip create <public network>` command.
 

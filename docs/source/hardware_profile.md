@@ -14,7 +14,7 @@ a large set of BMH documents efficiently.
 
 ## The Example Hardware Profile
 
-A Hardware Profile, in airshiptl terms, is a collection of parameters that
+A Hardware Profile, in airshipctl terms, is a collection of parameters that
 comprise a hardware level configuration of a server. Currently, it contains
 RAID and firmware configurations. And later, this can be extended.
 
