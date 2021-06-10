@@ -2,6 +2,8 @@ ARG GO_IMAGE=gcr.io/gcp-runtimes/go1-builder:1.15
 ARG PLUGINS_RELEASE_IMAGE=alpine:3.12.0
 
 FROM ${GO_IMAGE} as function
+ARG GOPROXY=""
+
 # Inject custom root certificate authorities if needed
 # Docker does not have a good conditional copy statement and requires that a source file exists
 # to complete the copy function without error.  Therefore the README.md file will be copied to
