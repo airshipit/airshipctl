@@ -3,6 +3,7 @@ ARG PLUGINS_BUILD_IMAGE=alpine:3.12.0
 ARG PLUGINS_RELEASE_IMAGE=alpine:3.12.0
 FROM ${PLUGINS_BUILD_IMAGE} as ctls
 ARG GOPROXY=""
+ARG K8S_VERSION=v1.18.6
 
 RUN apk update && apk add curl
 # Inject custom root certificate authorities if needed
@@ -12,7 +13,7 @@ RUN apk update && apk add curl
 COPY ./certs/* /usr/local/share/ca-certificates/
 RUN update-ca-certificates
 
-RUN curl -L "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl" \
+RUN curl -L "https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl" \
       -o /kubectl
 RUN curl -L  "https://github.com/projectcalico/calicoctl/releases/download/v3.18.1/calicoctl" \
       -o /calicoctl
