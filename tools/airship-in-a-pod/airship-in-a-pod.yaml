@@ -21,7 +21,8 @@ spec:
 
   - name: libvirt
     image: ianhowell/libvirt:latest
-    tty: true
+    # Set to true for debugging
+    tty: false
     securityContext:
       privileged: true
       #SYS_ADMIN required for systemd, need to work out reqs for libvirt
