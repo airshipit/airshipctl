@@ -105,6 +105,8 @@ phases:
   # To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
   # and find ConfigMap with name kubectl-wait-cluster
   - name: kubectl-wait-cluster-target
+  # Power off Ephemeral baremetal host avoid DHCP conflict
+  - name: power-off-ephemeral
   # Create target k8s cluster resources
   - name: controlplane-target
   # List all nodes in target cluster
@@ -117,11 +119,6 @@ phases:
   # To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
   # and find ConfigMap with name kubectl-get-pods
   - name: kubectl-get-pods-target
-  # all vms. This can be removed once sushy tool is fixed
-  # Scripts for this phase placed in manifests/function/phase-helpers/virsh-destroy-vms/
-  # To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
-  # and find ConfigMap with name virsh-destroy-vms
-  - name: virsh-destroy-vms
   # Deploy worker node
   - name: workers-target
   # Waiting for node to be provisioned

@@ -68,8 +68,6 @@ spec:
                     required:
                     - isoURL
                     type: object
-                required:
-                - remoteDirect
                 type: object
               timeout:
                 description: Timeout in seconds

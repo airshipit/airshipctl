@@ -215,6 +215,17 @@ spec:
       isoURL: ISO_URL
 ---
 apiVersion: airshipit.org/v1alpha1
+kind: BaremetalManager
+metadata:
+  name: PowerOffEphemeral
+  labels:
+    airshipit.org/deploy-k8s: "false"
+spec:
+  operation: power-off
+  hostSelector:
+    name: EPHEMERAL_NODE
+---
+apiVersion: airshipit.org/v1alpha1
 kind: GenericContainer
 metadata:
   name: iso-cloud-init-data
@@ -501,7 +512,7 @@ kind: GenericContainer
 metadata:
   name: kubectl-wait-bmh
 spec:
-  image: quay.io/airshipit/toolbox:latest
+  image: localhost/toolbox
   hostNetwork: true
   envVars:
   - RESOURCE_GROUP_FILTER=metal3.io
@@ -518,7 +529,7 @@ kind: GenericContainer
 metadata:
   name: kubectl-wait-label-node
 spec:
-  image: quay.io/airshipit/toolbox:latest
+  image: localhost/toolbox
   hostNetwork: true
   envVars:
   - RESOURCE_GROUP_FILTER=metal3.io
@@ -535,7 +546,7 @@ kind: GenericContainer
 metadata:
   name: kubectl-check-ingress-ctrl
 spec:
-  image: quay.io/airshipit/toolbox:latest
+  image: localhost/toolbox
   hostNetwork: true
 configRef:
   kind: ConfigMap
