@@ -142,6 +142,7 @@ func replace(items []*yaml.RNode, target *airshipv1.ReplTarget, value *yaml.RNod
 		ByGVK(target.ObjRef.Group, target.ObjRef.Version, target.ObjRef.Kind).
 		ByName(target.ObjRef.Name).
 		ByNamespace(target.ObjRef.Namespace).
+		ByLabel(target.ObjRef.LabelSelector).
 		Filter(items)
 	if err != nil {
 		return err
