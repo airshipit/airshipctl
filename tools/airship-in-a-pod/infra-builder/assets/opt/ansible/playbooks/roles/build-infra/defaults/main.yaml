@@ -19,31 +19,31 @@ floorplan:
 ephemeral_node:
   name: air-ephemeral
   cpu: 4
-  ram: 6124
+  ram: 6144
   nat_mac_address: 52:54:00:9b:27:02
   prov_mac_address: 52:54:00:b6:ed:02
   block:
-    - 20G
+    - 30G
 
 target_nodes:
   count: 1
   name: air-target
   cpu: 2
-  ram: 6124
+  ram: 7168
   nat_mac_address: 52:54:00:9b:27:4c
   prov_mac_address: 52:54:00:b6:ed:31
   block:
-    - 20G
+    - 30G
 
 worker_nodes:
   count: 1
   name: air-worker
-  cpu: 1
-  ram: 6124
+  cpu: 2
+  ram: 7168
   nat_mac_address: 52:54:00:9b:27:07
   prov_mac_address: 52:54:00:b6:ed:23
   block:
-    - 20G
+    - 30G
 
 # 1st item must be the oobm network, 2nd the provisioning
 networks:
