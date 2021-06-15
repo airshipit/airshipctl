@@ -9,5 +9,5 @@ spec:
         matchLabels:
           airshipit.org/k8s-role: worker
       image:
-        url: http://10.23.24.102:80/images/data-plane.qcow2
-        checksum: http://10.23.24.102:80/images/data-plane.qcow2.md5sum
+        url: http://REPLACEMENT_PROVISIONING_IP:80/images/data-plane.qcow2
+        checksum: http://REPLACEMENT_PROVISIONING_IP:80/images/data-plane.qcow2.md5sum
