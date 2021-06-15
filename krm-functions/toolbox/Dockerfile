@@ -1,11 +1,12 @@
 ARG GO_IMAGE=gcr.io/gcp-runtimes/go1-builder:1.15
-ARG PLUGINS_BUILD_IMAGE=alpine:3.12.0
-ARG PLUGINS_RELEASE_IMAGE=alpine:3.12.0
+ARG PLUGINS_BUILD_IMAGE=quay.io/airshipit/alpine:3.13.5
+ARG PLUGINS_RELEASE_IMAGE=quay.io/airshipit/alpine:3.13.5
 FROM ${PLUGINS_BUILD_IMAGE} as ctls
 ARG GOPROXY=""
 ARG K8S_VERSION=v1.18.6
 
 RUN apk update && apk add curl
+
 # Inject custom root certificate authorities if needed
 # Docker does not have a good conditional copy statement and requires that a source file exists
 # to complete the copy function without error.  Therefore the README.md file will be copied to
