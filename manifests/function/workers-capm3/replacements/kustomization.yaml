@@ -4,3 +4,4 @@ resources:
   - workers-env-vars.yaml
   - generated-secrets.yaml
   - networking.yaml
+  - metal3machinetemplate_vars.yaml
