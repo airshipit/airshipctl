@@ -54,3 +54,39 @@ replacements:
     objref:
       kind: KubeadmControlPlane
     fieldrefs: ["spec.kubeadmConfigSpec.ntp"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ntp.servers[0]
+  target:
+    objref:
+      kind: KubeadmControlPlane
+    fieldrefs: ["spec.kubeadmConfigSpec.files[*].content%REPLACEMENT_NTP_SERVER1%"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ntp.servers[1]
+  target:
+    objref:
+      kind: KubeadmControlPlane
+    fieldrefs: ["spec.kubeadmConfigSpec.files[*].content%REPLACEMENT_NTP_SERVER2%"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ntp.servers[2]
+  target:
+    objref:
+      kind: KubeadmControlPlane
+    fieldrefs: ["spec.kubeadmConfigSpec.files[*].content%REPLACEMENT_NTP_SERVER3%"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ntp.servers[3]
+  target:
+    objref:
+      kind: KubeadmControlPlane
+    fieldrefs: ["spec.kubeadmConfigSpec.files[*].content%REPLACEMENT_NTP_SERVER4%"]

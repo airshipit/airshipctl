@@ -49,3 +49,44 @@ replacements:
       name: ephemeral-bmc-secret
       kind: Secret
     fieldrefs: ["stringData.userData%REPLACEMENT_POD_CIDR%"]
+# Replace the k8s controlplane NTP servers
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ntp.servers[0]
+  target:
+    objref:
+      name: ephemeral-bmc-secret
+      kind: Secret
+    fieldrefs: ["stringData.userData%REPLACEMENT_NTP_SERVER1%"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ntp.servers[1]
+  target:
+    objref:
+      name: ephemeral-bmc-secret
+      kind: Secret
+    fieldrefs: ["stringData.userData%REPLACEMENT_NTP_SERVER2%"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ntp.servers[2]
+  target:
+    objref:
+      name: ephemeral-bmc-secret
+      kind: Secret
+    fieldrefs: ["stringData.userData%REPLACEMENT_NTP_SERVER3%"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ntp.servers[3]
+  target:
+    objref:
+      name: ephemeral-bmc-secret
+      kind: Secret
+    fieldrefs: ["stringData.userData%REPLACEMENT_NTP_SERVER4%"]
