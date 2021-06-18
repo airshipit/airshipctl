@@ -65,6 +65,7 @@ type KubeconfigSourceFilesystem struct {
 // KubeconfigSourceClusterAPI get kubeconfig from clusterAPI parent cluster
 type KubeconfigSourceClusterAPI struct {
 	NamespacedName `json:"clusterNamespacedName,omitempty"`
+	Timeout        string `json:"timeout,omitempty"`
 }
 
 // KubeconfigSourceBundle get kubeconfig from bundle

@@ -15,9 +15,13 @@
 package kubeconfig
 
 import (
+	"fmt"
 	"io"
-	"log"
+	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/yaml"
@@ -26,12 +30,14 @@ import (
 	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/fs"
+	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/util"
 )
 
 const (
-	// KubeconfigPrefix is a prefix that is added when writing temporary kubeconfig files
-	KubeconfigPrefix = "kubeconfig-"
+	// Prefix is a prefix that is added when writing temporary kubeconfig files
+	Prefix         = "kubeconfig-"
+	defaultTimeout = 30 * time.Second
 )
 
 // Interface provides a uniform way to interact with kubeconfig file
@@ -100,13 +106,39 @@ func FromAPIalphaV1(apiObj *v1alpha1.KubeConfig) KubeSourceFunc {
 }
 
 // FromSecret returns KubeSource type, uses client interface to kubernetes cluster
-func FromSecret(c client.Interface, o *client.GetKubeconfigOptions) KubeSourceFunc {
+func FromSecret(c corev1.CoreV1Interface, o *client.GetKubeconfigOptions) KubeSourceFunc {
 	return func() ([]byte, error) {
-		data, err := c.GetKubeconfig(o)
-		if err != nil {
+		if o.ManagedClusterName == "" {
+			return nil, ErrClusterNameEmpty{}
+		}
+		if o.ManagedClusterNamespace == "" {
+			o.ManagedClusterNamespace = "default"
+		}
+
+		data, exist, secretName := new([]byte), new(bool), fmt.Sprintf("%s-kubeconfig", o.ManagedClusterName)
+		fn := func() (bool, error) {
+			secret, err := c.Secrets(o.ManagedClusterNamespace).Get(secretName, metav1.GetOptions{})
+			if err != nil {
+				log.Printf("get kubeconfig from secret failed, retrying, reason: %v", err)
+				return false, nil
+			}
+
+			if *data, *exist = secret.Data["value"]; *exist && len(*data) > 0 {
+				return true, nil
+			}
+			return true, ErrMalformedKubeconfig{ClusterName: o.ManagedClusterName}
+		}
+
+		duration, err := time.ParseDuration(o.Timeout)
+		if err != nil || duration == 0 {
+			duration = defaultTimeout
+		}
+
+		if err = wait.PollImmediate(time.Second, duration, fn); err != nil {
 			return nil, err
 		}
-		return []byte(data), nil
+
+		return *data, nil
 	}
 }
 
@@ -197,7 +229,7 @@ func (k *kubeConfig) WriteTempFile(root string) (string, Cleanup, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	file, err := k.fileSystem.TempFile(root, KubeconfigPrefix)
+	file, err := k.fileSystem.TempFile(root, Prefix)
 	if err != nil {
 		log.Printf("Failed to write temporary file, error %v", err)
 		return "", nil, err

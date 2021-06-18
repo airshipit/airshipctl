@@ -17,6 +17,7 @@ package kubeconfig
 import (
 	"fmt"
 
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 
@@ -25,11 +26,9 @@ import (
 	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/fs"
+	"opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/pkg/log"
 )
-
-// KubeconfigDefaultFileName is a default name for kubeconfig
-const KubeconfigDefaultFileName = "kubeconfig"
 
 // NewBuilder returns instance of kubeconfig builder.
 func NewBuilder() *Builder {
@@ -45,11 +44,11 @@ type Builder struct {
 	clusterName string
 	root        string
 
-	bundle           document.Bundle
-	clusterMap       clustermap.ClusterMap
-	clusterctlClient client.Interface
-	fs               fs.FileSystem
-	siteKubeconf     *api.Config
+	bundle       document.Bundle
+	client       corev1.CoreV1Interface
+	clusterMap   clustermap.ClusterMap
+	fs           fs.FileSystem
+	siteKubeconf *api.Config
 }
 
 // WithBundle allows to set document.Bundle object that should contain kubeconfig api object
@@ -76,16 +75,15 @@ func (b *Builder) WithTempRoot(root string) *Builder {
 	return b
 }
 
-// WithClusterctlClient this is used if u want to inject your own clusterctl
-// mostly needed for tests
-func (b *Builder) WithClusterctlClient(c client.Interface) *Builder {
-	b.clusterctlClient = c
-	return b
-}
-
 // WithFilesystem allows to set filesystem
 func (b *Builder) WithFilesystem(fs fs.FileSystem) *Builder {
 	b.fs = fs
+	return b
+}
+
+// WithCoreV1Client allows to set core v1 client, use for unit tests only
+func (b *Builder) WithCoreV1Client(c corev1.CoreV1Interface) *Builder {
+	b.client = c
 	return b
 }
 
@@ -229,18 +227,18 @@ func (b *Builder) fromClusterAPI(clusterName string, ref v1alpha1.KubeconfigSour
 		}
 		defer cleanup()
 
-		if b.clusterctlClient == nil {
-			b.clusterctlClient, err = client.NewClient("", log.DebugEnabled(), v1alpha1.DefaultClusterctl())
+		if b.client == nil {
+			clientSet, err := utils.FactoryFromKubeConfig(f, parentContext, utils.SetTimeout("30s")).KubernetesClientSet()
 			if err != nil {
 				return nil, err
 			}
+			b.client = clientSet.CoreV1()
 		}
 
 		log.Debugf("Getting child kubeconfig from parent, parent context '%s', parent kubeconfig '%s'",
 			parentContext, f)
-		return FromSecret(b.clusterctlClient, &client.GetKubeconfigOptions{
-			ParentKubeconfigPath:    f,
-			ParentKubeconfigContext: parentContext,
+		return FromSecret(b.client, &client.GetKubeconfigOptions{
+			Timeout:                 ref.Timeout,
 			ManagedClusterNamespace: ref.Namespace,
 			ManagedClusterName:      ref.Name,
 		})()
@@ -257,7 +255,7 @@ func (b *Builder) alreadyBuilt(clusterContext string) (bool, *api.Config) {
 	// resulting and existing context names must be the same, otherwise error will be returned
 	clusterKubeconfig, err := extractContext(clusterContext, clusterContext, kubeconfBytes)
 	if err != nil {
-		log.Debugf("Received error when extacting context, ignoring kubeconfig. Error: %v", err)
+		log.Debugf("Received error when extracting context, ignoring kubeconfig. Error: %v", err)
 		return false, nil
 	}
 

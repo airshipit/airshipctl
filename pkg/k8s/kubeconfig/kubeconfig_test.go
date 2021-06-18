@@ -23,7 +23,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/apimachinery/pkg/watch"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	v1 "k8s.io/client-go/tools/clientcmd/api/v1"
 	kustfs "sigs.k8s.io/kustomize/api/filesys"
 
@@ -112,46 +119,121 @@ func TestKubeconfigContent(t *testing.T) {
 	assert.Equal(t, expectedData, actualData)
 }
 
-type MockClientInterface struct {
-	MockGetKubeconfig func(options *client.GetKubeconfigOptions) (string, error)
-	client.Interface
+type MockCoreV1Interface struct {
+	MockSecrets func(string) corev1.SecretInterface
+	corev1.CoreV1Interface
 }
 
-func (c MockClientInterface) GetKubeconfig(o *client.GetKubeconfigOptions) (string, error) {
-	return c.MockGetKubeconfig(o)
+func (c MockCoreV1Interface) Secrets(n string) corev1.SecretInterface {
+	return c.MockSecrets(n)
+}
+
+var _ corev1.SecretInterface = &SecretMockInterface{}
+
+type SecretMockInterface struct {
+	mock.Mock
+}
+
+func (s *SecretMockInterface) Create(_ *apiv1.Secret) (*apiv1.Secret, error) {
+	panic("implement me")
+}
+
+func (s *SecretMockInterface) Update(_ *apiv1.Secret) (*apiv1.Secret, error) {
+	panic("implement me")
+}
+
+func (s *SecretMockInterface) Delete(_ string, _ *metav1.DeleteOptions) error {
+	panic("implement me")
+}
+
+func (s *SecretMockInterface) DeleteCollection(_ *metav1.DeleteOptions, _ metav1.ListOptions) error {
+	panic("implement me")
+}
+
+func (s *SecretMockInterface) Get(name string, options metav1.GetOptions) (*apiv1.Secret, error) {
+	args := s.Called(name, options)
+	expectedResult, ok := args.Get(0).(*apiv1.Secret)
+	if !ok {
+		return nil, fmt.Errorf("wrong input")
+	}
+	return expectedResult, args.Error(1)
+}
+
+func (s *SecretMockInterface) List(_ metav1.ListOptions) (*apiv1.SecretList, error) {
+	panic("implement me")
+}
+
+func (s *SecretMockInterface) Watch(_ metav1.ListOptions) (watch.Interface, error) {
+	panic("implement me")
+}
+
+func (s *SecretMockInterface) Patch(_ string, _ types.PatchType, _ []byte, _ ...string) (*apiv1.Secret, error) {
+	panic("implement me")
 }
 
 func TestFromSecret(t *testing.T) {
 	tests := []struct {
 		name         string
-		expectedData string
-		err          error
+		options      *client.GetKubeconfigOptions
+		getSecret    *apiv1.Secret
+		getErr       error
+		expectedData []byte
+		expectedErr  error
 	}{
 		{
-			name:         "valid kubeconfig",
-			expectedData: testValidKubeconfig,
-			err:          nil,
+			name:        "empty cluster name",
+			options:     &client.GetKubeconfigOptions{},
+			expectedErr: kubeconfig.ErrClusterNameEmpty{},
 		},
 		{
-			name:         "failed to get kubeconfig",
-			expectedData: "",
-			err:          errors.New("error"),
+			name:        "multiple retries and error",
+			options:     &client.GetKubeconfigOptions{ManagedClusterName: "cluster", Timeout: "1s"},
+			getErr:      errors.New("error"),
+			expectedErr: wait.ErrWaitTimeout,
+		},
+		{
+			name:        "empty secret object",
+			options:     &client.GetKubeconfigOptions{ManagedClusterName: "cluster"},
+			getSecret:   &apiv1.Secret{},
+			expectedErr: kubeconfig.ErrMalformedKubeconfig{ClusterName: "cluster"},
+		},
+		{
+			name:        "empty data value",
+			options:     &client.GetKubeconfigOptions{ManagedClusterName: "cluster"},
+			getSecret:   &apiv1.Secret{Data: map[string][]byte{"value": {}}},
+			expectedErr: kubeconfig.ErrMalformedKubeconfig{ClusterName: "cluster"},
+		},
+		{
+			name:         "successfully get kubeconfig",
+			options:      &client.GetKubeconfigOptions{ManagedClusterName: "cluster"},
+			getSecret:    &apiv1.Secret{Data: map[string][]byte{"value": []byte(testValidKubeconfig)}},
+			expectedData: []byte(testValidKubeconfig),
 		},
 	}
 
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			cl := MockClientInterface{
-				MockGetKubeconfig: func(_ *client.GetKubeconfigOptions) (string, error) { return tt.expectedData, tt.err },
+			sm := &SecretMockInterface{
+				Mock: mock.Mock{},
 			}
-			kubeconf, err := kubeconfig.FromSecret(cl, nil)()
-			if tt.err != nil {
+			sm.On("Get", tt.options.ManagedClusterName+"-kubeconfig", metav1.GetOptions{}).
+				Return(tt.getSecret, tt.getErr)
+
+			coreV1Interface := MockCoreV1Interface{
+				MockSecrets: func(s string) corev1.SecretInterface {
+					return sm
+				},
+			}
+
+			kubeconf, err := kubeconfig.FromSecret(coreV1Interface, tt.options)()
+			if tt.expectedErr != nil {
 				require.Error(t, err)
-				assert.Nil(t, kubeconf)
+				require.Equal(t, tt.expectedErr, err)
+				require.Nil(t, kubeconf)
 			} else {
 				require.NoError(t, err)
-				assert.Equal(t, []byte(tt.expectedData), kubeconf)
+				require.Equal(t, tt.expectedData, kubeconf)
 			}
 		})
 	}
@@ -423,10 +505,10 @@ type fakeReaderWriter struct {
 var _ io.Reader = fakeReaderWriter{}
 var _ io.Writer = fakeReaderWriter{}
 
-func (f fakeReaderWriter) Read(p []byte) (n int, err error) {
+func (f fakeReaderWriter) Read(_ []byte) (n int, err error) {
 	return 0, f.readErr
 }
 
-func (f fakeReaderWriter) Write(p []byte) (n int, err error) {
+func (f fakeReaderWriter) Write(_ []byte) (n int, err error) {
 	return 0, f.writeErr
 }

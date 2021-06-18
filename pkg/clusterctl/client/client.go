@@ -44,7 +44,6 @@ const (
 type Interface interface {
 	Init(kubeconfigPath, kubeconfigContext string) error
 	Move(fromKubeconfigPath, fromKubeconfigContext, toKubeconfigPath, toKubeconfigContext, namespace string) error
-	GetKubeconfig(options *GetKubeconfigOptions) (string, error)
 	Render(options RenderOptions) ([]byte, error)
 }
 
@@ -65,11 +64,8 @@ type RenderOptions struct {
 
 // GetKubeconfigOptions carries all the options to retrieve kubeconfig from parent cluster
 type GetKubeconfigOptions struct {
-	// Path to parent kubeconfig file
-	ParentKubeconfigPath string
-	// Specify context within the kubeconfig file. If empty, cluster client
-	// will use the current context.
-	ParentKubeconfigContext string
+	// Timeout is the maximum length of time to retrieve kubeconfig
+	Timeout string
 	// Namespace is the namespace in which secret is placed.
 	ManagedClusterNamespace string
 	// ManagedClusterName is the name of the managed cluster.
@@ -167,16 +163,4 @@ func (c *Client) Render(renderOptions RenderOptions) ([]byte, error) {
 		return nil, err
 	}
 	return components.Yaml()
-}
-
-// GetKubeconfig is a wrapper for related cluster-api function
-func (c *Client) GetKubeconfig(options *GetKubeconfigOptions) (string, error) {
-	return c.clusterctlClient.GetKubeconfig(clusterctlclient.GetKubeconfigOptions{
-		Kubeconfig: clusterctlclient.Kubeconfig{
-			Path:    options.ParentKubeconfigPath,
-			Context: options.ParentKubeconfigContext,
-		},
-		Namespace:           options.ManagedClusterNamespace,
-		WorkloadClusterName: options.ManagedClusterName,
-	})
 }
