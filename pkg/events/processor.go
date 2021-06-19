@@ -17,9 +17,8 @@ package events
 import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"sigs.k8s.io/cli-utils/cmd/printers"
-	"sigs.k8s.io/cli-utils/pkg/common"
-
 	applyevent "sigs.k8s.io/cli-utils/pkg/apply/event"
+	"sigs.k8s.io/cli-utils/pkg/common"
 
 	"opendev.org/airship/airshipctl/pkg/log"
 )
