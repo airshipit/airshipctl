@@ -27,7 +27,7 @@ import (
 
 // Selector provides abstraction layer in front of kustomize selector
 type Selector struct {
-	types.Selector
+	types.Selector `json:"selector,omitempty"`
 }
 
 // NewSelector returns instance of Selector container

@@ -163,6 +163,9 @@ type VersionsCatalogueSpec struct {
 
 	// Allows for the specification of the kubernetes version being used.
 	Kubernetes string `json:"kubernetes,omitempty"`
+
+	// Allows for the specification of the image repositories
+	ImageRepositories string `json:"image_repositories,omitempty"`
 }
 
 // +kubebuilder:object:root=true
