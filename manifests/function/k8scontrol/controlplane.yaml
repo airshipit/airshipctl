@@ -11,9 +11,40 @@ spec:
     name: cluster-controlplane
   kubeadmConfigSpec:
     clusterConfiguration:
+      imageRepository: k8s.gcr.io
       apiServer:
         timeoutForControlPlane: 1000s
-      imageRepository: k8s.gcr.io
+        extraArgs:
+          allow-privileged: "true"
+          kubelet-preferred-address-types: InternalIP,ExternalIP,Hostname
+          authorization-mode: Node,RBAC
+          service-cluster-ip-range: 10.0.0.0/20
+          service-node-port-range: 80-32767
+          enable-admission-plugins: NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,ResourceQuota,DefaultTolerationSeconds,NodeRestriction
+          feature-gates: PodShareProcessNamespace=true
+          tls-cipher-suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA
+          tls-min-version: VersionTLS12
+          v: "2"
+          requestheader-group-headers: X-Remote-Group
+          requestheader-username-headers: X-Remote-User
+          requestheader-allowed-names: front-proxy-client
+      controllerManager:
+        extraArgs:
+          cluster-cidr: 192.168.16.0/20
+          node-monitor-period: 5s
+          node-monitor-grace-period: 20s
+          pod-eviction-timeout: 60s
+          terminated-pod-gc-threshold: "1000"
+          bind-address: 127.0.0.1
+          port: "0"
+          use-service-account-credentials: "true"
+          configure-cloud-routes: "false"
+          enable-hostpath-provisioner: "true"
+          v: "2"
+      networking:
+        dnsDomain: cluster.local
+        podSubnet: 192.168.16.0/20
+        serviceSubnet: 10.0.0.0/20
     files:
       - path: "/etc/systemd/system/containerd.service.d/http-proxy.conf"
         content: |
