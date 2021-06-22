@@ -161,3 +161,5 @@ spec:
           image: quay.io/airshipit/image-builder:latest-ubuntu_focal
 
   kubernetes: v1.18.6
+
+  image_repositories: k8s.gcr.io

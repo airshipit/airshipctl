@@ -13,6 +13,7 @@ spec:
     clusterConfiguration:
       apiServer:
         timeoutForControlPlane: 1000s
+      imageRepository: k8s.gcr.io
     files:
       - path: "/etc/systemd/system/containerd.service.d/http-proxy.conf"
         content: |

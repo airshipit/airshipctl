@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - ephemeral-env-vars.yaml
   - networking.yaml
+  - versions.yaml
   - generated-secrets.yaml
   - stringData-encode.yaml
   - cleanup.yaml

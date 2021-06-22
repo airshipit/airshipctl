@@ -227,6 +227,10 @@ spec:
                 description: Allows for the specification of the kubernetes version
                   being used.
                 type: string
+              image_repositories:
+                description: Allows for the specification of the image repositories
+                  being used.
+                type: string
             type: object
         type: object
     served: true
