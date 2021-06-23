@@ -37,9 +37,6 @@ done
 echo "List generated images"
 ls -lth ${IMAGE_DIR}
 
-echo "Remove the container used for image generation"
-sudo docker rm $(docker ps -a -f status=exited -q)
-
 #cleanup the directories
 if [ "${CLEANUP_SERVE_DIR}" == "true" ] || [ "${CLEANUP_SERVE_DIR}" == "True" ]; then
   echo "Clean directories used by image-builder"
