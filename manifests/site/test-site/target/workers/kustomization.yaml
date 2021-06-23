@@ -9,3 +9,4 @@ namespace: target-infra
 
 transformers:
   - ../../../../function/workers-capm3/replacements
+  - ../../../../function/workers-capm3/replacements-secrets
