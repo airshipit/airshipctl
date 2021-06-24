@@ -5,12 +5,11 @@ Usage:
   cluster [command]
 
 Available Commands:
-  check-certificate-expiration Airshipctl command to check expiring TLS certificates, secrets and kubeconfigs in the kubernetes cluster
-  get-kubeconfig               Airshipctl command to retrieve kubeconfig for a desired cluster
-  help                         Help about any command
-  list                         Airshipctl command to get and list defined clusters
-  rotate-sa-token              Airshipctl command to rotate tokens of Service Account(s)
-  status                       Retrieve statuses of deployed cluster components
+  get-kubeconfig  Airshipctl command to retrieve kubeconfig for a desired cluster
+  help            Help about any command
+  list            Airshipctl command to get and list defined clusters
+  rotate-sa-token Airshipctl command to rotate tokens of Service Account(s)
+  status          Retrieve statuses of deployed cluster components
 
 Flags:
   -h, --help   help for cluster
