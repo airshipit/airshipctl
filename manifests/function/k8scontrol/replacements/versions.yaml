@@ -30,4 +30,14 @@ replacements:
       kind: Metal3MachineTemplate
       name: cluster-controlplane
     fieldrefs: ["{.spec.template.spec.image}"]
-
+# Replace the imageRepository in the KubeadmControlPlane
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.image_repositories}"
+  target:
+    objref:
+      kind: KubeadmControlPlane
+      name: cluster-controlplane
+    fieldrefs: ["{.spec.kubeadmConfigSpec.clusterConfiguration.imageRepository}"]
