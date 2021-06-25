@@ -154,7 +154,7 @@ func TestClusterctlExecutorRun(t *testing.T) {
 				MockTempFile: func(string, string) (fs.File, error) {
 					return testfs.TestFile{
 						MockName:  func() string { return "filename" },
-						MockWrite: func() (int, error) { return 0, nil },
+						MockWrite: func([]byte) (int, error) { return 0, nil },
 						MockClose: func() error { return nil },
 					}, nil
 				},

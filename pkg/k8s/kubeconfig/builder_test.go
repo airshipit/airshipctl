@@ -215,7 +215,7 @@ func TestBuilderClusterctl(t *testing.T) {
 				MockTempFile: func(s1, s2 string) (fs.File, error) {
 					return testfs.TestFile{
 						MockName:  func() string { return kubeconfigPath },
-						MockWrite: func() (int, error) { return 0, nil },
+						MockWrite: func([]byte) (int, error) { return 0, nil },
 						MockClose: func() error { return nil },
 					}, nil
 				},

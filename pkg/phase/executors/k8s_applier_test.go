@@ -290,7 +290,7 @@ func testKubeconfig(stringData string) kubeconfig.Interface {
 				MockTempFile: func(root, pattern string) (fs.File, error) {
 					return testfs.TestFile{
 						MockName:  func() string { return "kubeconfig-142398" },
-						MockWrite: func() (int, error) { return 0, nil },
+						MockWrite: func([]byte) (int, error) { return 0, nil },
 						MockClose: func() error { return nil },
 					}, nil
 				},

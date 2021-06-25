@@ -344,9 +344,9 @@ type fakeKubeConfig struct {
 	getFile func() (string, kubeconfig.Cleanup, error)
 }
 
-func (k fakeKubeConfig) GetFile() (string, kubeconfig.Cleanup, error) { return k.getFile() }
-func (k fakeKubeConfig) Write(_ io.Writer) error                      { return nil }
-func (k fakeKubeConfig) WriteFile(_ string) error                     { return nil }
+func (k fakeKubeConfig) GetFile() (string, kubeconfig.Cleanup, error)        { return k.getFile() }
+func (k fakeKubeConfig) Write(_ io.Writer) error                             { return nil }
+func (k fakeKubeConfig) WriteFile(_ string, _ kubeconfig.WriteOptions) error { return nil }
 func (k fakeKubeConfig) WriteTempFile(_ string) (string, kubeconfig.Cleanup, error) {
 	return k.getFile()
 }

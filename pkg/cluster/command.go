@@ -57,9 +57,12 @@ func StatusRunner(o StatusOptions, w io.Writer) error {
 // GetKubeconfigCommand holds options for get kubeconfig command
 type GetKubeconfigCommand struct {
 	ClusterName string
+	File        string
+	Merge       bool
 }
 
-// RunE creates new kubeconfig interface object from secret and prints its content to writer
+// RunE creates new kubeconfig interface object from secret, options hold the writer and merge(bool)
+// to merge the kubeconfig. Writer in options is ignored if a file is provided.
 func (cmd *GetKubeconfigCommand) RunE(cfgFactory config.Factory, writer io.Writer) error {
 	cfg, err := cfgFactory()
 	if err != nil {
@@ -89,5 +92,8 @@ func (cmd *GetKubeconfigCommand) RunE(cfgFactory config.Factory, writer io.Write
 		SiteWide(siteWide).
 		Build()
 
+	if cmd.File != "" {
+		return kubeconf.WriteFile(cmd.File, kubeconfig.WriteOptions{Merge: cmd.Merge})
+	}
 	return kubeconf.Write(writer)
 }
