@@ -1,0 +1,37 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- op: replace
+  path: "/spec/containers/4/env/3/value"
+  value: https://review.opendev.org/airship/airshipctl
+
+- op: replace
+  path: "/spec/containers/4/env/4/value"
+  value: master
+
+- op: replace
+  path: "/spec/containers/4/env/5/value"
+  value: airshipctl
+
+# runner container
+- op: replace
+  path: "/spec/containers/6/env/3/value"
+  value: airshipctl
+
+# for local testing
+#- op: add
+#  path: "/spec/containers/4/imagePullPolicy"
+#  value: Never
+#
+#- op: add
+#  path: "/spec/containers/6/imagePullPolicy"
+#  value: Never
