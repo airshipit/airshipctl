@@ -47,7 +47,10 @@ template: |
   kind: BareMetalHost
   metadata:
     annotations:
+  {{- if $host.labels }}
     labels:
+  {{ toYaml $host.labels | indent 4 }}
+  {{- end }}
     name: {{ $hostName }}
   spec:
     online: false

@@ -23,6 +23,8 @@ hosts:
         oam: 52:54:00:9b:27:4c
         pxe: 52:54:00:b6:ed:31
       hardwareProfile: default # defined in the hostgenerator-m3 function
+      labels: # optional
+        airshipit.org/example-label: "label-bmh-like-this"
     node02:
       bootMode: legacy
       macAddress: 52:54:00:b6:ed:02
