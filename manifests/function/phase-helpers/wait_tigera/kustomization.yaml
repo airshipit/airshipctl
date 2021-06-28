@@ -1,6 +1,0 @@
-configMapGenerator:
-- name: kubectl-wait-tigera
-  options:
-    disableNameSuffixHash: true
-  files:
-  - script=kubectl_wait_tigera.sh

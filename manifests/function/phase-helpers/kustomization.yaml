@@ -1,7 +1,6 @@
 resources:
 - wait_node
 - get_pods
-- wait_tigera
 - wait_deploy
 - get_node
 - wait_pods_ready

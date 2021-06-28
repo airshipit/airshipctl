@@ -4,3 +4,8 @@ metadata:
   name: default
 spec:
   registry: "quay.io"
+---
+apiVersion: operator.tigera.io/v1
+kind: TigeraStatus
+metadata:
+  name: calico
