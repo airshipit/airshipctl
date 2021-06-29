@@ -119,6 +119,6 @@ func DefaultClusterctl() *Clusterctl {
 		InitOptions: &InitOptions{},
 		MoveOptions: &MoveOptions{},
 		Providers:   make([]*Provider, 0),
-		ImageMetas:  make(map[string]ImageMeta, 0),
+		ImageMetas:  make(map[string]ImageMeta),
 	}
 }

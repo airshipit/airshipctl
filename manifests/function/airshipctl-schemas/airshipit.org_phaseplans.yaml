@@ -1,0 +1,91 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.6.1
+  creationTimestamp: null
+  name: phaseplans.airshipit.org
+spec:
+  group: airshipit.org
+  names:
+    kind: PhasePlan
+    listKind: PhasePlanList
+    plural: phaseplans
+    singular: phaseplan
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: PhasePlan object represents phase execution sequence
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          description:
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          phases:
+            items:
+              description: PhaseStep represents phase (or step) within a phase plan
+              properties:
+                name:
+                  type: string
+                namespace:
+                  type: string
+              type: object
+            type: array
+          validation:
+            description: ValidationConfig represents configuration needed for static
+              validation
+            properties:
+              crdList:
+                description: CRDList defines list of kustomize entrypoints located
+                  in "TARGET_PATH" where to find additional CRD
+                items:
+                  type: string
+                type: array
+              ignoreMissingSchemas:
+                description: IgnoreMissingSchemas skips validation for resource definitions
+                  without a schema.
+                type: boolean
+              kindsToSkip:
+                description: KindsToSkip defines Kinds which will be skipped during
+                  validation
+                items:
+                  type: string
+                type: array
+              kubernetesVersion:
+                description: KubernetesVersion is the version of Kubernetes to validate
+                  against (default "1.18.6").
+                type: string
+              schemaLocation:
+                description: SchemaLocation is the base URL from which to search for
+                  schemas. It can be either a remote location or a local directory
+                type: string
+              strict:
+                description: Strict disallows additional properties not in schema
+                  if set
+                type: boolean
+            type: object
+        required:
+        - validation
+        type: object
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

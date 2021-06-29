@@ -1,0 +1,93 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.6.1
+  creationTimestamp: null
+  name: baremetalmanagers.airshipit.org
+spec:
+  group: airshipit.org
+  names:
+    kind: BaremetalManager
+    listKind: BaremetalManagerList
+    plural: baremetalmanagers
+    singular: baremetalmanager
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: BaremetalManager allows execution of control operations against
+          baremetal hosts
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: BaremetalManagerSpec holds configuration for baremetal manager
+            properties:
+              hostSelector:
+                description: BaremetalHostSelector allows to select a host by label
+                  selector, by name and namespace
+                properties:
+                  labelSelector:
+                    type: string
+                  name:
+                    type: string
+                  namespace:
+                    type: string
+                required:
+                - labelSelector
+                - name
+                - namespace
+                type: object
+              operation:
+                description: BaremetalOperation defines an operation to be performed
+                  against baremetal host
+                type: string
+              operationOptions:
+                description: BaremetalOperationOptions hold operation options
+                properties:
+                  remoteDirect:
+                    description: RemoteDirectOptions holds configuration for remote
+                      direct operation
+                    properties:
+                      isoURL:
+                        type: string
+                    required:
+                    - isoURL
+                    type: object
+                required:
+                - remoteDirect
+                type: object
+              timeout:
+                description: Timeout in seconds
+                type: integer
+            required:
+            - hostSelector
+            - operation
+            - operationOptions
+            - timeout
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

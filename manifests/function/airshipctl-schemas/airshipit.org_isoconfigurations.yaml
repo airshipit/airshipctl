@@ -1,0 +1,138 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.6.1
+  creationTimestamp: null
+  name: isoconfigurations.airshipit.org
+spec:
+  group: airshipit.org
+  names:
+    kind: IsoConfiguration
+    listKind: IsoConfigurationList
+    plural: isoconfigurations
+    singular: isoconfiguration
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: IsoConfiguration structure is inherited from apimachinery TypeMeta
+          and ObjectMeta and is a top level configuration structure for building image
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          builder:
+            description: Isogen structure defines document selection criteria for
+              cloud-init metadata
+            properties:
+              networkConfigKey:
+                description: Cloud init network config will be retrieved from this
+                  document key
+                type: string
+              networkConfigSelector:
+                description: Cloud Init network config will be retrieved from the
+                  doc matching this object
+                properties:
+                  selector:
+                    description: Selector specifies a set of resources. Any resource
+                      that matches intersection of all conditions is included in this
+                      set.
+                    properties:
+                      annotationSelector:
+                        description: AnnotationSelector is a string that follows the
+                          label selection expression https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#api
+                          It matches with the resource annotations.
+                        type: string
+                      group:
+                        type: string
+                      kind:
+                        type: string
+                      labelSelector:
+                        description: LabelSelector is a string that follows the label
+                          selection expression https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#api
+                          It matches with the resource labels.
+                        type: string
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                      version:
+                        type: string
+                    type: object
+                type: object
+              outputFileName:
+                description: File name to use for the output image that will be written
+                  to the container volume root
+                type: string
+              userDataKey:
+                description: Cloud init user data will be retrieved from this document
+                  key
+                type: string
+              userDataSelector:
+                description: Cloud Init user data will be retrieved from the doc matching
+                  this object
+                properties:
+                  selector:
+                    description: Selector specifies a set of resources. Any resource
+                      that matches intersection of all conditions is included in this
+                      set.
+                    properties:
+                      annotationSelector:
+                        description: AnnotationSelector is a string that follows the
+                          label selection expression https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#api
+                          It matches with the resource annotations.
+                        type: string
+                      group:
+                        type: string
+                      kind:
+                        type: string
+                      labelSelector:
+                        description: LabelSelector is a string that follows the label
+                          selection expression https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#api
+                          It matches with the resource labels.
+                        type: string
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                      version:
+                        type: string
+                    type: object
+                type: object
+            type: object
+          container:
+            description: IsoContainer structure contains parameters related to Docker
+              runtime, used for building image
+            properties:
+              containerRuntime:
+                description: Container Runtime Interface driver
+                type: string
+              image:
+                description: ISO generator container image URL
+                type: string
+              volume:
+                description: Container volume directory binding.
+                type: string
+            type: object
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+        type: object
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

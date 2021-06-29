@@ -1,0 +1,158 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.6.1
+  creationTimestamp: null
+  name: replacementtransformers.airshipit.org
+spec:
+  group: airshipit.org
+  names:
+    kind: ReplacementTransformer
+    listKind: ReplacementTransformerList
+    plural: replacementtransformers
+    singular: replacementtransformer
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: ReplacementTransformer plugin configuration for airship document
+          model
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          replacements:
+            description: Replacements list of source and target field to do a replacement
+            items:
+              description: Replacement defines how to perform a substitution where
+                it is from and where it is to.
+              properties:
+                source:
+                  description: ReplSource defines where a substitution is from It
+                    can from two different kinds of sources  - from a field of one
+                    resource  - from a string
+                  properties:
+                    fieldref:
+                      type: string
+                    objref:
+                      description: Target refers to a kubernetes object by Group,
+                        Version, Kind and Name gvk.Gvk contains Group, Version and
+                        Kind APIVersion is added to keep the backward compatibility
+                        of using ObjectReference for Var.ObjRef
+                      properties:
+                        apiVersion:
+                          type: string
+                        group:
+                          type: string
+                        kind:
+                          type: string
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                        version:
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    value:
+                      type: string
+                  type: object
+                target:
+                  description: ReplTarget defines where a substitution is to.
+                  properties:
+                    fieldrefs:
+                      items:
+                        type: string
+                      type: array
+                    objref:
+                      description: Selector specifies a set of resources. Any resource
+                        that matches intersection of all conditions is included in
+                        this set.
+                      properties:
+                        annotationSelector:
+                          description: AnnotationSelector is a string that follows
+                            the label selection expression https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#api
+                            It matches with the resource annotations.
+                          type: string
+                        group:
+                          type: string
+                        kind:
+                          type: string
+                        labelSelector:
+                          description: LabelSelector is a string that follows the
+                            label selection expression https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#api
+                            It matches with the resource labels.
+                          type: string
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                        version:
+                          type: string
+                      type: object
+                  type: object
+                targets:
+                  items:
+                    description: ReplTarget defines where a substitution is to.
+                    properties:
+                      fieldrefs:
+                        items:
+                          type: string
+                        type: array
+                      objref:
+                        description: Selector specifies a set of resources. Any resource
+                          that matches intersection of all conditions is included
+                          in this set.
+                        properties:
+                          annotationSelector:
+                            description: AnnotationSelector is a string that follows
+                              the label selection expression https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#api
+                              It matches with the resource annotations.
+                            type: string
+                          group:
+                            type: string
+                          kind:
+                            type: string
+                          labelSelector:
+                            description: LabelSelector is a string that follows the
+                              label selection expression https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#api
+                              It matches with the resource labels.
+                            type: string
+                          name:
+                            type: string
+                          namespace:
+                            type: string
+                          version:
+                            type: string
+                        type: object
+                    type: object
+                  type: array
+              required:
+              - source
+              - target
+              - targets
+              type: object
+            type: array
+        type: object
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

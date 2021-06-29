@@ -16,6 +16,7 @@ package templater
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"text/template"
 
@@ -52,7 +53,7 @@ func funcMapAppend(fma, fmb template.FuncMap) template.FuncMap {
 	for k, v := range fmb {
 		_, ok := fma[k]
 		if ok {
-			panic(fmt.Errorf("Trying to redefine function %s that already exists", k))
+			panic(fmt.Errorf("trying to redefine function %s that already exists", k))
 		}
 		fma[k] = v
 	}
@@ -70,7 +71,16 @@ func (t *plugin) Filter(items []*yaml.RNode) ([]*yaml.RNode, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err = tmpl.Execute(out, t.Values); err != nil {
+
+	var values interface{}
+
+	if t.Values != nil {
+		if err = json.Unmarshal(t.Values.Raw, &values); err != nil {
+			return nil, err
+		}
+	}
+
+	if err = tmpl.Execute(out, values); err != nil {
 		return nil, err
 	}
 

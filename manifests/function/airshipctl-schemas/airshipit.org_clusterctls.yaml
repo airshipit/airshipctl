@@ -1,0 +1,174 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.6.1
+  creationTimestamp: null
+  name: clusterctls.airshipit.org
+spec:
+  group: airshipit.org
+  names:
+    kind: Clusterctl
+    listKind: ClusterctlList
+    plural: clusterctls
+    singular: clusterctl
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Clusterctl provides information about clusterctl components
+        properties:
+          action:
+            description: ActionType for clusterctl
+            type: string
+          additional-vars:
+            additionalProperties:
+              type: string
+            description: AdditionalComponentVariables are variables that will be available
+              to clusterctl when reading provider components
+            type: object
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          env-vars:
+            description: EnvVars if set to true, allows to source variables for cluster-api
+              components for environment variables.
+            type: boolean
+          images:
+            additionalProperties:
+              description: ImageMeta is part of clusterctl config
+              properties:
+                repository:
+                  type: string
+                tag:
+                  type: string
+              type: object
+            type: object
+          init-options:
+            description: InitOptions container with exposed clusterctl InitOptions
+            properties:
+              bootstrap-providers:
+                description: BootstrapProviders and versions (e.g. kubeadm:v0.3.0)
+                  to add to the management cluster. If unspecified, the kubeadm bootstrap
+                  provider's latest release is used.
+                items:
+                  type: string
+                type: array
+              control-plane-providers:
+                description: ControlPlaneProviders and versions (e.g. kubeadm:v0.3.0)
+                  to add to the management cluster. If unspecified, the kubeadm control
+                  plane provider latest release is used.
+                items:
+                  type: string
+                type: array
+              core-provider:
+                description: CoreProvider version (e.g. cluster-api:v0.3.0) to add
+                  to the management cluster. If unspecified, the cluster-api core
+                  provider's latest release is used.
+                type: string
+              infrastructure-providers:
+                description: InfrastructureProviders and versions (e.g. aws:v0.5.0)
+                  to add to the management cluster.
+                items:
+                  type: string
+                type: array
+              kubeConfigRef:
+                description: KubeConfigRef reference to KubeConfig document
+                properties:
+                  apiVersion:
+                    description: API version of the referent.
+                    type: string
+                  fieldPath:
+                    description: 'If referring to a piece of an object instead of
+                      an entire object, this string should contain a valid JSON/Go
+                      field access statement, such as desiredState.manifest.containers[2].
+                      For example, if the object reference is to a container within
+                      a pod, this would take on a value like: "spec.containers{name}"
+                      (where "name" refers to the name of the container that triggered
+                      the event) or if no container name is specified "spec.containers[2]"
+                      (container with index 2 in this pod). This syntax is chosen
+                      only to have some well-defined way of referencing a part of
+                      an object. TODO: this design is not final and this field is
+                      subject to change in the future.'
+                    type: string
+                  kind:
+                    description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                    type: string
+                  name:
+                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                    type: string
+                  namespace:
+                    description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                    type: string
+                  resourceVersion:
+                    description: 'Specific resourceVersion to which this reference
+                      is made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                    type: string
+                  uid:
+                    description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                    type: string
+                type: object
+            type: object
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          move-options:
+            description: MoveOptions carries the options supported by move.
+            properties:
+              namespace:
+                description: The namespace where the workload cluster is hosted. If
+                  unspecified, the target context's namespace is used.
+                type: string
+            type: object
+          providers:
+            items:
+              description: Provider is part of clusterctl config
+              properties:
+                clusterctl-repository:
+                  description: IsClusterctlRepository if set to true, clusterctl provider's
+                    repository implementation will be used if omitted or set to false,
+                    airshipctl repository implementation will be used.
+                  type: boolean
+                name:
+                  type: string
+                type:
+                  type: string
+                url:
+                  type: string
+                variable-substitution:
+                  description: VariableSubstitution indicates weather you want to
+                    substitute variables in the cluster-api manifests if set to true,
+                    variables will be substituted only if they are defined either
+                    in Environment or in AdditionalComponentVariables, if not they
+                    will be left as is.
+                  type: boolean
+                versions:
+                  additionalProperties:
+                    type: string
+                  description: Map of versions where each key is a version and value
+                    is path relative to target path of the manifest ignored if IsClusterctlRepository
+                    is set to true
+                  type: object
+              required:
+              - name
+              - type
+              type: object
+            type: array
+        type: object
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
