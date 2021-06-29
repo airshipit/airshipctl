@@ -169,3 +169,6 @@ spec:
     controlplane:
       name: kubeadm-clusterConfiguration
       repository: k8s.gcr.io
+    kube-webhook-certgen:
+      name: kube-webhook-certgen
+      repository: quay.io/airshipit/kube-webhook-certgen

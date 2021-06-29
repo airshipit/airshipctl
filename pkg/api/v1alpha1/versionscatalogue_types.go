@@ -165,7 +165,7 @@ type VersionsCatalogueSpec struct {
 	Kubernetes string `json:"kubernetes,omitempty"`
 
 	// Allows for the specification of the image repositories
-	ImageRepositories map[string]ImageRepositorySpec `json:"image_repositories,omitempty"`
+	ImageRepositories AirshipctlFunctionImageComponentMap `json:"image_repositories,omitempty"`
 }
 
 // +kubebuilder:object:root=true

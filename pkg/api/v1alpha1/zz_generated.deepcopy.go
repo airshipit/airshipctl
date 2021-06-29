@@ -1893,7 +1893,7 @@ func (in *VersionsCatalogueSpec) DeepCopyInto(out *VersionsCatalogueSpec) {
 	}
 	if in.ImageRepositories != nil {
 		in, out := &in.ImageRepositories, &out.ImageRepositories
-		*out = make(map[string]ImageRepositorySpec, len(*in))
+		*out = make(AirshipctlFunctionImageComponentMap, len(*in))
 		for key, val := range *in {
 			(*out)[key] = val
 		}
