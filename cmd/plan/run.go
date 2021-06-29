@@ -16,6 +16,7 @@ package plan
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/phase"
@@ -37,10 +38,9 @@ Perform a dry run of a plan
 
 // NewRunCommand creates a command which execute a particular phase plan
 func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
-	r := &phase.PlanRunCommand{
-		Factory: cfgFactory,
-		Options: phase.PlanRunFlags{},
-	}
+	r := &phase.PlanRunCommand{Factory: cfgFactory}
+	f := &phase.RunFlags{}
+
 	runCmd := &cobra.Command{
 		Use:     "run PLAN_NAME",
 		Short:   "Airshipctl command to run plan",
@@ -48,13 +48,22 @@ func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
 		Example: runExample,
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			r.Options.PlanID.Name = args[0]
+			r.PlanID.Name = args[0]
+			fn := func(flag *pflag.Flag) {
+				switch flag.Name {
+				case "dry-run":
+					r.Options.DryRun = f.DryRun
+				case "wait-timeout":
+					r.Options.Timeout = &f.Timeout
+				}
+			}
+			cmd.Flags().Visit(fn)
 			return r.RunE()
 		},
 	}
 
 	flags := runCmd.Flags()
-	flags.BoolVar(&r.Options.DryRun, "dry-run", false, "simulate phase execution")
-	flags.DurationVar(&r.Options.Timeout, "wait-timeout", 0, "wait timeout")
+	flags.BoolVar(&f.DryRun, "dry-run", false, "simulate phase execution")
+	flags.DurationVar(&f.Timeout, "wait-timeout", 0, "wait timeout")
 	return runCmd
 }

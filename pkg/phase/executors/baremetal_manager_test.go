@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -89,6 +90,7 @@ func TestNewBMHExecutor(t *testing.T) {
 }
 
 func TestBMHExecutorRun(t *testing.T) {
+	timeout := time.Duration(40)
 	tests := []struct {
 		name        string
 		expectedErr string
@@ -102,7 +104,7 @@ func TestBMHExecutorRun(t *testing.T) {
 			runOptions: ifc.RunOptions{
 				DryRun: true,
 				// any value but zero
-				Timeout: 40,
+				Timeout: &timeout,
 			},
 			execDoc:   executorDoc(t, fmt.Sprintf(bmhExecutorTemplate, "unknown", "")),
 			inventory: testBaremetalInventory(),

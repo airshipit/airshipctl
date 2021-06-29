@@ -125,8 +125,8 @@ func toCommandOptions(i inventoryifc.Inventory,
 	spec v1alpha1.BaremetalManagerSpec,
 	opts ifc.RunOptions) *inventory.CommandOptions {
 	timeout := time.Duration(spec.Timeout) * time.Second
-	if opts.Timeout != 0 {
-		timeout = opts.Timeout
+	if opts.Timeout != nil {
+		timeout = *opts.Timeout
 	}
 
 	return &inventory.CommandOptions{
