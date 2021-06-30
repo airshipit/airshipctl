@@ -35,7 +35,7 @@ replacements:
     objref:
       kind: VersionsCatalogue
       name: versions-airshipctl
-    fieldref: "{.spec.image_repositories}"
+    fieldref: "{.spec.image_repositories.controlplane.repository}"
   target:
     objref:
       kind: KubeadmControlPlane
