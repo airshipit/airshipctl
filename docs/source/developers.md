@@ -201,9 +201,9 @@ Make sure the following conditions are met:
     1. ./tools/gate/00_setup.sh
 5. Download test security key and add it to environment variable.
     ```sh
-   - curl -fsSL -o /tmp/key.asc https://raw.githubusercontent.com/mozilla/sops/master/pgp/sops_functional_tests_key.asc
-   - export SOPS_IMPORT_PGP="$(cat /tmp/key.asc)"
-   - export SOPS_PGP_FP="FBC7B9E2A4F9289AC0C1D4843D16CEE4A27381B4"
+   curl -fsSL -o /tmp/key.asc https://raw.githubusercontent.com/mozilla/sops/master/pgp/sops_functional_tests_key.asc
+   export SOPS_IMPORT_PGP="$(cat /tmp/key.asc)"
+   export SOPS_PGP_FP="FBC7B9E2A4F9289AC0C1D4843D16CEE4A27381B4"
    ```
 6. Execute the following scripts one by one
     1. ./tools/gate/10_build_gate.sh
