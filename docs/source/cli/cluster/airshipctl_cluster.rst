@@ -32,7 +32,6 @@ SEE ALSO
 ~~~~~~~~
 
 * :ref:`airshipctl <airshipctl>` 	 - A unified command line tool for management of end-to-end kubernetes cluster deployment on cloud infrastructure environments.
-* :ref:`airshipctl cluster check-certificate-expiration <airshipctl_cluster_check-certificate-expiration>` 	 - Airshipctl command to check expiring TLS certificates, secrets and kubeconfigs in the kubernetes cluster
 * :ref:`airshipctl cluster get-kubeconfig <airshipctl_cluster_get-kubeconfig>` 	 - Airshipctl command to retrieve kubeconfig for a desired cluster
 * :ref:`airshipctl cluster list <airshipctl_cluster_list>` 	 - Airshipctl command to get and list defined clusters
 * :ref:`airshipctl cluster rotate-sa-token <airshipctl_cluster_rotate-sa-token>` 	 - Airshipctl command to rotate tokens of Service Account(s)
