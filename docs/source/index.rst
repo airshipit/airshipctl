@@ -28,6 +28,7 @@ Welcome to airshipctl's Documentation!
    architecture
    phases
    developers
+   environment
    plugins
    testing-guidelines
    virtual_redfish_bmc
