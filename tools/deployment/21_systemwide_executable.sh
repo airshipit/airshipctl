@@ -20,8 +20,13 @@ export HTTP_PROXY=${HTTP_PROXY:-${http_proxy}}
 export NO_PROXY=${NO_PROXY:-${no_proxy}}
 export PROXY=${PROXY:-${http_proxy}}
 
+set +e
 echo "Build airshipctl docker images"
-sudo -E make images
+for i in {1..3}; do
+    sudo -E make images && break
+done
+[ "$?" -ne 0 ] && exit 1
+set -e
 
 echo "Copy airshipctl from docker image"
 DOCKER_IMAGE_TAG=$(sudo -E make print-docker-image-tag)
