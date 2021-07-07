@@ -3,11 +3,11 @@ kind: Kustomization
 resources:
   # TODO (dukov) It's recocommended to upload BareMetalHost objects separately
   # otherwise nodes will hang in 'registering' state for quite a long time
-  - ../../../../function/k8scontrol
+  - ../../../../type/gating/ephemeral/controlplane
   - ../../target/catalogues # NOTE: use target networking for this phase
   - nodes
 
 namespace: target-infra
 
 transformers:
-  - ../../../../function/k8scontrol/replacements
+  - ../../../../type/gating/ephemeral/controlplane/replacements
