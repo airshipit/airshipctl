@@ -23,7 +23,7 @@ then
     exit 1
 fi
 
-git diff-files --quiet --ignore-submodules **/*.md
+git diff-files --quiet --ignore-submodules **/*.rst
 if [ $? -ne 0 ]
 then
     echo "git diff found modified cli help, please run make cli-docs"
@@ -38,7 +38,7 @@ then
     exit 1
 fi
 
-git diff-index --cached --quiet --ignore-submodules HEAD -- **/*.md
+git diff-index --cached --quiet --ignore-submodules HEAD -- **/*.rst
 if [ $? -ne 0 ]
 then
     echo "git diff found modified cli help, please run make cli-docs"
