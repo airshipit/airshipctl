@@ -7,7 +7,7 @@ metadata:
   name: kubernetes-apply
 config:
   waitOptions:
-    timeout: 2000
+    timeout: 2600
   pruneOptions:
     prune: false
 ---
@@ -19,7 +19,7 @@ metadata:
   name: kubernetes-apply-controlplane
 config:
   waitOptions:
-    timeout: 3600
+    timeout: 5000
   pruneOptions:
     prune: false
 ---
