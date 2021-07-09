@@ -5,9 +5,9 @@ dependencies:
   git:
     repo: "https://github.com/fluxcd/helm-controller"
     directory: "config/crd"
-    ref: "v0.4.3"
+    ref: "v0.11.1"
 - name: upstream/manager
   git:
     repo: "https://github.com/fluxcd/helm-controller"
     directory: "config/manager"
-    ref: "v0.4.3"
+    ref: "v0.11.1"

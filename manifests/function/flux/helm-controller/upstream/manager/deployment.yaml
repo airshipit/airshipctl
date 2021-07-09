@@ -17,7 +17,7 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
     spec:
-      terminationGracePeriodSeconds: 10
+      terminationGracePeriodSeconds: 600
       containers:
       - name: manager
         image: fluxcd/helm-controller
@@ -26,21 +26,21 @@ spec:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
         ports:
-          - containerPort: 8080
-            name: http-prom
-          - containerPort: 9440
-            name: healthz
-            protocol: TCP
+        - containerPort: 8080
+          name: http-prom
+        - containerPort: 9440
+          name: healthz
+          protocol: TCP
         env:
-          - name: RUNTIME_NAMESPACE
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.namespace
+        - name: RUNTIME_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         args:
-          - --watch-all-namespaces
-          - --log-level=info
-          - --log-json
-          - --enable-leader-election
+        - --watch-all-namespaces
+        - --log-level=info
+        - --log-encoding=json
+        - --enable-leader-election
         readinessProbe:
           httpGet:
             path: /readyz
@@ -57,8 +57,8 @@ spec:
             cpu: 100m
             memory: 64Mi
         volumeMounts:
-          - name: temp
-            mountPath: /tmp
-      volumes:
         - name: temp
-          emptyDir: {}
+          mountPath: /tmp
+      volumes:
+      - name: temp
+        emptyDir: {}

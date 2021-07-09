@@ -9,7 +9,7 @@ spec:
   selector:
     app: source-controller
   ports:
-    - name: http
-      port: 80
-      protocol: TCP
-      targetPort: http
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: http
