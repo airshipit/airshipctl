@@ -14,5 +14,4 @@ Commands
    help/index
    phase/index
    plan/index
-   secret/index
    version/index
