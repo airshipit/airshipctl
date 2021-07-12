@@ -1,7 +1,6 @@
 # Developer's Guide
 
-This guide explains how to set up your environment for developing on
-airshipctl.
+This guide explains how to set up your environment for airshipctl development.
 
 ## Environment expectations
 
@@ -42,13 +41,6 @@ USE_PROXY=true
 `10.23.0.0/16` encapsulates the range of addresses used by airshipctl
 development environment virtual machines, and `10.96.0.0/12` is the Kubernetes
 service CIDR.
-
-### DNS Configuration
-
-If you cannot reach the Google DNS servers from your local environment, add your
-DNS servers to
-`manifests/type/airship-core/shared/catalogues/common-networking.yaml` in place
-of the Google ones.
 
 ## Clone airshipctl code
 
@@ -184,154 +176,6 @@ Read more:
 In order to ensure that all package unit tests follow the same standard and
 use the same frameworks, airshipctl has a document outlining
 [specific test guidelines][9] maintained separately.
-Moreover, there are few scripts in directory `tools/gate` which run different
-tests. The script [20_run_gate_runner.sh][10] will generate airshipctl config
-file, deploy ephemeral cluster with infra and cluster API, deploy target cluster
-and verify all control pods.
-
-## Steps to build a Local All-in-one VM Environment
-
-Pre-requisites:
-Make sure the following conditions are met:
-1. Nested Virtualization enabled on the Host
-2. A Virtual Machine with 20 GB RAM, 4 vCPU and 80GB Disk and Ubuntu 18.04 Installed.
-3. Clone the following repo -
-    - git clone https://opendev.org/airship/airshipctl.git
-4. Install necessary packages and pre deployment setup
-    1. ./tools/gate/00_setup.sh
-5. Download test security key and add it to environment variable.
-    ```sh
-   curl -fsSL -o /tmp/key.asc https://raw.githubusercontent.com/mozilla/sops/master/pgp/sops_functional_tests_key.asc
-   export SOPS_IMPORT_PGP="$(cat /tmp/key.asc)"
-   export SOPS_PGP_FP="FBC7B9E2A4F9289AC0C1D4843D16CEE4A27381B4"
-   ```
-6. Execute the following scripts one by one
-    1. ./tools/gate/10_build_gate.sh
-    1. ./tools/gate/20_run_gate_runner.sh
-
-   Note: instead of running `./tools/gate/20_run_gate_runner.sh` it's possible to run its steps one-by-one, from `playbooks/airshipctl-gate-runner.yaml`, e.g.:
-    1. sudo -E ./tools/deployment/01_install_kubectl.sh
-    1. sudo -E ./tools/deployment/22_test_configs.sh
-    1. ...
-
-7. How to verify the ephemeral cluster and target cluster is deployed successfully
-    Validate Ephemeral Cluster is Operational:
-    ```Markdown
-    kubectl --kubeconfig /home/user/.airship/kubeconfig --context ephemeral-cluster get pods --all-namespaces
-    NAMESPACE                           NAME                                                             READY   STATUS    RESTARTS   AGE
-    capi-kubeadm-bootstrap-system       capi-kubeadm-bootstrap-controller-manager-556678c94-hngzj        2/2     Running   0          50s
-    capi-kubeadm-control-plane-system   capi-kubeadm-control-plane-controller-manager-556d47dffd-qljht   2/2     Running   0          47s
-    capi-system                         capi-controller-manager-67859f6b78-2tgcx                         2/2     Running   0          54s
-    capi-webhook-system                 capi-controller-manager-5c785c685c-fds47                         2/2     Running   0          55s
-    capi-webhook-system                 capi-kubeadm-bootstrap-controller-manager-77658d7745-5bb7z       2/2     Running   0          52s
-    capi-webhook-system                 capi-kubeadm-control-plane-controller-manager-74dcf8b9c-ds4l7    2/2     Running   0          49s
-    capi-webhook-system                 capm3-controller-manager-568747bbbb-zld5v                        2/2     Running   0          45s
-    capm3-system                        capm3-controller-manager-698c6d6df9-n72cf                        2/2     Running   0          42s
-    cert-manager                        cert-manager-578cd6d964-lznfq                                    1/1     Running   0          76s
-    cert-manager                        cert-manager-cainjector-5ffff9dd7c-h9v6l                         1/1     Running   0          76s
-    cert-manager                        cert-manager-webhook-556b9d7dfd-hvvfs                            1/1     Running   0          75s
-    hardware-classification             hardware-classification-controller-manager-776b5f66f8-6z9xl      2/2     Running   0          10m
-    kube-system                         calico-kube-controllers-94b8f9766-6cl6l                          1/1     Running   0          10m
-    kube-system                         calico-node-dw6c8                                                1/1     Running   0          10m
-    kube-system                         coredns-66bff467f8-57wpm                                         1/1     Running   0          13m
-    kube-system                         coredns-66bff467f8-lbfw2                                         1/1     Running   0          13m
-    kube-system                         etcd-ephemeral                                                   1/1     Running   0          13m
-    kube-system                         kube-apiserver-ephemeral                                         1/1     Running   0          13m
-    kube-system                         kube-controller-manager-ephemeral                                1/1     Running   0          13m
-    kube-system                         kube-proxy-whdhw                                                 1/1     Running   0          13m
-    kube-system                         kube-scheduler-ephemeral                                         1/1     Running   0          13m
-    metal3                              ironic-5d95b49d6c-lr6b2                                          4/4     Running   0          10m
-    metal3                              metal3-baremetal-operator-84f9df77fb-zq4qv                       3/3     Running   0          10m
-    ```
-
-      Validate Target Cluster is Operational:
-
-    ```Markdown
-    kubectl --kubeconfig /home/user/.airship/kubeconfig --context target-cluster get pods --all-namespaces
-    NAMESPACE                           NAME                                                             READY   STATUS    RESTARTS   AGE
-    capi-kubeadm-bootstrap-system       capi-kubeadm-bootstrap-controller-manager-556678c94-svqmn        2/2     Running   0          56s
-    capi-kubeadm-control-plane-system   capi-kubeadm-control-plane-controller-manager-556d47dffd-z28lq   2/2     Running   0          46s
-    capi-system                         capi-controller-manager-67859f6b78-x4k25                         2/2     Running   0          64s
-    capi-webhook-system                 capi-controller-manager-5c785c685c-9t58p                         2/2     Running   0          69s
-    capi-webhook-system                 capi-kubeadm-bootstrap-controller-manager-77658d7745-wv8bt       2/2     Running   0          62s
-    capi-webhook-system                 capi-kubeadm-control-plane-controller-manager-74dcf8b9c-rskqk    2/2     Running   0          51s
-    capi-webhook-system                 capm3-controller-manager-568747bbbb-gpvqc                        2/2     Running   0          35s
-    capm3-system                        capm3-controller-manager-698c6d6df9-n6pfm                        2/2     Running   0          27s
-    cert-manager                        cert-manager-578cd6d964-nkgj7                                    1/1     Running   0          99s
-    cert-manager                        cert-manager-cainjector-5ffff9dd7c-ps62z                         1/1     Running   0          99s
-    cert-manager                        cert-manager-webhook-556b9d7dfd-2spgg                            1/1     Running   0          99s
-    flux-system                         helm-controller-cbb96fc8d-7vh96                                  1/1     Running   0          11m
-    flux-system                         source-controller-64f4b85496-zfj6w                               1/1     Running   0          11m
-    hardware-classification             hardware-classification-controller-manager-776b5f66f8-zd5rt      2/2     Running   0          11m
-    kube-system                         calico-kube-controllers-94b8f9766-9r2cn                          1/1     Running   0          11m
-    kube-system                         calico-node-6gfpc                                                1/1     Running   0          11m
-    kube-system                         coredns-66bff467f8-4gggz                                         1/1     Running   0          16m
-    kube-system                         coredns-66bff467f8-qgbhj                                         1/1     Running   0          16m
-    kube-system                         etcd-node01                                                      1/1     Running   0          16m
-    kube-system                         kube-apiserver-node01                                            1/1     Running   0          16m
-    kube-system                         kube-controller-manager-node01                                   1/1     Running   0          16m
-    kube-system                         kube-proxy-ch6z9                                                 1/1     Running   0          16m
-    kube-system                         kube-scheduler-node01                                            1/1     Running   0          16m
-    metal3                              ironic-5d95b49d6c-8xwcx                                          4/4     Running   0          11m
-    metal3                              metal3-baremetal-operator-84f9df77fb-25h4w                       3/3     Running   0          11m
-    ```
-
-8. How to deploy Workloads
-    Once the Target is Operational, Workloads can be deployed on the Target Cluster.
-    A small demo workload can be deployed using ./tools/deployment/36_deploy_workload.sh.This demo includes ingress as a workload.
-    To verify execute kubectl command as below:
-    ```Markdown
-    $ kubectl --kubeconfig /home/user/.airship/kubeconfig --context target-cluster get pods -n ingress
-
-    NAME                                                    READY   STATUS    RESTARTS   AGE
-    ingress-ingress-nginx-controller-7d5d89f47d-p8hms       1/1     Running   1          6d19h
-    ingress-ingress-nginx-defaultbackend-6c49f4ff7f-nzsjw   1/1     Running   1          6d19h
-    ```
-    Additional Workloads can be defined under  ~/airshipctl/manifests/site/test-site/target/workload/kustomization.yaml which specifies the resources as below
-    ```Markdown
-    $ pwd
-    /home/user/airshipctl/manifests/site/test-site/target/workload
-    $ cat kustomization.yaml
-    resources:
-    - ../../../../function/airshipctl-base-catalogues
-    - ../../../../type/gating/target/workload
-    transformers:
-    - ../../../../type/gating/target/workload/ingress/replacements
-    $ pwd
-    /home/user/airshipctl/manifests/type/gating/target/workload
-    $ ll
-    total 16
-    drwxrwxr-x 3 user user 4096 Nov 16 17:02 ./
-    drwxrwxr-x 3 user user 4096 Nov 16 17:02 ../
-    drwxrwxr-x 3 user user 4096 Nov 16 17:02 ingress/
-    -rw-rw-r-- 1 user user   23 Nov 16 17:02 kustomization.yaml
-    ```
-9. In case the All-in-One-VM is restarted and the nested VMs do not get restarted automatically simply execute the below steps to make the Target Cluster up again.
-    ```Markdown
-    $ sudo virsh list --all
-    Id    Name                           State
-    ----------------------------------------------------
-    -     air-ephemeral                  shut off
-    -     air-target-1                   shut off
-    -     air-worker-1                   shut off
-    $ virsh net-start air_nat
-    Network air_nat started
-    $ virsh net-start air_prov
-    Network air_prov started
-    $ virsh start air-target-1
-    Domain air-target-1 started
-    $ virsh start air-worker-1
-    Domain air-worker-1 started
-    $ sudo virsh list --all
-    Id    Name                           State
-    ----------------------------------------------------
-    3     air-target-1                   running
-    4     air-worker-1                   running
-    ```
-
-10. In case the deployment needs to be cleaned and rerun again, run the below script.
-    - sudo ./tools/deployment/clean.sh
-
 
 [1]: https://github.com/airshipit/airshipctl/blob/master/tools/gate/00_setup.sh
 [2]: https://quay.io/airshipit/airshipctl
