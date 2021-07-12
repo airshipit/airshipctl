@@ -37,7 +37,9 @@
       - daemonsets
       - deployments
       - endpoints
-      - helmrelease
+      - helmcharts
+      - helmreleases
+      - helmrepositories
       - ingresses
       - jobs
       - kubeadmconfigs
