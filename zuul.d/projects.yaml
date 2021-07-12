@@ -42,6 +42,7 @@
         - airship-airshipctl-gate-script-runner-docker
         - airship-aiap-build-image
         - airship-airship-in-a-pod-script-runner
+        - airship-airshipctl-dead-link-linter
     experimental:
       jobs:
         - airship-airshipctl-docker-kubebench-conformance

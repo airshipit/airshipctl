@@ -1,0 +1,25 @@
+directories:
+  - "./"
+fileExtensions:
+  - ".md"
+  - ".rst"
+goldenURL: "https://google.com"
+ignored:
+  - "https://google.com"
+  - "http://username:password@host:port"
+  - "https://10.23.25.101:6443"
+  - "https://10.23.25.102:6443"
+  - "http://10.0.4.4/identity"
+  - "http://192.168.122.10:8000/redfish/v1/Systems"
+  - "http://192.168.122.10:8000/redfish/v1/Systems/8e5b2dc4-0c1d-4509-af2f-7a4a8f2121a8"
+  - "http://localhost/mini.iso"
+  - "http://localhost/mini.iso"
+  - "http://localhost:8000/"
+  - "http://localhost:8000/redfish/v1/Managers/58893887-894-2487-2389-841168418919/VirtualMedia/Cd"
+  - "http://localhost:8000/redfish/v1/Managers/58893887-894-2487-2389-841168418919/VirtualMedia/Cd/Actions/VirtualMedia.InsertMedia-"
+  - "http://localhost:8000/redfish/v1/Systems/"
+  - "http://localhost:8000/redfish/v1/Systems/47a3b9a3-3967-4d23-98d8-18de1c28e94f"
+  - "http://localhost:8000/redfish/v1/Systems/47a3b9a3-3967-4d23-98d8-18de1c28e94f"
+  - "http://localhost:8000/redfish/v1/Systems/47a3b9a3-3967-4d23-98d8-18de1c28e94f/Actions/ComputerSystem.Reset"
+maxFailures: 0
+logVerbosity: 0

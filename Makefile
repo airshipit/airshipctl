@@ -373,6 +373,11 @@ check-copyright:
 validate-docs:
 	@./tools/validate_docs
 
+# Validate all URL references in documentation work
+.PHONY: dead-link-linter
+dead-link-linter:
+	@./tools/dead-link-linter
+
 # Generate code
 generate: controller-gen
 	$(CONTROLLER_GEN) object:headerFile="tools/license_go.txt" paths="./..."

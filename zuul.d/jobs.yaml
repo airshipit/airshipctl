@@ -50,6 +50,13 @@
     voting: false
 
 - job:
+    name: airship-airshipctl-dead-link-linter
+    description: Ensures all URLs referenced in documentation are still working
+    run: playbooks/airship-airshipctl-dead-link-linter.yaml
+    nodeset: airship-airshipctl-single-node
+    voting: false
+
+- job:
     name: airship-airshipctl-build-image
     nodeset: airship-airshipctl-single-node
     run: playbooks/airship-airshipctl-build-images.yaml
