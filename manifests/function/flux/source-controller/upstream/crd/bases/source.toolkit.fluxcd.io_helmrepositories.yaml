@@ -1,11 +1,8 @@
-
----
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.3.0
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.5.0
   name: helmrepositories.source.toolkit.fluxcd.io
 spec:
   group: source.toolkit.fluxcd.io
@@ -14,6 +11,8 @@ spec:
     listKind: HelmRepositoryList
     plural: helmrepositories
     singular: helmrepository
+    shortNames:
+    - helmrepo
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -52,6 +51,14 @@ spec:
               interval:
                 description: The interval at which to check the upstream for updates.
                 type: string
+              passCredentials:
+                description: PassCredentials allows the credentials from the SecretRef
+                  to be passed on to a host that does not match the host as defined
+                  in URL. This may be required if the host of the advertised chart
+                  URLs in the index differ from the defined URL. Enabling this should
+                  be done with caution, as it can potentially result in credentials
+                  getting stolen in a MITM-attack.
+                type: boolean
               secretRef:
                 description: The name of the secret containing authentication credentials
                   for the Helm repository. For HTTP/S basic auth the secret must contain
@@ -59,9 +66,10 @@ spec:
                   certFile and keyFile, and/or caCert fields.
                 properties:
                   name:
-                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                      TODO: Add other useful fields. apiVersion, kind, uid?'
+                    description: Name of the referent
                     type: string
+                required:
+                - name
                 type: object
               suspend:
                 description: This flag tells the controller to suspend the reconciliation

@@ -3,6 +3,6 @@ kind: Kustomization
 resources:
 - deployment.yaml
 images:
-  - name: fluxcd/helm-controller
-    newName: fluxcd/helm-controller
-    newTag: v0.4.3
+- name: fluxcd/helm-controller
+  newName: fluxcd/helm-controller
+  newTag: v0.11.1
