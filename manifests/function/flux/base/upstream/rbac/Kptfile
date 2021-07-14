@@ -1,20 +1,19 @@
-apiVersion: kpt.dev/v1alpha1
+apiVersion: kpt.dev/v1
 kind: Kptfile
+metadata:
+  name: rbac
 upstream:
   type: git
   git:
+    repo: https://github.com/fluxcd/flux2
+    directory: manifests/rbac
+    ref: v0.5.1
+  updateStrategy: resource-merge
+upstreamLock:
+  type: git
+  git:
+    repo: https://github.com/fluxcd/flux2
+    directory: manifests/rbac
+    ref: v0.5.1
     commit: 0ba6fc1b366bd6f2ce231d3ac8a95eac57ff8554
-    repo: https://github.com/fluxcd/flux2
-    directory: manifests/rbac
-    ref: v0.5.1
-dependencies:
-- name: upstream/rbac
-  git:
-    repo: https://github.com/fluxcd/flux2
-    directory: manifests/rbac
-    ref: v0.5.1
-- name: upstream/policies
-  git:
-    repo: https://github.com/fluxcd/flux2
-    directory: manifests/policies
-    ref: v0.5.1
+pipeline: {}
