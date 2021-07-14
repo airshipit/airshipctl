@@ -51,7 +51,10 @@ export AIRSHIP_CONFIG_MANIFEST_DIRECTORY="/tmp/airship"
 if [ "$MANIFEST_REPO_NAME" == "airshipctl" ]
 then
   ./tools/deployment/22_test_configs.sh
-  ./tools/deployment/23_pull_documents.sh
+  # `airshipctl document pull` doesn't support pull patchsets yet
+  #./tools/deployment/23_pull_documents.sh
+  mkdir /tmp/airship
+  cp -rp /opt/airshipctl /tmp/airship/airshipctl
   ./tools/deployment/23_generate_secrets.sh
 else
   ./tools/deployment/airship-core/22_test_configs.sh
