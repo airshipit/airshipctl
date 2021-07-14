@@ -292,6 +292,17 @@ config:
 apiVersion: airshipit.org/v1alpha1
 kind: Phase
 metadata:
+  name: kubectl-wait-node-target
+  clusterName: target-cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: kubectl-wait-node
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
   name: kubectl-get-node-target
   clusterName: target-cluster
 config:
@@ -387,6 +398,18 @@ config:
     apiVersion: airshipit.org/v1alpha1
     kind: GenericContainer
     name: kubectl-pause-bmh
+  documentEntryPoint: ephemeral/controlplane
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: kubectl-wait-cluster-ephemeral
+  clusterName: ephemeral-cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: kubectl-wait-cluster-init
   documentEntryPoint: ephemeral/controlplane
 ---
 apiVersion: airshipit.org/v1alpha1
