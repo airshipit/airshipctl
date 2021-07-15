@@ -31,18 +31,20 @@ install /tmp/kustomize /usr/local/bin
 cp "$ARTIFACTS_DIR/$MANIFEST_REPO_NAME/bin/airshipctl" /usr/local/bin/airshipctl
 if [ $MANIFEST_REPO_NAME != "airshipctl" ]
 then
-        export AIRSHIP_CONFIG_PHASE_REPO_URL="https://opendev.org/airship/treasuremap"
-	cp -r $ARTIFACTS_DIR/airshipctl/ /opt/airshipctl
+  export AIRSHIP_CONFIG_PHASE_REPO_URL="https://opendev.org/airship/treasuremap"
+  cp -r $ARTIFACTS_DIR/airshipctl/ /opt/airshipctl
 fi
 
 cp  -r $ARTIFACTS_DIR/$MANIFEST_REPO_NAME/ /opt/$MANIFEST_REPO_NAME
 cd /opt/$MANIFEST_REPO_NAME
 
+curl -fsSL -o /sops-key.asc https://raw.githubusercontent.com/mozilla/sops/master/pgp/sops_functional_tests_key.asc
 SOPS_PGP_FP="FBC7B9E2A4F9289AC0C1D4843D16CEE4A27381B4"
-curl -fsSL -o /tmp/key.asc https://raw.githubusercontent.com/mozilla/sops/master/pgp/sops_functional_tests_key.asc
-echo 'export SOPS_IMPORT_PGP="$(cat /tmp/key.asc)"' >> ~/.profile
-echo "export SOPS_PGP_FP=${SOPS_PGP_FP}" >> ~/.profile
-source ~/.profile
+SOPS_IMPORT_PGP="$(cat /sops-key.asc)"
+export SOPS_IMPORT_PGP
+export SOPS_PGP_FP
+echo 'export SOPS_IMPORT_PGP="$(cat /sops-key.asc)"' >> ~/.bashrc
+echo "export SOPS_PGP_FP=${SOPS_PGP_FP}" >> ~/.bashrc
 
 export AIRSHIP_CONFIG_MANIFEST_DIRECTORY="/tmp/airship"
 
@@ -74,9 +76,9 @@ if [[ "$USE_CACHED_ISO" = "true" ]]; then
 else
   if [ "$MANIFEST_REPO_NAME" == "airshipctl" ]
   then
-     ./tools/deployment/24_build_images.sh
+    ./tools/deployment/24_build_images.sh
   else
-     ./tools/deployment/airship-core/24_build_images.sh
+    ./tools/deployment/airship-core/24_build_images.sh
   fi
 
   tar -czf "$ARTIFACTS_DIR/iso.tar.gz" --directory=/srv/images .
