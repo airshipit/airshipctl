@@ -17,15 +17,15 @@ build: libvirt
 build: $(IMAGES) ## Build the containers.
 
 base:
-	docker build --tag ianhowell/base:$(IMAGE_TAG) --build-arg BASE_IMAGE=ubuntu:20.04 ./base
+	docker build --tag $(IMAGE_REGISTRY)/aiap-base:$(IMAGE_TAG) --build-arg BASE_IMAGE=ubuntu:20.04 ./base
 ifeq (true, $(PUSH_IMAGES))
-	docker push ianhowell/base:$(IMAGE_TAG)
+	docker push $(IMAGE_REGISTRY)/aiap-base:$(IMAGE_TAG)
 endif
 
 libvirt:
-	docker build --tag ianhowell/libvirt:$(IMAGE_TAG) ./libvirt
+	docker build --tag $(IMAGE_REGISTRY)/libvirt:$(IMAGE_TAG) ./libvirt
 ifeq (true, $(PUSH_IMAGES))
-	docker push ianhowell/libvirt:$(IMAGE_TAG)
+	docker push $(IMAGE_REGISTRY)/libvirt:$(IMAGE_TAG)
 endif
 
 $(IMAGES):

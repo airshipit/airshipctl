@@ -1,4 +1,4 @@
-FROM ianhowell/base:latest
+FROM quay.io/airshipit/aiap-base:latest
 
 SHELL ["bash", "-exc"]
 ENV DEBIAN_FRONTEND noninteractive
