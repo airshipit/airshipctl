@@ -23,6 +23,7 @@ export IMAGE_DIR=${IMAGE_DIR:-"/srv/images"}
 export SERVE_PORT=${SERVE_PORT:-"8099"}
 export AIRSHIPCTL_WS=${AIRSHIPCTL_WS:-$PWD}
 export TMP_DIR=${TMP_DIR:-"$(dirname $(mktemp -u))"}
+export SITE=${SITE:-"test-site"}
 
 ANSIBLE_CFG=${ANSIBLE_CFG:-"${HOME}/.ansible.cfg"}
 ANSIBLE_HOSTS=${ANSIBLE_HOSTS:-"${TMP_DIR}/ansible_hosts"}
