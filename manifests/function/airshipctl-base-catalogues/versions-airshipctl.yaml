@@ -162,4 +162,10 @@ spec:
 
   kubernetes: v1.18.6
 
-  image_repositories: k8s.gcr.io
+  image_repositories:
+    cni:
+      name: tigera-operator
+      repository: quay.io
+    controlplane:
+      name: kubeadm-clusterConfiguration
+      repository: k8s.gcr.io

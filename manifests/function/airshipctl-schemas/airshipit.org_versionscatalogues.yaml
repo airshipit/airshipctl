@@ -196,8 +196,34 @@ spec:
                   are grouped by airshipctl function -> images in function.
                 type: object
               image_repositories:
+                additionalProperties:
+                  description: ImageRepositorySpec defines the spec for a repository
+                    that includes repository URL, Name and one of Hash/Tag/SHA/Digest.
+                  properties:
+                    digest:
+                      type: string
+                    hash:
+                      type: string
+                    name:
+                      description: Name is an optional property that is used to specify
+                        the name of an image. Typically, this format is only needed
+                        for charts such as dex-aio, which uses "repo", "name", and
+                        "tag" properties to declare images, rather than the more commonly
+                        used "repository" and "tag". In such cases, "repository" should
+                        contain only the name of the repository (e.g. "quay.io") and
+                        the "name" property should contain the image name (e.g. "metal3-io/ironic").
+                      type: string
+                    repository:
+                      type: string
+                    sha:
+                      type: string
+                    tag:
+                      type: string
+                  required:
+                  - repository
+                  type: object
                 description: Allows for the specification of the image repositories
-                type: string
+                type: object
               images:
                 additionalProperties:
                   additionalProperties:
