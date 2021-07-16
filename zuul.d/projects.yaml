@@ -40,6 +40,7 @@
         - airship-airshipctl-validate-site-docs
 #        - airship-airshipctl-functional-existing-k8s TODO: Enable this when functional tests exist, and a cluster is up
         - airship-airshipctl-gate-script-runner-docker
+        - airship-aiap-build-image
     experimental:
       jobs:
         - airship-airshipctl-docker-kubebench-conformance
@@ -53,11 +54,13 @@
         - airship-airshipctl-build-image
         - airship-airshipctl-validate-site-docs
         - airship-airshipctl-gate-script-runner
+        - airship-aiap-build-image
 
 #        - airship-airshipctl-functional-existing-k8s TODO: Enable this when functional tests exist, and a cluster is up
     post:
       jobs:
         - airship-airshipctl-publish-image
+        - airship-aiap-publish-image
         - airship-airshipctl-upload-git-mirror
     promote:
       jobs:

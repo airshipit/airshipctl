@@ -60,6 +60,13 @@
       - ^\.github/.*$
 
 - job:
+    name: airship-aiap-build-image
+    nodeset: airship-airshipctl-single-node
+    run: playbooks/airship-aiap-build-images.yaml
+    files:
+      - ^tools/airship-in-a-pod/.*$
+
+- job:
     name: airship-airshipctl-validate-site-docs
     timeout: 6600
     pre-run:
@@ -233,6 +240,18 @@
     nodeset: airship-airshipctl-single-node
     run: playbooks/airship-airshipctl-publish-images.yaml
     irrelevant-files: *noncodefiles
+    secrets:
+      - name: airshipctl_image_repo_credentials
+        secret: airshipctl_image_repo_credentials
+        pass-to-parent: true
+    vars:
+      image: quay.io/airshipit/airshipctl
+- job:
+    name: airship-aiap-publish-image
+    nodeset: airship-airshipctl-single-node
+    run: playbooks/airship-aiap-publish-images.yaml
+    files:
+      - ^tools/airship-in-a-pod/.*$
     secrets:
       - name: airshipctl_image_repo_credentials
         secret: airshipctl_image_repo_credentials
