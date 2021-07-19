@@ -1,0 +1,41 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- name: Install python3-docker and python3-requests Modules
+  package:
+    name:
+      - python3-docker
+      - python3-requests
+    state: present
+
+- name: List Docker Images
+  shell: docker image ls
+
+- name: Push Images
+  block:
+    - name: Login to Image Registry
+      docker_login:
+        username: "{{ airshipctl_image_repo_credentials.username }}"
+        password: "{{ airshipctl_image_repo_credentials.password }}"
+        registry_url: "{{ image_repo }}"
+
+    - name: Push Image with Tags
+      make:
+        chdir: "{{ zuul.project.src_dir }}/tools/airship-in-a-pod"
+        target: images
+        params:
+          DOCKER_REGISTRY: "{{ image_repo }}"
+          DOCKER_IMAGE_TAG: "{{ item }}"
+          PUBLISH: "true"
+      loop:
+        - "latest"
+        - "{{ zuul.newrev }}"
