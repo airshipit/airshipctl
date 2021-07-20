@@ -434,6 +434,23 @@ configRef:
 apiVersion: airshipit.org/v1alpha1
 kind: GenericContainer
 metadata:
+  name: kubectl-wait-cluster-init
+spec:
+  image: localhost/toolbox
+  hostNetwork: true
+  envVars:
+    - RESOURCE_GROUP_FILTER=cluster.x-k8s.io
+    - RESOURCE_VERSION_FILTER=v1alpha3
+    - RESOURCE_KIND_FILTER=Cluster
+    - CONDITION=controlPlaneInitialized
+configRef:
+  kind: ConfigMap
+  name: kubectl-wait-cluster
+  apiVersion: v1
+---
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
   name: virsh-eject-cdrom-images
   labels:
     airshipit.org/deploy-k8s: "false"
