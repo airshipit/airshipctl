@@ -60,8 +60,9 @@ else
   ./tools/deployment/airship-core/22_test_configs.sh
   ./tools/deployment/airship-core/23_pull_documents.sh
   ./tools/deployment/airship-core/23_generate_secrets.sh
-
 fi
+
+echo "export KUBECONFIG=$HOME/.airship/kubeconfig" >> ~/.bashrc
 
 sed -i -e 's#bmcAddress: redfish+http://\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\):8000#bmcAddress: redfish+https://10.23.25.1:8443#' "/tmp/airship/$MANIFEST_REPO_NAME/manifests/site/test-site/target/catalogues/hosts.yaml"
 sed -i -e 's#root#username#' "/tmp/airship/$MANIFEST_REPO_NAME/manifests/site/test-site/target/catalogues/hosts.yaml"
