@@ -20,8 +20,8 @@ import (
 )
 
 const (
-	// ContainerDriverDocker indicates that docker driver should be used in container constructor
-	ContainerDriverDocker = "docker"
+	// DriverDocker indicates that docker driver should be used in container constructor
+	DriverDocker = "docker"
 )
 
 // Status type provides container status
@@ -86,7 +86,7 @@ func NewContainer(ctx context.Context, driver string, url string) (Container, er
 	switch driver {
 	case "":
 		return nil, ErrNoContainerDriver{}
-	case ContainerDriverDocker:
+	case DriverDocker:
 		cli, err := NewDockerClient(ctx)
 		if err != nil {
 			return nil, err
