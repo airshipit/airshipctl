@@ -80,9 +80,9 @@ while true; do
   esac
 done
 
-SCRIPT_LIST=$(cat $ZUUL_JOBS_PATH | yq '.[9].job.vars.gate_scripts[]' -c -r)
+SCRIPT_LIST=$(cat $ZUUL_JOBS_PATH | yq '.[] | select(.job.name == "airship-airshipctl-gate-script-runner") | .job.vars.gate_scripts[]' -c -r)
 if [[ ! $SCRIPT_LIST ]]; then
-  SCRIPT_LIST=$(cat $GATE_RUNNER_YAML_PATH | yq '.[0].tasks[0].set_fact.deploy_test_site_scripts_default[]' -c -r)
+  SCRIPT_LIST=$(cat $GATE_RUNNER_YAML_PATH | yq '.[]| select (.name=="airshipctl_gate_runner")| .tasks[]| select (.name=="set_default_gate_scripts")| .set_fact.gate_scripts_default[]' -c -r)
 fi
 
 SKIP_LIST=$(echo ${SKIP_LIST//,/ })
