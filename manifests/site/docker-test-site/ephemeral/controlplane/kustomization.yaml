@@ -2,6 +2,9 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../../../function/k8scontrol-capd
+  - namespace.yaml
+
+namespace: target-infra
 
 patchesJson6902:
   - target:
