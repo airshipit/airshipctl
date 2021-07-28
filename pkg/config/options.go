@@ -22,8 +22,6 @@ import (
 
 	"k8s.io/cli-runtime/pkg/printers"
 	"sigs.k8s.io/yaml"
-
-	"opendev.org/airship/airshipctl/pkg/errors"
 )
 
 // ContextOptions holds all configurable options for context
@@ -44,7 +42,6 @@ type ManifestOptions struct {
 	Branch       string
 	CommitHash   string
 	Tag          string
-	RemoteRef    string
 	Force        bool
 	IsPhase      bool
 	TargetPath   string
@@ -151,9 +148,6 @@ func (o *ContextOptions) Print(cfg *Config, w io.Writer) error {
 func (o *ManifestOptions) Validate() error {
 	if o.Name == "" {
 		return ErrMissingManifestName{}
-	}
-	if o.RemoteRef != "" {
-		return errors.ErrNotImplemented{What: "repository checkout by RemoteRef"}
 	}
 	if o.IsPhase && o.RepoName == "" {
 		return ErrMissingRepositoryName{}

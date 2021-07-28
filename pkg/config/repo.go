@@ -18,6 +18,7 @@ import (
 	"fmt"
 
 	"github.com/go-git/go-git/v5"
+	gitconfig "github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
@@ -49,6 +50,8 @@ type Repository struct {
 	Auth *RepoAuth `json:"auth,omitempty"`
 	// CheckoutOptions holds options to checkout repository
 	CheckoutOptions *RepoCheckout `json:"checkout,omitempty"`
+	// FetchOptions holds options for fetching remote refs
+	FetchOptions *RepoFetch `json:"fetch,omitempty"`
 }
 
 // RepoAuth struct describes method of authentication against given repository
@@ -77,15 +80,25 @@ type RepoCheckout struct {
 	Branch string `json:"branch"`
 	// Tag is the tag name to checkout
 	Tag string `json:"tag"`
-	// RemoteRef is not supported currently TODO
-	// RemoteRef is used for remote checkouts such as gerrit change requests/github pull request
+	// Ref is the ref to checkout
 	// for example refs/changes/04/691202/5
-	// TODO Add support for fetching remote refs
-	RemoteRef string `json:"remoteRef,omitempty"`
+	Ref string `json:"ref,omitempty"`
 	// ForceCheckout is a boolean to indicate whether to use the `--force` option when checking out
 	ForceCheckout bool `json:"force"`
 	// LocalBranch is a boolean to indicate whether the Branch is local one. False by default
 	LocalBranch bool `json:"localBranch"`
+}
+
+// RepoFetch holds information on which remote ref to fetch
+type RepoFetch struct {
+	// RemoteRefSpec is used for remote fetches such as gerrit change
+	// requests and github pull requests. The format of the refspec is an
+	// optional +, followed by <src>:<dst>, where <src> is the pattern for
+	// references on the remote side and <dst> is where those references
+	// will be written locally. The + tells Git to update the reference
+	// even if it isn't a fast-forward.
+	// eg.: refs/changes/04/691202/5:refs/changes/04/691202/5
+	RemoteRefSpec string `json:"remoteRefSpec,omitempty"`
 }
 
 // RepoCheckout methods
@@ -102,7 +115,7 @@ func (c *RepoCheckout) String() string {
 // repository checkout and returns Error for incorrect values
 // returns nil when there are no errors
 func (c *RepoCheckout) Validate() error {
-	possibleValues := []string{c.CommitHash, c.Branch, c.Tag, c.RemoteRef}
+	possibleValues := []string{c.CommitHash, c.Branch, c.Tag, c.Ref}
 	var count int
 	for _, val := range possibleValues {
 		if val != "" {
@@ -112,8 +125,14 @@ func (c *RepoCheckout) Validate() error {
 	if count > 1 {
 		return ErrMutuallyExclusiveCheckout{}
 	}
-	if c.RemoteRef != "" {
-		return errors.ErrNotImplemented{What: "repository checkout by RemoteRef"}
+	return nil
+}
+
+// Validate verifies that the remote refspec is valid. If a remote refspec was
+// not supplied, Validate does nothing.
+func (rf *RepoFetch) Validate() error {
+	if rf.RemoteRefSpec != "" {
+		return gitconfig.RefSpec(rf.RemoteRefSpec).Validate()
 	}
 	return nil
 }
@@ -238,6 +257,8 @@ func (repo *Repository) ToCheckoutOptions() *git.CheckoutOptions {
 			co.Branch = plumbing.NewTagReferenceName(repo.CheckoutOptions.Tag)
 		case repo.CheckoutOptions.CommitHash != "":
 			co.Hash = plumbing.NewHash(repo.CheckoutOptions.CommitHash)
+		case repo.CheckoutOptions.Ref != "":
+			co.Branch = plumbing.ReferenceName(repo.CheckoutOptions.Ref)
 		}
 	}
 	return co
@@ -257,7 +278,14 @@ func (repo *Repository) ToCloneOptions(auth transport.AuthMethod) *git.CloneOpti
 // ToFetchOptions returns an instance of git.FetchOptions for given authentication
 // FetchOptions describes how a fetch should be performed
 func (repo *Repository) ToFetchOptions(auth transport.AuthMethod) *git.FetchOptions {
-	return &git.FetchOptions{Auth: auth}
+	var refSpecs []gitconfig.RefSpec
+	if repo.FetchOptions != nil && repo.FetchOptions.RemoteRefSpec != "" {
+		refSpecs = []gitconfig.RefSpec{gitconfig.RefSpec(repo.FetchOptions.RemoteRefSpec)}
+	}
+	return &git.FetchOptions{
+		Auth:     auth,
+		RefSpecs: refSpecs,
+	}
 }
 
 // URL returns the repository URL in a string format

@@ -63,7 +63,8 @@ func TestDownload(t *testing.T) {
 		CloneOptions: &git.CloneOptions{
 			URL: fx.DotGit().Root(),
 		},
-		URLString: fx.DotGit().Root(),
+		FetchOptions: &git.FetchOptions{Auth: nil},
+		URLString:    fx.DotGit().Root(),
 	}
 
 	fs := memfs.New()

@@ -31,7 +31,6 @@ func Pull(cfgFactory config.Factory, noCheckout bool) error {
 }
 
 func cloneRepositories(cfg *config.Config, noCheckout bool) error {
-	// Clone main repository
 	currentManifest, err := cfg.CurrentContextManifest()
 	log.Debugf("Reading current context manifest information from %s", cfg.LoadedConfigPath())
 	if err != nil {
@@ -39,17 +38,17 @@ func cloneRepositories(cfg *config.Config, noCheckout bool) error {
 	}
 
 	// Clone repositories
-	for repoName, extraRepoConfig := range currentManifest.Repositories {
-		err := extraRepoConfig.Validate()
+	for repoName, repoConfig := range currentManifest.Repositories {
+		err := repoConfig.Validate()
 		if err != nil {
 			return err
 		}
-		repository, err := repo.NewRepository(currentManifest.GetTargetPath(), extraRepoConfig)
+		repository, err := repo.NewRepository(currentManifest.GetTargetPath(), repoConfig)
 		if err != nil {
 			return err
 		}
 		log.Printf("Downloading %s repository %s from %s into %s",
-			repoName, repository.Name, extraRepoConfig.URL(), currentManifest.GetTargetPath())
+			repoName, repository.Name, repoConfig.URL(), currentManifest.GetTargetPath())
 		err = repository.Download(noCheckout)
 		if err != nil {
 			return err
