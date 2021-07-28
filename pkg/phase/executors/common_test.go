@@ -96,6 +96,14 @@ func executorDoc(t *testing.T, s string) document.Document {
 	return doc
 }
 
+// executorBundle converts string to bundle object
+func executorBundle(t *testing.T, s string) document.Bundle {
+	b, err := document.NewBundleFromBytes([]byte(s))
+	require.NoError(t, err)
+	require.NotNil(t, b)
+	return b
+}
+
 // TODO replace this test bundle factory with one that uses bundle mock
 func testBundleFactory() document.BundleFactoryFunc {
 	return func() (document.Bundle, error) {

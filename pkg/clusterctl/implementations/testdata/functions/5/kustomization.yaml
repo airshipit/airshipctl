@@ -1,3 +1,0 @@
-# Contains variables that should be substituted
-resources:
- - azure-resources.yaml

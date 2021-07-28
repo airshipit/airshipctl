@@ -18,11 +18,16 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
+
+	"sigs.k8s.io/kustomize/kyaml/yaml"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
-	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
+	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	airerrors "opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
@@ -33,62 +38,236 @@ import (
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
 
+const clusterAPIOverrides = "/workdir/.cluster-api/overrides"
+
 var _ ifc.Executor = &ClusterctlExecutor{}
 
 // ClusterctlExecutor phase executor
 type ClusterctlExecutor struct {
 	clusterName string
+	targetPath  string
 
-	client.Interface
 	clusterMap clustermap.ClusterMap
 	options    *airshipv1.Clusterctl
 	kubecfg    kubeconfig.Interface
+	execObj    *airshipv1.GenericContainer
+	clientFunc container.ClientV1Alpha1FactoryFunc
+	cctlOpts   *airshipv1.ClusterctlOptions
 }
 
-// NewClusterctlExecutor creates instance of 'clusterctl init' phase executor
+var typeMap = map[string]string{
+	airshipv1.BootstrapProviderType:      "bootstrap",
+	airshipv1.ControlPlaneProviderType:   "control-plane",
+	airshipv1.InfrastructureProviderType: "infrastructure",
+	airshipv1.CoreProviderType:           "core",
+}
+
+// NewClusterctlExecutor creates instance of 'clusterctl' phase executor
 func NewClusterctlExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 	options := airshipv1.DefaultClusterctl()
 	if err := cfg.ExecutorDocument.ToAPIObject(options, airshipv1.Scheme); err != nil {
 		return nil, err
 	}
-	client, err := client.NewClient(cfg.TargetPath, log.DebugEnabled(), options)
+	cctlOpts := &airshipv1.ClusterctlOptions{
+		Components: map[string][]byte{},
+	}
+	if err := initRepoData(options, cctlOpts, cfg.TargetPath); err != nil {
+		return nil, err
+	}
+
+	doc, err := cfg.PhaseConfigBundle.SelectOne(document.NewClusterctlContainerExecutorSelector())
 	if err != nil {
 		return nil, err
 	}
+
+	apiObj := airshipv1.DefaultGenericContainer()
+	err = doc.ToAPIObject(apiObj, airshipv1.Scheme)
+	if err != nil {
+		return nil, err
+	}
+
+	clientFunc := container.NewClientV1Alpha1
+	if cfg.ContainerFunc != nil {
+		clientFunc = cfg.ContainerFunc
+	}
+
 	return &ClusterctlExecutor{
 		clusterName: cfg.ClusterName,
-		Interface:   client,
 		options:     options,
+		cctlOpts:    cctlOpts,
 		kubecfg:     cfg.KubeConfig,
 		clusterMap:  cfg.ClusterMap,
+		targetPath:  cfg.TargetPath,
+		execObj:     apiObj,
+		clientFunc:  clientFunc,
 	}, nil
+}
+
+func initRepoData(c *airshipv1.Clusterctl, o *airshipv1.ClusterctlOptions, targetPath string) error {
+	for _, prv := range c.Providers {
+		rURL, err := url.Parse(prv.URL)
+		if err != nil {
+			return err
+		}
+		if rURL.Scheme != "" || filepath.IsAbs(prv.URL) {
+			continue
+		}
+
+		componentDir := filepath.Join(clusterAPIOverrides,
+			fmt.Sprintf("%s-%s", typeMap[prv.Type], prv.Name), filepath.Base(prv.URL))
+		if prv.Type == airshipv1.CoreProviderType {
+			componentDir = filepath.Join(clusterAPIOverrides, prv.Name, filepath.Base(prv.URL))
+		}
+
+		kustomizePath := filepath.Join(targetPath, prv.URL)
+		log.Debugf("Building cluster-api provider component documents from kustomize path at '%s'", kustomizePath)
+		bundle, err := document.NewBundleByPath(kustomizePath)
+		if err != nil {
+			return err
+		}
+		doc, err := bundle.SelectOne(document.NewClusterctlMetadataSelector())
+		if err != nil {
+			return err
+		}
+		metadata, err := doc.AsYAML()
+		if err != nil {
+			return err
+		}
+
+		o.Components[filepath.Join(componentDir, "metadata.yaml")] = metadata
+
+		filteredBundle, err := bundle.SelectBundle(document.NewDeployToK8sSelector())
+		if err != nil {
+			return err
+		}
+
+		buffer := &bytes.Buffer{}
+		if err = filteredBundle.Write(buffer); err != nil {
+			return err
+		}
+		prv.URL = filepath.Join(componentDir, fmt.Sprintf("%s-components.yaml", typeMap[prv.Type]))
+		o.Components[prv.URL] = buffer.Bytes()
+	}
+	return nil
 }
 
 // Run clusterctl init as a phase runner
 func (c *ClusterctlExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 	defer close(evtCh)
+
+	if log.DebugEnabled() {
+		c.cctlOpts.CmdOptions = append(c.cctlOpts.CmdOptions, "-v5")
+	}
+
+	cctlConfig := map[string]interface{}{
+		"providers": c.options.Providers,
+		"images":    c.options.ImageMetas,
+	}
+	for k, v := range c.options.AdditionalComponentVariables {
+		cctlConfig[k] = v
+	}
+
+	var err error
+	c.cctlOpts.Config, err = yaml.Marshal(cctlConfig)
+	if err != nil {
+		handleError(evtCh, err)
+	}
+
 	switch c.options.Action {
-	case airshipv1.Move:
-		c.move(opts, evtCh)
 	case airshipv1.Init:
-		c.init(opts, evtCh)
+		c.init(evtCh)
+	case airshipv1.Move:
+		c.move(opts.DryRun, evtCh)
 	default:
 		handleError(evtCh, errors.ErrUnknownExecutorAction{Action: string(c.options.Action), ExecutorName: "clusterctl"})
 	}
 }
 
-func (c *ClusterctlExecutor) move(opts ifc.RunOptions, evtCh chan events.Event) {
-	evtCh <- events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
-		Operation: events.ClusterctlMoveStart,
-		Message:   "starting clusterctl move executor",
-	})
-	ns := c.options.MoveOptions.Namespace
+func (c *ClusterctlExecutor) run() error {
+	opts, err := yaml.Marshal(c.cctlOpts)
+	if err != nil {
+		return err
+	}
+	c.execObj.Config = string(opts)
+	return c.clientFunc("", &bytes.Buffer{}, os.Stdout, c.execObj, c.targetPath).Run()
+}
+
+func (c *ClusterctlExecutor) getKubeconfig() (string, string, func(), error) {
 	kubeConfigFile, cleanup, err := c.kubecfg.GetFile()
+	if err != nil {
+		return "", "", nil, err
+	}
+
+	context, err := c.clusterMap.ClusterKubeconfigContext(c.clusterName)
+	if err != nil {
+		cleanup()
+		return "", "", nil, err
+	}
+
+	c.execObj.Spec.StorageMounts = append(c.execObj.Spec.StorageMounts, airshipv1.StorageMount{
+		MountType:     "bind",
+		Src:           kubeConfigFile,
+		DstPath:       kubeConfigFile,
+		ReadWriteMode: false,
+	})
+	return kubeConfigFile, context, cleanup, nil
+}
+
+func (c *ClusterctlExecutor) init(evtCh chan events.Event) {
+	evtCh <- events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
+		Operation: events.ClusterctlInitStart,
+		Message:   "starting clusterctl init executor",
+	})
+
+	kubecfg, context, cleanup, err := c.getKubeconfig()
 	if err != nil {
 		handleError(evtCh, err)
 		return
 	}
 	defer cleanup()
+
+	c.cctlOpts.CmdOptions = append(c.cctlOpts.CmdOptions,
+		"init",
+		"--kubeconfig", kubecfg,
+		"--kubeconfig-context", context,
+	)
+
+	initMap := map[string]string{
+		typeMap[airshipv1.BootstrapProviderType]:      c.options.InitOptions.BootstrapProviders,
+		typeMap[airshipv1.ControlPlaneProviderType]:   c.options.InitOptions.ControlPlaneProviders,
+		typeMap[airshipv1.InfrastructureProviderType]: c.options.InitOptions.InfrastructureProviders,
+		typeMap[airshipv1.CoreProviderType]:           c.options.InitOptions.CoreProvider,
+	}
+	for k, v := range initMap {
+		if v != "" {
+			c.cctlOpts.CmdOptions = append(c.cctlOpts.CmdOptions, fmt.Sprintf("--%s=%s", k, v))
+		}
+	}
+
+	if err = c.run(); err != nil {
+		handleError(evtCh, err)
+		return
+	}
+
+	eventMsg := "clusterctl init completed successfully"
+	evtCh <- events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
+		Operation: events.ClusterctlInitEnd,
+		Message:   eventMsg,
+	})
+}
+
+func (c *ClusterctlExecutor) move(dryRun bool, evtCh chan events.Event) {
+	evtCh <- events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
+		Operation: events.ClusterctlMoveStart,
+		Message:   "starting clusterctl move executor",
+	})
+	kubecfg, context, cleanup, err := c.getKubeconfig()
+	if err != nil {
+		handleError(evtCh, err)
+		return
+	}
+	defer cleanup()
+
 	fromCluster, err := c.clusterMap.ParentCluster(c.clusterName)
 	if err != nil {
 		handleError(evtCh, err)
@@ -99,76 +278,34 @@ func (c *ClusterctlExecutor) move(opts ifc.RunOptions, evtCh chan events.Event) 
 		handleError(evtCh, err)
 		return
 	}
-	toContext, err := c.clusterMap.ClusterKubeconfigContext(c.clusterName)
-	if err != nil {
+
+	c.cctlOpts.CmdOptions = append(
+		c.cctlOpts.CmdOptions,
+		"move",
+		"--kubeconfig", kubecfg,
+		"--kubeconfig-context", fromContext,
+		"--to-kubeconfig", kubecfg,
+		"--to-kubeconfig-context", context,
+		"--namespace", c.options.MoveOptions.Namespace,
+	)
+
+	if dryRun {
+		c.cctlOpts.CmdOptions = append(
+			c.cctlOpts.CmdOptions,
+			"--dry-run",
+		)
+	}
+
+	if err = c.run(); err != nil {
 		handleError(evtCh, err)
 		return
 	}
 
-	log.Print("command 'clusterctl move' is going to be executed")
-	// TODO (kkalynovskyi) add more details to dry-run, for now if dry run is set we skip move command
-	if !opts.DryRun {
-		err = c.Move(kubeConfigFile, fromContext, kubeConfigFile, toContext, ns)
-		if err != nil {
-			handleError(evtCh, err)
-			return
-		}
-	}
-
+	eventMsg := "clusterctl move completed successfully"
 	evtCh <- events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
 		Operation: events.ClusterctlMoveEnd,
-		Message:   "clusterctl move completed successfully",
-	})
-}
-
-func (c *ClusterctlExecutor) init(opts ifc.RunOptions, evtCh chan events.Event) {
-	evtCh <- events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
-		Operation: events.ClusterctlInitStart,
-		Message:   "starting clusterctl init executor",
-	})
-	kubeConfigFile, cleanup, err := c.kubecfg.GetFile()
-	if err != nil {
-		handleError(evtCh, err)
-		return
-	}
-
-	defer cleanup()
-
-	if opts.DryRun {
-		// TODO (dukov) add more details to dry-run
-		log.Print("command 'clusterctl init' is going to be executed")
-		evtCh <- events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
-			Operation: events.ClusterctlInitEnd,
-			Message:   "clusterctl init dry-run completed successfully",
-		})
-		return
-	}
-
-	context, err := c.clusterMap.ClusterKubeconfigContext(c.clusterName)
-	if err != nil {
-		handleError(evtCh, err)
-		return
-	}
-
-	eventMsg := "clusterctl init completed successfully"
-
-	// Use cluster name as context in kubeconfig file
-	err = c.Init(kubeConfigFile, context)
-	if err != nil && isAlreadyExistsError(err) {
-		// log the already existed/initialized error as warning and continue
-		eventMsg = fmt.Sprintf("WARNING: clusterctl is already initialized, received an error :  %s", err.Error())
-	} else if err != nil {
-		handleError(evtCh, err)
-		return
-	}
-	evtCh <- events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
-		Operation: events.ClusterctlInitEnd,
 		Message:   eventMsg,
 	})
-}
-
-func isAlreadyExistsError(err error) bool {
-	return strings.Contains(err.Error(), "there is already an instance")
 }
 
 // Validate executor configuration and documents
@@ -190,33 +327,10 @@ func (c *ClusterctlExecutor) Validate() error {
 
 // Render executor documents
 func (c *ClusterctlExecutor) Render(w io.Writer, ro ifc.RenderOptions) error {
-	dataAll := bytes.NewBuffer([]byte{})
-	typeMap := map[string][]string{
-		string(client.BootstrapProviderType):      c.options.InitOptions.BootstrapProviders,
-		string(client.ControlPlaneProviderType):   c.options.InitOptions.ControlPlaneProviders,
-		string(client.InfrastructureProviderType): c.options.InitOptions.InfrastructureProviders,
-		string(client.CoreProviderType): (map[bool][]string{true: {c.options.InitOptions.CoreProvider},
-			false: {}})[c.options.InitOptions.CoreProvider != ""],
-	}
-	for prvType, prvList := range typeMap {
-		for _, prv := range prvList {
-			res := strings.Split(prv, ":")
-			if len(res) != 2 {
-				return errors.ErrUnableParseProvider{
-					Provider:     prv,
-					ProviderType: prvType,
-				}
-			}
-			data, err := c.Interface.Render(client.RenderOptions{
-				ProviderName:    res[0],
-				ProviderVersion: res[1],
-				ProviderType:    prvType,
-			})
-			if err != nil {
-				return err
-			}
-			dataAll.Write(data)
-			dataAll.Write([]byte("\n---\n"))
+	dataAll := &bytes.Buffer{}
+	for path, data := range c.cctlOpts.Components {
+		if strings.Contains(path, "components.yaml") {
+			dataAll.Write(append(data, []byte("\n---\n")...))
 		}
 	}
 

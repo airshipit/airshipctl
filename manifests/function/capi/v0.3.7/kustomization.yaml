@@ -5,6 +5,7 @@ commonLabels:
 
 bases:
 - crd
+- data
 - webhook
 - default
 

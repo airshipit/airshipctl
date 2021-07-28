@@ -35,7 +35,6 @@ import (
 	kustfs "sigs.k8s.io/kustomize/api/filesys"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
-	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
@@ -220,7 +219,7 @@ func (s *SecretMockInterface) Patch(_ string, _ types.PatchType, _ []byte, _ ...
 func TestFromSecret(t *testing.T) {
 	tests := []struct {
 		name         string
-		options      *client.GetKubeconfigOptions
+		options      *v1alpha1.GetKubeconfigOptions
 		getSecret    *apiv1.Secret
 		getErr       error
 		expectedData []byte
@@ -228,30 +227,30 @@ func TestFromSecret(t *testing.T) {
 	}{
 		{
 			name:        "empty cluster name",
-			options:     &client.GetKubeconfigOptions{},
+			options:     &v1alpha1.GetKubeconfigOptions{},
 			expectedErr: kubeconfig.ErrClusterNameEmpty{},
 		},
 		{
 			name:        "multiple retries and error",
-			options:     &client.GetKubeconfigOptions{ManagedClusterName: "cluster", Timeout: "1s"},
+			options:     &v1alpha1.GetKubeconfigOptions{ManagedClusterName: "cluster", Timeout: "1s"},
 			getErr:      errors.New("error"),
 			expectedErr: wait.ErrWaitTimeout,
 		},
 		{
 			name:        "empty secret object",
-			options:     &client.GetKubeconfigOptions{ManagedClusterName: "cluster"},
+			options:     &v1alpha1.GetKubeconfigOptions{ManagedClusterName: "cluster"},
 			getSecret:   &apiv1.Secret{},
 			expectedErr: kubeconfig.ErrMalformedKubeconfig{ClusterName: "cluster"},
 		},
 		{
 			name:        "empty data value",
-			options:     &client.GetKubeconfigOptions{ManagedClusterName: "cluster"},
+			options:     &v1alpha1.GetKubeconfigOptions{ManagedClusterName: "cluster"},
 			getSecret:   &apiv1.Secret{Data: map[string][]byte{"value": {}}},
 			expectedErr: kubeconfig.ErrMalformedKubeconfig{ClusterName: "cluster"},
 		},
 		{
 			name:         "successfully get kubeconfig",
-			options:      &client.GetKubeconfigOptions{ManagedClusterName: "cluster"},
+			options:      &v1alpha1.GetKubeconfigOptions{ManagedClusterName: "cluster"},
 			getSecret:    &apiv1.Secret{Data: map[string][]byte{"value": []byte(testValidKubeconfig)}},
 			expectedData: []byte(testValidKubeconfig),
 		},

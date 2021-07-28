@@ -23,7 +23,6 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
-	"opendev.org/airship/airshipctl/pkg/clusterctl/client"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/k8s/utils"
@@ -237,7 +236,7 @@ func (b *Builder) fromClusterAPI(clusterName string, ref v1alpha1.KubeconfigSour
 
 		log.Debugf("Getting child kubeconfig from parent, parent context '%s', parent kubeconfig '%s'",
 			parentContext, f)
-		return FromSecret(b.client, &client.GetKubeconfigOptions{
+		return FromSecret(b.client, &v1alpha1.GetKubeconfigOptions{
 			Timeout:                 ref.Timeout,
 			ManagedClusterNamespace: ref.Namespace,
 			ManagedClusterName:      ref.Name,

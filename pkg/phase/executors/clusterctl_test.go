@@ -18,6 +18,7 @@ import (
 	"bytes"
 	goerrors "errors"
 	"fmt"
+	"io"
 	"testing"
 	"time"
 
@@ -26,14 +27,13 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
+	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
-	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/executors/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
-	testfs "opendev.org/airship/airshipctl/testutil/fs"
 )
 
 var (
@@ -52,8 +52,7 @@ init-options:
 providers:
   - name: "cluster-api"
     type: "CoreProvider"
-    versions:
-      v0.3.2: functions/capi/infrastructure/v0.3.2`
+    url: functions/capi/v0.3.2`
 
 	executorConfigTmplGood = `
 apiVersion: airshipit.org/v1alpha1
@@ -73,72 +72,200 @@ move-options:
 providers:
   - name: "cluster-api"
     type: "CoreProvider"
-    versions:
-      v0.3.3: manifests/function/capi/v0.3.3`
+    url: functions/capi/v0.3.2`
 
 	renderedDocs = `---
 apiVersion: v1
 kind: Namespace
 metadata:
   labels:
-    cluster.x-k8s.io/provider: cluster-api
-    clusterctl.cluster.x-k8s.io: ""
     control-plane: controller-manager
   name: version-two
 ...
 `
+	krmExecDoc = `---
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: clusterctl
+  labels:
+    airshipit.org/deploy-k8s: "false"
+spec:
+  type: krm
+  image: localhost/clusterctl:latest
+  hostNetwork: true
+`
 )
 
 func TestNewClusterctlExecutor(t *testing.T) {
-	sampleCfgDoc := executorDoc(t, fmt.Sprintf(executorConfigTmplGood, "init"))
 	testCases := []struct {
-		name        string
-		expectedErr error
+		name           string
+		targetPath     string
+		phaseCfgBundle document.Bundle
+		execDoc        document.Document
+		errContains    string
 	}{
 		{
-			name: "New Clusterctl Executor",
+			name: "invalid executor document",
+			execDoc: executorDoc(t, `
+apiVersion: test.org/v1alpha1
+kind: testkind
+metadata:
+  name: testname
+`),
+			errContains: "no kind \"testkind\" is registered for version \"test.org/v1alpha1\"",
+		},
+		{
+			name:       "broken kustomize entrypoint",
+			targetPath: "/not/exist",
+			execDoc: executorDoc(t, `
+apiVersion: airshipit.org/v1alpha1
+kind: Clusterctl
+metadata:
+  name: clusterctl
+providers:
+  - name: "cluster-api"
+    type: "CoreProvider"
+    url: functions/capi/v0.3.2"
+`),
+			errContains: "no such file or directory",
+		},
+		{
+			name:       "no metadata available",
+			targetPath: "./testdata",
+			execDoc: executorDoc(t, `
+apiVersion: airshipit.org/v1alpha1
+kind: Clusterctl
+metadata:
+  name: clusterctl
+providers:
+  - name: "cluster-api"
+    type: "CoreProvider"
+    url: functions/capi/v0.3.2/no-metadata
+`),
+			errContains: "document filtered by selector " +
+				"[Group=\"clusterctl.cluster.x-k8s.io\", Version=\"v1alpha3\", Kind=\"Metadata\"] found no documents",
+		},
+		{
+			name:           "no container executor available",
+			targetPath:     "./testdata",
+			phaseCfgBundle: executorBundle(t, ""),
+			execDoc: executorDoc(t, `
+apiVersion: airshipit.org/v1alpha1
+kind: Clusterctl
+metadata:
+  name: clusterctl
+providers:
+  - name: "cluster-api"
+    type: "CoreProvider"
+    url: functions/capi/v0.3.2
+`),
+			errContains: "document filtered by selector [Group=\"airshipit.org\", " +
+				"Version=\"v1alpha1\", Kind=\"GenericContainer\", Name=\"clusterctl\"] found no documents",
+		},
+		{
+			name:           "successfully create executor",
+			targetPath:     "./testdata",
+			phaseCfgBundle: executorBundle(t, krmExecDoc),
+			execDoc: executorDoc(t, `
+apiVersion: airshipit.org/v1alpha1
+kind: Clusterctl
+metadata:
+  name: clusterctl
+providers:
+  - name: "cluster-api"
+    type: "CoreProvider"
+    url: functions/capi/v0.3.2
+`),
 		},
 	}
 	for _, test := range testCases {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
-			_, actualErr := executors.NewClusterctlExecutor(ifc.ExecutorConfig{
-				ExecutorDocument: sampleCfgDoc,
+			executor, actualErr := executors.NewClusterctlExecutor(ifc.ExecutorConfig{
+				ExecutorDocument:  tt.execDoc,
+				TargetPath:        tt.targetPath,
+				PhaseConfigBundle: tt.phaseCfgBundle,
 			})
-			assert.Equal(t, tt.expectedErr, actualErr)
+			if tt.errContains != "" {
+				require.Nil(t, executor)
+				require.NotNil(t, actualErr)
+				require.Contains(t, actualErr.Error(), tt.errContains)
+			} else {
+				require.NoError(t, actualErr)
+				require.NotNil(t, executor)
+			}
 		})
 	}
 }
 
+var _ clustermap.ClusterMap = &ClusterMapMockInterface{}
+
+type ClusterMapMockInterface struct {
+	MockClusterKubeconfigContext func(string) (string, error)
+	MockParentCluster            func(string) (string, error)
+}
+
+func (c ClusterMapMockInterface) ValidateClusterMap() error {
+	panic("implement me")
+}
+
+func (c ClusterMapMockInterface) ParentCluster(s string) (string, error) {
+	return c.MockParentCluster(s)
+}
+
+func (c ClusterMapMockInterface) AllClusters() []string {
+	panic("implement me")
+}
+
+func (c ClusterMapMockInterface) ClusterKubeconfigContext(s string) (string, error) {
+	return c.MockClusterKubeconfigContext(s)
+}
+
+func (c ClusterMapMockInterface) Sources(_ string) ([]v1alpha1.KubeconfigSource, error) {
+	panic("implement me")
+}
+
+func (c ClusterMapMockInterface) Write(_ io.Writer, _ clustermap.WriteOptions) error {
+	panic("implement me")
+}
+
+var _ container.ClientV1Alpha1 = &MockClientFuncInterface{}
+
+type MockClientFuncInterface struct {
+	MockRun func() error
+}
+
+func (c MockClientFuncInterface) Run() error {
+	return c.MockRun()
+}
+
 func TestClusterctlExecutorRun(t *testing.T) {
 	errTmpFile := goerrors.New("TmpFile error")
-
+	errCtx := goerrors.New("context error")
+	errParent := goerrors.New("parent cluster error")
 	testCases := []struct {
 		name        string
 		cfgDoc      document.Document
-		fs          fs.FileSystem
-		bundlePath  string
+		kubecfg     kubeconfig.Interface
 		expectedEvt []events.Event
 		clusterMap  clustermap.ClusterMap
+		clientFunc  container.ClientV1Alpha1FactoryFunc
 	}{
 		{
-			name:       "Error unknown action",
-			cfgDoc:     executorDoc(t, fmt.Sprintf(executorConfigTmplGood, "someAction")),
-			bundlePath: "testdata/executor_init",
+			name:   "Error unknown action",
+			cfgDoc: executorDoc(t, fmt.Sprintf(executorConfigTmplGood, "someAction")),
 			expectedEvt: []events.Event{
 				wrapError(errors.ErrUnknownExecutorAction{Action: "someAction", ExecutorName: "clusterctl"}),
 			},
 			clusterMap: clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
 		},
 		{
-			name:   "Error temporary file",
+			name:   "Failed get kubeconfig file - init",
 			cfgDoc: executorDoc(t, fmt.Sprintf(executorConfigTmplGood, "init")),
-			fs: testfs.MockFileSystem{
-				MockTempFile: func(string, string) (fs.File, error) {
-					return nil, errTmpFile
-				},
-			},
-			bundlePath: "testdata/executor_init",
+			kubecfg: fakeKubeConfig{getFile: func() (string, kubeconfig.Cleanup, error) {
+				return "", nil, errTmpFile
+			}},
 			expectedEvt: []events.Event{
 				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
 					Operation: events.ClusterctlInitStart,
@@ -148,20 +275,85 @@ func TestClusterctlExecutorRun(t *testing.T) {
 			clusterMap: clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
 		},
 		{
+			name:   "Failed get kubeconfig file - move",
+			cfgDoc: executorDoc(t, fmt.Sprintf(executorConfigTmplGood, "move")),
+			kubecfg: fakeKubeConfig{getFile: func() (string, kubeconfig.Cleanup, error) {
+				return "", nil, errTmpFile
+			}},
+			expectedEvt: []events.Event{
+				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
+					Operation: events.ClusterctlMoveStart,
+				}),
+				wrapError(errTmpFile),
+			},
+			clusterMap: clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
+		},
+		{
+			name:   "Failed get kubeconfig context - init",
+			cfgDoc: executorDoc(t, fmt.Sprintf(executorConfigTmplGood, "init")),
+			kubecfg: fakeKubeConfig{getFile: func() (string, kubeconfig.Cleanup, error) {
+				return "", func() {}, nil
+			}},
+			expectedEvt: []events.Event{
+				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
+					Operation: events.ClusterctlInitStart,
+				}),
+				wrapError(errCtx),
+			},
+			clusterMap: ClusterMapMockInterface{MockClusterKubeconfigContext: func(s string) (string, error) {
+				return "", errCtx
+			}},
+		},
+		{
+			name:   "Failed get kubeconfig context - move",
+			cfgDoc: executorDoc(t, fmt.Sprintf(executorConfigTmplGood, "move")),
+			kubecfg: fakeKubeConfig{getFile: func() (string, kubeconfig.Cleanup, error) {
+				return "", func() {}, nil
+			}},
+			expectedEvt: []events.Event{
+				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
+					Operation: events.ClusterctlMoveStart,
+				}),
+				wrapError(errCtx),
+			},
+			clusterMap: ClusterMapMockInterface{MockClusterKubeconfigContext: func(s string) (string, error) {
+				return "", errCtx
+			}},
+		},
+		{
+			name:   "Failed get parent cluster",
+			cfgDoc: executorDoc(t, fmt.Sprintf(executorConfigTmplGood, "move")),
+			kubecfg: fakeKubeConfig{getFile: func() (string, kubeconfig.Cleanup, error) {
+				return "", func() {}, nil
+			}},
+			expectedEvt: []events.Event{
+				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
+					Operation: events.ClusterctlMoveStart,
+				}),
+				wrapError(errParent),
+			},
+			clusterMap: ClusterMapMockInterface{MockClusterKubeconfigContext: func(s string) (string, error) {
+				return "ctx", nil
+			},
+				MockParentCluster: func(s string) (string, error) {
+					return "", errParent
+				}},
+		},
+		{
 			name:   "Regular Run init",
 			cfgDoc: executorDoc(t, fmt.Sprintf(executorConfigTmplGood, "init")),
-			fs: testfs.MockFileSystem{
-				MockTempFile: func(string, string) (fs.File, error) {
-					return testfs.TestFile{
-						MockName:  func() string { return "filename" },
-						MockWrite: func([]byte) (int, error) { return 0, nil },
-						MockClose: func() error { return nil },
-					}, nil
-				},
-				MockRemoveAll: func() error { return nil },
+			kubecfg: fakeKubeConfig{getFile: func() (string, kubeconfig.Cleanup, error) {
+				return "", func() {}, nil
+			}},
+			clusterMap: ClusterMapMockInterface{MockClusterKubeconfigContext: func(s string) (string, error) {
+				return "cluster", nil
+			}},
+			clientFunc: func(_ string, _ io.Reader, _ io.Writer,
+				_ *v1alpha1.GenericContainer, _ string) container.ClientV1Alpha1 {
+				return MockClientFuncInterface{MockRun: func() error {
+					return nil
+				}}
 			},
-			bundlePath: "testdata/executor_init",
-			clusterMap: clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
 			expectedEvt: []events.Event{
 				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
 					Operation: events.ClusterctlInitStart,
@@ -171,27 +363,52 @@ func TestClusterctlExecutorRun(t *testing.T) {
 				}),
 			},
 		},
-		// TODO add move tests here
+		{
+			name:   "Regular Run move",
+			cfgDoc: executorDoc(t, fmt.Sprintf(executorConfigTmplGood, "move")),
+			kubecfg: fakeKubeConfig{getFile: func() (string, kubeconfig.Cleanup, error) {
+				return "", func() {}, nil
+			}},
+			clusterMap: ClusterMapMockInterface{MockClusterKubeconfigContext: func(s string) (string, error) {
+				return "cluster", nil
+			},
+				MockParentCluster: func(s string) (string, error) {
+					return "parentCluster", nil
+				}},
+			clientFunc: func(_ string, _ io.Reader, _ io.Writer,
+				_ *v1alpha1.GenericContainer, _ string) container.ClientV1Alpha1 {
+				return MockClientFuncInterface{MockRun: func() error {
+					return nil
+				}}
+			},
+			expectedEvt: []events.Event{
+				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
+					Operation: events.ClusterctlMoveStart,
+				}),
+				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
+					Operation: events.ClusterctlMoveEnd,
+				}),
+			},
+		},
 	}
 	for _, test := range testCases {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
-			kubeCfg := kubeconfig.NewKubeConfig(
-				kubeconfig.FromByte([]byte("someKubeConfig")),
-				kubeconfig.InjectFileSystem(tt.fs),
-			)
 			executor, err := executors.NewClusterctlExecutor(
 				ifc.ExecutorConfig{
-					ExecutorDocument: tt.cfgDoc,
-					KubeConfig:       kubeCfg,
-					ClusterMap:       tt.clusterMap,
+					TargetPath:        "testdata",
+					PhaseConfigBundle: executorBundle(t, krmExecDoc),
+					ExecutorDocument:  tt.cfgDoc,
+					KubeConfig:        tt.kubecfg,
+					ClusterMap:        tt.clusterMap,
+					ContainerFunc:     tt.clientFunc,
 				})
 			require.NoError(t, err)
 			ch := make(chan events.Event)
 			go executor.Run(ch, ifc.RunOptions{DryRun: true})
 			var actualEvt []events.Event
 			for evt := range ch {
-				// Skip timmestamp for comparison
+				// Skip timestamp for comparison
 				evt.Timestamp = time.Time{}
 				if evt.Type == events.ClusterctlType {
 					// Set message to empty string, so it's not compared
@@ -200,7 +417,7 @@ func TestClusterctlExecutorRun(t *testing.T) {
 				actualEvt = append(actualEvt, evt)
 			}
 			for i := range tt.expectedEvt {
-				// Skip timmestamp for comparison
+				// Skip timestamp for comparison
 				tt.expectedEvt[i].Timestamp = time.Time{}
 			}
 			assert.Equal(t, tt.expectedEvt, actualEvt)
@@ -237,10 +454,12 @@ func TestClusterctlExecutorValidate(t *testing.T) {
 	for _, test := range testCases {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
-			sampleCfgDoc := executorDoc(t, fmt.Sprintf(test.executorConfigTmpl, test.actionType, test.actionType))
+			sampleCfgDoc := executorDoc(t, fmt.Sprintf(test.executorConfigTmpl, test.actionType))
 			executor, err := executors.NewClusterctlExecutor(
 				ifc.ExecutorConfig{
-					ExecutorDocument: sampleCfgDoc,
+					TargetPath:        "testdata",
+					ExecutorDocument:  sampleCfgDoc,
+					PhaseConfigBundle: executorBundle(t, krmExecDoc),
 				})
 			require.NoError(t, err)
 			err = executor.Validate()
@@ -258,8 +477,9 @@ func TestClusterctlExecutorRender(t *testing.T) {
 	sampleCfgDoc := executorDoc(t, fmt.Sprintf(executorConfigTmpl, "init"))
 	executor, err := executors.NewClusterctlExecutor(
 		ifc.ExecutorConfig{
-			TargetPath:       "../../clusterctl/client/testdata",
-			ExecutorDocument: sampleCfgDoc,
+			TargetPath:        "testdata",
+			ExecutorDocument:  sampleCfgDoc,
+			PhaseConfigBundle: executorBundle(t, krmExecDoc),
 		})
 	require.NoError(t, err)
 	actualOut := &bytes.Buffer{}

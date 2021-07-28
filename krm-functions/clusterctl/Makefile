@@ -5,7 +5,7 @@ GOBIN := $(shell go env GOPATH)/bin
 
 # docker image options
 DOCKER_REGISTRY     ?= quay.io
-DOCKER_IMAGE_NAME   ?= kubeval-validator
+DOCKER_IMAGE_NAME   ?= clusterctl
 DOCKER_IMAGE_PREFIX ?= airshipit
 DOCKER_IMAGE_TAG    ?= latest
 DOCKER_IMAGE        ?= $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)

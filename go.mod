@@ -21,7 +21,6 @@ require (
 	github.com/go-git/go-git/v5 v5.0.0
 	github.com/go-logr/zapr v0.1.1 // indirect
 	github.com/gophercloud/gophercloud v0.6.0 // indirect
-	github.com/gopherjs/gopherjs v0.0.0-20191106031601-ce3c9ade29de // indirect
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
@@ -29,7 +28,6 @@ require (
 	github.com/moby/term v0.0.0-20201216013528-df9cb8a40635 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.1
-	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.6.1
@@ -46,7 +44,6 @@ require (
 	opendev.org/airship/go-redfish v0.0.0-20200318103738-db034d1d753a
 	opendev.org/airship/go-redfish/client v0.0.0-20200318103738-db034d1d753a
 	sigs.k8s.io/cli-utils v0.21.0
-	sigs.k8s.io/cluster-api v0.3.13
 	sigs.k8s.io/controller-runtime v0.5.14
 	sigs.k8s.io/kustomize/api v0.7.2
 	sigs.k8s.io/kustomize/kyaml v0.10.6

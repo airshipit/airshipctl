@@ -15,9 +15,7 @@
 package v1alpha1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
 )
 
 // +kubebuilder:object:root=true
@@ -33,12 +31,26 @@ type Clusterctl struct {
 	MoveOptions *MoveOptions `json:"move-options,omitempty"`
 	// AdditionalComponentVariables are variables that will be available to clusterctl
 	// when reading provider components
-	AdditionalComponentVariables map[string]string `json:"additional-vars,omitempty"`
-	// EnvVars if set to true, allows to source variables for cluster-api components
-	// for environment variables.
-	EnvVars    bool                 `json:"env-vars,omitempty"`
-	ImageMetas map[string]ImageMeta `json:"images,omitempty"`
+	AdditionalComponentVariables map[string]string    `json:"additional-vars,omitempty"`
+	ImageMetas                   map[string]ImageMeta `json:"images,omitempty"`
 }
+
+const (
+	// CoreProviderType is a type reserved for Cluster API core repository.
+	CoreProviderType = "CoreProvider"
+
+	// BootstrapProviderType is the type associated with codebases that provide
+	// bootstrapping capabilities.
+	BootstrapProviderType = "BootstrapProvider"
+
+	// InfrastructureProviderType is the type associated with codebases that provide
+	// infrastructure capabilities.
+	InfrastructureProviderType = "InfrastructureProvider"
+
+	// ControlPlaneProviderType is the type associated with codebases that provide
+	// control-plane capabilities.
+	ControlPlaneProviderType = "ControlPlaneProvider"
+)
 
 // ImageMeta is part of clusterctl config
 type ImageMeta struct {
@@ -50,20 +62,8 @@ type ImageMeta struct {
 type Provider struct {
 	Name string `json:"name,"`
 	Type string `json:"type,"`
-	URL  string `json:"url,omitempty"`
-
-	// IsClusterctlRepository if set to true, clusterctl provider's repository implementation will be used
-	// if omitted or set to false, airshipctl repository implementation will be used.
-	IsClusterctlRepository bool `json:"clusterctl-repository,omitempty"`
-
-	// Map of versions where each key is a version and value is path relative to target path of the manifest
-	// ignored if IsClusterctlRepository is set to true
-	Versions map[string]string `json:"versions,omitempty"`
-
-	// VariableSubstitution indicates weather you want to substitute variables in the cluster-api manifests
-	// if set to true, variables will be substituted only if they are defined either in Environment or
-	// in AdditionalComponentVariables, if not they will be left as is.
-	VariableSubstitution bool `json:"variable-substitution,omitempty"`
+	// URL can contain remote URL of upstream Provider or relative to target path of the manifest
+	URL string `json:"url,omitempty"`
 }
 
 // InitOptions container with exposed clusterctl InitOptions
@@ -72,19 +72,17 @@ type InitOptions struct {
 	// cluster-api core provider's latest release is used.
 	CoreProvider string `json:"core-provider,omitempty"`
 
-	// BootstrapProviders and versions (e.g. kubeadm:v0.3.0) to add to the management cluster.
+	// BootstrapProviders and versions (comma separated, e.g. kubeadm:v0.3.0) to add to the management cluster.
 	// If unspecified, the kubeadm bootstrap provider's latest release is used.
-	BootstrapProviders []string `json:"bootstrap-providers,omitempty"`
+	BootstrapProviders string `json:"bootstrap-providers,omitempty"`
 
-	// InfrastructureProviders and versions (e.g. aws:v0.5.0) to add to the management cluster.
-	InfrastructureProviders []string `json:"infrastructure-providers,omitempty"`
+	// InfrastructureProviders and versions (comma separated, e.g. aws:v0.5.0,metal3:v0.4.0)
+	// to add to the management cluster.
+	InfrastructureProviders string `json:"infrastructure-providers,omitempty"`
 
-	// ControlPlaneProviders and versions (e.g. kubeadm:v0.3.0) to add to the management cluster.
+	// ControlPlaneProviders and versions (comma separated, e.g. kubeadm:v0.3.0) to add to the management cluster.
 	// If unspecified, the kubeadm control plane provider latest release is used.
-	ControlPlaneProviders []string `json:"control-plane-providers,omitempty"`
-
-	// KubeConfigRef reference to KubeConfig document
-	KubeConfigRef *corev1.ObjectReference `json:"kubeConfigRef,omitempty"`
+	ControlPlaneProviders string `json:"control-plane-providers,omitempty"`
 }
 
 // ActionType for clusterctl
@@ -96,20 +94,10 @@ const (
 	Move ActionType = "move"
 )
 
-// Provider returns provider filtering by name and type
-func (c *Clusterctl) Provider(name string, providerType clusterctlv1.ProviderType) *Provider {
-	t := string(providerType)
-	for _, prov := range c.Providers {
-		if prov.Name == name && prov.Type == t {
-			return prov
-		}
-	}
-	return nil
-}
-
 // MoveOptions carries the options supported by move.
 type MoveOptions struct {
-	// The namespace where the workload cluster is hosted. If unspecified, the target context's namespace is used.
+	// Namespace where the objects describing the workload cluster exists. If unspecified, the current
+	// namespace will be used.
 	Namespace string `json:"namespace,omitempty"`
 }
 
@@ -121,4 +109,21 @@ func DefaultClusterctl() *Clusterctl {
 		Providers:   make([]*Provider, 0),
 		ImageMetas:  make(map[string]ImageMeta),
 	}
+}
+
+// ClusterctlOptions holds all necessary data to run clusterctl inside of KRM
+type ClusterctlOptions struct {
+	CmdOptions []string          `json:"cmd-options,omitempty"`
+	Config     []byte            `json:"config,omitempty"`
+	Components map[string][]byte `json:"components,omitempty"`
+}
+
+// GetKubeconfigOptions carries all the options to retrieve kubeconfig from parent cluster
+type GetKubeconfigOptions struct {
+	// Timeout is the maximum length of time to retrieve kubeconfig
+	Timeout string
+	// Namespace is the namespace in which secret is placed.
+	ManagedClusterNamespace string
+	// ManagedClusterName is the name of the managed cluster.
+	ManagedClusterName string
 }
