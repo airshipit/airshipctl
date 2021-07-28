@@ -16,7 +16,7 @@ spec:
         cluster.x-k8s.io/cluster-name: target-cluster
     spec:
       clusterName: target-cluster
-      version: v1.19.14
+      version: v1.21.2
       bootstrap:
         configRef:
           name: worker-1

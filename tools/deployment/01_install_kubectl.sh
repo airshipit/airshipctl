@@ -14,7 +14,7 @@
 
 set -xe
 
-: ${KUBE_VERSION:="v1.19.1"}
+: ${KUBE_VERSION:="v1.21.2"}
 
 # Install kubectl
 URL="https://storage.googleapis.com"
