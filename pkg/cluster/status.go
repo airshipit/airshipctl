@@ -113,7 +113,7 @@ func NewStatusMap(client client.Interface) (*StatusMap, error) {
 	crds, err := statusMap.client.ApiextensionsClientSet().
 		ApiextensionsV1().
 		CustomResourceDefinitions().
-		List(metav1.ListOptions{})
+		List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +136,7 @@ func (sm *StatusMap) ReadStatus(ctx context.Context, resource object.ObjMetadata
 	}
 	options := metav1.GetOptions{}
 	object, err := sm.client.DynamicClient().Resource(gvr.Resource).
-		Namespace(resource.Namespace).Get(resource.Name, options)
+		Namespace(resource.Namespace).Get(context.Background(), resource.Name, options)
 	if err != nil {
 		return handleResourceStatusError(resource, err)
 	}
@@ -165,7 +165,7 @@ func (sm *StatusMap) ReadStatusForObject(
 	gvr := restMapping.Resource
 
 	obj, err := sm.client.DynamicClient().Resource(gvr).Namespace(resource.GetNamespace()).
-		Get(resource.GetName(), metav1.GetOptions{})
+		Get(context.Background(), resource.GetName(), metav1.GetOptions{})
 	if err != nil {
 		return &event.ResourceStatus{
 			Identifier: identifier,
@@ -214,7 +214,7 @@ func (sm *StatusMap) GetStatusForResource(resource document.Document) (status.St
 
 	gvr := restMapping.Resource
 	obj, err := sm.client.DynamicClient().Resource(gvr).Namespace(resource.GetNamespace()).
-		Get(resource.GetName(), metav1.GetOptions{})
+		Get(context.Background(), resource.GetName(), metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}

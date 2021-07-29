@@ -852,7 +852,7 @@ spec:
   containers:
   - name: myapp-container
     image: busybox`,
-		expectedErr: "found more than one resources matching identified by Gvk: ~G_~V_Pod",
+		expectedErr: "found more than one resources matching identified by Gvk: {  Pod}",
 	},
 	{
 		cfg: `
@@ -876,7 +876,7 @@ kind: Pod
 metadata:
   name: pod1`,
 		expectedErr: "failed to find any source resources identified by " +
-			"Gvk: ~G_~V_Pod Name: doesNotExists Namespace: default",
+			"Gvk: {  Pod} Name: doesNotExists Namespace: default",
 	},
 	{
 		cfg: `
@@ -903,7 +903,7 @@ spec:
   containers:
   - name: myapp-container
     image: busybox`,
-		expectedErr: "failed to find any target resources identified by Gvk: ~G_~V_Deployment",
+		expectedErr: "failed to find any target resources identified by ResID: {{  Deployment}  }",
 	},
 	{
 		cfg: `

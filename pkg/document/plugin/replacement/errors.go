@@ -19,7 +19,7 @@ import (
 	"reflect"
 	"strings"
 
-	"sigs.k8s.io/kustomize/api/types"
+	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 )
 
 // ErrBadConfiguration returned in case of plugin misconfiguration
@@ -33,7 +33,7 @@ func (e ErrBadConfiguration) Error() string {
 
 // ErrMultipleResources returned if multiple resources were found
 type ErrMultipleResources struct {
-	ObjRef *types.Target
+	ObjRef *airshipv1.Target
 }
 
 func (e ErrMultipleResources) Error() string {
@@ -42,7 +42,7 @@ func (e ErrMultipleResources) Error() string {
 
 // ErrSourceNotFound returned if a replacement source resource does not exist in resource map
 type ErrSourceNotFound struct {
-	ObjRef *types.Target
+	ObjRef *airshipv1.Target
 }
 
 func (e ErrSourceNotFound) Error() string {
@@ -51,7 +51,7 @@ func (e ErrSourceNotFound) Error() string {
 
 // ErrTargetNotFound returned if a replacement target resource does not exist in the resource map
 type ErrTargetNotFound struct {
-	ObjRef *types.Selector
+	ObjRef *airshipv1.Selector
 }
 
 func (e ErrTargetNotFound) Error() string {

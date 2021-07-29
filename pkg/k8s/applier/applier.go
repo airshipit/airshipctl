@@ -30,6 +30,7 @@ import (
 	applyevent "sigs.k8s.io/cli-utils/pkg/apply/event"
 	"sigs.k8s.io/cli-utils/pkg/apply/poller"
 	clicommon "sigs.k8s.io/cli-utils/pkg/common"
+	"sigs.k8s.io/cli-utils/pkg/inventory"
 	"sigs.k8s.io/cli-utils/pkg/manifestreader"
 	"sigs.k8s.io/cli-utils/pkg/provider"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -166,15 +167,18 @@ func (a *Applier) ensureNamespaceExists(name string, dryRun clicommon.DryRunStra
 		return err
 	}
 	nsClient := clientSet.CoreV1().Namespaces()
-	_, err = nsClient.Create(&v1.Namespace{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Namespace",
-			APIVersion: "v1",
+	_, err = nsClient.Create(
+		context.Background(),
+		&v1.Namespace{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Namespace",
+				APIVersion: "v1",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name: name,
+			},
 		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-		},
-	})
+		metav1.CreateOptions{})
 	if err != nil && !apierror.IsAlreadyExists(err) {
 		// we got error and error doesn't say that NS already exist
 		return err
@@ -225,7 +229,12 @@ func (a *Adaptor) Initialize(p poller.Poller) error {
 // Run perform apply operation
 func (a *Adaptor) Run(ctx context.Context, objects []*unstructured.Unstructured,
 	options cliapply.Options) <-chan applyevent.Event {
-	return a.CliUtilsApplier.Run(ctx, objects, options)
+	inv, objects, err := inventory.SplitUnstructureds(objects)
+	if err != nil {
+		log.Debugf("Error while splitting objects %v", err)
+		return nil
+	}
+	return a.CliUtilsApplier.Run(ctx, inv, objects, options)
 }
 
 // NewInventoryDocument returns default config map with inventory Id to group up the objects

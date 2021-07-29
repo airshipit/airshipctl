@@ -24,7 +24,9 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	kerror "k8s.io/apimachinery/pkg/util/errors"
+	"sigs.k8s.io/kustomize/kyaml/errors"
 	"sigs.k8s.io/kustomize/kyaml/fn/framework"
+	"sigs.k8s.io/kustomize/kyaml/fn/framework/command"
 	"sigs.k8s.io/kustomize/kyaml/kio"
 	kyaml "sigs.k8s.io/kustomize/kyaml/yaml"
 
@@ -51,21 +53,18 @@ const (
 )
 
 func main() {
-	cfg := &v1.ConfigMap{}
-	resourceList := &framework.ResourceList{FunctionConfig: &cfg}
 	runner := ScriptRunner{
 		ScriptFile:         scriptPath,
 		WorkDir:            workdir,
 		RenderedBundleFile: bundleFile,
 		DataKey:            scriptKey,
-		ResourceList:       resourceList,
-		ConfigMap:          cfg,
 		ErrStream:          os.Stderr,
 		OutStream:          os.Stderr,
 	}
-	cmd := framework.Command(resourceList, runner.Run)
+	cmd := command.Build(&runner, command.StandaloneDisabled, false)
+
 	if err := cmd.Execute(); err != nil {
-		log.Print(err)
+		fmt.Println(err)
 		os.Exit(1)
 	}
 }
@@ -77,17 +76,20 @@ type ScriptRunner struct {
 	ErrStream io.Writer
 	OutStream io.Writer
 
-	ConfigMap    *v1.ConfigMap
-	ResourceList *framework.ResourceList
+	ConfigMap *v1.ConfigMap
 }
 
-// Run writes the script and bundle to the file system and executes it
-func (c *ScriptRunner) Run() error {
+// Process writes the script and bundle to the file system and executes it
+func (c *ScriptRunner) Process(rl *framework.ResourceList) error {
+	if err := framework.LoadFunctionConfig(rl.FunctionConfig, &c.ConfigMap); err != nil {
+		return errors.Wrap(err)
+	}
+
 	bundlePath, scriptPath := c.getBundleAndScriptPath()
 
 	script, exist := c.ConfigMap.Data[c.DataKey]
 	if !exist {
-		return fmt.Errorf("ConfigMap '%s/%s' doesnt' have specified script key '%s'",
+		return fmt.Errorf("ConfigMap '%s/%s' doesn't have specified script key '%s'",
 			c.ConfigMap.Namespace, c.ConfigMap.Name, c.DataKey)
 	}
 
@@ -95,12 +97,12 @@ func (c *ScriptRunner) Run() error {
 	if err != nil {
 		return err
 	}
-	err = c.writeBundle(bundlePath, c.ResourceList.Items)
+	err = c.writeBundle(bundlePath, rl.Items)
 	if err != nil {
 		return err
 	}
 
-	c.ResourceList.Items = nil
+	rl.Items = nil
 
 	clicmd := exec.Command(scriptPath)
 	clicmd.Stdout = c.OutStream

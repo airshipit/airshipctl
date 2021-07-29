@@ -16,6 +16,7 @@ package kubeconfig_test
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -30,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
+	applycorev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	v1 "k8s.io/client-go/tools/clientcmd/api/v1"
 	kustfs "sigs.k8s.io/kustomize/api/filesys"
@@ -179,23 +181,31 @@ type SecretMockInterface struct {
 	mock.Mock
 }
 
-func (s *SecretMockInterface) Create(_ *apiv1.Secret) (*apiv1.Secret, error) {
+func (s *SecretMockInterface) Create(_ context.Context, _ *apiv1.Secret,
+	_ metav1.CreateOptions) (*apiv1.Secret, error) {
 	panic("implement me")
 }
 
-func (s *SecretMockInterface) Update(_ *apiv1.Secret) (*apiv1.Secret, error) {
+func (s *SecretMockInterface) Update(_ context.Context, _ *apiv1.Secret,
+	_ metav1.UpdateOptions) (*apiv1.Secret, error) {
 	panic("implement me")
 }
 
-func (s *SecretMockInterface) Delete(_ string, _ *metav1.DeleteOptions) error {
+func (s *SecretMockInterface) Delete(_ context.Context, _ string, _ metav1.DeleteOptions) error {
 	panic("implement me")
 }
 
-func (s *SecretMockInterface) DeleteCollection(_ *metav1.DeleteOptions, _ metav1.ListOptions) error {
+func (s *SecretMockInterface) DeleteCollection(_ context.Context, _ metav1.DeleteOptions,
+	_ metav1.ListOptions) error {
 	panic("implement me")
 }
 
-func (s *SecretMockInterface) Get(name string, options metav1.GetOptions) (*apiv1.Secret, error) {
+func (s *SecretMockInterface) Apply(_ context.Context, _ *applycorev1.SecretApplyConfiguration,
+	_ metav1.ApplyOptions) (*apiv1.Secret, error) {
+	panic("implement me")
+}
+
+func (s *SecretMockInterface) Get(_ context.Context, name string, options metav1.GetOptions) (*apiv1.Secret, error) {
 	args := s.Called(name, options)
 	expectedResult, ok := args.Get(0).(*apiv1.Secret)
 	if !ok {
@@ -204,15 +214,16 @@ func (s *SecretMockInterface) Get(name string, options metav1.GetOptions) (*apiv
 	return expectedResult, args.Error(1)
 }
 
-func (s *SecretMockInterface) List(_ metav1.ListOptions) (*apiv1.SecretList, error) {
+func (s *SecretMockInterface) List(_ context.Context, _ metav1.ListOptions) (*apiv1.SecretList, error) {
 	panic("implement me")
 }
 
-func (s *SecretMockInterface) Watch(_ metav1.ListOptions) (watch.Interface, error) {
+func (s *SecretMockInterface) Watch(_ context.Context, _ metav1.ListOptions) (watch.Interface, error) {
 	panic("implement me")
 }
 
-func (s *SecretMockInterface) Patch(_ string, _ types.PatchType, _ []byte, _ ...string) (*apiv1.Secret, error) {
+func (s *SecretMockInterface) Patch(_ context.Context, _ string, _ types.PatchType, _ []byte,
+	_ metav1.PatchOptions, _ ...string) (*apiv1.Secret, error) {
 	panic("implement me")
 }
 

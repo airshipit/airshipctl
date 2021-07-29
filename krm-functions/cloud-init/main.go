@@ -23,6 +23,7 @@ import (
 	"sigs.k8s.io/kustomize/api/provider"
 	"sigs.k8s.io/kustomize/api/resmap"
 	"sigs.k8s.io/kustomize/kyaml/fn/framework"
+	"sigs.k8s.io/kustomize/kyaml/fn/framework/command"
 	"sigs.k8s.io/kustomize/kyaml/fn/runtime/runtimeutil"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 
@@ -40,7 +41,7 @@ const (
 
 func bundleFromRNodes(rnodes []*yaml.RNode) (document.Bundle, error) {
 	p := provider.NewDefaultDepProvider()
-	resmapFactory := resmap.NewFactory(p.GetResourceFactory(), p.GetConflictDetectorFactory())
+	resmapFactory := resmap.NewFactory(p.GetResourceFactory())
 	resmap, err := resmapFactory.NewResMapFromRNodeSlice(rnodes)
 	if err != nil {
 		return &document.BundleFactory{}, err
@@ -67,14 +68,8 @@ func docFromRNode(rnode *yaml.RNode) (document.Document, error) {
 }
 
 func main() {
-	resourceList := &framework.ResourceList{}
-	cmd := framework.Command(resourceList, func() error {
-		functionConfig, ok := resourceList.FunctionConfig.(*yaml.RNode)
-		if !ok {
-			return errors.New("Error while type assert of FunctionConfig")
-		}
-
-		functionConfigDocument, err := docFromRNode(functionConfig)
+	fn := func(rl *framework.ResourceList) error {
+		functionConfigDocument, err := docFromRNode(rl.FunctionConfig)
 		if err != nil {
 			return err
 		}
@@ -89,7 +84,7 @@ func main() {
 			return err
 		}
 
-		docBundle, err := bundleFromRNodes(resourceList.Items)
+		docBundle, err := bundleFromRNodes(rl.Items)
 		if err != nil {
 			return err
 		}
@@ -105,7 +100,7 @@ func main() {
 			return err
 		}
 
-		functionSpec := runtimeutil.GetFunctionSpec(functionConfig)
+		functionSpec := runtimeutil.GetFunctionSpec(rl.FunctionConfig)
 		configPath := functionSpec.Container.StorageMounts[0].DstPath
 
 		fls := make(map[string][]byte)
@@ -117,12 +112,12 @@ func main() {
 			return err
 		}
 
-		resourceList.Items = []*yaml.RNode{}
+		rl.Items = []*yaml.RNode{}
 		return nil
-	})
-
+	}
+	cmd := command.Build(framework.ResourceListProcessorFunc(fn), command.StandaloneEnabled, false)
 	if err := cmd.Execute(); err != nil {
-		fmt.Fprint(os.Stderr, err)
+		fmt.Println(err)
 		os.Exit(1)
 	}
 }

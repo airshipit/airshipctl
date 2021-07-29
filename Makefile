@@ -14,9 +14,6 @@ endif
 
 # Produce CRDs that work back to Kubernetes 1.16
 CRD_OPTIONS ?= crd:crdVersions=v1
-
-BINDIR              := bin
-EXECUTABLE_CLI      := airshipctl
 TOOLBINDIR          := tools/bin
 
 # linting
@@ -36,19 +33,6 @@ DOCKER_IMAGE_TAG    ?= latest
 DOCKER_IMAGE        ?= $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
 DOCKER_TARGET_STAGE ?= release
 PUBLISH             ?= false
-# use this variables to override base images in internal build process
-ifneq ($(strip $(DOCKER_BASE_GO_IMAGE)),)
-DOCKER_CMD_FLAGS    += --build-arg GO_IMAGE=$(strip $(DOCKER_BASE_GO_IMAGE))
-endif
-ifneq ($(strip $(DOCKER_BASE_RELEASE_IMAGE)),)
-DOCKER_CMD_FLAGS    += --build-arg RELEASE_IMAGE=$(strip $(DOCKER_BASE_RELEASE_IMAGE))
-endif
-ifneq ($(strip $(DOCKER_IMAGE_ENTRYPOINT)),)
-DOCKER_CMD_FLAGS    += --build-arg ENTRYPOINT=$(strip $(DOCKER_IMAGE_ENTRYPOINT))
-endif
-ifneq ($(strip $(GOPROXY)),)
-DOCKER_CMD_FLAGS    += --build-arg GOPROXY=$(strip $(GOPROXY))
-endif
 # use this variable for image labels added in internal build process
 COMMIT              ?= $(shell git rev-parse HEAD)
 LABEL               ?= org.airshipit.build=community
@@ -72,16 +56,16 @@ USE_PROXY           ?= false
 # docker build flags
 DOCKER_CMD_FLAGS    += --network=host
 DOCKER_CMD_FLAGS    += --force-rm=$(DOCKER_FORCE_CLEAN)
-
-DOCKER_PROXY_FLAGS  := --build-arg http_proxy=$(PROXY)
-DOCKER_PROXY_FLAGS  += --build-arg https_proxy=$(PROXY)
-DOCKER_PROXY_FLAGS  += --build-arg HTTP_PROXY=$(PROXY)
-DOCKER_PROXY_FLAGS  += --build-arg HTTPS_PROXY=$(PROXY)
-DOCKER_PROXY_FLAGS  += --build-arg no_proxy=$(NO_PROXY)
-DOCKER_PROXY_FLAGS  += --build-arg NO_PROXY=$(NO_PROXY)
-
 ifeq ($(USE_PROXY), true)
-DOCKER_CMD_FLAGS += $(DOCKER_PROXY_FLAGS)
+DOCKER_CMD_FLAGS    += --build-arg http_proxy=$(PROXY)
+DOCKER_CMD_FLAGS    += --build-arg https_proxy=$(PROXY)
+DOCKER_CMD_FLAGS    += --build-arg HTTP_PROXY=$(PROXY)
+DOCKER_CMD_FLAGS    += --build-arg HTTPS_PROXY=$(PROXY)
+DOCKER_CMD_FLAGS    += --build-arg no_proxy=$(NO_PROXY)
+DOCKER_CMD_FLAGS    += --build-arg NO_PROXY=$(NO_PROXY)
+endif
+ifneq ($(strip $(GOPROXY)),)
+DOCKER_CMD_FLAGS    += --build-arg GOPROXY=$(strip $(GOPROXY))
 endif
 
 # Godoc server options
@@ -96,33 +80,156 @@ export KIND_URL     ?= https://kind.sigs.k8s.io/dl/v0.8.1/kind-$(UNAME)-amd64
 KUBECTL_VERSION     ?= v1.18.6
 export KUBECTL_URL  ?= https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
 
-# Plugins options
-PLUGINS_DIR         := krm-functions
-PLUGINS             := $(subst $(PLUGINS_DIR)/,,$(wildcard $(PLUGINS_DIR)/*))
-# use this variables to override base images in internal build process
-ifneq ($(strip $(DOCKER_BASE_PLUGINS_BUILD_IMAGE)),)
-DOCKER_CMD_FLAGS    += --build-arg PLUGINS_BUILD_IMAGE=$(strip $(DOCKER_BASE_PLUGINS_BUILD_IMAGE))
-endif
-ifneq ($(strip $(DOCKER_BASE_PLUGINS_RELEASE_IMAGE)),)
-DOCKER_CMD_FLAGS    += --build-arg PLUGINS_RELEASE_IMAGE=$(strip $(DOCKER_BASE_PLUGINS_RELEASE_IMAGE))
-endif
-
-
-$(PLUGINS):
-	 @CGO_ENABLED=0 go build -o $(BINDIR)/$@ $(GO_FLAGS) ./$(PLUGINS_DIR)/$@/
-
 .PHONY: depend
 depend:
 	@go mod download
 
 .PHONY: build
-build: depend
-	@CGO_ENABLED=0 go build -o $(BINDIR)/$(EXECUTABLE_CLI) $(GO_FLAGS)
 
 .PHONY: install
 install: depend
 install:
 	@CGO_ENABLED=0 go install .
+
+# Core of build logic
+BIN_DIR      := bin
+BIN_SRC_DIR  := krm-functions
+BINS         := airshipctl $(subst $(BIN_SRC_DIR)/,,$(wildcard $(BIN_SRC_DIR)/*))
+IMGS         := $(BINS)
+
+# This section sets the settings for different subcomponents
+
+# airshipctl is a special case - we need to override it manually:
+# its makefile target for image is 'docker-image' - others have
+# docker-image-<name of component> targets
+airshipctl_IMG_TGT_NAME:=docker-image
+# its main.go is in the root of repo - others have main.go in
+# $(BIN_SRC_DIR)/<name of component>/main.go
+airshipctl_FROM_PATH:=.
+# and its Dockerfile is also in the root of repo - others have Dockerfile in
+# $(BIN_SRC_DIR)/<name of component>/Dockerfile
+docker-image_DOCKERFILE:=Dockerfile
+
+# kubeval-validator, toolbox and toolbox-virsh don't depend on
+# airshipctl repo. Their Dockerfiles don't
+# need to be called from the root of the repo.
+kubeval-validator_IS_INDEPENDED:=true
+clusterctl_IS_INDEPENDED:=true
+toolbox-virsh_IS_INDEPENDED:=true
+# in addition toolbox-virsh docker image needs toolbox docker image to be built first
+docker-image-toolbox-virsh_DEPENDENCY:=docker-image-toolbox
+
+# The template that generates targets for creating binaries per component:
+# Targets will be generated only for components that depend on airshipctl repo (part of that go module)
+# Note: expressions with ?= won't be executed if the values of that variable was already set to it.
+# Using that syntax it's possible to build values overrides for components.
+# Note 2: $$ is needed to instruct make-engine that variable should be used after template rendering.
+# When template is rendered all $ will be rendered in the template and $$ will be converted to $, e.g.
+# if we call map_binary_defaults_tmpl for airshipctl $1 will be converted to 'airshipctl' and we'll get
+# ifneq ($(airshipctl_IS_INDEPENDED),true)
+# arishipctl_FROM_PATH?=$(BIN_SRC_DIR)/airshipctl/main.go
+# ...
+# since we defining arishipctl_FROM_PATH above, and ?= is used in the 2nd line
+# arishipctl_FROM_PATH will stay the same as it was defined above.
+define map_binary_defaults_tmpl
+ifneq ($$($1_IS_INDEPENDED),true)
+$1_FROM_PATH?=$$(BIN_SRC_DIR)/$1/main.go
+
+$$(warning Adding dynamic target $$(BIN_DIR)/$1)
+$$(BIN_DIR)/$1: $$($1_FROM_PATH) depend
+	@CGO_ENABLED=0 go build -o $$@ $$(GO_FLAGS) $$<
+
+$$(warning Adding dynamic target $1)
+.PHONY: $1
+$1: $$(BIN_DIR)/$1
+
+build: $1
+endif
+endef
+map_binary_defaults = $(eval $(call map_binary_defaults_tmpl,$1))
+# Go through all components and generate binary targets for each of them
+$(foreach bin,$(BINS),$(call map_binary_defaults,$(bin)))
+
+.PHONY: images
+.PHONY: images-publish
+
+# The template that generates targets for creating images per components
+# There is a special logic to handle per-components overrides
+# 2 targets will be generated per component: docker-image-<component name> (possible to override)
+# and docker-image-<component name>-publish
+define map_image_defaults_tmpl
+$1_IMG_TGT_NAME?=docker-image-$1
+
+$$($1_IMG_TGT_NAME)_DOCKERTGT?=$$(DOCKER_TARGET_STAGE)
+$$($1_IMG_TGT_NAME)_DOCKERFILE?=$$(BIN_SRC_DIR)/$1/Dockerfile
+$$($1_IMG_TGT_NAME)_MAKETGT?=$$(BIN_DIR)/$1
+
+ifeq ($$($1_IS_INDEPENDED),true)
+$$($1_IMG_TGT_NAME)_DOCKERROOT?=$$(BIN_SRC_DIR)/$1
+else
+$$($1_IMG_TGT_NAME)_DOCKERROOT?=.
+endif
+
+ifneq ($1,airshipctl)
+ifneq ($$(origin DOCKER_BASE_PLUGINS_GO_IMAGE), undefined)
+$$($1_IMG_TGT_NAME)_BASE_GO_IMAGE?=$$(DOCKER_BASE_PLUGINS_GO_IMAGE)
+endif
+endif
+$$($1_IMG_TGT_NAME)_BASE_GO_IMAGE?=$$(DOCKER_BASE_GO_IMAGE)
+ifneq ($$(strip $$($$($1_IMG_TGT_NAME)_BASE_GO_IMAGE)),)
+$$($1_IMG_TGT_NAME)_BUILD_ARG  += GO_IMAGE=$$($$($1_IMG_TGT_NAME)_BASE_GO_IMAGE)
+endif
+
+ifneq ($1,airshipctl)
+ifneq ($$(origin DOCKER_BASE_PLUGINS_BUILD_IMAGE), undefined)
+$$($1_IMG_TGT_NAME)_BASE_BUILD_IMAGE?=$$(DOCKER_BASE_PLUGINS_BUILD_IMAGE)
+endif
+endif
+$$($1_IMG_TGT_NAME)_BASE_BUILD_IMAGE?=$$(DOCKER_BASE_BUILD_IMAGE)
+ifneq ($$(strip $$($$($1_IMG_TGT_NAME)_BASE_BUILD_IMAGE)),)
+$$($1_IMG_TGT_NAME)_BUILD_ARG  += BUILD_IMAGE=$$($$($1_IMG_TGT_NAME)_BASE_BUILD_IMAGE)
+endif
+
+ifneq ($1,airshipctl)
+ifneq ($$(origin DOCKER_BASE_PLUGINS_RELEASE_IMAGE), undefined)
+$$($1_IMG_TGT_NAME)_BASE_RELEASE_IMAGE?=$$(DOCKER_BASE_PLUGINS_RELEASE_IMAGE)
+endif
+endif
+$$($1_IMG_TGT_NAME)_BASE_RELEASE_IMAGE?=$$(DOCKER_BASE_RELEASE_IMAGE)
+ifneq ($$(strip $$($$($1_IMG_TGT_NAME)_BASE_RELEASE_IMAGE)),)
+$$($1_IMG_TGT_NAME)_BUILD_ARG  += RELEASE_IMAGE=$$($$($1_IMG_TGT_NAME)_BASE_RELEASE_IMAGE)
+endif
+
+$$(warning Adding dynamic target $$($1_IMG_TGT_NAME))
+.PHONY: $$($1_IMG_TGT_NAME)
+$$($1_IMG_TGT_NAME): $$($$($1_IMG_TGT_NAME)_DEPENDENCY)
+	docker build $$($$($1_IMG_TGT_NAME)_DOCKERROOT) $$(DOCKER_CMD_FLAGS)\
+		--file $$($$($1_IMG_TGT_NAME)_DOCKERFILE) \
+		--label $$(LABEL) \
+		--label "org.opencontainers.image.revision=$$(COMMIT)" \
+		--label "org.opencontainers.image.created=$$(shell date --rfc-3339=seconds --utc)" \
+		--label "org.opencontainers.image.title=$1" \
+		--target $$($$($1_IMG_TGT_NAME)_DOCKERTGT) \
+		$$(addprefix --build-arg ,$$($$($1_IMG_TGT_NAME)_BUILD_ARG)) \
+		--build-arg MAKE_TARGET=$$($$($1_IMG_TGT_NAME)_MAKETGT) \
+		--tag $$(DOCKER_REGISTRY)/$$(DOCKER_IMAGE_PREFIX)/$1:$$(DOCKER_IMAGE_TAG) \
+		$$(foreach tag,$$(DOCKER_IMAGE_EXTRA_TAGS),--tag $$(DOCKER_REGISTRY)/$$(DOCKER_IMAGE_PREFIX)/$1:$$(tag) )
+ifeq ($$(PUBLISH), true)
+	@docker push $$(DOCKER_REGISTRY)/$$(DOCKER_IMAGE_PREFIX)/$1:$$(DOCKER_IMAGE_TAG)
+endif
+
+images: $$($1_IMG_TGT_NAME)
+
+$$(warning Adding dynamic target $$($1_IMG_TGT_NAME)-publish)
+.PHONY: $$($1_IMG_TGT_NAME)-publish
+$$($1_IMG_TGT_NAME)-publish: $$($1_IMG_TGT_NAME)
+	@docker push $$(DOCKER_REGISTRY)/$$(DOCKER_IMAGE_PREFIX)/$1:$$(DOCKER_IMAGE_TAG)
+
+images-publish: $$($1_IMG_TGT_NAME)-publish
+endef
+map_image_defaults = $(eval $(call map_image_defaults_tmpl,$1))
+# go through components and render the template
+$(foreach img,$(IMGS),$(call map_image_defaults,$(img)))
 
 .PHONY: test
 test: lint
@@ -163,108 +270,33 @@ tidy:
 golint:
 	@./tools/golint
 
-.PHONY: images
-images: docker-image
-images: docker-image-clusterctl docker-image-kubeval-validator docker-image-cloud-init docker-image-replacement-transformer docker-image-templater docker-image-toolbox
-
-.PHONY: docker-image
-docker-image:
-	@docker build . $(DOCKER_CMD_FLAGS) \
-		--label $(LABEL) \
-		--target $(DOCKER_TARGET_STAGE) \
-		--build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET) \
-		--tag $(DOCKER_IMAGE)
-ifeq ($(PUBLISH), true)
-	@docker push $(DOCKER_IMAGE)
-endif
-
-.PHONY: docker-image-templater
-docker-image-templater:
-	@docker build $(PLUGINS_DIR)/templater $(DOCKER_CMD_FLAGS) \
-		--label $(LABEL) \
-		--target $(DOCKER_TARGET_STAGE) \
-		--tag $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/templater:$(DOCKER_IMAGE_TAG)
-ifeq ($(PUBLISH), true)
-	@docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/templater:$(DOCKER_IMAGE_TAG)
-endif
-
-.PHONY: docker-image-replacement-transformer
-docker-image-replacement-transformer:
-	@docker build $(PLUGINS_DIR)/replacement-transformer $(DOCKER_CMD_FLAGS) \
-		--label $(LABEL) \
-		--target $(DOCKER_TARGET_STAGE) \
-		--tag $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/replacement-transformer:$(DOCKER_IMAGE_TAG)
-ifeq ($(PUBLISH), true)
-	@docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/replacement-transformer:$(DOCKER_IMAGE_TAG)
-endif
-
-.PHONY: docker-image-cloud-init
-docker-image-cloud-init:
-	@docker build $(PLUGINS_DIR)/cloud-init $(DOCKER_CMD_FLAGS) \
-		--label $(LABEL) \
-		--target $(DOCKER_TARGET_STAGE) \
-		--tag $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/cloud-init:$(DOCKER_IMAGE_TAG)
-ifeq ($(PUBLISH), true)
-	@docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/cloud-init:$(DOCKER_IMAGE_TAG)
-endif
-
-.PHONY: docker-image-clusterctl
-docker-image-clusterctl:
-	@docker build $(PLUGINS_DIR)/clusterctl $(DOCKER_CMD_FLAGS) \
-		--label $(LABEL) \
-		--target $(DOCKER_TARGET_STAGE) \
-		--tag $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/clusterctl:$(DOCKER_IMAGE_TAG)
-ifeq ($(PUBLISH), true)
-	@docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/clusterctl:$(DOCKER_IMAGE_TAG)
-endif
-
-.PHONY: docker-image-kubeval-validator
-docker-image-kubeval-validator:
-	@docker build $(PLUGINS_DIR)/kubeval-validator $(DOCKER_CMD_FLAGS) \
-		--label $(LABEL) \
-		--target $(DOCKER_TARGET_STAGE) \
-		--tag $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/kubeval-validator:$(DOCKER_IMAGE_TAG)
-ifeq ($(PUBLISH), true)
-	@docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/kubeval-validator:$(DOCKER_IMAGE_TAG)
-endif
-
-.PHONY: docker-image-toolbox
-docker-image-toolbox:
-	@docker build $(PLUGINS_DIR)/toolbox $(DOCKER_CMD_FLAGS) \
-		--label $(LABEL) \
-		--target $(DOCKER_TARGET_STAGE) \
-		--tag $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/toolbox:$(DOCKER_IMAGE_TAG)
-ifeq ($(PUBLISH), true)
-	@docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/toolbox:$(DOCKER_IMAGE_TAG)
-endif
-
 .PHONY: print-docker-image-tag
 print-docker-image-tag:
 	@echo "$(DOCKER_IMAGE)"
 
 .PHONY: docker-image-test-suite
-docker-image-test-suite: DOCKER_MAKE_TARGET = "cover update-golden generate check-git-diff"
-docker-image-test-suite: DOCKER_TARGET_STAGE = builder
+docker-image-test-suite: docker-image_MAKETGT = "cover update-golden generate check-git-diff"
+docker-image-test-suite: docker-image_DOCKERTGT = builder
 docker-image-test-suite: docker-image
 
 .PHONY: docker-image-unit-tests
-docker-image-unit-tests: DOCKER_MAKE_TARGET = cover
-docker-image-unit-tests: DOCKER_TARGET_STAGE = builder
+docker-image-unit-tests: docker-image_MAKETGT = cover
+docker-image-unit-tests: docker-image_DOCKERTGT = builder
 docker-image-unit-tests: docker-image
 
 .PHONY: docker-image-lint
-docker-image-lint: DOCKER_MAKE_TARGET = "lint check-copyright"
-docker-image-lint: DOCKER_TARGET_STAGE = builder
+docker-image-lint: docker-image_MAKETGT = "lint check-copyright"
+docker-image-lint: docker-image_DOCKERTGT = builder
 docker-image-lint: docker-image
 
 .PHONY: docker-image-golint
-docker-image-golint: DOCKER_MAKE_TARGET = golint
-docker-image-golint: DOCKER_TARGET_STAGE = builder
+docker-image-golint: docker-image_MAKETGT = golint
+docker-image-golint: docker-image_DOCKERTGT = builder
 docker-image-golint: docker-image
 
 .PHONY: clean
 clean:
-	@rm -fr $(BINDIR)
+	@rm -fr $(BIN_DIR)
 	@rm -fr $(COVER_PROFILE)
 
 .PHONY: docs

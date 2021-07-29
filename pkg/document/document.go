@@ -20,7 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
-	"sigs.k8s.io/kustomize/api/k8sdeps/kunstruct"
+	"sigs.k8s.io/kustomize/api/hasher"
 	"sigs.k8s.io/kustomize/api/resource"
 	"sigs.k8s.io/yaml"
 )
@@ -69,7 +69,9 @@ func (d *Factory) Annotate(newAnnotations map[string]string) {
 	for key, val := range newAnnotations {
 		annotations[key] = val
 	}
-	d.SetAnnotations(annotations)
+	if err := d.SetAnnotations(annotations); err != nil {
+		panic(fmt.Sprintf("Annotate: SetAnnotations failed %v", err))
+	}
 }
 
 // Label document by applying labels as map
@@ -82,7 +84,9 @@ func (d *Factory) Label(newLabels map[string]string) {
 	for key, val := range newLabels {
 		labels[key] = val
 	}
-	d.SetLabels(labels)
+	if err := d.SetLabels(labels); err != nil {
+		panic(fmt.Sprintf("Label: SetLabels failed %v", err))
+	}
 }
 
 // GetNamespace returns the namespace the resource thinks it's in.
@@ -289,7 +293,7 @@ func NewDocument(r *resource.Resource) (Document, error) {
 
 // NewDocumentFromBytes constructs document from bytes
 func NewDocumentFromBytes(b []byte) (Document, error) {
-	res, err := resource.NewFactory(kunstruct.NewKunstructuredFactoryImpl()).FromBytes(b)
+	res, err := resource.NewFactory(&hasher.Hasher{}).FromBytes(b)
 	if err != nil {
 		return nil, err
 	}

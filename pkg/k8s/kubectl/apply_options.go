@@ -15,6 +15,8 @@
 package kubectl
 
 import (
+	"fmt"
+
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/cli-runtime/pkg/printers"
 	"k8s.io/kubectl/pkg/cmd/apply"
@@ -29,7 +31,10 @@ type ApplyOptions struct {
 
 // SetDryRun enables/disables the dry run flag in kubectl apply options
 func (ao *ApplyOptions) SetDryRun(dryRun bool) {
-	ao.ApplyOptions.DryRun = dryRun
+	if dryRun {
+		// --dry-run is deprecated and can be replaced with --dry-run=client.
+		ao.ApplyOptions.DryRunStrategy = cmdutil.DryRunClient
+	}
 }
 
 // SetPrune enables/disables the prune flag in kubectl apply options
@@ -64,13 +69,13 @@ func NewApplyOptions(f cmdutil.Factory, streams genericclioptions.IOStreams) (*A
 
 	o.ToPrinter = func(operation string) (printers.ResourcePrinter, error) {
 		o.PrintFlags.NamePrintFlags.Operation = operation
-		if o.DryRun {
+		if o.DryRunStrategy == cmdutil.DryRunClient {
 			err := o.PrintFlags.Complete("%s (dry run)")
 			if err != nil {
 				return nil, err
 			}
 		}
-		if o.ServerDryRun {
+		if o.DryRunStrategy == cmdutil.DryRunServer {
 			err := o.PrintFlags.Complete("%s (server dry run)")
 			if err != nil {
 				return nil, err
@@ -85,17 +90,16 @@ func NewApplyOptions(f cmdutil.Factory, streams genericclioptions.IOStreams) (*A
 		return nil, err
 	}
 
-	o.DiscoveryClient, err = f.ToDiscoveryClient()
-	if err != nil {
-		return nil, err
-	}
-
 	dynamicClient, err := f.DynamicClient()
 	if err != nil {
 		return nil, err
 	}
 
-	o.DeleteOptions = o.DeleteFlags.ToOptions(dynamicClient, o.IOStreams)
+	o.DeleteOptions, err = o.DeleteFlags.ToOptions(dynamicClient, o.IOStreams)
+	if err != nil {
+		return nil, err
+	}
+
 	// This can only fail if ToDiscoverClient() function fails
 	o.OpenAPISchema, err = f.OpenAPISchema()
 	if err != nil {
@@ -115,7 +119,12 @@ func NewApplyOptions(f cmdutil.Factory, streams genericclioptions.IOStreams) (*A
 
 	o.DynamicClient = dynamicClient
 
-	o.Namespace, o.EnforceNamespace, err = f.ToRawKubeConfigLoader().Namespace()
+	cl := f.ToRawKubeConfigLoader()
+	if cl == nil {
+		return nil, fmt.Errorf("ToRawKubeConfigLoader() returned nil")
+	}
+
+	o.Namespace, o.EnforceNamespace, err = cl.Namespace()
 	if err != nil {
 		return nil, err
 	}

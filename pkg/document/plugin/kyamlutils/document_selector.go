@@ -127,12 +127,7 @@ func (lf *LabelFilter) Filter(input []*yaml.RNode) ([]*yaml.RNode, error) {
 	}
 
 	for _, node := range input {
-		nodeLabels, err := node.GetLabels()
-		if err != nil {
-			return nil, err
-		}
-
-		if selector.Matches(labels.Set(nodeLabels)) {
+		if selector.Matches(labels.Set(node.GetLabels())) {
 			output = append(output, node)
 		}
 	}

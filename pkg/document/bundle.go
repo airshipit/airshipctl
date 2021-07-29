@@ -19,7 +19,7 @@ import (
 	"strings"
 
 	kustfs "sigs.k8s.io/kustomize/api/filesys"
-	"sigs.k8s.io/kustomize/api/k8sdeps/kunstruct"
+	"sigs.k8s.io/kustomize/api/hasher"
 	"sigs.k8s.io/kustomize/api/krusty"
 	"sigs.k8s.io/kustomize/api/resmap"
 	"sigs.k8s.io/kustomize/api/resource"
@@ -129,15 +129,14 @@ func NewBundle(fSys fs.FileSystem, kustomizePath string) (Bundle, error) {
 		DoLegacyResourceSort: true, // Default and what we want
 		LoadRestrictions:     options.LoadRestrictions,
 		DoPrune:              false, // Default
-		UseKyaml:             true,  // Default
 		PluginConfig: &types.PluginConfig{
 			PluginRestrictions: types.PluginRestrictionsNone,
 			BpLoadingOptions:   types.BploUseStaticallyLinked,
 		},
 	}
 
-	kustomizer := krusty.MakeKustomizer(fSys, &o)
-	m, err := kustomizer.Run(kustomizePath)
+	kustomizer := krusty.MakeKustomizer(&o)
+	m, err := kustomizer.Run(fSys, kustomizePath)
 	if err != nil {
 		return nil, err
 	}
@@ -390,7 +389,7 @@ func (b *BundleFactory) Append(doc Document) error {
 	if err != nil {
 		return err
 	}
-	res, err := resource.NewFactory(kunstruct.NewKunstructuredFactoryImpl()).FromBytes(yaml)
+	res, err := resource.NewFactory(&hasher.Hasher{}).FromBytes(yaml)
 	if err != nil {
 		return nil
 	}

@@ -1,7 +1,7 @@
-ARG GO_IMAGE=gcr.io/gcp-runtimes/go1-builder:1.15
-ARG PLUGINS_BUILD_IMAGE=quay.io/airshipit/alpine:3.13.5
-ARG PLUGINS_RELEASE_IMAGE=quay.io/airshipit/alpine:3.13.5
-FROM ${PLUGINS_BUILD_IMAGE} as ctls
+ARG GO_IMAGE=amd64/golang:1.16.6-buster
+ARG BUILD_IMAGE=quay.io/airshipit/alpine:3.13.5
+ARG RELEASE_IMAGE=quay.io/airshipit/alpine:3.13.5
+FROM ${BUILD_IMAGE} as ctls
 ARG GOPROXY=""
 ARG K8S_VERSION=v1.18.6
 
@@ -21,15 +21,28 @@ RUN curl -L  "https://github.com/projectcalico/calicoctl/releases/download/v3.18
 RUN chmod +x /kubectl /calicoctl
 
 FROM ${GO_IMAGE} as builder
-ENV CGO_ENABLED=0
-WORKDIR /go/src/
-COPY image/go.mod .
-RUN /usr/local/go/bin/go mod download
-COPY main.go .
-RUN /usr/local/go/bin/go build -v -o /usr/local/bin/config-function ./
+ARG GOPROXY=""
 
-FROM ${PLUGINS_RELEASE_IMAGE} as release
-RUN apk update && apk add curl && rm -rf /var/cache/apk/*
+ENV PATH "/usr/local/go/bin:$PATH"
+RUN apt-get update -yq && apt-get upgrade -yq && apt-get install -y gcc make
+
+SHELL [ "/bin/bash", "-cex" ]
+WORKDIR /usr/src/airshipctl
+
+# Take advantage of caching for dependency acquisition
+COPY go.mod go.sum /usr/src/airshipctl/
+RUN go mod download
+
+COPY . /usr/src/airshipctl/
+ARG MAKE_TARGET=bin/toolbox
+RUN make ${MAKE_TARGET}
+
+FROM ${RELEASE_IMAGE} as release
+ARG MAKE_TARGET=bin/toolbox
+RUN apk update && apk add ca-certificates curl && rm -rf /var/cache/apk/*
+COPY ./certs/* /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+
 COPY --from=ctls /kubectl /calicoctl /usr/local/bin/
-COPY --from=builder /usr/local/bin/config-function /usr/local/bin/config-function
+COPY --from=builder /usr/src/airshipctl/${MAKE_TARGET} /usr/local/bin/config-function
 CMD ["/usr/local/bin/config-function"]
