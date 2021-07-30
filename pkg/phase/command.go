@@ -45,12 +45,12 @@ type GenericRunFlags struct {
 // RunFlags options for phase run command
 type RunFlags struct {
 	GenericRunFlags
-	PhaseID ifc.ID
 }
 
 // RunCommand phase run command
 type RunCommand struct {
-	Options RunFlags
+	PhaseID ifc.ID
+	Options ifc.RunOptions
 	Factory config.Factory
 }
 
@@ -68,11 +68,11 @@ func (c *RunCommand) RunE() error {
 
 	client := NewClient(helper)
 
-	phase, err := client.PhaseByID(c.Options.PhaseID)
+	phase, err := client.PhaseByID(c.PhaseID)
 	if err != nil {
 		return err
 	}
-	return phase.Run(ifc.RunOptions{DryRun: c.Options.DryRun, Timeout: c.Options.Timeout})
+	return phase.Run(c.Options)
 }
 
 // ListCommand phase list command
@@ -205,12 +205,12 @@ func (c *PlanListCommand) RunE() error {
 // PlanRunFlags options for phase run command
 type PlanRunFlags struct {
 	GenericRunFlags
-	PlanID ifc.ID
 }
 
 // PlanRunCommand phase run command
 type PlanRunCommand struct {
-	Options PlanRunFlags
+	PlanID  ifc.ID
+	Options ifc.RunOptions
 	Factory config.Factory
 }
 
@@ -228,11 +228,11 @@ func (c *PlanRunCommand) RunE() error {
 
 	client := NewClient(helper)
 
-	plan, err := client.PlanByID(c.Options.PlanID)
+	plan, err := client.PlanByID(c.PlanID)
 	if err != nil {
 		return err
 	}
-	return plan.Run(ifc.RunOptions{DryRun: c.Options.DryRun, Timeout: c.Options.Timeout})
+	return plan.Run(c.Options)
 }
 
 // ClusterListCommand options for cluster list command

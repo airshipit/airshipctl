@@ -39,10 +39,8 @@ type ExecutorStatus struct{}
 
 // RunOptions holds options for run method
 type RunOptions struct {
-	DryRun   bool
-	Progress bool
-
-	Timeout time.Duration
+	DryRun  bool
+	Timeout *time.Duration
 }
 
 // RenderOptions holds options for render method

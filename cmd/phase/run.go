@@ -16,6 +16,7 @@ package phase
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/phase"
@@ -36,10 +37,8 @@ Run initinfra phase
 
 // NewRunCommand creates a command to run specific phase
 func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
-	p := &phase.RunCommand{
-		Factory: cfgFactory,
-		Options: phase.RunFlags{},
-	}
+	p := &phase.RunCommand{Factory: cfgFactory}
+	f := &phase.RunFlags{}
 
 	runCmd := &cobra.Command{
 		Use:     "run PHASE_NAME",
@@ -48,12 +47,22 @@ func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
 		Args:    cobra.ExactArgs(1),
 		Example: runExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			p.Options.PhaseID.Name = args[0]
+			p.PhaseID.Name = args[0]
+			// Go through all the flags that have been set
+			fn := func(flag *pflag.Flag) {
+				switch flag.Name {
+				case "dry-run":
+					p.Options.DryRun = f.DryRun
+				case "wait-timeout":
+					p.Options.Timeout = &f.Timeout
+				}
+			}
+			cmd.Flags().Visit(fn)
 			return p.RunE()
 		},
 	}
 	flags := runCmd.Flags()
-	flags.BoolVar(&p.Options.DryRun, "dry-run", false, "simulate phase execution")
-	flags.DurationVar(&p.Options.Timeout, "wait-timeout", 0, "wait timeout")
+	flags.BoolVar(&f.DryRun, "dry-run", false, "simulate phase execution")
+	flags.DurationVar(&f.Timeout, "wait-timeout", 0, "wait timeout")
 	return runCmd
 }

@@ -43,7 +43,7 @@ func TestRunCommand(t *testing.T) {
 	tests := []struct {
 		name        string
 		errContains string
-		runFlags    phase.RunFlags
+		runFlags    ifc.RunOptions
 		factory     config.Factory
 	}{
 		{
@@ -492,13 +492,11 @@ func TestPlanRunCommand(t *testing.T) {
 		tt := tc
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := phase.PlanRunCommand{
-				Options: phase.PlanRunFlags{
-					GenericRunFlags: phase.GenericRunFlags{
-						DryRun: true,
-					},
-					PlanID: tt.planID,
+				Options: ifc.RunOptions{
+					DryRun: true,
 				},
 				Factory: tt.factory,
+				PlanID:  tt.planID,
 			}
 			err := cmd.RunE()
 			if tt.expectedErr != "" {

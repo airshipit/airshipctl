@@ -92,8 +92,8 @@ func (e *KubeApplierExecutor) Run(ch chan events.Event, runOpts ifc.RunOptions) 
 		dryRunStrategy = common.DryRunClient
 	}
 	timeout := time.Second * time.Duration(e.apiObject.Config.WaitOptions.Timeout)
-	if int64(runOpts.Timeout/time.Second) != 0 {
-		timeout = runOpts.Timeout
+	if runOpts.Timeout != nil {
+		timeout = *runOpts.Timeout
 	}
 
 	log.Debugf("WaitTimeout: %v", timeout)
