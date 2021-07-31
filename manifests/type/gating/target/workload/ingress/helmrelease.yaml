@@ -15,6 +15,10 @@ spec:
     defaultBackend:
       enabled: true
     controller:
+      admissionWebhooks:
+        patch:
+          image:
+            repository: quay.io/airshipit/kube-webhook-certgen
       service:
         type: NodePort
         nodePorts:

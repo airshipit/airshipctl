@@ -37,3 +37,13 @@ replacements:
       kind: HelmRelease
       name: ingress
     fieldrefs: ["spec.chart.spec.version"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: spec.image_repositories.kube-webhook-certgen.repository
+  target:
+    objref:
+      kind: HelmRelease
+      name: ingress
+    fieldrefs: ["spec.values.controller.admissionWebhooks.patch.image.repository"]
