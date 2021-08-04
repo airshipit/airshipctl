@@ -21,7 +21,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	redfishMocks "opendev.org/airship/go-redfish/api/mocks"
@@ -88,42 +87,45 @@ func TestEjectVirtualMedia(t *testing.T) {
 	assert.NoError(t, err)
 
 	client.nodeID = nodeID
+	client.RedfishAPI = m
+
 	ctx := SetAuth(context.Background(), "", "")
 
 	// Mark CD and DVD test media as inserted
 	inserted := true
 	testMediaCD := testutil.GetVirtualMedia([]string{"CD"})
-	testMediaCD.Inserted = &inserted
+	testMediaCD.SetInserted(inserted)
 
 	testMediaDVD := testutil.GetVirtualMedia([]string{"DVD"})
-	testMediaDVD.Inserted = &inserted
+	testMediaDVD.SetInserted(inserted)
 
 	httpResp := &http.Response{StatusCode: 200}
-	m.On("GetSystem", ctx, client.nodeID).Return(testutil.GetTestSystem(), httpResp, nil).Times(1)
-	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
-		Return(testutil.GetMediaCollection([]string{"Cd", "DVD", "Floppy"}), httpResp, nil)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, testutil.GetTestSystem(), httpResp, nil, 1)
 
+	testutil.MockOnListManagerVirtualMedia(ctx, m, testutil.ManagerID,
+		testutil.GetMediaCollection([]string{"Cd", "DVD", "Floppy"}), httpResp, nil, 1)
 	// Eject CD
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
-		Return(testMediaCD, httpResp, nil)
-	m.On("EjectVirtualMedia", ctx, testutil.ManagerID, "Cd", mock.Anything).Times(1).
-		Return(redfishClient.RedfishError{}, httpResp, nil)
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
-		Return(testutil.GetVirtualMedia([]string{"Cd"}), httpResp, nil)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID,
+		"Cd", testMediaCD, httpResp, nil)
+	testutil.MockOnEjectVirtualMedia(ctx, m, testutil.ManagerID, "Cd",
+		redfishClient.RedfishError{}, httpResp, nil)
+
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Cd",
+		testutil.GetVirtualMedia([]string{"Cd"}), httpResp, nil)
 
 	// Eject DVD and simulate two retries
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "DVD").Times(1).
-		Return(testMediaDVD, httpResp, nil)
-	m.On("EjectVirtualMedia", ctx, testutil.ManagerID, "DVD", mock.Anything).Times(1).
-		Return(redfishClient.RedfishError{}, httpResp, nil)
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "DVD").Times(1).
-		Return(testMediaDVD, httpResp, nil)
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "DVD").Times(1).
-		Return(testutil.GetVirtualMedia([]string{"DVD"}), httpResp, nil)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID,
+		"DVD", testMediaDVD, httpResp, nil)
+	testutil.MockOnEjectVirtualMedia(ctx, m, testutil.ManagerID, "DVD",
+		redfishClient.RedfishError{}, httpResp, nil)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID,
+		"DVD", testMediaDVD, httpResp, nil)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID,
+		"DVD", testutil.GetVirtualMedia([]string{"DVD"}), httpResp, nil)
 
 	// Floppy is not inserted, so it is not ejected
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Floppy").Times(1).
-		Return(testutil.GetVirtualMedia([]string{"Floppy"}), httpResp, nil)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID,
+		"Floppy", testutil.GetVirtualMedia([]string{"Floppy"}), httpResp, nil)
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
@@ -148,22 +150,21 @@ func TestEjectVirtualMediaRetriesExceeded(t *testing.T) {
 	// Mark test media as inserted
 	inserted := true
 	testMedia := testutil.GetVirtualMedia([]string{"CD"})
-	testMedia.Inserted = &inserted
+	testMedia.SetInserted(inserted)
 
 	httpResp := &http.Response{StatusCode: 200}
-	m.On("GetSystem", ctx, client.nodeID).Return(testutil.GetTestSystem(), httpResp, nil)
-	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).
-		Return(testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil)
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").
-		Return(testMedia, httpResp, nil)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, testutil.GetTestSystem(), httpResp, nil, 1)
+
+	testutil.MockOnListManagerVirtualMedia(ctx, m, testutil.ManagerID,
+		testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil, 1)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Cd", testMedia, httpResp, nil)
 
 	// Verify retry logic
-	m.On("EjectVirtualMedia", ctx, testutil.ManagerID, "Cd", mock.Anything).
-		Return(redfishClient.RedfishError{}, httpResp, nil)
+	testutil.MockOnEjectVirtualMedia(ctx, m, testutil.ManagerID, "Cd",
+		redfishClient.RedfishError{}, httpResp, nil)
 
 	// Media still inserted on retry. Since retries are 1, this causes failure.
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").
-		Return(testMedia, httpResp, nil)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Cd", testMedia, httpResp, nil)
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
@@ -186,19 +187,20 @@ func TestRebootSystem(t *testing.T) {
 
 	// Mock redfish shutdown and status requests
 	resetReq := redfishClient.ResetRequestBody{}
-	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
+	resetReq.SetResetType(redfishClient.RESETTYPE_FORCE_OFF)
 	httpResp := &http.Response{StatusCode: 200}
-	m.On("ResetSystem", ctx, client.nodeID, resetReq).Times(1).Return(redfishClient.RedfishError{}, httpResp, nil)
+	testutil.MockOnResetSystem(ctx, m, client.nodeID, &resetReq, redfishClient.RedfishError{}, httpResp, nil)
 
-	m.On("GetSystem", ctx, client.nodeID).Times(1).Return(
-		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_OFF}, httpResp, nil)
+	computerSystem := redfishClient.NewComputerSystemWithDefaults()
+	computerSystem.SetPowerState(redfishClient.POWERSTATE_OFF)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, *computerSystem, httpResp, nil, 1)
 
 	// Mock redfish startup and status requests
-	resetReq.ResetType = redfishClient.RESETTYPE_ON
-	m.On("ResetSystem", ctx, client.nodeID, resetReq).Times(1).Return(redfishClient.RedfishError{}, httpResp, nil)
-
-	m.On("GetSystem", ctx, client.nodeID).Times(1).
-		Return(redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_ON}, httpResp, nil)
+	resetReq.SetResetType(redfishClient.RESETTYPE_ON)
+	testutil.MockOnResetSystem(ctx, m, client.nodeID, &resetReq, redfishClient.RedfishError{}, httpResp, nil)
+	computerSystem = redfishClient.NewComputerSystemWithDefaults()
+	computerSystem.SetPowerState(redfishClient.POWERSTATE_ON)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, *computerSystem, httpResp, nil, 1)
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
@@ -220,10 +222,10 @@ func TestRebootSystemShutdownError(t *testing.T) {
 	ctx := SetAuth(context.Background(), "", "")
 
 	resetReq := redfishClient.ResetRequestBody{}
-	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
+	resetReq.SetResetType(redfishClient.RESETTYPE_FORCE_OFF)
 
 	// Mock redfish shutdown request for failure
-	m.On("ResetSystem", ctx, client.nodeID, resetReq).Times(1).Return(redfishClient.RedfishError{},
+	testutil.MockOnResetSystem(ctx, m, client.nodeID, &resetReq, redfishClient.RedfishError{},
 		&http.Response{StatusCode: 401}, redfishClient.GenericOpenAPIError{})
 
 	// Replace normal API client with mocked API client
@@ -247,21 +249,23 @@ func TestRebootSystemStartupError(t *testing.T) {
 	ctx := SetAuth(context.Background(), "", "")
 
 	resetReq := redfishClient.ResetRequestBody{}
-	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
+	resetReq.SetResetType(redfishClient.RESETTYPE_FORCE_OFF)
 
 	// Mock redfish shutdown request
-	m.On("ResetSystem", ctx, client.nodeID, resetReq).Times(1).Return(redfishClient.RedfishError{},
+
+	testutil.MockOnResetSystem(ctx, m, client.nodeID, &resetReq, redfishClient.RedfishError{},
 		&http.Response{StatusCode: 200}, nil)
 
-	m.On("GetSystem", ctx, client.nodeID).Times(1).Return(
-		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_OFF},
-		&http.Response{StatusCode: 200}, nil)
+	computerSystem := redfishClient.NewComputerSystemWithDefaults()
+	computerSystem.SetPowerState(redfishClient.POWERSTATE_OFF)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, *computerSystem,
+		&http.Response{StatusCode: 200}, nil, 1)
 
 	resetOnReq := redfishClient.ResetRequestBody{}
-	resetOnReq.ResetType = redfishClient.RESETTYPE_ON
+	resetOnReq.SetResetType(redfishClient.RESETTYPE_ON)
 
 	// Mock redfish startup request for failure
-	m.On("ResetSystem", ctx, client.nodeID, resetOnReq).Times(1).Return(redfishClient.RedfishError{},
+	testutil.MockOnResetSystem(ctx, m, client.nodeID, &resetOnReq, redfishClient.RedfishError{},
 		&http.Response{StatusCode: 401}, redfishClient.GenericOpenAPIError{})
 
 	// Replace normal API client with mocked API client
@@ -285,14 +289,13 @@ func TestRebootSystemTimeout(t *testing.T) {
 	ctx := SetAuth(context.Background(), "", "")
 
 	resetReq := redfishClient.ResetRequestBody{}
-	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
+	resetReq.SetResetType(redfishClient.RESETTYPE_FORCE_OFF)
 
-	m.On("ResetSystem", ctx, client.nodeID, resetReq).
-		Times(1).
-		Return(redfishClient.RedfishError{}, &http.Response{StatusCode: 200}, nil)
+	testutil.MockOnResetSystem(ctx, m, client.nodeID, &resetReq, redfishClient.RedfishError{},
+		&http.Response{StatusCode: 200}, nil)
 
-	m.On("GetSystem", ctx, client.nodeID).
-		Return(redfishClient.ComputerSystem{}, &http.Response{StatusCode: 200}, nil)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, redfishClient.ComputerSystem{},
+		&http.Response{StatusCode: 200}, nil, -1)
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
@@ -314,8 +317,8 @@ func TestSetBootSourceByTypeGetSystemError(t *testing.T) {
 	ctx := SetAuth(context.Background(), "", "")
 
 	// Mock redfish get system request
-	m.On("GetSystem", ctx, client.NodeID()).Times(1).Return(redfishClient.ComputerSystem{},
-		&http.Response{StatusCode: 500}, redfishClient.GenericOpenAPIError{})
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, redfishClient.ComputerSystem{},
+		&http.Response{StatusCode: 500}, nil, 1)
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
@@ -337,13 +340,18 @@ func TestSetBootSourceByTypeSetSystemError(t *testing.T) {
 	ctx := SetAuth(context.Background(), "", "")
 
 	httpResp := &http.Response{StatusCode: 200}
-	m.On("GetSystem", ctx, client.nodeID).Return(testutil.GetTestSystem(), httpResp, nil)
-	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
-		Return(testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil)
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
-		Return(testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
-	m.On("SetSystem", ctx, client.nodeID, mock.Anything).Times(1).Return(
-		redfishClient.ComputerSystem{}, &http.Response{StatusCode: 401}, redfishClient.GenericOpenAPIError{})
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, testutil.GetTestSystem(),
+		httpResp, nil, -1)
+	testutil.MockOnListManagerVirtualMedia(ctx, m, testutil.ManagerID,
+		testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil, 1)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Cd",
+		testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
+	system := redfishClient.ComputerSystem{}
+	boot := redfishClient.NewBoot()
+	boot.SetBootSourceOverrideTarget(redfishClient.BOOTSOURCE_CD)
+	system.SetBoot(*boot)
+	testutil.MockOnSetSystem(ctx, m, client.nodeID, system,
+		&http.Response{StatusCode: 401}, redfishClient.GenericOpenAPIError{})
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
@@ -365,17 +373,22 @@ func TestSetBootSourceByTypeBootSourceUnavailable(t *testing.T) {
 	client.nodeID = nodeID
 
 	invalidSystem := testutil.GetTestSystem()
-	invalidSystem.Boot.BootSourceOverrideTargetRedfishAllowableValues = []redfishClient.BootSource{
+	boot := invalidSystem.GetBoot()
+	boot.SetBootSourceOverrideTargetRedfishAllowableValues([]redfishClient.BootSource{
 		redfishClient.BOOTSOURCE_HDD,
 		redfishClient.BOOTSOURCE_PXE,
-	}
+	})
 
 	httpResp := &http.Response{StatusCode: 200}
-	m.On("GetSystem", ctx, client.nodeID).Return(invalidSystem, httpResp, nil)
-	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
-		Return(testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil)
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
-		Return(testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, invalidSystem,
+		httpResp, nil, 2)
+	testutil.MockOnListManagerVirtualMedia(ctx, m, testutil.ManagerID,
+		testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil, 1)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Cd",
+		testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
+	system := redfishClient.ComputerSystem{}
+	testutil.MockOnSetSystem(ctx, m, client.nodeID, system,
+		&http.Response{StatusCode: 401}, redfishClient.GenericOpenAPIError{})
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
@@ -399,29 +412,29 @@ func TestSetVirtualMediaEjectExistingMedia(t *testing.T) {
 	ctx := SetAuth(context.Background(), "", "")
 
 	// Mark test media as inserted
-	inserted := true
 	testMedia := testutil.GetVirtualMedia([]string{"CD"})
-	testMedia.Inserted = &inserted
+	testMedia.SetInserted(true)
 
 	httpResp := &http.Response{StatusCode: 200}
-	m.On("GetSystem", ctx, client.nodeID).Return(testutil.GetTestSystem(), httpResp, nil)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, testutil.GetTestSystem(),
+		httpResp, nil, -1)
 
 	// Eject Media calls
-	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
-		Return(testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil)
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
-		Return(testMedia, httpResp, nil)
-	m.On("EjectVirtualMedia", ctx, testutil.ManagerID, "Cd", mock.Anything).Times(1).
-		Return(redfishClient.RedfishError{}, httpResp, nil)
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
-		Return(testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
+	testutil.MockOnListManagerVirtualMedia(ctx, m, testutil.ManagerID,
+		testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil, 1)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Cd", testMedia, httpResp, nil)
+
+	testutil.MockOnEjectVirtualMedia(ctx, m, testutil.ManagerID, "Cd",
+		redfishClient.RedfishError{}, httpResp, nil)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Cd",
+		testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
 
 	// Insert media calls
-	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
-		Return(testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil)
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
-		Return(testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
-	m.On("InsertVirtualMedia", ctx, testutil.ManagerID, "Cd", mock.Anything).Return(
+	testutil.MockOnListManagerVirtualMedia(ctx, m, testutil.ManagerID,
+		testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil, 1)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Cd",
+		testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
+	testutil.MockOnInsertVirtualMedia(ctx, m, testutil.ManagerID, "Cd",
 		redfishClient.RedfishError{}, httpResp, redfishClient.GenericOpenAPIError{})
 
 	// Replace normal API client with mocked API client
@@ -447,20 +460,19 @@ func TestSetVirtualMediaEjectExistingMediaFailure(t *testing.T) {
 	// Mark test media as inserted
 	inserted := true
 	testMedia := testutil.GetVirtualMedia([]string{"CD"})
-	testMedia.Inserted = &inserted
+	testMedia.SetInserted(inserted)
 
 	httpResp := &http.Response{StatusCode: 200}
-	m.On("GetSystem", ctx, client.nodeID).Return(testutil.GetTestSystem(), httpResp, nil)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, testutil.GetTestSystem(),
+		httpResp, nil, 1)
 
 	// Eject Media calls
-	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
-		Return(testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil)
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
-		Return(testMedia, httpResp, nil)
-	m.On("EjectVirtualMedia", ctx, testutil.ManagerID, "Cd", mock.Anything).Times(1).
-		Return(redfishClient.RedfishError{}, httpResp, nil)
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
-		Return(testMedia, httpResp, nil)
+	testutil.MockOnListManagerVirtualMedia(ctx, m, testutil.ManagerID,
+		testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil, 1)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Cd", testMedia, httpResp, nil)
+	testutil.MockOnEjectVirtualMedia(ctx, m, testutil.ManagerID, "Cd",
+		redfishClient.RedfishError{}, httpResp, nil)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Cd", testMedia, httpResp, nil)
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
@@ -481,8 +493,8 @@ func TestSetVirtualMediaGetSystemError(t *testing.T) {
 	client.nodeID = nodeID
 
 	// Mock redfish get system request
-	m.On("GetSystem", ctx, client.nodeID).Times(1).Return(redfishClient.ComputerSystem{},
-		nil, redfishClient.GenericOpenAPIError{})
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, redfishClient.ComputerSystem{},
+		nil, redfishClient.GenericOpenAPIError{}, 1)
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
@@ -504,18 +516,19 @@ func TestSetVirtualMediaInsertVirtualMediaError(t *testing.T) {
 	client.nodeID = nodeID
 
 	httpResp := &http.Response{StatusCode: 200}
-	m.On("GetSystem", ctx, client.nodeID).Return(testutil.GetTestSystem(), httpResp, nil)
-	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
-		Return(testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil)
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
-		Return(testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, testutil.GetTestSystem(),
+		httpResp, nil, 3)
+	testutil.MockOnListManagerVirtualMedia(ctx, m, testutil.ManagerID,
+		testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil, 1)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Cd",
+		testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
 
 	// Insert media calls
-	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
-		Return(testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil)
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
-		Return(testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
-	m.On("InsertVirtualMedia", ctx, testutil.ManagerID, "Cd", mock.Anything).Return(
+	testutil.MockOnListManagerVirtualMedia(ctx, m, testutil.ManagerID,
+		testutil.GetMediaCollection([]string{"Cd"}), httpResp, nil, 1)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Cd",
+		testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
+	testutil.MockOnInsertVirtualMedia(ctx, m, testutil.ManagerID, "Cd",
 		redfishClient.RedfishError{}, &http.Response{StatusCode: 500}, redfishClient.GenericOpenAPIError{})
 
 	// Replace normal API client with mocked API client
@@ -538,17 +551,17 @@ func TestSystemPowerOff(t *testing.T) {
 	client.nodeID = nodeID
 	ctx := SetAuth(context.Background(), "", "")
 
-	m.On("ResetSystem", ctx, client.nodeID, mock.Anything).Return(
-		redfishClient.RedfishError{},
-		&http.Response{StatusCode: 200}, nil)
+	testutil.MockOnResetSystem(ctx, m, client.nodeID, &redfishClient.ResetRequestBody{},
+		redfishClient.RedfishError{}, &http.Response{StatusCode: 200}, nil)
 
-	m.On("GetSystem", ctx, client.nodeID).Return(
-		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_ON},
-		&http.Response{StatusCode: 200}, nil).Times(1)
+	computerSystem := redfishClient.NewComputerSystemWithDefaults()
+	computerSystem.SetPowerState(redfishClient.POWERSTATE_ON)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, *computerSystem,
+		&http.Response{StatusCode: 200}, nil, 1)
 
-	m.On("GetSystem", ctx, client.nodeID).Return(
-		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_OFF},
-		&http.Response{StatusCode: 200}, nil).Times(1)
+	computerSystem.SetPowerState(redfishClient.POWERSTATE_OFF)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, *computerSystem,
+		&http.Response{StatusCode: 200}, nil, 1)
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
@@ -570,9 +583,8 @@ func TestSystemPowerOffResetSystemError(t *testing.T) {
 	client.nodeID = nodeID
 	ctx := SetAuth(context.Background(), "", "")
 
-	m.On("ResetSystem", ctx, client.nodeID, mock.Anything).Return(
-		redfishClient.RedfishError{},
-		&http.Response{StatusCode: 500}, nil)
+	testutil.MockOnResetSystem(ctx, m, client.nodeID, &redfishClient.ResetRequestBody{},
+		redfishClient.RedfishError{}, &http.Response{StatusCode: 500}, nil)
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
@@ -594,17 +606,18 @@ func TestSystemPowerOn(t *testing.T) {
 	client.nodeID = nodeID
 	ctx := SetAuth(context.Background(), "", "")
 
-	m.On("ResetSystem", ctx, client.nodeID, mock.Anything).Return(
-		redfishClient.RedfishError{},
-		&http.Response{StatusCode: 200}, nil)
+	testutil.MockOnResetSystem(ctx, m, client.nodeID, &redfishClient.ResetRequestBody{},
+		redfishClient.RedfishError{}, &http.Response{StatusCode: 200}, nil)
 
-	m.On("GetSystem", ctx, client.nodeID).Return(
-		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_OFF},
-		&http.Response{StatusCode: 200}, nil).Times(1)
+	computerSystem := redfishClient.NewComputerSystemWithDefaults()
+	computerSystem.SetPowerState(redfishClient.POWERSTATE_OFF)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, *computerSystem,
+		&http.Response{StatusCode: 200}, nil, 1)
 
-	m.On("GetSystem", ctx, client.nodeID).Return(
-		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_ON},
-		&http.Response{StatusCode: 200}, nil).Times(1)
+	computerSystem = redfishClient.NewComputerSystemWithDefaults()
+	computerSystem.SetPowerState(redfishClient.POWERSTATE_ON)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, *computerSystem,
+		&http.Response{StatusCode: 200}, nil, 1)
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
@@ -626,9 +639,8 @@ func TestSystemPowerOnResetSystemError(t *testing.T) {
 	client.nodeID = nodeID
 	ctx := SetAuth(context.Background(), "", "")
 
-	m.On("ResetSystem", ctx, client.nodeID, mock.Anything).Return(
-		redfishClient.RedfishError{},
-		&http.Response{StatusCode: 500}, nil)
+	testutil.MockOnResetSystem(ctx, m, client.nodeID, &redfishClient.ResetRequestBody{},
+		redfishClient.RedfishError{}, &http.Response{StatusCode: 500}, nil)
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
@@ -650,11 +662,9 @@ func TestSystemPowerStatusUnknown(t *testing.T) {
 	client.nodeID = nodeID
 	ctx := SetAuth(context.Background(), "", "")
 
-	var unknownState redfishClient.PowerState = "unknown"
-	m.On("GetSystem", ctx, client.nodeID).Return(
-		redfishClient.ComputerSystem{PowerState: unknownState},
-		&http.Response{StatusCode: 200},
-		redfishClient.GenericOpenAPIError{})
+	computerSystem := redfishClient.NewComputerSystemWithDefaults()
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, *computerSystem,
+		&http.Response{StatusCode: 200}, redfishClient.GenericOpenAPIError{}, 1)
 
 	client.RedfishAPI = m
 
@@ -674,10 +684,10 @@ func TestSystemPowerStatusOn(t *testing.T) {
 	ctx := SetAuth(context.Background(), "", "")
 	client.nodeID = nodeID
 
-	m.On("GetSystem", ctx, client.nodeID).Return(
-		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_ON},
-		&http.Response{StatusCode: 200},
-		redfishClient.GenericOpenAPIError{})
+	computerSystem := redfishClient.NewComputerSystemWithDefaults()
+	computerSystem.SetPowerState(redfishClient.POWERSTATE_ON)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, *computerSystem,
+		&http.Response{StatusCode: 200}, redfishClient.GenericOpenAPIError{}, 1)
 
 	client.RedfishAPI = m
 
@@ -697,10 +707,10 @@ func TestSystemPowerStatusOff(t *testing.T) {
 	client.nodeID = nodeID
 	ctx := SetAuth(context.Background(), "", "")
 
-	m.On("GetSystem", ctx, client.nodeID).Return(
-		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_OFF},
-		&http.Response{StatusCode: 200},
-		redfishClient.GenericOpenAPIError{})
+	computerSystem := redfishClient.NewComputerSystemWithDefaults()
+	computerSystem.SetPowerState(redfishClient.POWERSTATE_OFF)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, *computerSystem,
+		&http.Response{StatusCode: 200}, redfishClient.GenericOpenAPIError{}, 1)
 
 	client.RedfishAPI = m
 
@@ -720,10 +730,10 @@ func TestSystemPowerStatusPoweringOn(t *testing.T) {
 	client.nodeID = nodeID
 	ctx := SetAuth(context.Background(), "", "")
 
-	m.On("GetSystem", ctx, client.nodeID).Return(
-		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_POWERING_ON},
-		&http.Response{StatusCode: 200},
-		redfishClient.GenericOpenAPIError{})
+	computerSystem := redfishClient.NewComputerSystemWithDefaults()
+	computerSystem.SetPowerState(redfishClient.POWERSTATE_POWERING_ON)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, *computerSystem,
+		&http.Response{StatusCode: 200}, redfishClient.GenericOpenAPIError{}, 1)
 
 	client.RedfishAPI = m
 
@@ -743,10 +753,10 @@ func TestSystemPowerStatusPoweringOff(t *testing.T) {
 	client.nodeID = nodeID
 	ctx := SetAuth(context.Background(), "", "")
 
-	m.On("GetSystem", ctx, client.nodeID).Return(
-		redfishClient.ComputerSystem{PowerState: redfishClient.POWERSTATE_POWERING_OFF},
-		&http.Response{StatusCode: 200},
-		redfishClient.GenericOpenAPIError{})
+	computerSystem := redfishClient.NewComputerSystemWithDefaults()
+	computerSystem.SetPowerState(redfishClient.POWERSTATE_POWERING_OFF)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, *computerSystem,
+		&http.Response{StatusCode: 200}, redfishClient.GenericOpenAPIError{}, 1)
 
 	client.RedfishAPI = m
 
@@ -765,11 +775,8 @@ func TestSystemPowerStatusGetSystemError(t *testing.T) {
 
 	client.nodeID = nodeID
 	ctx := SetAuth(context.Background(), "", "")
-
-	m.On("GetSystem", ctx, client.nodeID).Return(
-		redfishClient.ComputerSystem{},
-		&http.Response{StatusCode: 500},
-		redfishClient.GenericOpenAPIError{})
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, redfishClient.ComputerSystem{},
+		&http.Response{StatusCode: 500}, redfishClient.GenericOpenAPIError{}, 1)
 
 	client.RedfishAPI = m
 
@@ -786,10 +793,9 @@ func TestWaitForPowerStateGetSystemFailed(t *testing.T) {
 
 	ctx := SetAuth(context.Background(), "", "")
 	resetReq := redfishClient.ResetRequestBody{}
-	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
-
-	m.On("GetSystem", ctx, client.nodeID).Return(
-		redfishClient.ComputerSystem{}, &http.Response{StatusCode: 500}, nil)
+	resetReq.SetResetType(redfishClient.RESETTYPE_FORCE_OFF)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, redfishClient.ComputerSystem{},
+		&http.Response{StatusCode: 500}, nil, 1)
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
@@ -810,12 +816,12 @@ func TestWaitForPowerStateNoRetries(t *testing.T) {
 
 	ctx := SetAuth(context.Background(), "", "")
 	resetReq := redfishClient.ResetRequestBody{}
-	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
+	resetReq.SetResetType(redfishClient.RESETTYPE_FORCE_OFF)
 
-	m.On("GetSystem", ctx, client.nodeID).Return(
-		redfishClient.ComputerSystem{
-			PowerState: redfishClient.POWERSTATE_OFF,
-		}, &http.Response{StatusCode: 200}, nil)
+	computerSystem := redfishClient.NewComputerSystemWithDefaults()
+	computerSystem.SetPowerState(redfishClient.POWERSTATE_OFF)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, *computerSystem,
+		&http.Response{StatusCode: 200}, nil, 1)
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
@@ -836,17 +842,16 @@ func TestWaitForPowerStateWithRetries(t *testing.T) {
 
 	ctx := SetAuth(context.Background(), "", "")
 	resetReq := redfishClient.ResetRequestBody{}
-	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
+	resetReq.SetResetType(redfishClient.RESETTYPE_FORCE_OFF)
 
-	m.On("GetSystem", ctx, client.nodeID).Return(
-		redfishClient.ComputerSystem{
-			PowerState: redfishClient.POWERSTATE_ON,
-		}, &http.Response{StatusCode: 200}, nil).Times(1)
+	computerSystem := redfishClient.NewComputerSystemWithDefaults()
+	computerSystem.SetPowerState(redfishClient.POWERSTATE_ON)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID,
+		*computerSystem, &http.Response{StatusCode: 200}, nil, 1)
 
-	m.On("GetSystem", ctx, client.nodeID).Return(
-		redfishClient.ComputerSystem{
-			PowerState: redfishClient.POWERSTATE_OFF,
-		}, &http.Response{StatusCode: 200}, nil).Times(1)
+	computerSystem.SetPowerState(redfishClient.POWERSTATE_OFF)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID,
+		*computerSystem, &http.Response{StatusCode: 200}, nil, 1)
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
@@ -867,17 +872,17 @@ func TestWaitForPowerStateRetriesExceeded(t *testing.T) {
 
 	ctx := SetAuth(context.Background(), "", "")
 	resetReq := redfishClient.ResetRequestBody{}
-	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
+	resetReq.SetResetType(redfishClient.RESETTYPE_FORCE_OFF)
 
-	m.On("GetSystem", ctx, client.nodeID).Return(
-		redfishClient.ComputerSystem{
-			PowerState: redfishClient.POWERSTATE_ON,
-		}, &http.Response{StatusCode: 200}, nil)
+	computerSystem := redfishClient.NewComputerSystemWithDefaults()
+	computerSystem.SetPowerState(redfishClient.POWERSTATE_ON)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID,
+		*computerSystem, &http.Response{StatusCode: 200}, nil, 1)
 
-	m.On("GetSystem", ctx, client.nodeID).Return(
-		redfishClient.ComputerSystem{
-			PowerState: redfishClient.POWERSTATE_ON,
-		}, &http.Response{StatusCode: 200}, nil)
+	computerSystem = redfishClient.NewComputerSystemWithDefaults()
+	computerSystem.SetPowerState(redfishClient.POWERSTATE_ON)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID,
+		*computerSystem, &http.Response{StatusCode: 200}, nil, 1)
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
@@ -898,12 +903,12 @@ func TestWaitForPowerStateDifferentPowerState(t *testing.T) {
 
 	ctx := SetAuth(context.Background(), "", "")
 	resetReq := redfishClient.ResetRequestBody{}
-	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_ON
+	resetReq.SetResetType(redfishClient.RESETTYPE_FORCE_ON)
 
-	m.On("GetSystem", ctx, client.nodeID).Return(
-		redfishClient.ComputerSystem{
-			PowerState: redfishClient.POWERSTATE_ON,
-		}, &http.Response{StatusCode: 200}, nil)
+	computerSystem := redfishClient.NewComputerSystemWithDefaults()
+	computerSystem.SetPowerState(redfishClient.POWERSTATE_ON)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID,
+		*computerSystem, &http.Response{StatusCode: 200}, nil, 1)
 
 	// Replace normal API client with mocked API client
 	client.RedfishAPI = m
@@ -925,62 +930,57 @@ func TestRemoteDirect(t *testing.T) {
 
 	inserted := true
 	testMediaCD := testutil.GetVirtualMedia([]string{"CD"})
-	testMediaCD.Inserted = &inserted
-	resetReq := redfishClient.ResetRequestBody{
-		ResetType: redfishClient.RESETTYPE_FORCE_OFF,
-	}
+	testMediaCD.SetInserted(inserted)
 	httpResp := &http.Response{StatusCode: 200}
-	system := redfishClient.ComputerSystem{
-		PowerState: redfishClient.POWERSTATE_ON,
-		Links: redfishClient.SystemLinks{
-			ManagedBy: []redfishClient.IdRef{
-				{OdataId: testutil.ManagerID},
-			},
+	system := redfishClient.NewComputerSystemWithDefaults()
+	system.SetPowerState(redfishClient.POWERSTATE_OFF)
+	links := redfishClient.NewSystemLinksWithDefaults()
+	idRef := redfishClient.NewIdRefWithDefaults()
+	idRef.SetOdataId(testutil.ManagerID)
+	links.SetManagedBy([]redfishClient.IdRef{*idRef})
+	system.SetLinks(*links)
+	system.SetBoot(redfishClient.Boot{
+		BootSourceOverrideTargetRedfishAllowableValues: &[]redfishClient.BootSource{
+			redfishClient.BOOTSOURCE_CD,
 		},
-		Boot: redfishClient.Boot{
-			BootSourceOverrideTargetRedfishAllowableValues: []redfishClient.BootSource{
-				redfishClient.BOOTSOURCE_CD,
-			},
-		}}
+	})
 
 	ctx := SetAuth(context.Background(), "", "")
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, *system, httpResp, nil, 7)
 
-	m.On("GetSystem", ctx, client.nodeID).Return(system, httpResp, nil).Times(6)
-	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).
-		Return(testutil.GetMediaCollection([]string{"Cd", "DVD", "Floppy"}), httpResp, nil)
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
-		Return(testMediaCD, httpResp, nil)
-	m.On("EjectVirtualMedia", ctx, testutil.ManagerID, "Cd", mock.Anything).Times(1).
-		Return(redfishClient.RedfishError{}, httpResp, nil)
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
-		Return(testutil.GetVirtualMedia([]string{"Cd"}), httpResp, nil)
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "DVD").Times(1).
-		Return(testutil.GetVirtualMedia([]string{"DVD"}), httpResp, nil)
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Floppy").Times(1).
-		Return(testutil.GetVirtualMedia([]string{"Floppy"}), httpResp, nil)
+	testutil.MockOnListManagerVirtualMedia(ctx, m, testutil.ManagerID,
+		testutil.GetMediaCollection([]string{"Cd", "DVD", "Floppy"}), httpResp, nil, -1)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Cd", testMediaCD, httpResp, nil)
+	testutil.MockOnEjectVirtualMedia(ctx, m, testutil.ManagerID, "Cd",
+		redfishClient.RedfishError{}, httpResp, nil)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Cd",
+		testutil.GetVirtualMedia([]string{"Cd"}), httpResp, nil)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "DVD",
+		testutil.GetVirtualMedia([]string{"DVD"}), httpResp, nil)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Floppy",
+		testutil.GetVirtualMedia([]string{"Floppy"}), httpResp, nil)
 
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
-		Return(testMediaCD, httpResp, nil)
-
-	m.On("InsertVirtualMedia", ctx, testutil.ManagerID, "Cd", mock.Anything).Return(
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Cd",
+		testMediaCD, httpResp, nil)
+	testutil.MockOnInsertVirtualMedia(ctx, m, testutil.ManagerID, "Cd",
 		redfishClient.RedfishError{}, httpResp, redfishClient.GenericOpenAPIError{})
 
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
-		Return(testMediaCD, httpResp, nil)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Cd",
+		testMediaCD, httpResp, nil)
 
-	m.On("SetSystem", ctx, client.nodeID, mock.Anything).Times(1).Return(
-		redfishClient.ComputerSystem{}, httpResp, nil)
+	testutil.MockOnSetSystem(ctx, m, client.nodeID, redfishClient.ComputerSystem{},
+		httpResp, nil)
 
-	m.On("ResetSystem", ctx, client.nodeID, resetReq).Times(1).Return(redfishClient.RedfishError{}, httpResp, nil)
-	offSystem := system
-	offSystem.PowerState = redfishClient.POWERSTATE_OFF
-	m.On("GetSystem", ctx, client.nodeID).Return(offSystem, httpResp, nil).Times(1)
+	system.SetPowerState(redfishClient.POWERSTATE_ON)
 
-	m.On("ResetSystem", ctx, client.nodeID, redfishClient.ResetRequestBody{
-		ResetType: redfishClient.RESETTYPE_ON,
-	}).Times(1).Return(redfishClient.RedfishError{}, httpResp, nil)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, *system, httpResp, nil, 1)
 
-	m.On("GetSystem", ctx, client.nodeID).Return(system, httpResp, nil).Times(1)
+	resetReq := redfishClient.NewResetRequestBodyWithDefaults()
+	resetReq.SetResetType(redfishClient.RESETTYPE_ON)
+	testutil.MockOnResetSystem(ctx, m, client.nodeID, resetReq,
+		redfishClient.RedfishError{}, httpResp, nil)
+	system.SetPowerState(redfishClient.POWERSTATE_ON)
+	testutil.MockOnGetSystem(ctx, m, client.nodeID, *system, httpResp, nil, 2)
 
 	err = client.RemoteDirect(ctx, "http://some-url")
 	assert.NoError(t, err)

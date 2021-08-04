@@ -68,12 +68,13 @@ func (c *Client) EjectVirtualMedia(ctx context.Context) error {
 	ctx = SetAuth(ctx, c.username, c.password)
 	waitForEjectMedia := func(managerID string, mediaID string) error {
 		for retry := 0; retry < c.systemActionRetries; retry++ {
-			vMediaMgr, httpResp, err := c.RedfishAPI.GetManagerVirtualMedia(ctx, managerID, mediaID)
+			getMediaReq := c.RedfishAPI.GetManagerVirtualMedia(ctx, managerID, mediaID)
+			vMediaMgr, httpResp, err := c.RedfishAPI.GetManagerVirtualMediaExecute(getMediaReq)
 			if err = ScreenRedfishError(httpResp, err); err != nil {
 				return err
 			}
 
-			if *vMediaMgr.Inserted == false {
+			if !vMediaMgr.GetInserted() {
 				log.Debugf("Successfully ejected virtual media.")
 				return nil
 			}
@@ -87,25 +88,28 @@ func (c *Client) EjectVirtualMedia(ctx context.Context) error {
 		return err
 	}
 
-	mediaCollection, httpResp, err := c.RedfishAPI.ListManagerVirtualMedia(ctx, managerID)
+	listMediaReq := c.RedfishAPI.ListManagerVirtualMedia(ctx, managerID)
+	mediaCollection, httpResp, err := c.RedfishAPI.ListManagerVirtualMediaExecute(listMediaReq)
 	if err = ScreenRedfishError(httpResp, err); err != nil {
 		return err
 	}
 
 	// Walk all virtual media devices and eject if inserted
 	for _, mediaURI := range mediaCollection.Members {
-		mediaID := GetResourceIDFromURL(mediaURI.OdataId)
+		mediaID := GetResourceIDFromURL(*mediaURI.OdataId)
 
-		vMediaMgr, httpResp, err := c.RedfishAPI.GetManagerVirtualMedia(ctx, managerID, mediaID)
+		getMediaReq := c.RedfishAPI.GetManagerVirtualMedia(ctx, managerID, mediaID)
+		vMediaMgr, httpResp, err := c.RedfishAPI.GetManagerVirtualMediaExecute(getMediaReq)
 		if err = ScreenRedfishError(httpResp, err); err != nil {
 			return err
 		}
 
-		if *vMediaMgr.Inserted == true {
+		if vMediaMgr.GetInserted() {
 			log.Debugf("'%s' has virtual media inserted. Attempting to eject.", vMediaMgr.Name)
 
 			var emptyBody map[string]interface{}
-			_, httpResp, err = c.RedfishAPI.EjectVirtualMedia(ctx, managerID, mediaID, emptyBody)
+			ejectMediaReq := c.RedfishAPI.EjectVirtualMedia(ctx, managerID, mediaID).Body(emptyBody)
+			_, httpResp, err = c.RedfishAPI.EjectVirtualMediaExecute(ejectMediaReq)
 			if err = ScreenRedfishError(httpResp, err); err != nil {
 				return err
 			}
@@ -123,11 +127,12 @@ func (c *Client) EjectVirtualMedia(ctx context.Context) error {
 func (c *Client) RebootSystem(ctx context.Context) error {
 	log.Debugf("Rebooting node '%s': powering off.", c.nodeID)
 	ctx = SetAuth(ctx, c.username, c.password)
-	resetReq := redfishClient.ResetRequestBody{}
+	resetReq := redfishClient.NewResetRequestBodyWithDefaults()
 
 	// Send PowerOff request
-	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
-	_, httpResp, err := c.RedfishAPI.ResetSystem(ctx, c.nodeID, resetReq)
+	resetReq.SetResetType(redfishClient.RESETTYPE_FORCE_OFF)
+	resetSystemReq := c.RedfishAPI.ResetSystem(ctx, c.nodeID).ResetRequestBody(*resetReq)
+	_, httpResp, err := c.RedfishAPI.ResetSystemExecute(resetSystemReq)
 	if err = ScreenRedfishError(httpResp, err); err != nil {
 		log.Debugf("Failed to reboot node '%s': shutdown failure.", c.nodeID)
 		return err
@@ -141,8 +146,9 @@ func (c *Client) RebootSystem(ctx context.Context) error {
 	log.Debugf("Rebooting node '%s': powering on.", c.nodeID)
 
 	// Send PowerOn request
-	resetReq.ResetType = redfishClient.RESETTYPE_ON
-	_, httpResp, err = c.RedfishAPI.ResetSystem(ctx, c.nodeID, resetReq)
+	resetReq.ResetType = redfishClient.RESETTYPE_ON.Ptr()
+	resetSystemReq = c.RedfishAPI.ResetSystem(ctx, c.nodeID).ResetRequestBody(*resetReq)
+	_, httpResp, err = c.RedfishAPI.ResetSystemExecute(resetSystemReq)
 	if err = ScreenRedfishError(httpResp, err); err != nil {
 		log.Debugf("Failed to reboot node '%s': startup failure.", c.nodeID)
 		return err
@@ -164,18 +170,23 @@ func (c *Client) SetBootSourceByType(ctx context.Context) error {
 	log.Debugf("Setting boot device to '%s'.", vMediaType)
 
 	// Retrieve system information, containing available boot sources
-	system, _, err := c.RedfishAPI.GetSystem(ctx, c.nodeID)
+	systemReq := c.RedfishAPI.GetSystem(ctx, c.nodeID)
+	system, _, err := c.RedfishAPI.GetSystemExecute(systemReq)
 	if err != nil {
 		return ErrRedfishClient{Message: fmt.Sprintf("Get System[%s] failed with err: %v", c.nodeID, err)}
 	}
 
-	allowableValues := system.Boot.BootSourceOverrideTargetRedfishAllowableValues
-	for _, bootSource := range allowableValues {
-		if strings.EqualFold(string(bootSource), vMediaType) {
+	boot := system.GetBoot()
+	allowableValues := boot.GetBootSourceOverrideTargetRedfishAllowableValues()
+	for i := range allowableValues {
+		if strings.EqualFold(string(allowableValues[i]), vMediaType) {
 			/* set boot source */
 			systemReq := redfishClient.ComputerSystem{}
-			systemReq.Boot.BootSourceOverrideTarget = bootSource
-			_, httpResp, err := c.RedfishAPI.SetSystem(ctx, c.nodeID, systemReq)
+			systemReq.SetBoot(redfishClient.Boot{
+				BootSourceOverrideTarget: &allowableValues[i],
+			})
+			setSystemReq := c.RedfishAPI.SetSystem(ctx, c.nodeID).ComputerSystem(systemReq)
+			_, httpResp, err := c.RedfishAPI.SetSystemExecute(setSystemReq)
 			if err = ScreenRedfishError(httpResp, err); err != nil {
 				return err
 			}
@@ -212,8 +223,10 @@ func (c *Client) SetVirtualMedia(ctx context.Context, isoPath string) error {
 	// Insert media
 	vMediaReq := redfishClient.InsertMediaRequestBody{}
 	vMediaReq.Image = isoPath
-	vMediaReq.Inserted = true
-	_, httpResp, err := c.RedfishAPI.InsertVirtualMedia(ctx, managerID, vMediaID, vMediaReq)
+	vMediaReq.SetInserted(true)
+
+	insertMediaReq := c.RedfishAPI.InsertVirtualMedia(ctx, managerID, vMediaID).InsertMediaRequestBody(vMediaReq)
+	_, httpResp, err := c.RedfishAPI.InsertVirtualMediaExecute(insertMediaReq)
 
 	if err = ScreenRedfishError(httpResp, err); err != nil {
 		return err
@@ -227,9 +240,16 @@ func (c *Client) SetVirtualMedia(ctx context.Context, isoPath string) error {
 func (c *Client) SystemPowerOff(ctx context.Context) error {
 	ctx = SetAuth(ctx, c.username, c.password)
 	resetReq := redfishClient.ResetRequestBody{}
-	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF
+	resetReq.ResetType = redfishClient.RESETTYPE_FORCE_OFF.Ptr()
 
-	_, httpResp, err := c.RedfishAPI.ResetSystem(ctx, c.nodeID, resetReq)
+	resetSystemReq := c.RedfishAPI.ResetSystem(ctx, c.nodeID).ResetRequestBody(resetReq)
+	_, httpResp, err := c.RedfishAPI.ResetSystemExecute(resetSystemReq)
+
+	// if already powered off, a status conflict message is returned but we are good to go
+	if httpResp != nil && httpResp.StatusCode == http.StatusConflict {
+		return nil
+	}
+	//screen for any errors
 	if err = ScreenRedfishError(httpResp, err); err != nil {
 		return err
 	}
@@ -240,10 +260,15 @@ func (c *Client) SystemPowerOff(ctx context.Context) error {
 // SystemPowerOn powers on a host.
 func (c *Client) SystemPowerOn(ctx context.Context) error {
 	ctx = SetAuth(ctx, c.username, c.password)
-	resetReq := redfishClient.ResetRequestBody{}
-	resetReq.ResetType = redfishClient.RESETTYPE_ON
+	resetReq := redfishClient.NewResetRequestBodyWithDefaults()
+	resetReq.SetResetType(redfishClient.RESETTYPE_ON)
 
-	_, httpResp, err := c.RedfishAPI.ResetSystem(ctx, c.nodeID, resetReq)
+	resetSystemReq := c.RedfishAPI.ResetSystem(ctx, c.nodeID).ResetRequestBody(*resetReq)
+
+	log.Printf("reset system request: %+v", resetSystemReq)
+
+	_, httpResp, err := c.RedfishAPI.ResetSystemExecute(resetSystemReq)
+
 	if err = ScreenRedfishError(httpResp, err); err != nil {
 		return err
 	}
@@ -254,12 +279,19 @@ func (c *Client) SystemPowerOn(ctx context.Context) error {
 // SystemPowerStatus retrieves the power status of a host as a human-readable string.
 func (c *Client) SystemPowerStatus(ctx context.Context) (power.Status, error) {
 	ctx = SetAuth(ctx, c.username, c.password)
-	computerSystem, httpResp, err := c.RedfishAPI.GetSystem(ctx, c.nodeID)
+	systemReq := c.RedfishAPI.GetSystem(ctx, c.nodeID)
+	computerSystem, httpResp, err := c.RedfishAPI.GetSystemExecute(systemReq)
+
 	if screenErr := ScreenRedfishError(httpResp, err); screenErr != nil {
 		return power.StatusUnknown, screenErr
 	}
 
-	switch computerSystem.PowerState {
+	if computerSystem.PowerState == nil {
+		log.Printf("csystem power: %+v", computerSystem)
+		return power.StatusUnknown, nil
+	}
+
+	switch *computerSystem.PowerState {
 	case redfishClient.POWERSTATE_ON:
 		return power.StatusOn, nil
 	case redfishClient.POWERSTATE_OFF:
@@ -269,6 +301,7 @@ func (c *Client) SystemPowerStatus(ctx context.Context) (power.Status, error) {
 	case redfishClient.POWERSTATE_POWERING_OFF:
 		return power.StatusPoweringOff, nil
 	default:
+		log.Printf("csystem power: %+v", computerSystem.PowerState)
 		return power.StatusUnknown, nil
 	}
 }
@@ -288,10 +321,10 @@ func RemoteDirect(ctx context.Context, isoURL, redfishURL string, c ifc.Client) 
 		return err
 	}
 
-	// Power on node if it is off
-	if powerStatus != power.StatusOn {
-		log.Debugf("Ephemeral node has power status '%s'. Attempting to power on.", powerStatus.String())
-		if err = c.SystemPowerOn(ctx); err != nil {
+	// Power off node if it is on
+	if powerStatus != power.StatusOff {
+		log.Debugf("Ephemeral node has power status '%s'. Attempting to power off.", powerStatus.String())
+		if err = c.SystemPowerOff(ctx); err != nil {
 			return err
 		}
 	}
@@ -311,7 +344,7 @@ func RemoteDirect(ctx context.Context, isoURL, redfishURL string, c ifc.Client) 
 		return err
 	}
 
-	err = c.RebootSystem(ctx)
+	err = c.SystemPowerOn(ctx)
 	if err != nil {
 		return err
 	}
@@ -339,7 +372,11 @@ func NewClient(redfishURL string,
 	}
 
 	cfg := &redfishClient.Configuration{
-		BasePath:      basePath,
+		Servers: redfishClient.ServerConfigurations{
+			{
+				URL: basePath,
+			},
+		},
 		DefaultHeader: make(map[string]string),
 		UserAgent:     headerUserAgent,
 	}
@@ -350,7 +387,7 @@ func NewClient(redfishURL string,
 	// normally get when not overriding the transport
 	defaultTransportCopy := http.DefaultTransport.(*http.Transport) //nolint:errcheck
 	transport := defaultTransportCopy.Clone()
-
+	transport.DisableKeepAlives = true
 	if insecure {
 		transport.TLSClientConfig = &tls.Config{
 			InsecureSkipVerify: true, //nolint:gosec

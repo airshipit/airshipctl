@@ -158,11 +158,16 @@ func TestRedfishUtilGetResIDFromURL(t *testing.T) {
 }
 
 func TestRedfishUtilIsIdInList(t *testing.T) {
+	path1 := "/path/to/id/1"
+	path2 := "/path/to/id/2"
+	path3 := "/path/to/id/3"
+	path4 := "/path/to/id/4"
+
 	idList := []redfishClient.IdRef{
-		{OdataId: "/path/to/id/1"},
-		{OdataId: "/path/to/id/2"},
-		{OdataId: "/path/to/id/3"},
-		{OdataId: "/path/to/id/4"},
+		{OdataId: &path1},
+		{OdataId: &path2},
+		{OdataId: &path3},
+		{OdataId: &path4},
 	}
 	var emptyList []redfishClient.IdRef
 
@@ -183,17 +188,16 @@ func TestGetVirtualMediaID(t *testing.T) {
 	ctx := context.Background()
 	httpResp := &http.Response{StatusCode: 200}
 
-	m.On("GetSystem", ctx, mock.Anything).
-		Return(testutil.GetTestSystem(), &http.Response{StatusCode: 200}, nil)
+	testutil.MockOnGetSystem(ctx, m, mock.Anything, testutil.GetTestSystem(), httpResp, nil, -1)
 
-	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
-		Return(testutil.GetMediaCollection([]string{"Floppy", "Cd"}), httpResp, nil)
+	testutil.MockOnListManagerVirtualMedia(ctx, m, testutil.ManagerID,
+		testutil.GetMediaCollection([]string{"Floppy", "Cd"}), httpResp, nil, 1)
 
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Floppy").Times(1).
-		Return(testutil.GetVirtualMedia([]string{"Floppy", "USBStick"}), httpResp, nil)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Floppy",
+		testutil.GetVirtualMedia([]string{"Floppy", "USBStick"}), httpResp, nil)
 
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Cd").Times(1).
-		Return(testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Cd",
+		testutil.GetVirtualMedia([]string{"CD"}), httpResp, nil)
 
 	mediaID, mediaType, err := redfish.GetVirtualMediaID(ctx, m, testutil.ManagerID)
 	assert.Equal(t, mediaID, "Cd")
@@ -210,12 +214,13 @@ func TestGetVirtualMediaIDNoMedia(t *testing.T) {
 
 	// Remove available media types from test system
 	system := testutil.GetTestSystem()
-	system.Boot.BootSourceOverrideTargetRedfishAllowableValues = []redfishClient.BootSource{}
-	m.On("GetSystem", ctx, mock.Anything).
-		Return(system, &http.Response{StatusCode: 200}, nil)
+	boot := system.GetBoot()
+	boot.SetBootSourceOverrideTargetRedfishAllowableValues([]redfishClient.BootSource{})
+	testutil.MockOnGetSystem(ctx, m, mock.Anything, system,
+		&http.Response{StatusCode: 200}, nil, -1)
 
-	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
-		Return(redfishClient.Collection{}, httpResp, nil)
+	testutil.MockOnListManagerVirtualMedia(ctx, m, testutil.ManagerID,
+		redfishClient.Collection{}, httpResp, nil, 1)
 
 	mediaID, mediaType, err := redfish.GetVirtualMediaID(ctx, m, testutil.ManagerID)
 	assert.Empty(t, mediaID)
@@ -231,17 +236,18 @@ func TestGetVirtualMediaIDUnacceptableMediaTypes(t *testing.T) {
 	httpResp := &http.Response{StatusCode: 200}
 
 	system := testutil.GetTestSystem()
-	system.Boot.BootSourceOverrideTargetRedfishAllowableValues = []redfishClient.BootSource{
+	boot := system.GetBoot()
+	boot.SetBootSourceOverrideTargetRedfishAllowableValues([]redfishClient.BootSource{
 		redfishClient.BOOTSOURCE_PXE,
-	}
-	m.On("GetSystem", ctx, mock.Anything).
-		Return(system, &http.Response{StatusCode: 200}, nil)
+	})
 
-	m.On("ListManagerVirtualMedia", ctx, testutil.ManagerID).Times(1).
-		Return(testutil.GetMediaCollection([]string{"Floppy"}), httpResp, nil)
+	testutil.MockOnGetSystem(ctx, m, mock.Anything, system,
+		&http.Response{StatusCode: 200}, nil, -1)
 
-	m.On("GetManagerVirtualMedia", ctx, testutil.ManagerID, "Floppy").Times(1).
-		Return(testutil.GetVirtualMedia([]string{"Floppy", "USBStick"}), httpResp, nil)
+	testutil.MockOnListManagerVirtualMedia(ctx, m, testutil.ManagerID,
+		testutil.GetMediaCollection([]string{"Floppy"}), httpResp, nil, 1)
+	testutil.MockOnGetManagerVirtualMedia(ctx, m, testutil.ManagerID, "Floppy",
+		testutil.GetVirtualMedia([]string{"Floppy", "USBStick"}), httpResp, nil)
 
 	mediaID, mediaType, err := redfish.GetVirtualMediaID(ctx, m, testutil.ManagerID)
 	assert.Empty(t, mediaID)
