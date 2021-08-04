@@ -13,5 +13,6 @@
 kustomize_version: v3.8.5
 kustomize_download_url: "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/{{ kustomize_version }}/kustomize_{{ kustomize_version }}_linux_amd64.tar.gz"
 proxy:
-  http:
-  noproxy:
+  http_proxy: "{{ lookup('env', 'http_proxy') }}"
+  https_proxy: "{{ lookup('env', 'https_proxy') }}"
+  no_proxy: "{{ lookup('env', 'no_proxy') }}"

@@ -19,6 +19,6 @@
   args:
     warn: false
   environment:
-    http_proxy: "{{ proxy.http }}"
-    https_proxy: "{{ proxy.http }}"
-    no_proxy: "{{ proxy.noproxy }}"
+    http_proxy: "{{ proxy.http_proxy }}"
+    https_proxy: "{{ proxy.https_proxy }}"
+    no_proxy: "{{ proxy.no_proxy }}"
