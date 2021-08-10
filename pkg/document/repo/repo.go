@@ -115,6 +115,19 @@ func (repo *Repository) Checkout() error {
 	return tree.Checkout(co)
 }
 
+// Fetch fetches remote refs
+func (repo *Repository) Fetch() error {
+	if !repo.Driver.IsOpen() {
+		return ErrNoOpenRepo{}
+	}
+	auth, err := repo.ToAuth()
+	if err != nil {
+		return fmt.Errorf("failed to build auth options for repository %v: %w", repo.Name, err)
+	}
+	fo := repo.ToFetchOptions(auth)
+	return repo.Driver.Fetch(fo)
+}
+
 // Open the repository
 func (repo *Repository) Open() error {
 	log.Debugf("Attempting to open repository %s", repo.Name)
@@ -155,5 +168,11 @@ func (repo *Repository) Download(noCheckout bool) error {
 	if noCheckout {
 		return nil
 	}
+
+	err := repo.Fetch()
+	if err != nil && err != git.NoErrAlreadyUpToDate {
+		return fmt.Errorf("failed to fetch refs for repository %v: %w", repo.Name, err)
+	}
+
 	return repo.Checkout()
 }

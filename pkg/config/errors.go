@@ -67,7 +67,7 @@ type ErrMutuallyExclusiveCheckout struct {
 }
 
 func (e ErrMutuallyExclusiveCheckout) Error() string {
-	return "Checkout mutually exclusive, use either: commit-hash, branch or tag."
+	return "Checkout mutually exclusive, use either: commit-hash, branch, tag, or ref."
 }
 
 // ErrRepositoryNotFound is returned if repository is empty
