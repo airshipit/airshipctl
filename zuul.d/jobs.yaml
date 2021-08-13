@@ -141,6 +141,47 @@
         - describe-kubernetes-objects
         - airship-gather-pod-logs
 - job:
+    name: airship-airship-in-a-pod-script-runner
+    attempts: 1
+    timeout: 9000
+    pre-run:
+      - playbooks/airship-airshipctl-deploy-docker.yaml
+    post-run: playbooks/airship-collect-logs.yaml
+    run: playbooks/airshipctl-gate-runner.yaml
+    nodeset: airship-airshipctl-single-16GB-bionic-node
+    irrelevant-files: *noncodefiles
+    dependencies:
+      - name: openstack-tox-docs
+        soft: true
+      - name: airship-airshipctl-lint
+        soft: true
+      - name: airship-airshipctl-golint
+        soft: true
+      - name: airship-airshipctl-unit
+        soft: true
+      - name: airship-airshipctl-build-image
+        soft: true
+    vars:
+      site_name: test-site
+      gate_scripts:
+        - ./tools/deployment/01_install_kubectl.sh
+        - ./tools/install_kustomize.sh
+        - ./tools/airship-in-a-pod/scripts/01_dns_settings.sh
+        - ./tools/airship-in-a-pod/scripts/10_install_minikube.sh
+        - ./tools/airship-in-a-pod/scripts/11_build_images.sh
+        - ./tools/airship-in-a-pod/scripts/12_start_minikube.sh
+        - ./tools/airship-in-a-pod/scripts/13_apply_dns.sh
+        - ./tools/airship-in-a-pod/scripts/20_apply_aiap.sh
+      serve_dir: /srv/images
+      serve_port: 8099
+      log_roles:
+        - gather-system-logs
+        - airship-gather-runtime-logs
+        - airship-airshipctl-gather-configs
+        - describe-kubernetes-objects
+        - airship-gather-pod-logs
+    voting: false
+- job:
     name: airship-airshipctl-gate-script-runner-docker
     attempts: 1
     timeout: 3600
