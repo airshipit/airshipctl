@@ -1,14 +1,15 @@
 kind: KubeadmControlPlane
-apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha4
 metadata:
   name: cluster-controlplane
 spec:
   replicas: 1
-  version: v1.18.6
-  infrastructureTemplate:
-    kind: Metal3MachineTemplate
-    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
-    name: cluster-controlplane
+  version: v1.19.14
+  machineTemplate:
+    infrastructureRef:
+      kind: Metal3MachineTemplate
+      apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+      name: cluster-controlplane
   kubeadmConfigSpec:
     clusterConfiguration:
       imageRepository: k8s.gcr.io
@@ -21,7 +22,6 @@ spec:
           service-cluster-ip-range: 10.0.0.0/20
           service-node-port-range: 80-32767
           enable-admission-plugins: NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,ResourceQuota,DefaultTolerationSeconds,NodeRestriction
-          feature-gates: PodShareProcessNamespace=true
           tls-cipher-suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA
           tls-min-version: VersionTLS12
           v: "2"
@@ -93,7 +93,7 @@ spec:
       - REPLACE_HOST_SSH_KEY
       sudo: ALL=(ALL) NOPASSWD:ALL
 ---
-apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
 kind: Metal3MachineTemplate
 metadata:
   name: cluster-controlplane

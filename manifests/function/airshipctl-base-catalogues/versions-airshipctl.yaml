@@ -26,27 +26,18 @@ spec:
     capm3: # Images specific to the camp3 function; etc.
       manager:
         repository: quay.io/metal3-io
-        tag: v0.4.0
+        tag: v0.5.0
       auth_proxy:
         repository: gcr.io/kubebuilder
-        tag: v0.4.0
-      ipam-manager:
-        repository: quay.io/metal3-io
-        tag: v0.0.4
+        tag: v0.8.0
     cacpk:
       manager:
-        repository: us.gcr.io/k8s-artifacts-prod/cluster-api
-        tag: v0.3.7
-      auth_proxy:
-        repository: gcr.io/kubebuilder
-        tag: v0.4.1
+        repository: gcr.io/k8s-staging-cluster-api
+        tag: v0.4.2
     cabpk:
       manager:
-        repository: us.gcr.io/k8s-artifacts-prod/cluster-api
-        tag: v0.3.7
-      auth_proxy:
-        repository: gcr.io/kubebuilder
-        tag: v0.4.1
+        repository: gcr.io/k8s-staging-cluster-api
+        tag: v0.4.2
     capd:
       manager:
         repository: gcr.io/k8s-staging-cluster-api
@@ -70,11 +61,8 @@ spec:
         tag: v0.4.1
     capi:
       manager:
-        repository: us.gcr.io/k8s-artifacts-prod/cluster-api
-        tag: v0.3.7
-      auth_proxy:
-        repository: gcr.io/kubebuilder
-        tag: v0.4.1
+        repository: gcr.io/k8s-staging-cluster-api
+        tag: v0.4.2
     capz:
       manager:
         repository: gcr.io/k8s-staging-cluster-api-azure
@@ -90,27 +78,33 @@ spec:
     #       <container>:
     baremetal_operator:
       ironic: # ironic Deployment
-        init_bootstrap:
-          image: quay.io/centos/centos:8.3.2011
         init_images:
-          image: quay.io/airshipit/ipa:latest
+          image: quay.io/airshipit/ipa-wallaby:latest
         qcow_bundle:
-          image: quay.io/airshipit/qcow-bundle:latest-ubuntu_focal
+          image: quay.io/airshipit/qcow-bundle:k8s-1.19-latest-ubuntu_focal
         dnsmasq:
-          image: quay.io/metal3-io/ironic:capm3-v0.4.0
+          image: quay.io/metal3-io/ironic:capm3-v0.5.0
+        mariadb:
+          image: quay.io/metal3-io/ironic:capm3-v0.5.0
         httpd:
-          image: quay.io/metal3-io/ironic:capm3-v0.4.0
-        ironic:
-          image: quay.io/metal3-io/ironic:capm3-v0.4.0
+          image: quay.io/metal3-io/ironic:capm3-v0.5.0
+        ironic_api:
+          image: quay.io/metal3-io/ironic:capm3-v0.5.0
+        ironic_conductor:
+          image: quay.io/metal3-io/ironic:capm3-v0.5.0
         ironic_inspector:
-          image: quay.io/metal3-io/ironic-inspector:capm3-v0.4.0
+          image: quay.io/metal3-io/ironic:capm3-v0.5.0
+        ironic_log_watch:
+          image: quay.io/metal3-io/ironic:capm3-v0.5.0
+        ironic_inspector_log_watch:
+          image: quay.io/metal3-io/ironic:capm3-v0.5.0
+        ironic_endpoint_keepalived:
+          image: quay.io/metal3-io/keepalived:capm3-v0.5.0
       metal3_baremetal_operator: # metal3-baremetal-operator Deployment
         baremetal_operator:
-          image: quay.io/metal3-io/baremetal-operator:capm3-v0.4.0
-        ironic_proxy:
-          image: quay.io/airshipit/socat:1.7.4.1
-        ironic_inspector_proxy:
-          image: quay.io/airshipit/socat:1.7.4.1
+          image: quay.io/metal3-io/baremetal-operator:capm3-v0.5.0
+        kube_rbac_proxy:
+          image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
     calico_v3:
       node: # calico-node DaemonSet
         upgrade_ipam:
@@ -158,9 +152,9 @@ spec:
     image_builder:
       image_builder:
         image_builder:
-          image: quay.io/airshipit/image-builder:611fd18363c52ee322a83e9c68a8b56f863b8a79-ubuntu_focal
+          image: quay.io/airshipit/image-builder:k8s-1.19-latest-ubuntu_focal
 
-  kubernetes: v1.18.6
+  kubernetes: v1.19.14
 
   image_repositories:
     cni:

@@ -1,10 +1,11 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ../../../../function/baremetal-operator
+  - ../../../../function/baremetal-operator/v0.5.0
   - ../../../../function/hwcc
   - ../../../../function/clusterctl
   - ../../../../composite/flux-helm
+  - ../../../../function/ironic-deployment/v0.5.0
 
 commonLabels:
   airshipit.org/stage: initinfra

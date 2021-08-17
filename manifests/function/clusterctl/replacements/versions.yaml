@@ -29,16 +29,6 @@ replacements:
       kind: Clusterctl
       name: clusterctl_init
     fieldrefs: ["{.images.infrastructure-metal3/kube-rbac-proxy}"]
-- source:
-    objref:
-      kind: VersionsCatalogue
-      name: versions-airshipctl
-    fieldref: "{.spec.capi_images.capm3.ipam-manager}"
-  target:
-    objref:
-      kind: Clusterctl
-      name: clusterctl_init
-    fieldrefs: ["{.images.infrastructure-metal3/ip-address-manager}"]
 # Replace cacpk versions
 - source:
     objref:
@@ -50,16 +40,6 @@ replacements:
       kind: Clusterctl
       name: clusterctl_init
     fieldrefs: ["{.images.control-plane-kubeadm/kubeadm-control-plane-controller}"]
-- source:
-    objref:
-      kind: VersionsCatalogue
-      name: versions-airshipctl
-    fieldref: "{.spec.capi_images.cacpk.auth_proxy}"
-  target:
-    objref:
-      kind: Clusterctl
-      name: clusterctl_init
-    fieldrefs: ["{.images.control-plane-kubeadm/kube-rbac-proxy}"]
 # Replace cabpk versions
 - source:
     objref:
@@ -71,16 +51,6 @@ replacements:
       kind: Clusterctl
       name: clusterctl_init
     fieldrefs: ["{.images.bootstrap-kubeadm/kubeadm-bootstrap-controller}"]
-- source:
-    objref:
-      kind: VersionsCatalogue
-      name: versions-airshipctl
-    fieldref: "{.spec.capi_images.cabpk.auth_proxy}"
-  target:
-    objref:
-      kind: Clusterctl
-      name: clusterctl_init
-    fieldrefs: ["{.images.bootstrap-kubeadm/kube-rbac-proxy}"]
 # Replace capd versions
 - source:
     objref:
@@ -155,16 +125,6 @@ replacements:
       kind: Clusterctl
       name: clusterctl_init
     fieldrefs: ["{.images.cluster-api/cluster-api-controller}"]
-- source:
-    objref:
-      kind: VersionsCatalogue
-      name: versions-airshipctl
-    fieldref: "{.spec.capi_images.capi.auth_proxy}"
-  target:
-    objref:
-      kind: Clusterctl
-      name: clusterctl_init
-    fieldrefs: ["{.images.cluster-api/kube-rbac-proxy}"]
 
 # Replace capz versions
 - source:

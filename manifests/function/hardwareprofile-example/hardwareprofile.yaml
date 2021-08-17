@@ -9,8 +9,8 @@ metadata:
 hardwareProfile:
   firmware:
     sriovEnabled: false
-    virtualizationDisabled: false
-    simultaneousMultithreadingDisabled: false
+    virtualizationEnabled: false
+    simultaneousMultithreadingEnabled: false
   raid:
     hardwareRAIDVolumes:
     - name: "VirtualDisk1"

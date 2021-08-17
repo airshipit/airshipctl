@@ -1,5 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ../../../../../function/baremetal-operator/replacements
+  - ../../../../../function/baremetal-operator/v0.5.0/replacements
   - ../../../../../composite/flux-helm/replacements
+  - ../../../../../function/ironic-deployment/v0.5.0/replacements

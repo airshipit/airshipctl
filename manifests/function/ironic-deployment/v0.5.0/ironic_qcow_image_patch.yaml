@@ -21,7 +21,7 @@ spec:
             - sh
             - -c
             - "cp /qcows/*.qcow2 /qcows/*.qcow2.md5sum /shared/html/images/"
-          image: "quay.io/sirishagopigiri/qcow-bundle:v1.19.1"
+          image: "quay.io/airshipit/qcow-bundle:k8s-1.19-latest-ubuntu_focal"
           imagePullPolicy: Always
           volumeMounts:
               - mountPath: "/shared"

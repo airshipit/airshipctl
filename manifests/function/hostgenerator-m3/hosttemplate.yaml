@@ -20,11 +20,14 @@ values:
   # See function/hardwareprofile-example for an example of how to do this.
   hardwareProfiles:
     default:
+      raid:
+        hardwareRAIDVolumes: []
+        softwareRAIDVolumes: []
       # Reference: https://github.com/metal3-io/metal3-docs/blob/master/design/baremetal-operator/bios-config.md
-      firmware:
-        sriovEnabled: false
-        virtualizationDisabled: false
-        simultaneousMultithreadingDisabled: false
+      #firmware:
+      #  sriovEnabled: false
+      #  virtualizationEnabled: false
+      #  simultaneousMultithreadingEnabled: false
 
 template: |
   {{- $envAll := . }}
@@ -38,9 +41,6 @@ template: |
   {{- $hardwareProfile := index $envAll.hardwareProfiles $host.hardwareProfile }}
   {{- if not $hardwareProfile -}}
   {{-   fail (printf "can't find hardwareProfile %s" $host.hardwareProfile) -}}
-  {{- end -}}
-  {{- if not $hardwareProfile.firmware -}}
-  {{-   fail (printf "hardwareProfile %s doesn't have firmware field" $host.hardwareProfile) -}}
   {{- end -}}
   ---
   apiVersion: metal3.io/v1alpha1
@@ -63,10 +63,12 @@ template: |
       address: {{ $host.bmcAddress }}
       credentialsName: {{ $hostName }}-bmc-secret
       disableCertificateVerification: {{ default false $host.disableCertificateVerification }}
+  {{- if $hardwareProfile.firmware }}
     firmware:
   {{ toYaml $hardwareProfile.firmware | indent 4 }}
   {{- /* If no raid is defined for a host, simply skip. There is no default setting for raid */ -}}
   {{- /* Reference for RAID: https://github.com/metal3-io/metal3-docs/pull/134 */ -}}
+  {{- end }}
   {{- if $hardwareProfile.raid }}
     raid:
   {{ toYaml $hardwareProfile.raid | indent 4 }}

@@ -73,7 +73,7 @@ type ImageURLSpec struct {
 // CAPIImageProperties defines the spec for CAPI images
 type CAPIImageProperties struct {
 	Manager     ImageURLSpec `json:"manager"`
-	AuthProxy   ImageURLSpec `json:"auth_proxy"`
+	AuthProxy   ImageURLSpec `json:"auth_proxy,omitempty"`
 	IPAMManager ImageURLSpec `json:"ipam-manager,omitempty"`
 }
 
@@ -143,9 +143,9 @@ type VersionsCatalogueSpec struct {
 	// capi_images defines collections of images used by cluster API.
 	// The name of each key in this section should correspond to the airshipctl
 	// function in which the images will be used, such as "capm3". Each capi_image
-	// object must have a "manager" and "auth_proxy" object, each of which must have
-	// "repository" and "tag" properties defined. capi_images may also include an
-	// optional "ipam-manager" object, which must also have "repository" and "tag"
+	// object must have a "manager" object, which must have "repository" and "tag"
+	// properties defined. capi_images may also include an optional "ipam-manager"
+	// or "auth_proxy" object, which must also have "repository" and "tag"
 	// properties defined.
 	CAPIImages CAPIImageSpec `json:"capi_images,omitempty"`
 

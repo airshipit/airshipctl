@@ -16,6 +16,7 @@ set -xe
 
 export TIMEOUT=${TIMEOUT:-3600}
 export CONDITION=${CONDITION:-"controlPlaneReady"}
+export CHECK=${CHECK:-"true"}
 
 end=$(($(date +%s) + $TIMEOUT))
 echo "Waiting $TIMEOUT seconds for cluster to reach $CONDITION condition" 1>&2
@@ -25,7 +26,7 @@ while true; do
               --request-timeout 20s \
               --context $KCTL_CONTEXT \
               get -f $RENDERED_BUNDLE_PATH \
-              -o jsonpath={.status.$CONDITION})" == "true" ]
+              -o jsonpath={.status.$CONDITION})" == $CHECK ]
     then
         echo "Getting information about cluster" 1>&2
         kubectl \

@@ -24,7 +24,7 @@ spec:
     provisioningIp: "10.23.25.102"
     dhcpRange: "10.23.25.200,10.23.25.250"
     ironicAutomatedClean: ""
-    httpPort: ""
+    httpPort: "80"
     ironicFastTrack: ""
     deployKernelUrl: ""
     deployRamdiskUrl: ""

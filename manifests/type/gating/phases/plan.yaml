@@ -144,4 +144,4 @@ validation:
     - VariableCatalogue
   crdList:
     - airshipctl/manifests/function/airshipctl-schemas
-    - airshipctl/manifests/global/crd/baremetal-operator
+    - airshipctl/manifests/function/baremetal-operator/v0.5.0/upstream/crd
