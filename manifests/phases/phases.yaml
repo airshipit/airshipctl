@@ -19,7 +19,7 @@ config:
   executorRef:
     apiVersion: airshipit.org/v1alpha1
     kind: KubernetesApply
-    name: kubernetes-apply-nowait
+    name: kubernetes-apply-networking
   documentEntryPoint: ephemeral/initinfra-networking
 ---
 apiVersion: airshipit.org/v1alpha1
@@ -57,7 +57,7 @@ config:
   executorRef:
     apiVersion: airshipit.org/v1alpha1
     kind: KubernetesApply
-    name: kubernetes-apply-nowait
+    name: kubernetes-apply-networking
   documentEntryPoint: target/initinfra-networking
 ---
 apiVersion: airshipit.org/v1alpha1

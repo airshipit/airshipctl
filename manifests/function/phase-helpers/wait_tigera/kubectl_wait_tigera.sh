@@ -14,23 +14,16 @@
 
 set -xe
 
-echo "Wait for Calico to be deployed using tigera" 1>&2
-kubectl --kubeconfig $KUBECONFIG --context $KCTL_CONTEXT  wait --all-namespaces --for=condition=Ready pods --all --timeout=1000s 1>&2
+export TIMEOUT=${TIMEOUT:-1000}
 
-echo "Wait for Established condition of tigerastatus(CRD) to be true for tigerastatus(CR) to show up" 1>&2
-kubectl --kubeconfig $KUBECONFIG --context $KCTL_CONTEXT wait --for=condition=Established crd/tigerastatuses.operator.tigera.io --timeout=300s 1>&2
+echo "Wait $TIMEOUT seconds for tigera status to be in Available state." 1>&2
+end=$(($(date +%s) + $TIMEOUT))
 
-# Wait till CR(tigerastatus) shows up to query
-count=0
-max_retry_attempts=150
-until [ "$(kubectl --kubeconfig $KUBECONFIG --context $KCTL_CONTEXT get tigerastatus 2>/dev/null)" ]; do
-  count=$((count + 1))
-  if [[ ${count} -eq "${max_retry_attempts}" ]]; then
-    echo 'Timed out waiting for tigerastatus' 1>&2
+until [ "$(kubectl --kubeconfig $KUBECONFIG --context $KCTL_CONTEXT wait --for=condition=Available --all tigerastatus 2>/dev/null)" ]; do
+  now=$(date +%s)
+  if [ $now -gt $end ]; then
+    echo "Tigera status is not ready before TIMEOUT=$TIMEOUT" 1>&2
     exit 1
   fi
-  sleep 2
+  sleep 10
 done
-
-# Wait till condition is available for tigerastatus
-kubectl --kubeconfig $KUBECONFIG --context $KCTL_CONTEXT wait --for=condition=Available tigerastatus --all --timeout=1000s 1>&2
