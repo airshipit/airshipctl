@@ -158,7 +158,7 @@ spec:
     image_builder:
       image_builder:
         image_builder:
-          image: quay.io/airshipit/image-builder:4ca0c71e6eab659e9a335fabca4bc54b68941aeb-ubuntu_focal
+          image: quay.io/airshipit/image-builder:611fd18363c52ee322a83e9c68a8b56f863b8a79-ubuntu_focal
 
   kubernetes: v1.18.6
 
