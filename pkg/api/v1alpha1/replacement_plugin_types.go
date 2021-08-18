@@ -85,7 +85,7 @@ type Replacement struct {
 type ReplSource struct {
 	ObjRef   *Target `json:"objref,omitempty" yaml:"objref,omitempty"`
 	FieldRef string  `json:"fieldref,omitempty" yaml:"fiedldref,omitempty"`
-	Value    string  `json:"value,omitempty" yaml:"value,omitempty"`
+	Value    *string `json:"value,omitempty" yaml:"value,omitempty"`
 }
 
 // ReplTarget defines where a substitution is to.

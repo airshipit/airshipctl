@@ -62,8 +62,11 @@ func New(obj map[string]interface{}) (kio.Filter, error) {
 		if r.Target != nil && r.Targets != nil {
 			return nil, ErrBadConfiguration{Msg: "only target OR targets is allowed in one replacement, not both"}
 		}
-		if r.Source.ObjRef != nil && r.Source.Value != "" {
+		if r.Source.ObjRef != nil && r.Source.Value != nil {
 			return nil, ErrBadConfiguration{Msg: "only one of fieldref and value is allowed in one replacement"}
+		}
+		if r.Source.ObjRef == nil && r.Source.Value == nil {
+			return nil, ErrBadConfiguration{Msg: "no source value or source objectref value was given"}
 		}
 	}
 	return p, nil
@@ -91,9 +94,10 @@ func (p *plugin) Filter(items []*yaml.RNode) ([]*yaml.RNode, error) {
 }
 
 func getValue(items []*yaml.RNode, source *airshipv1.ReplSource) (*yaml.RNode, error) {
-	if source.Value != "" {
-		return yaml.NewScalarRNode(source.Value), nil
+	if source.Value != nil {
+		return yaml.NewScalarRNode(*source.Value), nil
 	}
+
 	sources, err := kyamlutils.DocumentSelector{}.
 		ByAPIVersion(source.ObjRef.APIVersion).
 		ByGVK(source.ObjRef.Group, source.ObjRef.Version, source.ObjRef.Kind).
