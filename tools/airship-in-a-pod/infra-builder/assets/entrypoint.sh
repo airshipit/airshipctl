@@ -14,7 +14,7 @@
 
 set -ex
 
-printf "Waiting 30 seconds for the libvirt, sushy, and docker services to be ready\n"
+printf "Waiting 30 seconds for the libvirt and docker services to be ready\n"
 sleep 30
 
 ansible-playbook -v /opt/ansible/playbooks/build-infra.yaml \
