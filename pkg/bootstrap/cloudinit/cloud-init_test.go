@@ -35,24 +35,22 @@ var (
 	}
 	validSelectors = selectors{
 		userDataSelector: document.NewSelector().
-			ByKind("Secret").
-			ByLabel("airshipit.org/ephemeral-user-data in (True, true)"),
+			ByKind(secret).
+			ByLabel(ephUser),
 		userDataKey: defaultUserDataKey,
 		networkConfigSelector: document.NewSelector().
-			ByKind("BareMetalHost").
-			ByLabel("airshipit.org/ephemeral-node in (True, true)"),
+			ByKind(bmh).
+			ByLabel(ephNode),
 		networkConfigKey: defaultNetworkConfigKey,
 	}
 )
 
 func TestGetCloudData(t *testing.T) {
-	bundle, err := document.NewBundleByPath("testdata")
-	require.NoError(t, err, "Building Bundle Failed")
-
 	tests := []struct {
 		name string
 		selectors
 		labelFilter      string
+		testBundle       document.Bundle
 		expectedUserData []byte
 		expectedNetData  []byte
 		expectedErr      error
@@ -64,6 +62,18 @@ func TestGetCloudData(t *testing.T) {
 			expectedUserData: []byte("cloud-init"),
 			expectedNetData:  []byte("net-config"),
 			expectedErr:      nil,
+			testBundle: createTestBundle(t, testData{
+				docsCfg:           getValidDocSet(),
+				secret:            "Secret",
+				bmh:               "BareMetalHost",
+				ephNode:           "airshipit.org/ephemeral-node in (True, true)",
+				ephUser:           "airshipit.org/ephemeral-user-data in (True, true)",
+				selectorNamespace: "metal3",
+				selectorName:      "master-1-networkdata",
+				mockErr1:          nil,
+				mockErr2:          nil,
+				mockErr3:          nil,
+			}),
 		},
 		{
 			name:             "BareMetalHost document not found",
@@ -74,8 +84,24 @@ func TestGetCloudData(t *testing.T) {
 			expectedErr: document.ErrDocNotFound{
 				Selector: document.NewSelector().
 					ByLabel(document.EphemeralHostSelector).
-					ByKind("BareMetalHost"),
+					ByKind(bmh),
 			},
+			testBundle: createTestBundle(t, testData{
+				docsCfg:           getEphemeralMissing(),
+				secret:            "Secret",
+				bmh:               "BareMetalHost",
+				ephNode:           "airshipit.org/ephemeral-node in (True, true)",
+				ephUser:           "airshipit.org/ephemeral-user-data in (True, true)",
+				selectorNamespace: "",
+				selectorName:      "",
+				mockErr1:          nil,
+				mockErr2: document.ErrDocNotFound{
+					Selector: document.NewSelector().
+						ByLabel(document.EphemeralHostSelector).
+						ByKind(bmh),
+				},
+				mockErr3: nil,
+			}),
 		},
 		{
 			name:             "BareMetalHost document duplication",
@@ -86,8 +112,24 @@ func TestGetCloudData(t *testing.T) {
 			expectedErr: document.ErrMultiDocsFound{
 				Selector: document.NewSelector().
 					ByLabel(document.EphemeralHostSelector).
-					ByKind("BareMetalHost"),
+					ByKind(bmh),
 			},
+			testBundle: createTestBundle(t, testData{
+				docsCfg:           getEphemeralDuplicate(),
+				secret:            "Secret",
+				bmh:               "BareMetalHost",
+				ephNode:           "airshipit.org/ephemeral-node in (True, true)",
+				ephUser:           "airshipit.org/ephemeral-user-data in (True, true)",
+				selectorNamespace: "",
+				selectorName:      "",
+				mockErr1:          nil,
+				mockErr2: document.ErrMultiDocsFound{
+					Selector: document.NewSelector().
+						ByLabel(document.EphemeralHostSelector).
+						ByKind(bmh),
+				},
+				mockErr3: nil,
+			}),
 		},
 		{
 			name:             "Bad network data document reference",
@@ -97,10 +139,27 @@ func TestGetCloudData(t *testing.T) {
 			expectedNetData:  nil,
 			expectedErr: document.ErrDocNotFound{
 				Selector: document.NewSelector().
-					ByKind("Secret").
+					ByKind(secret).
 					ByNamespace("networkdatabadpointer-missing").
 					ByName("networkdatabadpointer-missing"),
 			},
+			testBundle: createTestBundle(t, testData{
+				docsCfg:           getNetworkBadPointer(),
+				secret:            "Secret",
+				bmh:               "BareMetalHost",
+				ephNode:           "airshipit.org/ephemeral-node in (True, true)",
+				ephUser:           "airshipit.org/ephemeral-user-data in (True, true)",
+				selectorNamespace: "metal3",
+				selectorName:      "master-1-networkdata",
+				mockErr1:          nil,
+				mockErr2:          nil,
+				mockErr3: document.ErrDocNotFound{
+					Selector: document.NewSelector().
+						ByKind(secret).
+						ByNamespace("networkdatabadpointer-missing").
+						ByName("networkdatabadpointer-missing"),
+				},
+			}),
 		},
 		{
 			name:             "Bad network data document structure",
@@ -112,6 +171,18 @@ func TestGetCloudData(t *testing.T) {
 				DocName: "networkdatamalformed-malformed",
 				Key:     defaultNetworkConfigKey,
 			},
+			testBundle: createTestBundle(t, testData{
+				docsCfg:           getNetDataMalformed(),
+				secret:            "Secret",
+				bmh:               "BareMetalHost",
+				ephNode:           "airshipit.org/ephemeral-node in (True, true)",
+				ephUser:           "airshipit.org/ephemeral-user-data in (True, true)",
+				selectorNamespace: "metal3",
+				selectorName:      "master-1-networkdata",
+				mockErr1:          nil,
+				mockErr2:          nil,
+				mockErr3:          nil,
+			}),
 		},
 		{
 			name:             "Bad user data document structure",
@@ -123,6 +194,18 @@ func TestGetCloudData(t *testing.T) {
 				DocName: "userdatamalformed-somesecret",
 				Key:     defaultUserDataKey,
 			},
+			testBundle: createTestBundle(t, testData{
+				docsCfg:           getUserDataMalformed(),
+				secret:            "Secret",
+				bmh:               "BareMetalHost",
+				ephNode:           "airshipit.org/ephemeral-node in (True, true)",
+				ephUser:           "airshipit.org/ephemeral-user-data in (True, true)",
+				selectorNamespace: "",
+				selectorName:      "",
+				mockErr1:          nil,
+				mockErr2:          nil,
+				mockErr3:          nil,
+			}),
 		},
 		{
 			name:             "User data document not found",
@@ -132,26 +215,36 @@ func TestGetCloudData(t *testing.T) {
 			expectedNetData:  nil,
 			expectedErr: document.ErrDocNotFound{
 				Selector: document.NewSelector().
-					ByKind("Secret").
+					ByKind(secret).
 					ByLabel(document.EphemeralUserDataSelector),
 			},
+			testBundle: createTestBundle(t, testData{
+				docsCfg:           getUserDataMissing(),
+				secret:            "Secret",
+				bmh:               "BareMetalHost",
+				ephNode:           "airshipit.org/ephemeral-node in (True, true)",
+				ephUser:           "airshipit.org/ephemeral-user-data in (True, true)",
+				selectorNamespace: "",
+				selectorName:      "",
+				mockErr1: document.ErrDocNotFound{
+					Selector: document.NewSelector().
+						ByKind(secret).
+						ByLabel(document.EphemeralUserDataSelector),
+				},
+				mockErr2: nil,
+				mockErr3: nil,
+			}),
 		},
 	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// prune the bundle down using the label filter for the specific test
-			selector := document.NewSelector().ByLabel(tt.labelFilter)
-			filteredBundle, err := bundle.SelectBundle(selector)
-			require.NoError(t, err, "Building filtered bundle for %s failed", tt.labelFilter)
-
 			// ensure each test case filter has at least one document
-			docs, err := filteredBundle.GetAllDocuments()
+			docs, err := tt.testBundle.GetAllDocuments()
 			require.NoError(t, err, "GetAllDocuments failed")
 			require.NotZero(t, docs)
 
 			actualUserData, actualNetData, actualErr := GetCloudData(
-				filteredBundle,
+				tt.testBundle,
 				tt.userDataSelector,
 				tt.userDataKey,
 				tt.networkConfigSelector,
