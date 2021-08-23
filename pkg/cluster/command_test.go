@@ -26,9 +26,38 @@ import (
 	"opendev.org/airship/airshipctl/pkg/cluster"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/k8s/client/fake"
+	testdoc "opendev.org/airship/airshipctl/testutil/document"
 )
 
 type mockStatusOptions struct{}
+
+func getAllDocCfgs() []string {
+	return []string{
+		`apiVersion: "example.com/v1"
+kind: Resource
+metadata:
+  name: stable-resource
+  namespace: target-infra
+`,
+	}
+}
+
+func testFakeDocBundle() document.Bundle {
+	bundle := &testdoc.MockBundle{}
+	docCfgs := getAllDocCfgs()
+	allDocs := make([]document.Document, len(docCfgs))
+	for i, cfg := range docCfgs {
+		doc, err := document.NewDocumentFromBytes([]byte(cfg))
+		if err != nil {
+			return bundle
+		}
+		allDocs[i] = doc
+	}
+
+	bundle.On("GetAllDocuments").Return(allDocs, nil)
+
+	return bundle
+}
 
 func (o mockStatusOptions) GetStatusMapDocs() (*cluster.StatusMap, []document.Document, error) {
 	fakeClient := fake.NewClient(
@@ -38,11 +67,8 @@ func (o mockStatusOptions) GetStatusMapDocs() (*cluster.StatusMap, []document.Do
 	if err != nil {
 		return nil, nil, err
 	}
-	fakeDocBundle, err := document.NewBundleByPath("testdata/statusmap")
-	if err != nil {
-		return nil, nil, err
-	}
 
+	fakeDocBundle := testFakeDocBundle()
 	fakeDocs, err := fakeDocBundle.GetAllDocuments()
 	if err != nil {
 		return nil, nil, err
