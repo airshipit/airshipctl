@@ -35,7 +35,7 @@ then
   printf "Using cached airshipctl\n"
   cp -r "$CACHE_DIR/*" "$ARTIFACTS_DIR"
 else
-  printf "Waiting 30 seconds for the libvirt, sushy, and docker services to be ready\n"
+  printf "Waiting 30 seconds for the libvirt and docker services to be ready\n"
   sleep 30
 
   cloneRepo $MANIFEST_REPO_NAME $MANIFEST_REPO_URL $MANIFEST_REPO_REF

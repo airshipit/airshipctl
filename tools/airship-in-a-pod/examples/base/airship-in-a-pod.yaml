@@ -107,8 +107,8 @@ spec:
           -config <(cat /csr_details.txt) \
           -extensions 'req_ext'
 
-        # Wait for interface to come up
-        while ! ping -c1 10.23.25.1 2>&1 >/dev/null; do sleep 1; done
+        # Wait for infrastructure to come up
+        while [[ ! -e /tmp/completed/infra-builder ]]; do printf "Waiting on infra-builder...\n"; sleep 1; done
 
         sushy-emulator \
           --debug \
@@ -121,6 +121,8 @@ spec:
     volumeMounts:
       - name: var-run-libvirt
         mountPath: /var/run/libvirt
+      - name: completed
+        mountPath: /tmp/completed
 
   - name: nginx
     image: nginx:latest
