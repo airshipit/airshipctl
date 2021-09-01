@@ -18,10 +18,16 @@ metadata:
         image: localhost/templater
 values:
   hosts:
-  - macAddress: 00:aa:bb:cc:dd
+  - macAddresses:
+      oam: 00:aa:bb:cc:dd
+      pxe: 00:aa:bb:cc:ee
     name: node-1
-  - macAddress: 00:aa:bb:cc:ee
+  - macAddresses:
+      oam: 00:aa:bb:cc:ff
     name: node-2
+  - macAddresses:
+      pxe: 00:aa:bb:cc:22
+    name: node-3
 template: |
   {{ range .hosts -}}
   ---
@@ -30,5 +36,7 @@ template: |
   metadata:
     name: {{ .name }}
   spec:
-    bootMACAddress: {{ .macAddress }}
+    {{- if and (.macAddresses) (.macAddresses.oam) }}
+    bootMACAddress: {{ .macAddresses.oam }}
+    {{- end }}
   {{ end -}}
