@@ -50,8 +50,8 @@ export AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_TYPE=${AIRSHIP_CONFIG_MANIFEST_REPO_AUT
 export EXTERNAL_KUBECONFIG=${EXTERNAL_KUBECONFIG:-""}
 
 # Remove the contents of the .airship folder, preserving the kustomize plugin directory
-rm -rf $HOME/.airship/*config*
-mkdir -p $HOME/.airship
+rm -rf "$HOME/.airship/config" "$HOME/.airship/kubeconfig"
+mkdir -p "$HOME/.airship"
 
 echo "Generate ~/.airship/config and ~/.airship/kubeconfig"
 envsubst <"${AIRSHIPCTL_WS}/tools/deployment/templates/airshipconfig_template" > ~/.airship/config
