@@ -218,6 +218,14 @@ spec:
         value: airshipctl
       - name: AIRSHIPCTL_REF
         value:
+      - name: USE_PROXY
+        value:
+      - name: no_proxy
+        value:
+      - name: http_proxy
+        value:
+      - name: https_proxy
+        value:
     volumeMounts:
       - name: tmp
         mountPath: /tmp
@@ -253,6 +261,14 @@ spec:
         value: /opt/aiap-cache
       - name: ARTIFACTS_DIR
         value: /opt/aiap-artifacts
+      - name: USE_PROXY
+        value:
+      - name: no_proxy
+        value:
+      - name: http_proxy
+        value:
+      - name: https_proxy
+        value:
     volumeMounts:
       - name: cache
         mountPath: /opt/aiap-cache
@@ -300,6 +316,14 @@ spec:
         value: "false"
       - name: MANIFEST_REPO_NAME
         value: airshipctl
+      - name: USE_PROXY
+        value:
+      - name: no_proxy
+        value:
+      - name: http_proxy
+        value:
+      - name: https_proxy
+        value:
     volumeMounts:
       - name: cache
         mountPath: /opt/aiap-cache
