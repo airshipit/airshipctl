@@ -34,7 +34,14 @@ export SITE=${SITE:-"test-site"}
 export AIRSHIP_CONFIG_METADATA_PATH=${AIRSHIP_CONFIG_METADATA_PATH:-"manifests/site/${SITE}/metadata.yaml"}
 export SYSTEM_ACTION_RETRIES=30
 export SYSTEM_REBOOT_DELAY=30
-export AIRSHIP_CONFIG_PHASE_REPO_BRANCH=${BRANCH:-"master"}
+# Branch and ref options are mutually exclusive. Ref gets preference since it's more specific
+if [[ -z "$AIRSHIP_CONFIG_PHASE_REPO_REF" ]]; then
+  export AIRSHIP_CONFIG_PHASE_REPO_BRANCH=${BRANCH:-"master"}
+  export AIRSHIP_CONFIG_PHASE_REPO_REMOTE_REF=""
+else
+  export AIRSHIP_CONFIG_PHASE_REPO_BRANCH=""
+  export AIRSHIP_CONFIG_PHASE_REPO_REMOTE_REF="$AIRSHIP_CONFIG_PHASE_REPO_REF:$AIRSHIP_CONFIG_PHASE_REPO_REF"
+fi
 # the git repo url or local file system path to a cloned repo, e.g., /home/stack/airshipctl
 export AIRSHIP_CONFIG_PHASE_REPO_URL=${AIRSHIP_CONFIG_PHASE_REPO_URL:-"https://review.opendev.org/airship/airshipctl"}
 export AIRSHIP_CONFIG_PHASE_REPO_NAME=${AIRSHIP_CONFIG_PHASE_REPO_NAME:-"airshipctl"}
