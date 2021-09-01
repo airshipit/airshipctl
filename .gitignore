@@ -23,3 +23,6 @@ bin/
 
 # Sphinx build venv
 .tox/
+
+# Logging
+tools/airship-in-a-pod/logs/
