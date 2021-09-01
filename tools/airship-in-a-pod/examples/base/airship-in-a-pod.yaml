@@ -216,14 +216,10 @@ spec:
         value: "false"
       - name: ARTIFACTS_DIR
         value: /opt/aiap-artifacts
-      - name: MANIFEST_REPO_URL
-        value: https://review.opendev.org/airship/airshipctl
-      - name: MANIFEST_REPO_REF
+      - name: AIRSHIPCTL_REPO_URL
+        value: https://opendev.org/airship/airshipctl
+      - name: AIRSHIPCTL_REPO_REF
         value: master
-      - name: MANIFEST_REPO_NAME
-        value: airshipctl
-      - name: AIRSHIPCTL_REF
-        value:
       - name: USE_PROXY
         value:
       - name: no_proxy
@@ -320,8 +316,12 @@ spec:
         value: /opt/aiap-artifacts
       - name: USE_CACHED_ISO
         value: "false"
-      - name: MANIFEST_REPO_NAME
-        value: airshipctl
+      - name: AIRSHIP_CONFIG_PHASE_REPO_URL
+        value: https://review.opendev.org/airship/airshipctl
+      - name: AIRSHIP_CONFIG_PHASE_REPO_BRANCH
+        value: master
+      - name: AIRSHIP_CONFIG_PHASE_REPO_REF
+        value:
       - name: USE_PROXY
         value:
       - name: no_proxy

@@ -36,7 +36,7 @@ export SYSTEM_ACTION_RETRIES=30
 export SYSTEM_REBOOT_DELAY=30
 # Branch and ref options are mutually exclusive. Ref gets preference since it's more specific
 if [[ -z "$AIRSHIP_CONFIG_PHASE_REPO_REF" ]]; then
-  export AIRSHIP_CONFIG_PHASE_REPO_BRANCH=${BRANCH:-"master"}
+  export AIRSHIP_CONFIG_PHASE_REPO_BRANCH=${AIRSHIP_CONFIG_PHASE_REPO_BRANCH:-"master"}
   export AIRSHIP_CONFIG_PHASE_REPO_REMOTE_REF=""
 else
   export AIRSHIP_CONFIG_PHASE_REPO_BRANCH=""

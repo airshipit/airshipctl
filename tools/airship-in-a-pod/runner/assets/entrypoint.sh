@@ -28,16 +28,6 @@ kustomize_download_url="https://github.com/kubernetes-sigs/kustomize/releases/do
 curl -sSL "$kustomize_download_url" | tar -C /tmp -xzf -
 install /tmp/kustomize /usr/local/bin
 
-cp "$ARTIFACTS_DIR/$MANIFEST_REPO_NAME/bin/airshipctl" /usr/local/bin/airshipctl
-if [ $MANIFEST_REPO_NAME != "airshipctl" ]
-then
-  export AIRSHIP_CONFIG_PHASE_REPO_URL="https://opendev.org/airship/treasuremap"
-  cp -r $ARTIFACTS_DIR/airshipctl/ /opt/airshipctl
-fi
-
-cp  -r $ARTIFACTS_DIR/$MANIFEST_REPO_NAME/ /opt/$MANIFEST_REPO_NAME
-cd /opt/$MANIFEST_REPO_NAME
-
 curl -fsSL -o /sops-key.asc https://raw.githubusercontent.com/mozilla/sops/master/pgp/sops_functional_tests_key.asc
 SOPS_PGP_FP="FBC7B9E2A4F9289AC0C1D4843D16CEE4A27381B4"
 SOPS_IMPORT_PGP="$(cat /sops-key.asc)"
@@ -46,50 +36,35 @@ export SOPS_PGP_FP
 echo 'export SOPS_IMPORT_PGP="$(cat /sops-key.asc)"' >> ~/.bashrc
 echo "export SOPS_PGP_FP=${SOPS_PGP_FP}" >> ~/.bashrc
 
-export AIRSHIP_CONFIG_MANIFEST_DIRECTORY="/tmp/airship"
+install "$ARTIFACTS_DIR/airshipctl/bin/airshipctl" /usr/local/bin
+cd "$ARTIFACTS_DIR/airshipctl"
 
-# By default, don't build airshipctl - use the binary from the shared volume instead
-# ./tools/deployment/21_systemwide_executable.sh
-if [ "$MANIFEST_REPO_NAME" == "airshipctl" ]
-then
-  ./tools/deployment/22_test_configs.sh
-  # `airshipctl document pull` doesn't support pull patchsets yet
-  #./tools/deployment/23_pull_documents.sh
-  mkdir /tmp/airship
-  cp -rp /opt/airshipctl /tmp/airship/airshipctl
-  ./tools/deployment/23_generate_secrets.sh
+export AIRSHIP_CONFIG_MANIFEST_DIRECTORY="$ARTIFACTS_DIR/manifests"
+./tools/deployment/22_test_configs.sh
+if [[ -n "$AIRSHIP_CONFIG_PHASE_REPO_REF" ]]; then
+  export NO_CHECKOUT="false"
 else
-  ./tools/deployment/airship-core/22_test_configs.sh
-  ./tools/deployment/airship-core/23_pull_documents.sh
-  ./tools/deployment/airship-core/23_generate_secrets.sh
+  export NO_CHECKOUT="true"
 fi
+./tools/deployment/23_pull_documents.sh
+./tools/deployment/23_generate_secrets.sh
 
 echo "export KUBECONFIG=$HOME/.airship/kubeconfig" >> ~/.bashrc
 
-sed -i -e 's#bmcAddress: redfish+http://\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\):8000#bmcAddress: redfish+https://10.23.25.1:8443#' "/tmp/airship/$MANIFEST_REPO_NAME/manifests/site/test-site/target/catalogues/hosts.yaml"
-sed -i -e 's#root#username#' "/tmp/airship/$MANIFEST_REPO_NAME/manifests/site/test-site/target/catalogues/hosts.yaml"
-sed -i -e 's#r00tme#password#' "/tmp/airship/$MANIFEST_REPO_NAME/manifests/site/test-site/target/catalogues/hosts.yaml"
-sed -i -e 's#disableCertificateVerification: false#disableCertificateVerification: true#' "/tmp/airship/$MANIFEST_REPO_NAME/manifests/site/test-site/target/catalogues/hosts.yaml"
+repo_name=$(yq -r .manifests.dummy_manifest.repositories.primary.url /root/.airship/config | awk 'BEGIN {FS="/"} {print $NF}')
+sed -i -e 's#bmcAddress: redfish+http://\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\):8000#bmcAddress: redfish+https://10.23.25.1:8443#' "$AIRSHIP_CONFIG_MANIFEST_DIRECTORY/$repo_name/manifests/site/test-site/target/catalogues/hosts.yaml"
+sed -i -e 's#root#username#' "$AIRSHIP_CONFIG_MANIFEST_DIRECTORY/$repo_name/manifests/site/test-site/target/catalogues/hosts.yaml"
+sed -i -e 's#r00tme#password#' "$AIRSHIP_CONFIG_MANIFEST_DIRECTORY/$repo_name/manifests/site/test-site/target/catalogues/hosts.yaml"
+sed -i -e 's#disableCertificateVerification: false#disableCertificateVerification: true#' "$AIRSHIP_CONFIG_MANIFEST_DIRECTORY/$repo_name/manifests/site/test-site/target/catalogues/hosts.yaml"
 
 if [[ "$USE_CACHED_ISO" = "true" ]]; then
   mkdir -p /srv/images
   tar -xzf "$CACHE_DIR/iso.tar.gz" --directory /srv/images
 else
-  if [ "$MANIFEST_REPO_NAME" == "airshipctl" ]
-  then
-    ./tools/deployment/24_build_images.sh
-  else
-    ./tools/deployment/airship-core/24_build_images.sh
-  fi
-
+  ./tools/deployment/24_build_images.sh
   tar -czf "$ARTIFACTS_DIR/iso.tar.gz" --directory=/srv/images .
 fi
 
-if [ "$MANIFEST_REPO_NAME" == "airshipctl" ]
-then
-  ./tools/deployment/25_deploy_gating.sh
-else
-  ./tools/deployment/airship-core/25_deploy_gating.sh
-fi
+./tools/deployment/25_deploy_gating.sh
 
 /signal_complete runner

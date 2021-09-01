@@ -14,20 +14,17 @@
 
 set -ex
 
-
 function cloneRepo(){
-  repo_name=$1
+  repo_dir=$1
   repo_url=$2
   repo_ref=$3
 
-  repo_dir="$ARTIFACTS_DIR/$repo_name"
   mkdir -p "$repo_dir"
   cd "$repo_dir"
 
   git init
   git fetch "$repo_url" "$repo_ref"
   git checkout FETCH_HEAD
-
 }
 
 if [[ "$USE_CACHED_ARTIFACTS" = "true" ]]
@@ -38,22 +35,13 @@ else
   printf "Waiting 30 seconds for the libvirt and docker services to be ready\n"
   sleep 30
 
-  cloneRepo $MANIFEST_REPO_NAME $MANIFEST_REPO_URL $MANIFEST_REPO_REF
+  repo_dir="$ARTIFACTS_DIR/airshipctl"
+  cloneRepo "$repo_dir" "$AIRSHIPCTL_REPO_URL" "$AIRSHIPCTL_REPO_REF"
 
-  if [[ "$MANIFEST_REPO_NAME" !=  "airshipctl" ]]
-  then
-	  cloneRepo airshipctl https://github.com/airshipit/airshipctl $AIRSHIPCTL_REF
-  fi
-  cd $ARTIFACTS_DIR/$MANIFEST_REPO_NAME
-
-  if [[ "$MANIFEST_REPO_NAME" ==  "airshipctl" ]]
-  then
-    ./tools/deployment/21_systemwide_executable.sh
-  else
-    ./tools/deployment/airship-core/21_systemwide_executable.sh
-  fi
+  cd "$repo_dir"
+  ./tools/deployment/21_systemwide_executable.sh
   mkdir -p bin
-  cp "$(which airshipctl)" bin
+  cp "$(command -v airshipctl)" bin
 fi
 
 /signal_complete artifact-setup
