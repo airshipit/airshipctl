@@ -320,6 +320,19 @@ spec:
         value:
       - name: https_proxy
         value:
+      - name: AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_TYPE
+        value: "none"
+      - name: AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_KEY_PASSWORD
+        value: ""
+      - name: AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_KEY_PATH
+        value: ""
+      - name: AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_HTTP_PASSWORD
+        value: ""
+      - name: AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_SSH_PASSWORD
+        value: ""
+      - name: AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_USERNAME
+        value: ""
+
     volumeMounts:
       - name: cache
         mountPath: /opt/aiap-cache
