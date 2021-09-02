@@ -63,7 +63,11 @@ spec:
           command:
             - sh
             - -c
-            - "cp /qcows/*.qcow2 /qcows/*.qcow2.md5sum /shared/html/images/"
+            - |
+              cp /qcows/*.qcow2 /qcows/*.qcow2.md5sum /shared/html/images/
+              [ -f /qcows/control-plane.qcow2 ] && cp -n /qcows/control-plane.qcow2 /shared/html/images/data-plane.qcow2
+              [ -f /qcows/control-plane.qcow2.md5sum ] && cp -n /qcows/control-plane.qcow2.md5sum /shared/html/images/data-plane.qcow2.md5sum
+              [ -f /shared/html/images/data-plane.qcow2.md5sum ] && sed -i 's/control-plane.qcow2/data-plane.qcow2/g' /shared/html/images/data-plane.qcow2.md5sum
           image: "quay.io/airshipit/qcow-bundle:latest-ubuntu_focal"
           imagePullPolicy: Always
           volumeMounts:
