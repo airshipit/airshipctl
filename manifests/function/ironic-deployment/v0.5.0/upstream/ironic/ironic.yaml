@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: capm3-ironic
+spec:
+  replicas: 1
+  strategy:
+    # We cannot run Ironic with more than one replica at a time. The recreate
+    # strategy makes sure that the old pod is gone before a new is started.
+    type: Recreate
+  selector:
+    matchLabels:
+      name: capm3-ironic
+  template:
+    metadata:
+      labels:
+        name: capm3-ironic
+    spec:
+      hostNetwork: true
+      containers:
+        - name: ironic-dnsmasq
+          image: quay.io/metal3-io/ironic
+          imagePullPolicy: Always
+          securityContext:
+             capabilities:
+               add: ["NET_ADMIN"]
+          command:
+            - /bin/rundnsmasq
+          volumeMounts:
+            - mountPath: /shared
+              name: ironic-data-volume
+          envFrom:
+            - configMapRef:
+                name: ironic-bmo-configmap
+        - name: mariadb
+          image: quay.io/metal3-io/ironic
+          imagePullPolicy: Always
+          command:
+            - /bin/runmariadb
+          volumeMounts:
+            - mountPath: /shared
+              name: ironic-data-volume
+          env:
+            - name: MARIADB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-password
+                  key: password
+            - name: RESTART_CONTAINER_CERTIFICATE_UPDATED
+              valueFrom:
+                 configMapKeyRef:
+                  name: ironic-bmo-configmap
+                  key: RESTART_CONTAINER_CERTIFICATE_UPDATED
+        - name: ironic-api
+          image: quay.io/metal3-io/ironic
+          imagePullPolicy: Always
+          command:
+            - /bin/runironic-api
+          volumeMounts:
+            - mountPath: /shared
+              name: ironic-data-volume
+          envFrom:
+            - configMapRef:
+                name: ironic-bmo-configmap
+          env:
+            - name: MARIADB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-password
+                  key: password
+        - name: ironic-conductor
+          image: quay.io/metal3-io/ironic
+          imagePullPolicy: Always
+          command:
+            - /bin/runironic-conductor
+          volumeMounts:
+            - mountPath: /shared
+              name: ironic-data-volume
+          envFrom:
+            - configMapRef:
+                name: ironic-bmo-configmap
+          env:
+            - name: MARIADB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-password
+                  key: password
+        - name: ironic-log-watch
+          image: quay.io/metal3-io/ironic
+          imagePullPolicy: Always
+          command:
+            - /bin/runlogwatch.sh
+          volumeMounts:
+            - mountPath: /shared
+              name: ironic-data-volume
+        - name: ironic-inspector
+          image: quay.io/metal3-io/ironic
+          imagePullPolicy: Always
+          command:
+            - /bin/runironic-inspector
+          envFrom:
+            - configMapRef:
+                name: ironic-bmo-configmap
+        - name: ironic-inspector-log-watch
+          image: quay.io/metal3-io/ironic
+          imagePullPolicy: Always
+          command:
+            - /bin/runlogwatch.sh
+          volumeMounts:
+            - mountPath: /shared
+              name: ironic-data-volume
+      volumes:
+        - name: ironic-data-volume
+          emptyDir: {}

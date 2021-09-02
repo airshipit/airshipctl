@@ -1,0 +1,5 @@
+resources:
+- service_patch.yaml
+
+configurations:
+- kustomizeconfig.yaml

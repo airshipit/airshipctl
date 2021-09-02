@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: metal3
+resources:
+- upstream/default
+- config-file
+- entrypoint
+- ironic-pv.yaml
+
+patchesStrategicMerge:
+- ironic_toleration_patch.yaml
+- ironic_nodeselector_patch.yaml
+- ironic_qcow_image_patch.yaml
+- ironic_volume_patch.yaml
+
+patchesJSON6902:
+- target:
+    group: apps
+    version: v1
+    kind: Deployment
+    name: capm3-ironic
+  patch: |-
+    - op: remove
+      path: /spec/template/spec/volumes/0/emptyDir

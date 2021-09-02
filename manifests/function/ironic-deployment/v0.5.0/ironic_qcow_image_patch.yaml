@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: capm3-ironic
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: init-images
+          image: quay.io/airshipit/ipa-wallaby:latest
+          imagePullPolicy: Always
+          command: ['/bin/init-images']
+          volumeMounts:
+            - name: ironic-data-volume
+              mountPath: "/shared"
+            - name: ironic-entrypoints
+              mountPath: /bin/init-images
+              subPath: init-images
+        - name: qcow-bundle
+          command:
+            - sh
+            - -c
+            - "cp /qcows/*.qcow2 /qcows/*.qcow2.md5sum /shared/html/images/"
+          image: "quay.io/sirishagopigiri/qcow-bundle:v1.19.1"
+          imagePullPolicy: Always
+          volumeMounts:
+              - mountPath: "/shared"
+                name: ironic-data-volume

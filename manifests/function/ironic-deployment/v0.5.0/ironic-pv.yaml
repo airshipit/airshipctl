@@ -1,0 +1,25 @@
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: ironic-pv-volume
+spec:
+  storageClassName: default
+  capacity:
+    storage: "10Gi"
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/opt/metal3-dev-env/ironic"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: ironic-pv-claim
+spec:
+  storageClassName: default
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: "10Gi"

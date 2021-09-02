@@ -1,0 +1,16 @@
+#!/usr/bin/bash
+
+cp -f /shared/ironic.conf /etc/ironic/ironic.conf
+
+DB_VERSION="$(ironic-dbsync --config-file /etc/ironic/ironic.conf version)"
+if [ "${DB_VERSION}" == "None" ];
+then
+    ironic-dbsync --config-file /etc/ironic/ironic.conf create_schema
+fi
+
+/usr/bin/ironic-conductor &
+/usr/bin/ironic-api &
+
+/bin/runhealthcheck "ironic" &>/dev/null &
+
+sleep infinity

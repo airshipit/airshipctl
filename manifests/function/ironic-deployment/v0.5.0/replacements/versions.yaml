@@ -1,0 +1,110 @@
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: ironic-deployment-versions-replacements
+  annotations:
+    config.kubernetes.io/function: |-
+      container:
+        image: localhost/replacement-transformer
+replacements:
+# Container versions for the ironic Deployment
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.images.baremetal_operator.ironic.dnsmasq.image}"
+  target:
+    objref:
+      kind: Deployment
+      name: capm3-ironic
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'ironic-dnsmasq')].image}"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.images.baremetal_operator.ironic.mariadb.image}"
+  target:
+    objref:
+      kind: Deployment
+      name: capm3-ironic
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'mariadb')].image}"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.images.baremetal_operator.ironic.httpd.image}"
+  target:
+    objref:
+      kind: Deployment
+      name: capm3-ironic
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'ironic-httpd')].image}"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.images.baremetal_operator.ironic.ironic_api.image}"
+  target:
+    objref:
+      kind: Deployment
+      name: capm3-ironic
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'ironic-api')].image}"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.images.baremetal_operator.ironic.ironic_inspector.image}"
+  target:
+    objref:
+      kind: Deployment
+      name: capm3-ironic
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'ironic-inspector')].image}"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.images.baremetal_operator.ironic.ironic_conductor.image}"
+  target:
+    objref:
+      kind: Deployment
+      name: capm3-ironic
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'ironic-conductor')].image}"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.images.baremetal_operator.ironic.ironic_endpoint_keepalived.image}"
+  target:
+    objref:
+      kind: Deployment
+      name: capm3-ironic
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'ironic-endpoint-keepalived')].image}"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.images.baremetal_operator.ironic.init_images.image}"
+  target:
+    objref:
+      kind: Deployment
+      name: capm3-ironic
+    fieldrefs: ["{.spec.template.spec.initContainers[?(.name == 'init-images')].image}"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.images.baremetal_operator.ironic.ironic_inspector_log_watch.image}"
+  target:
+    objref:
+      kind: Deployment
+      name: capm3-ironic
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'ironic-inspector-log-watch')].image}"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.images.baremetal_operator.ironic.ironic_log_watch.image}"
+  target:
+    objref:
+      kind: Deployment
+      name: capm3-ironic
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'ironic-log-watch')].image}"]

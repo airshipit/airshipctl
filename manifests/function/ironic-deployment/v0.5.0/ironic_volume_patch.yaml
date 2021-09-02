@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: capm3-ironic
+spec:
+  template:
+    spec:
+      volumes:
+        - name: ironic-data-volume
+          persistentVolumeClaim:
+            claimName: ironic-pv-claim
+        - name: ironic-entrypoints
+          configMap:
+            name: ironic-entrypoints
+            defaultMode: 0700

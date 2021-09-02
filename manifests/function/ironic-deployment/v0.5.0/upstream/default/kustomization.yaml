@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: capm3-system
+resources:
+- ../../../../baremetal-operator/v0.5.0/upstream/namespace
+- ../ironic
+configMapGenerator:
+- envs:
+  - ironic_bmo_configmap.env
+  name: ironic-bmo-configmap
+secretGenerator:
+- literals:
+  - password=changeme
+  name: mariadb-password
+  type: Opaque

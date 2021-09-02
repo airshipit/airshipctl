@@ -1,0 +1,112 @@
+# These rules inject networking info into the baremetal-operator  function.
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: baremetal-operator-networking-replacements
+  annotations:
+    config.kubernetes.io/function: |-
+      container:
+        image: localhost/replacement-transformer
+replacements:
+# Replace the pod & service networks
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ironic.provisioningInterface
+  target:
+    objref:
+      kind: ConfigMap
+      name: baremetal-operator-ironic
+    fieldrefs: ["data.PROVISIONING_INTERFACE"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ironic.provisioningIp
+  target:
+    objref:
+      kind: ConfigMap
+      name: baremetal-operator-ironic
+    fieldrefs: ["data.PROVISIONING_IP"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ironic.httpPort
+  target:
+    objref:
+      kind: ConfigMap
+      name: baremetal-operator-ironic
+    fieldrefs: ["data.HTTP_PORT"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ironic.provisioningIp
+  target:
+    objref:
+      kind: ConfigMap
+      name: baremetal-operator-ironic
+    fieldrefs: ["data.DEPLOY_KERNEL_URL%PROVISIONING_IP%"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ironic.httpPort
+  target:
+    objref:
+      kind: ConfigMap
+      name: baremetal-operator-ironic
+    fieldrefs: ["data.DEPLOY_KERNEL_URL%HTTP_PORT%"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ironic.provisioningIp
+  target:
+    objref:
+      kind: ConfigMap
+      name: baremetal-operator-ironic
+    fieldrefs: ["data.DEPLOY_RAMDISK_URL%PROVISIONING_IP%"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ironic.httpPort
+  target:
+    objref:
+      kind: ConfigMap
+      name: baremetal-operator-ironic
+    fieldrefs: ["data.DEPLOY_RAMDISK_URL%HTTP_PORT%"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ironic.provisioningIp
+  target:
+    objref:
+      kind: ConfigMap
+      name: baremetal-operator-ironic
+    fieldrefs: ["data.IRONIC_ENDPOINT%PROVISIONING_IP%"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ironic.provisioningIp
+  target:
+    objref:
+      kind: ConfigMap
+      name: baremetal-operator-ironic
+    fieldrefs: ["data.IRONIC_INSPECTOR_ENDPOINT%PROVISIONING_IP%"]
+- source:
+    objref:
+      kind: NetworkCatalogue
+      name: networking
+    fieldref: spec.ironic.ironicFastTrack
+  target:
+    objref:
+      kind: ConfigMap
+      name: baremetal-operator-ironic
+    fieldrefs: ["data.IRONIC_FAST_TRACK"]
+

@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: metal3
+resources:
+- upstream/default
+
+patchesStrategicMerge:
+- operator_nodeselector_patch.yaml
+- operator_tolerations_patch.yaml
+- label_baremetalhosts_crd_patch.yaml
+- label_firmwareschemas_crd_patch.yaml
+- label_hostfirmwaresettings_crd_patch.yaml

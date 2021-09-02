@@ -1,0 +1,11 @@
+#!/usr/bin/bash
+
+. /bin/ironic-common.sh
+
+wait_for_interface_or_ip
+
+ironic-inspector-dbsync --config-file /shared/inspector.conf upgrade
+
+exec /usr/bin/ironic-inspector --config-file /etc/ironic-inspector/inspector-dist.conf \
+	--config-file /shared/inspector.conf \
+	--log-file /shared/log/ironic-inspector/ironic-inspector.log
