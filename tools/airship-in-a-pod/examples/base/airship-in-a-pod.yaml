@@ -121,9 +121,7 @@ spec:
           --interface 10.23.25.1 \
           --port 8443 \
           --ssl-key /airship_gate_redfish_auth.key \
-          --ssl-certificate /airship_gate_redfish_auth.pem || true
-
-        tail -f /dev/null
+          --ssl-certificate /airship_gate_redfish_auth.pem
     volumeMounts:
       - name: var-run-libvirt
         mountPath: /var/run/libvirt
@@ -200,15 +198,21 @@ spec:
     command:
       - bash
       - -cex
-      - |
-        /entrypoint.sh || true
-        tail -f /dev/null
+      - /entrypoint.sh
     readinessProbe:
       exec:
         command:
         - test
         - -e
         - /tmp/completed/artifact-setup
+    livenessProbe:
+      exec:
+        command:
+        - test
+        - -e
+        - /tmp/healthy/artifact-setup
+      initialDelaySeconds: 5
+      periodSeconds: 5
     env:
       - name: CACHE_DIR
         value: /opt/aiap-cache
@@ -249,15 +253,21 @@ spec:
     command:
       - bash
       - -cex
-      - |
-        /entrypoint.sh || true
-        tail -f /dev/null
+      - /entrypoint.sh
     readinessProbe:
       exec:
         command:
         - test
         - -e
         - /tmp/completed/infra-builder
+    livenessProbe:
+      exec:
+        command:
+        - test
+        - -e
+        - /tmp/healthy/infra-builder
+      initialDelaySeconds: 5
+      periodSeconds: 5
     env:
       - name: CACHE_DIR
         value: /opt/aiap-cache
@@ -298,9 +308,7 @@ spec:
     command:
       - bash
       - -cex
-      - |
-        /entrypoint.sh || true
-        tail -f /dev/null
+      - /entrypoint.sh
     readinessProbe:
       exec:
         command:
@@ -309,6 +317,14 @@ spec:
         - /tmp/completed/runner
       initialDelaySeconds: 600
       periodSeconds: 30
+    livenessProbe:
+      exec:
+        command:
+        - test
+        - -e
+        - /tmp/healthy/runner
+      initialDelaySeconds: 5
+      periodSeconds: 5
     env:
       - name: CACHE_DIR
         value: /opt/aiap-cache

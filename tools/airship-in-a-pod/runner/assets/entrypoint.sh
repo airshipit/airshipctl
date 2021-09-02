@@ -14,6 +14,18 @@
 
 set -ex
 
+# Create the "canary" file, indicating that the container is healthy
+mkdir -p /tmp/healthy
+touch /tmp/healthy/runner
+
+success=false
+function cleanup() {
+  if [[ "$success" == "false" ]]; then
+    rm /tmp/healthy/runner
+  fi
+}
+trap cleanup EXIT
+
 # Wait until artifact-setup and libvirt infrastructure has been built
 /wait_for artifact-setup
 /wait_for infra-builder
@@ -67,4 +79,5 @@ fi
 
 ./tools/deployment/25_deploy_gating.sh
 
+success=true
 /signal_complete runner

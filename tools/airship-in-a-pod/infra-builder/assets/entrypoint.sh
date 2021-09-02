@@ -14,10 +14,23 @@
 
 set -ex
 
+# Create the "canary" file, indicating that the container is healthy
+mkdir -p /tmp/healthy
+touch /tmp/healthy/infra-builder
+
+success=false
+function cleanup() {
+  if [[ "$success" == "false" ]]; then
+    rm /tmp/healthy/infra-builder
+  fi
+}
+trap cleanup EXIT
+
 printf "Waiting 30 seconds for the libvirt and docker services to be ready\n"
 sleep 30
 
 ansible-playbook -v /opt/ansible/playbooks/build-infra.yaml \
   -e local_src_dir="$(pwd)"
 
+success=true
 /signal_complete infra-builder

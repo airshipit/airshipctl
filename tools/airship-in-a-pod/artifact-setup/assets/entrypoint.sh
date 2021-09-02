@@ -14,7 +14,19 @@
 
 set -ex
 
-function cloneRepo(){
+# Create the "canary" file, indicating that the container is healthy
+mkdir -p /tmp/healthy
+touch /tmp/healthy/artifact-setup
+
+success=false
+function cleanup() {
+  if [[ "$success" == "false" ]]; then
+    rm /tmp/healthy/artifact-setup
+  fi
+}
+trap cleanup EXIT
+
+function cloneRepo() {
   repo_dir=$1
   repo_url=$2
   repo_ref=$3
@@ -44,4 +56,5 @@ else
   cp "$(command -v airshipctl)" bin
 fi
 
+success=true
 /signal_complete artifact-setup
