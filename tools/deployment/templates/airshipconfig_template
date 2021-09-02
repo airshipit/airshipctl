@@ -26,5 +26,12 @@ manifests:
           remoteRef: ""
           tag: ""
         url: ${AIRSHIP_CONFIG_PHASE_REPO_URL}
+        auth:
+          type: "$AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_TYPE"
+          keyPass:  "$AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_KEY_PASSWORD"
+          sshKey:   "$AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_KEY_PATH"
+          httpPass: "$AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_HTTP_PASSWORD"
+          sshPass:  "$AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_SSH_PASSWORD"
+          username: "$AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_USERNAME"
     metadataPath: ${AIRSHIP_CONFIG_METADATA_PATH}
     targetPath: ${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}
