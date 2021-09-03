@@ -17,9 +17,27 @@ The pod also contains the following "Support" containers:
 
 * `libvirt`: This provides virtualisation
 * `sushy-tools`: This is used for its BMC emulator
-* `docker-in-docker`: This is used for nesting containers*
+* `docker-in-docker`: This is used for nesting containers
 * `nginx`: This is used for image hosting
 
+## Azure Kubernetes Service (AKS) Quick Start
+
+Airship-in-a-Pod can be easily run within AKS by running the script:
+
+```
+tools/airship-in-a-pod/scripts/aiap-in-aks.sh
+```
+
+Environment variables can be supplied to override default, such as:
+
+* `AIAP_POD`: the kustomization to use for the AIAP Pod definition
+* `CLEANUP_GROUP`: whether to delete the resource group created for
+   AIAP.  Defaults to `false`.
+
+Please consult the script for the full list of overrideable variables.
+
+Note that authentication (e.g. `az login`) must be done prior to invoking
+the script.
 
 ## Prerequisites
 
