@@ -1,4 +1,5 @@
-FROM quay.io/airshipit/aiap-base:latest
+ARG BASE_IMAGE=quay.io/airshipit/aiap-base:latest
+FROM ${BASE_IMAGE}
 
 SHELL ["bash", "-exc"]
 ENV DEBIAN_FRONTEND noninteractive
