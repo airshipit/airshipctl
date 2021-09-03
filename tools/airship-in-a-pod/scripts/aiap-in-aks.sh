@@ -63,4 +63,7 @@ done
 if ${CLEANUP_GROUP}; then
     echo "deleting resource group ${GROUP}..."
     az group delete --name ${GROUP} -y
+    kubectl config delete-user "clusterUser_${GROUP}_${CLUSTER}"
+    kubectl config delete-cluster "${CLUSTER}"
+    kubectl config delete-context "${CLUSTER}"
 fi
