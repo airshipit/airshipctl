@@ -21,10 +21,6 @@ spec:
 
   - name: libvirt
     image: quay.io/airshipit/libvirt:aiap-v1
-    # Set to true for debugging
-    # 18June2021 : reverting #578 fix due to erratic behaviour
-    # for “setctty: operation not permitted" error, set tty:false
-    tty: true
     securityContext:
       privileged: true
       #SYS_ADMIN required for systemd, need to work out reqs for libvirt
