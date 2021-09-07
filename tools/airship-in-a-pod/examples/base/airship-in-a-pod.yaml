@@ -14,7 +14,17 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: airship-in-a-pod
+  labels:
+    aiap: aiap
 spec:
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: aiap
+            operator: Exists
+        topologyKey: kubernetes.io/hostname
   hostNetwork: false
   restartPolicy: Never
   containers:
