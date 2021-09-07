@@ -39,6 +39,7 @@ export AIRSHIP_CONFIG_PHASE_REPO_BRANCH=${BRANCH:-"master"}
 export AIRSHIP_CONFIG_PHASE_REPO_URL=${AIRSHIP_CONFIG_PHASE_REPO_URL:-"https://review.opendev.org/airship/airshipctl"}
 export AIRSHIP_CONFIG_PHASE_REPO_NAME=${AIRSHIP_CONFIG_PHASE_REPO_NAME:-"airshipctl"}
 export AIRSHIP_CONFIG_MANIFEST_DIRECTORY=${AIRSHIP_CONFIG_MANIFEST_DIRECTORY:-"/tmp/airship"}
+export AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_TYPE=${AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_TYPE:-"none"}
 export EXTERNAL_KUBECONFIG=${EXTERNAL_KUBECONFIG:-""}
 
 # Remove the contents of the .airship folder, preserving the kustomize plugin directory

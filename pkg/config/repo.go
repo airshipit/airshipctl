@@ -34,6 +34,7 @@ const (
 	SSHAuth   = "ssh-key"
 	SSHPass   = "ssh-pass"
 	HTTPBasic = "http-basic"
+	NoAuth    = "none"
 )
 
 // remoteName is a remote name that airshipctl work with during document pull
@@ -57,7 +58,7 @@ type Repository struct {
 // RepoAuth struct describes method of authentication against given repository
 type RepoAuth struct {
 	// Type of authentication method to be used with given repository
-	// supported types are "ssh-key", "ssh-pass", "http-basic"
+	// supported types are "ssh-key", "ssh-pass", "http-basic", "none"
 	Type string `json:"type,omitempty"`
 	//KeyPassword is a password decrypt ssh private key (used with ssh-key auth type)
 	KeyPassword string `json:"keyPass,omitempty"`
@@ -139,7 +140,7 @@ func (rf *RepoFetch) Validate() error {
 
 // RepoAuth methods
 var (
-	AllowedAuthTypes = []string{SSHAuth, SSHPass, HTTPBasic}
+	AllowedAuthTypes = []string{SSHAuth, SSHPass, HTTPBasic, NoAuth}
 )
 
 // String returns repository authentication details in string format
@@ -172,6 +173,8 @@ func (auth *RepoAuth) Validate() error {
 		if auth.KeyPath != "" || auth.KeyPassword != "" || auth.HTTPPassword != "" {
 			return NewErrIncompatibleAuthOptions([]string{"ssh-key, key-pass, http-pass"}, auth.Type)
 		}
+	case NoAuth:
+		return nil
 	}
 	return nil
 }
@@ -224,7 +227,7 @@ func (repo *Repository) Validate() error {
 // ToAuth returns an implementation of transport.AuthMethod for
 // the given auth type to establish an ssh connection
 func (repo *Repository) ToAuth() (transport.AuthMethod, error) {
-	if repo.Auth == nil {
+	if repo.Auth == nil || repo.Auth.Type == NoAuth {
 		return nil, nil
 	}
 	switch repo.Auth.Type {
