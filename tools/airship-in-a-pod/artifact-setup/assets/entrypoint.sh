@@ -39,7 +39,7 @@ function cloneRepo() {
   git checkout FETCH_HEAD
 }
 
-if [[ "$USE_CACHED_ARTIFACTS" = "true" ]]
+if [[ "$USE_CACHED_AIRSHIPCTL" = "true" ]]
 then
   printf "Using cached airshipctl\n"
   cp -r "$CACHE_DIR/*" "$ARTIFACTS_DIR"

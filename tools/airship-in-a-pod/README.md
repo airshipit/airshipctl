@@ -4,14 +4,14 @@ Airship in a pod is a Kubernetes pod definition which describes all of the
 components required to deploy a fully functioning Airship 2 deployment. The pod
 consists of the following "Task" containers:
 
-* `artifact-setup`: This container builds the airshipctl binary and makes it
-  available to the other containers. Also, based on the configuration provided
-  in the airship-in-a-pod manifest, airshipctl/treasuremap(based on the usecase) git repositories
-  will be downloaded and the required tag or commitId will be checked out.
+* `artifact-setup`: This container collects the airshipctl binary repo, builds
+  the airshipctl binary (and associated kustomize plugins), and makes them
+  available to the other containers
 * `infra-builder`: This container creates the various virtual networks and
   machines required for an Airship deployment
 * `runner`: The runner container is the "meat" of the pod, and executes the
-  deployment
+  deployment. It sets up a customized airshipctl config file, then uses
+  airshipctl to pull the specified manifests and execute the deployment
 
 The pod also contains the following "Support" containers:
 
@@ -43,21 +43,14 @@ the script.
 
 ### Nested Virtualisation
 
-If deployment is done on a VM, ensure that nested virtualization is enabled.
-
-### Setup shared directory
-
-Create the following directory with appropriate r+w permissions.
-
-```
-sudo mkdir /opt/.airship
-```
+If deployment is done on a VM, ensure that nested virtualisation is enabled.
 
 ### Environment variable setup
 
 If you are within a proxy environment, ensure that the following environment
 variables are defined, and NO_PROXY has the IP address which minikube uses.
-For retrieving minikube ip refer: [minikube-ip](https://minikube.sigs.k8s.io/docs/commands/ip/)
+Check the [minikube documentation](https://minikube.sigs.k8s.io/docs/commands/ip/)
+for retrieving the minikube ip.
 
 ```
 export HTTP_PROXY=http://username:password@host:port
@@ -79,110 +72,55 @@ Within the environment, with appropriate env variables set, run the following co
 sudo -E minikube start --driver=none
 
 ```
-Refer [minikube](https://minikube.sigs.k8s.io/docs/start/)for more details.
+Refer to the [minikube documentation](https://minikube.sigs.k8s.io/docs/start/) for more details.
 
 ## Usage
 
 Since Airship in a Pod is just a pod definition, deploying and using it is as
-simple as deploying and using any Kubernetes pod with kustomize tool.
+simple as deploying and using any other Kubernetes pod with `kubectl apply -f`.
+The base pod definition can be found
+[here](https://github.com/airshipit/airshipctl/tree/master/tools/airship-in-a-pod/examples/base)
+and deploys using the current master `airshipctl` binary and current master
+[test site](https://github.com/airshipit/airshipctl/tree/master/manifests/site/test-site).
 
-###  Pod configuration
+### Pod configuration
 
-The below section provides steps to configure site with [airshipctl](https://github.com/airshipit/airshipctl)/[treasuremap](https://github.com/airshipit/treasuremap) manifests.
+Further configuration can be applied to the pod definition via
+[`kustomize`](https://kustomize.io/). Options that can be configured can be
+found in the [airshipctl example](https://github.com/airshipit/airshipctl/blob/master/tools/airship-in-a-pod/examples/airshipctl/replacements.yaml).
+You may choose to either modify one of the examples or create your own.
 
-#### For airshipctl
-
-Within the examples/airshipctl directory, update the existing patchset.yaml
-file to reflect the airshipctl branch reference as required.
-
-filepath : airshipctl/tools/airship-in-a-pod/examples/airshipctl/patchset.yaml
-
-
-```
-- op: replace
-  path: "/spec/containers/4/env/4/value"
-  value: <branch reference>
+Once you've created the desired configuration, the kustomized pod can be deployed with the following:
 
 ```
-
-#### For treasuremap
-
-For treasuremap related manifests, use the patchset.yaml from
-examples/treasuremap and  update the following to reflect
-the treasuremap branch reference and the pinned airshipctl reference
-as required. The pinned airshipctl reference is the tag/commitId with
-which treasuremap is tested and found working satisfactorily. This
-could be found listed as 'AIRSHIPCTL_REF' attribute under the zuul.d
-directory of treasuremap repository.
-
-filepath : airshipctl/tools/airship-in-a-pod/examples/treasuremap/patchset.yaml
-
-```
-- op: replace
-  path: "/spec/containers/4/env/4/value"
-  value: <branch reference>
-
-- op: replace
-  path: "/spec/containers/4/env/6/value"
-  value: <airshipctl_ref>
+kustomize build ${PATH_TO_KUSTOMIZATION} | kubectl apply -f -
 
 ```
 
-For more details, please consult the examples directory.
+### Interacting with the Pod
 
-### Deploy the Pod
-
-Once patchset.yaml for either airshipctl/treasuremap is ready, run the following
-command against the running minikube cluster as shown below.
-
-For example to run AIAP with treasuremap manifests, run the following commands.
+For a quick rundown of what a particular container is doing, simply check the logs for that container.
 
 ```
-cd tools/airship-in-a-pod/examples/{either airshipctl or treasuremap}
-kustomize build . | kubectl apply -f -
-
-```
-
-### View Pod Logs
-
-```
+# $CONTAINER is one of [runner infra-builder artifact-setup libvirt sushy dind nginx]
 kubectl logs airship-in-a-pod -c $CONTAINER
 ```
 
-### Interact with the Pod
+For a deeper dive, consider `exec`ing into one of the containers.
 
 ```
+# $CONTAINER is one of [runner infra-builder artifact-setup libvirt sushy dind nginx]
 kubectl exec -it airship-in-a-pod -c $CONTAINER -- bash
 ```
 
-where `$CONTAINER` is one of the containers listed above.
+#### Interacting with the Nodes
 
-### Inspect Cluster
-
-Once AIAP is fully installed with a target cluster (air-target-1 and air-worker-1 nodes)
-installed and running, the cluster could be monitored using the following steps.
-
-#### Log into the runner container
-
-```
-kubectl exec -it airship-in-a-pod -c runner -- bash
-```
-
-Run the .profile file using the following command to run kubectl/airshipctl commands
-as below.
-
-```
-source ~/.profile
-
-```
-
-To run kubectl commands on Target cluster, use --kubeconfig and --context params
-within kubectl as below.
-
-```
-kubectl --kubeconfig /root/.airship/kubeconfig --context target-cluster get pods -A'
-```
-
+If you would like to interact with the nodes used in the deployment, you should
+first prevent the runner container from exiting (check the examples/airshipctl
+replacements for the option to do this). While the runner container is alive,
+`exec` into it using the above command. The `kubectl` tool can then be used to
+interact with a cluster. Choose a context from `kubectl config get-contexts`
+and switch to it via `kubectl config use-context ${MY_CONTEXT}`.
 
 ### Output
 
@@ -194,7 +132,6 @@ Airship-in-a-pod produces the following outputs:
 
 These artifacts are placed at `ARTIFACTS_DIR` (defaults to /opt/aiap-artifacts`).
 
-
 ### Caching
 
 As it can be cumbersome and time-consuming to build and rebuild binaries and
@@ -205,7 +142,7 @@ caching:
 
 * If using a cached `airshipctl`, the `airshipctl` binary must be stored in the
   `$CACHE_DIR/airshipctl/bin/` directory, and the developer must have set
-  `USE_CACHED_ARTIFACTS` to `true`.
+  `USE_CACHED_AIRSHIPCTL` to `true`.
 * If using a cached ephemeral iso, the iso must first be contained in a tarball named `iso.tar.gz`, must be stored in the
   `$CACHE_DIR/` directory, and the developer must have set
   `USE_CACHED_ISO` to `true`.

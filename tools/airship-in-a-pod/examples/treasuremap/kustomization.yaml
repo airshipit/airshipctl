@@ -20,4 +20,4 @@ patchesJson6902:
     version: v1 # apiVersion
     kind: Pod
     name: airship-in-a-pod
-  path: patchset.yaml
+  path: replacements.yaml

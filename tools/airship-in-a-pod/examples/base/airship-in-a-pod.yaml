@@ -216,7 +216,7 @@ spec:
     env:
       - name: CACHE_DIR
         value: /opt/aiap-cache
-      - name: USE_CACHED_ARTIFACTS
+      - name: USE_CACHED_AIRSHIPCTL
         value: "false"
       - name: ARTIFACTS_DIR
         value: /opt/aiap-artifacts
@@ -348,15 +348,11 @@ spec:
         value:
       - name: AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_TYPE
         value: "none"
-      - name: AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_KEY_PASSWORD
-        value: ""
-      - name: AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_KEY_PATH
+      - name: AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_USERNAME
         value: ""
       - name: AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_HTTP_PASSWORD
         value: ""
       - name: AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_SSH_PASSWORD
-        value: ""
-      - name: AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_USERNAME
         value: ""
 
     volumeMounts:

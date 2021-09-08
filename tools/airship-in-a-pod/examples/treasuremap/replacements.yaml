@@ -23,24 +23,9 @@
 # This is the location from which to clone the manifest documents repo
 - op: replace
   path: "/spec/containers/6/env/3/value"
-  value: https://opendev.org/airship/airshipctl
+  value: https://opendev.org/airship/treasuremap
 
 # This is the branch or sha to checkout for the manifest documents repo
 - op: replace
   path: "/spec/containers/6/env/4/value"
-  value: master
-
-# This is the ref to checkout for the manifest documents repo
-# Note that this will take precedence over the branch if specified above
-- op: replace
-  path: "/spec/containers/6/env/5/value"
-  value:
-
-# for local testing
-#- op: add
-#  path: "/spec/containers/4/imagePullPolicy"
-#  value: Never
-#
-#- op: add
-#  path: "/spec/containers/6/imagePullPolicy"
-#  value: Never
+  value: 63c1faf718fd3341fc5bd975e575e3cf41647206
