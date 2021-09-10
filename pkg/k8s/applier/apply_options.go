@@ -23,6 +23,7 @@ import (
 // ApplyOptions struct that hold options for apply operation
 type ApplyOptions struct {
 	WaitTimeout    time.Duration
+	PollInterval   time.Duration
 	DryRunStrategy common.DryRunStrategy
 	Prune          bool
 	BundleName     string

@@ -95,6 +95,7 @@ func (e *KubeApplierExecutor) Run(ch chan events.Event, runOpts ifc.RunOptions) 
 	if runOpts.Timeout != nil {
 		timeout = *runOpts.Timeout
 	}
+	pollInterval := time.Second * time.Duration(e.apiObject.Config.WaitOptions.PollInterval)
 
 	log.Debugf("WaitTimeout: %v", timeout)
 	applyOptions := k8sapplier.ApplyOptions{
@@ -102,6 +103,7 @@ func (e *KubeApplierExecutor) Run(ch chan events.Event, runOpts ifc.RunOptions) 
 		Prune:          e.apiObject.Config.PruneOptions.Prune,
 		BundleName:     e.BundleName,
 		WaitTimeout:    timeout,
+		PollInterval:   pollInterval,
 	}
 	applier.ApplyBundle(filteredBundle, applyOptions)
 }

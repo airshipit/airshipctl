@@ -20,6 +20,7 @@ metadata:
 config:
   waitOptions:
     timeout: 5000
+    pollInterval: 30
   pruneOptions:
     prune: false
 ---
