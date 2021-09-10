@@ -81,3 +81,6 @@ fi
 
 success=true
 /signal_complete runner
+
+# Keep the container running for debugging/monitoring purposes
+sleep infinity

@@ -34,3 +34,6 @@ ansible-playbook -v /opt/ansible/playbooks/build-infra.yaml \
 
 success=true
 /signal_complete infra-builder
+
+# Keep the container running for debugging/monitoring purposes
+sleep infinity
