@@ -116,7 +116,7 @@ spec:
           -extensions 'req_ext'
 
         # Wait for infrastructure to come up
-        while [[ ! -e /tmp/completed/infra-builder ]]; do printf "Waiting on infra-builder...\n"; sleep 1; done
+        while (! grep -sq "SUCCESS" "/tmp/status/infra-builder"); do printf "Waiting on infra-builder...\n"; sleep 1; done
 
         sushy-emulator \
           --debug \
@@ -127,8 +127,8 @@ spec:
     volumeMounts:
       - name: var-run-libvirt
         mountPath: /var/run/libvirt
-      - name: completed
-        mountPath: /tmp/completed
+      - name: status
+        mountPath: /tmp/status
 
   - name: nginx
     image: nginx:latest
@@ -204,20 +204,6 @@ spec:
       - bash
       - -cex
       - /entrypoint.sh
-    readinessProbe:
-      exec:
-        command:
-        - test
-        - -e
-        - /tmp/completed/artifact-setup
-    livenessProbe:
-      exec:
-        command:
-        - test
-        - -e
-        - /tmp/healthy/artifact-setup
-      initialDelaySeconds: 5
-      periodSeconds: 5
     env:
       - name: CACHE_DIR
         value: /opt/aiap-cache
@@ -244,8 +230,8 @@ spec:
         mountPath: /opt/aiap-cache
       - name: artifacts
         mountPath: /opt/aiap-artifacts
-      - name: completed
-        mountPath: /tmp/completed
+      - name: status
+        mountPath: /tmp/status
       - name: var-run-docker
         mountPath: /var/run
       - name: var-run-libvirt
@@ -260,20 +246,6 @@ spec:
       - bash
       - -cex
       - /entrypoint.sh
-    readinessProbe:
-      exec:
-        command:
-        - test
-        - -e
-        - /tmp/completed/infra-builder
-    livenessProbe:
-      exec:
-        command:
-        - test
-        - -e
-        - /tmp/healthy/infra-builder
-      initialDelaySeconds: 5
-      periodSeconds: 5
     env:
       - name: CACHE_DIR
         value: /opt/aiap-cache
@@ -292,8 +264,8 @@ spec:
         mountPath: /opt/aiap-cache
       - name: artifacts
         mountPath: /opt/aiap-artifacts
-      - name: completed
-        mountPath: /tmp/completed
+      - name: status
+        mountPath: /tmp/status
       - name: tmp
         mountPath: /tmp
       - name: var-run-aiap
@@ -316,22 +288,6 @@ spec:
       - bash
       - -cex
       - /entrypoint.sh
-    readinessProbe:
-      exec:
-        command:
-        - test
-        - -e
-        - /tmp/completed/runner
-      initialDelaySeconds: 600
-      periodSeconds: 30
-    livenessProbe:
-      exec:
-        command:
-        - test
-        - -e
-        - /tmp/healthy/runner
-      initialDelaySeconds: 5
-      periodSeconds: 5
     env:
       - name: CACHE_DIR
         value: /opt/aiap-cache
@@ -361,14 +317,13 @@ spec:
         value: ""
       - name: AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_SSH_PASSWORD
         value: ""
-
     volumeMounts:
       - name: cache
         mountPath: /opt/aiap-cache
       - name: artifacts
         mountPath: /opt/aiap-artifacts
-      - name: completed
-        mountPath: /tmp/completed
+      - name: status
+        mountPath: /tmp/status
       - name: tmp
         mountPath: /tmp
       - name: var-run-aiap
@@ -386,6 +341,12 @@ spec:
       - name: airship-config
         mountPath: /root/.airship
 
+  - name: status-checker
+    image: quay.io/airshipit/aiap-status-checker:latest
+    volumeMounts:
+      - name: status
+        mountPath: /tmp/status
+
   volumes:
     - name: cache
       hostPath:
@@ -393,7 +354,7 @@ spec:
     - name: artifacts
       hostPath:
         path: /opt/aiap-artifacts
-    - name: completed
+    - name: status
       emptyDir: {}
     - name: dev
       hostPath:

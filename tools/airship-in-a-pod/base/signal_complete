@@ -1,9 +1,0 @@
-#!/bin/bash
-
-# signal_complete takes a container name and creates a file in the "completed"
-# directory, denoting that the named container has finished its tasks. This can be
-# leveraged by dependent containers via the `wait_for` command.
-
-mkdir -p "/tmp/completed"
-touch "/tmp/completed/$1"
-printf "Marked %s as complete.\n" "$1"

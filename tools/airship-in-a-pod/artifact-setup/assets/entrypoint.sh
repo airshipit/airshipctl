@@ -14,17 +14,18 @@
 
 set -ex
 
-# Create the "canary" file, indicating that the container is healthy
-mkdir -p /tmp/healthy
-touch /tmp/healthy/artifact-setup
-
+/signal_status "artifact-setup" "RUNNING"
 success=false
-function cleanup() {
+function reportStatus() {
   if [[ "$success" == "false" ]]; then
-    rm /tmp/healthy/artifact-setup
+    /signal_status "artifact-setup" "FAILED"
+  else
+    /signal_status "artifact-setup" "SUCCESS"
   fi
+  # Keep the container running for debugging/monitoring purposes
+  sleep infinity
 }
-trap cleanup EXIT
+trap reportStatus EXIT
 
 function cloneRepo() {
   repo_dir=$1
@@ -79,6 +80,3 @@ fi
 
 success=true
 /signal_complete artifact-setup
-
-# Keep the container running for debugging/monitoring purposes
-sleep infinity

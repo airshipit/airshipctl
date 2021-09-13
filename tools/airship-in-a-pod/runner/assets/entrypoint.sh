@@ -14,17 +14,18 @@
 
 set -ex
 
-# Create the "canary" file, indicating that the container is healthy
-mkdir -p /tmp/healthy
-touch /tmp/healthy/runner
-
+/signal_status "runner" "RUNNING"
 success=false
-function cleanup() {
+function reportStatus() {
   if [[ "$success" == "false" ]]; then
-    rm /tmp/healthy/runner
+    /signal_status "runner" "FAILED"
+  else
+    /signal_status "runner" "SUCCESS"
   fi
+  # Keep the container running for debugging/monitoring purposes
+  sleep infinity
 }
-trap cleanup EXIT
+trap reportStatus EXIT
 
 # Wait until artifact-setup and libvirt infrastructure has been built
 /wait_for artifact-setup
@@ -80,7 +81,3 @@ fi
 ./tools/deployment/25_deploy_gating.sh
 
 success=true
-/signal_complete runner
-
-# Keep the container running for debugging/monitoring purposes
-sleep infinity

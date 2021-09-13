@@ -14,16 +14,18 @@
 
 set -ex
 
-# Create the "canary" file, indicating that the container is healthy
-mkdir -p /tmp/healthy
-touch /tmp/healthy/infra-builder
-
+/signal_status "infra-builder" "RUNNING"
 success=false
-function cleanup() {
+function reportStatus() {
   if [[ "$success" == "false" ]]; then
-    rm /tmp/healthy/infra-builder
+    /signal_status "infra-builder" "FAILED"
+  else
+    /signal_status "infra-builder" "SUCCESS"
   fi
+  # Keep the container running for debugging/monitoring purposes
+  sleep infinity
 }
+trap reportStatus EXIT
 
 function check_libvirt_readiness() {
   timeout=300
@@ -47,15 +49,9 @@ function check_libvirt_readiness() {
   done
 }
 
-trap cleanup EXIT
-
 check_libvirt_readiness
 
 ansible-playbook -v /opt/ansible/playbooks/build-infra.yaml \
   -e local_src_dir="$(pwd)"
 
 success=true
-/signal_complete infra-builder
-
-# Keep the container running for debugging/monitoring purposes
-sleep infinity

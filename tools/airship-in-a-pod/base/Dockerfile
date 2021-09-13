@@ -41,4 +41,4 @@ RUN apt-get update ;\
     mkdir -p "$CACHE_DIR"
 
 COPY wait_for .
-COPY signal_complete .
+COPY signal_status .

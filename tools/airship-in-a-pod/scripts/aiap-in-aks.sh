@@ -36,11 +36,16 @@ kubectl apply -k ${AIAP_POD}
 set +x
 echo "waiting up to $TIMEOUT seconds for airship-in-a-pod to complete..."
 end=$(($(date +%s) + $TIMEOUT))
+echo "* waiting up to 10m for containers to become ready..."
+kubectl wait pod airship-in-a-pod --for condition=ContainersReady --timeout 10m
 while true; do
-    if (kubectl get pod airship-in-a-pod -o jsonpath="{.status.conditions[?(@.type=='ContainersReady')].status}" | grep -q True) ; then
+    last_status=$(kubectl logs airship-in-a-pod -c status-checker --tail 1)
+    if [ $(grep -o "SUCCESS" <<<$last_status | wc -l) = 3 ] ; then
         echo -e "\nairship-in-a-pod completed successfully."
         break
-    #TODO There's no way today to detect that an error has occurred, besides timing out.  We should resolve that & watch for condition.
+    elif grep -q "FAILED" <<<$last_status ; then
+        echo -e "\nAirship-in-a-pod completed with FAILURE: $last_status"
+        break
     else
         now=$(date +%s)
         if [ $now -gt $end ]; then

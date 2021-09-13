@@ -1,16 +1,26 @@
 #!/bin/bash
 
-# wait_for takes a list of container names and runs until all of those container names
-# appear in the "/tmp/completed" directory. It can be used to prevent a
-# container from executing until pre-requisite containers have indicated completion.
+# wait_for takes a container name and runs until the named container has
+# reported a "SUCCESS" or "FAILURE" status in the "/tmp/status" directory.
+# When the status becomes "SUCCESS" or "FAILURE", the `wait_for` script exits
+# with a corresponding exit code. It can be used to prevent a container from
+# executing until pre-requisite containers have indicated successful
+# completion.
 
-mkdir -p "/tmp/completed"
+container="$1"
+mkdir -p "/tmp/status"
+status_file="/tmp/status/$container"
+if [[ ! -e "$status_file" ]]; then
+  # Create the status file to prevent errors when checking its contents
+  touch "$status_file"
+fi
+
 while true; do
   # Assume we're finished, prove otherwise
   finished=true
   for container in "$@"; do
-    if [[ ! -e "/tmp/completed/$container" ]]; then
-      printf "Waiting on '%s'...\n" "$container"
+    if (! grep -q -e "SUCCESS" -e "FAILURE" "$status_file"); then
+      printf "Waiting on status from '%s'...\n" "$container"
       finished=false
       sleep 10
       break
@@ -20,3 +30,9 @@ while true; do
     break
   fi
 done
+
+if (grep -q "SUCCESS" "$status_file"); then
+  exit 0
+else
+  exit 1
+fi

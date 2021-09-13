@@ -15,7 +15,7 @@
   path: "/spec/containers/4/env/3/value"
   value: https://opendev.org/airship/airshipctl
 
-# This is the ref to checkout for the airshipctl binary repo
+# This is the branch to checkout for the airshipctl binary repo
 - op: replace
   path: "/spec/containers/4/env/4/value"
   value: master
@@ -86,9 +86,3 @@
 - op: replace
   path: "/spec/containers/6/env/2/value"
   value: "false"
-
-# Uncomment the following to keep the runner container alive. This can be
-# useful for debugging purposes.
-# - op: replace
-#   path: "/spec/containers/6/command"
-#   value: ["bash", "-cex", "/entrypoint || sleep infinity"]

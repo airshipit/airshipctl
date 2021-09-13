@@ -19,6 +19,8 @@ The pod also contains the following "Support" containers:
 * `sushy-tools`: This is used for its BMC emulator
 * `docker-in-docker`: This is used for nesting containers
 * `nginx`: This is used for image hosting
+* `status-checker`: This container is used to track the completion status of
+  the task containers.
 
 ## Deployment Options
 
@@ -98,6 +100,34 @@ Once you've created the desired configuration, the kustomized pod can be deploye
 
 ```
 kustomize build ${PATH_TO_KUSTOMIZATION} | kubectl apply -f -
+```
+
+## Finishing a Deployment
+
+A deployment of Airship-in-a-pod is denoted by one of two states:
+
+1. The runner container reaches the end of its execution successfully
+2. An error occurs in any of the containers
+
+The statuses for the task containers is aggregated in the `status-checker`
+container, which provides a status report every 5 seconds. The status report
+has the following structure:
+
+```
+artifact-setup: <$STATUS> infra-builder: <$STATUS> runner: <$STATUS>
+```
+
+In the above, `$STATUS` can be any of `RUNNING`, `SUCCESS`, `FAILED`, or
+`UNKNOWN`. The last line of the `status-checker`'s logs will always contain the
+most recent status report. This status report can be used to determine the
+overall health of the deployment, as in the following:
+
+```
+# Check if AIAP has finished successfully
+test $(kubectl logs airship-in-a-pod -c status-checker --tail 1 | grep -o "SUCCESS" | wc -l) = 3
+
+# Check if AIAP has failed
+kubectl logs airship-in-a-pod -c status-checker --tail 1 | grep -q "FAILED"
 ```
 
 ## Interacting with the Pod

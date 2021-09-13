@@ -1,7 +1,7 @@
 DOCKER_REGISTRY     ?= quay.io
 DOCKER_IMAGE_PREFIX ?= airshipit
 DOCKER_IMAGE_TAG    ?= latest
-IMAGES              ?= infra-builder runner artifact-setup
+IMAGES              ?= infra-builder runner artifact-setup status-checker
 PUBLISH             ?= false
 
 .PHONY: help base libvirt artifact-setup $(IMAGES) images test
