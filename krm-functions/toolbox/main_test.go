@@ -74,7 +74,7 @@ func TestCmdRun(t *testing.T) {
 			},
 		},
 		{
-			name:        "WorkDir that doesnt' exist",
+			name:        "WorkDir that doesn't exist",
 			workdir:     "foobar",
 			errContains: "open foobar/my-script.sh: no such file or directory",
 			configMap: &v1.ConfigMap{

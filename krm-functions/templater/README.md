@@ -66,6 +66,6 @@ following structure.
         bootMACAddress: {{ .macAddress }}
       {{ end -}}
 
-`values` defines the substituion value as Map.
-`template` defines the template with placeholders to substitue the value from the
+`values` defines the substitution value as Map.
+`template` defines the template with placeholders to substitute the value from the
            values Map

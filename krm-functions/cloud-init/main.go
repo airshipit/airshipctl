@@ -62,7 +62,7 @@ func docFromRNode(rnode *yaml.RNode) (document.Document, error) {
 		return nil, err
 	}
 	if len(collection) == 0 {
-		return nil, errors.New("Error while converting RNode to Document: empty document bundle")
+		return nil, errors.New("error while converting RNode to Document: empty document bundle")
 	}
 	return collection[0], nil
 }
