@@ -39,13 +39,34 @@ function cloneRepo() {
   git checkout FETCH_HEAD
 }
 
+function check_docker_readiness() {
+  timeout=300
+
+  #add wait condition
+  end=$(($(date +%s) + $timeout))
+  echo "Waiting $timeout seconds for docker to be ready."
+  while true; do
+    if ( docker version | grep 'Version' ); then
+      echo "docker is now ready"
+      break
+    else
+      echo "docker is not ready"
+    fi
+    now=$(date +%s)
+    if [ $now -gt $end ]; then
+      echo -e "\n Docker failed to become ready within a reasonable timeframe."
+      exit 1
+    fi
+    sleep 10
+  done
+}
+
 if [[ "$USE_CACHED_AIRSHIPCTL" = "true" ]]
 then
   printf "Using cached airshipctl\n"
   cp -r "$CACHE_DIR/*" "$ARTIFACTS_DIR"
 else
-  printf "Waiting 30 seconds for the libvirt and docker services to be ready\n"
-  sleep 30
+  check_docker_readiness
 
   repo_dir="$ARTIFACTS_DIR/airshipctl"
   cloneRepo "$repo_dir" "$AIRSHIPCTL_REPO_URL" "$AIRSHIPCTL_REPO_REF"

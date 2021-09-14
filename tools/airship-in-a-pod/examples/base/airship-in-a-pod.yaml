@@ -31,6 +31,7 @@ spec:
 
   - name: libvirt
     image: quay.io/airshipit/libvirt:aiap-v1
+    imagePullPolicy: IfNotPresent
     securityContext:
       privileged: true
       #SYS_ADMIN required for systemd, need to work out reqs for libvirt
@@ -80,6 +81,7 @@ spec:
 
   - name: sushy
     image: quay.io/metal3-io/sushy-tools
+    imagePullPolicy: IfNotPresent
     command:
       - bash
       - -cex
@@ -130,6 +132,7 @@ spec:
 
   - name: nginx
     image: nginx:latest
+    imagePullPolicy: IfNotPresent
     command:
       - bash
       - -cex
@@ -177,6 +180,7 @@ spec:
 
   - name: dind
     image: docker:stable-dind
+    imagePullPolicy: IfNotPresent
     securityContext:
       privileged: true
     volumeMounts:
@@ -195,6 +199,7 @@ spec:
 
   - name: artifact-setup
     image: quay.io/airshipit/aiap-artifact-setup:latest
+    imagePullPolicy: IfNotPresent
     command:
       - bash
       - -cex
@@ -248,6 +253,7 @@ spec:
 
   - name: infra-builder
     image: quay.io/airshipit/aiap-infra-builder:latest
+    imagePullPolicy: IfNotPresent
     securityContext:
       privileged: true
     command:
@@ -305,6 +311,7 @@ spec:
 
   - name: runner
     image: quay.io/airshipit/aiap-runner:latest
+    imagePullPolicy: IfNotPresent
     command:
       - bash
       - -cex
