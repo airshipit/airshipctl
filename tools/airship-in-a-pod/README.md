@@ -20,8 +20,18 @@ The pod also contains the following "Support" containers:
 * `docker-in-docker`: This is used for nesting containers
 * `nginx`: This is used for image hosting
 
-## Azure Kubernetes Service (AKS) Quick Start
+## Deployment Options
 
+1. [Deploy on Azure (Quick Start)](#azure-kubernetes-service-aks-quick-start)
+2. [Deploy using Minikube on Linux](#minikube-installation)
+
+### Azure Kubernetes Service (AKS) Quick Start
+
+Note: This section provides a means of very quickly getting up and running with
+AIAP, but requires access to Azure. If you would like to deploy to a native
+Linux environment, please refer to the [Minikube Installation](#minikube-installation).
+
+Upon logging into and authenticating an Azure account (via `az login`),
 Airship-in-a-Pod can be easily run within AKS by running the script:
 
 ```
@@ -36,45 +46,39 @@ Environment variables can be supplied to override default, such as:
 
 Please consult the script for the full list of overrideable variables.
 
-Note that authentication (e.g. `az login`) must be done prior to invoking
-the script.
+### Minikube Installation
 
-## Prerequisites
+This sections provides instructions for deploying AIAP to a single-node minikube.
 
-### Nested Virtualisation
+#### Prerequisites
 
-If deployment is done on a VM, ensure that nested virtualisation is enabled.
-
-### Environment variable setup
-
-If you are within a proxy environment, ensure that the following environment
-variables are defined, and NO_PROXY has the IP address which minikube uses.
+* Nested Virtualisation: If deploying on a VM, ensure that nested virtualisation is enabled.
+* Environment variable setup: If you are within a proxy environment, ensure that the following environment
+variables are defined, and `NO_PROXY` has the IP address which minikube uses.
 Check the [minikube documentation](https://minikube.sigs.k8s.io/docs/commands/ip/)
 for retrieving the minikube ip.
 
 ```
+export USE_PROXY=true
 export HTTP_PROXY=http://username:password@host:port
 export HTTPS_PROXY=http://username:password@host:port
 export NO_PROXY="localhost,127.0.0.1,10.23.0.0/16,10.96.0.0/12,10.1.1.44"
-export PROXY=http://username:password@host:port
-export USE_PROXY=true
-export http_proxy=http://username:password@host:port
-export https_proxy=http://username:password@host:port
-export no_proxy="localhost,127.0.0.1,10.23.0.0/16,10.96.0.0/12,10.1.1.44"
-export proxy=http://username:password@host:port
+export http_proxy="$HTTP_PROXY"
+export https_proxy="$HTTPS_PROXY"
+export no_proxy="$NO_PROXY"
 ```
 
-### To start minikube
+#### To start minikube
 
 Within the environment, with appropriate env variables set, run the following command.
 
 ```
 sudo -E minikube start --driver=none
-
 ```
+
 Refer to the [minikube documentation](https://minikube.sigs.k8s.io/docs/start/) for more details.
 
-## Usage
+#### Deploy the Pod
 
 Since Airship in a Pod is just a pod definition, deploying and using it is as
 simple as deploying and using any other Kubernetes pod with `kubectl apply -f`.
@@ -83,7 +87,7 @@ The base pod definition can be found
 and deploys using the current master `airshipctl` binary and current master
 [test site](https://github.com/airshipit/airshipctl/tree/master/manifests/site/test-site).
 
-### Pod configuration
+#### Pod configuration
 
 Further configuration can be applied to the pod definition via
 [`kustomize`](https://kustomize.io/). Options that can be configured can be
@@ -94,10 +98,9 @@ Once you've created the desired configuration, the kustomized pod can be deploye
 
 ```
 kustomize build ${PATH_TO_KUSTOMIZATION} | kubectl apply -f -
-
 ```
 
-### Interacting with the Pod
+## Interacting with the Pod
 
 For a quick rundown of what a particular container is doing, simply check the logs for that container.
 
@@ -113,7 +116,7 @@ For a deeper dive, consider `exec`ing into one of the containers.
 kubectl exec -it airship-in-a-pod -c $CONTAINER -- bash
 ```
 
-#### Interacting with the Nodes
+## Interacting with the Nodes
 
 If you would like to interact with the nodes used in the deployment, you should
 first prevent the runner container from exiting (check the examples/airshipctl
@@ -122,7 +125,7 @@ replacements for the option to do this). While the runner container is alive,
 interact with a cluster. Choose a context from `kubectl config get-contexts`
 and switch to it via `kubectl config use-context ${MY_CONTEXT}`.
 
-### Output
+## Output
 
 Airship-in-a-pod produces the following outputs:
 
@@ -130,9 +133,9 @@ Airship-in-a-pod produces the following outputs:
 * A tarball containing the generated ephemeral ISO, as well as the
   configuration used during generation.
 
-These artifacts are placed at `ARTIFACTS_DIR` (defaults to /opt/aiap-artifacts`).
+These artifacts are placed at `ARTIFACTS_DIR` (defaults to `/opt/aiap-artifacts`).
 
-### Caching
+## Caching
 
 As it can be cumbersome and time-consuming to build and rebuild binaries and
 images, some options are made available for caching. A developer may re-use
