@@ -1,4 +1,4 @@
-ARG GO_IMAGE=amd64/golang:1.16.6-alpine
+ARG GO_IMAGE=quay.io/airshipit/golang:1.16.8-alpine
 ARG PLUGINS_RELEASE_IMAGE=quay.io/airshipit/alpine:3.13.5
 FROM ${GO_IMAGE} as function
 ARG GOPROXY=""

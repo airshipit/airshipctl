@@ -1,4 +1,4 @@
-ARG GO_IMAGE=amd64/golang:1.16.6-buster
+ARG GO_IMAGE=quay.io/airshipit/golang:1.16.8-buster
 ARG RELEASE_IMAGE=quay.io/airshipit/alpine:3.13.5
 FROM ${GO_IMAGE} as builder
 ARG GOPROXY=""
