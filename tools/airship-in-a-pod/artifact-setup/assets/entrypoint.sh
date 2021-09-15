@@ -27,7 +27,7 @@ function reportStatus() {
 }
 trap reportStatus EXIT
 
-function cloneRepo() {
+function cloneAirshipctlRepo() {
   repo_dir=$1
   repo_url=$2
   repo_ref=$3
@@ -35,8 +35,19 @@ function cloneRepo() {
   mkdir -p "$repo_dir"
   cd "$repo_dir"
 
+  set +x
+  if [[ "$AIRSHIPCTL_REPO_AUTH_TYPE" = "http-basic" ]]
+  then
+    AIRSHIPCTL_REPO_AUTH_USERNAME=$( cat /opt/aiap-secret-volume/AIRSHIPCTL_REPO_AUTH_USERNAME )
+    AIRSHIPCTL_REPO_AUTH_HTTP_PASSWORD=$( cat /opt/aiap-secret-volume/AIRSHIPCTL_REPO_AUTH_HTTP_PASSWORD )
+    proto="$(cut -f1 -d":" <<< $repo_url)://"
+    url="${repo_url/$proto/}"
+    repo_url="${proto}${AIRSHIPCTL_REPO_AUTH_USERNAME}:${AIRSHIPCTL_REPO_AUTH_HTTP_PASSWORD}@${url}"
+  fi
+
   git init
   git fetch "$repo_url" "$repo_ref"
+  set -x
   git checkout FETCH_HEAD
 }
 
@@ -70,7 +81,7 @@ else
   check_docker_readiness
 
   repo_dir="$ARTIFACTS_DIR/airshipctl"
-  cloneRepo "$repo_dir" "$AIRSHIPCTL_REPO_URL" "$AIRSHIPCTL_REPO_REF"
+  cloneAirshipctlRepo "$repo_dir" "$AIRSHIPCTL_REPO_URL" "$AIRSHIPCTL_REPO_REF"
 
   cd "$repo_dir"
   ./tools/deployment/21_systemwide_executable.sh

@@ -10,6 +10,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aiap-secret
+  labels:
+    aiap: aiap
+data:
+  AIRSHIPCTL_REPO_AUTH_USERNAME: ""
+  AIRSHIPCTL_REPO_AUTH_HTTP_PASSWORD: ""
+  AIRSHIPCTL_REPO_AUTH_SSH_KEY: ""
+  AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_USERNAME: ""
+  AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_HTTP_PASSWORD: ""
+  AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_SSH_PASSWORD: ""
+---
+
 apiVersion: v1
 kind: Pod
 metadata:
@@ -215,6 +231,8 @@ spec:
         value: https://opendev.org/airship/airshipctl
       - name: AIRSHIPCTL_REPO_REF
         value: master
+      - name: AIRSHIPCTL_REPO_AUTH_TYPE
+        value: "none"
       - name: USE_PROXY
         value:
       - name: no_proxy
@@ -236,6 +254,8 @@ spec:
         mountPath: /var/run
       - name: var-run-libvirt
         mountPath: /var/run/libvirt
+      - name: aiap-secret-volume
+        mountPath: /opt/aiap-secret-volume
 
   - name: infra-builder
     image: quay.io/airshipit/aiap-infra-builder:latest
@@ -311,12 +331,7 @@ spec:
         value:
       - name: AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_TYPE
         value: "none"
-      - name: AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_USERNAME
-        value: ""
-      - name: AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_HTTP_PASSWORD
-        value: ""
-      - name: AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_SSH_PASSWORD
-        value: ""
+
     volumeMounts:
       - name: cache
         mountPath: /opt/aiap-cache
@@ -389,3 +404,6 @@ spec:
         medium: "Memory"
     - name: dind-storage
       emptyDir: {}
+    - name: aiap-secret-volume
+      secret:
+        secretName: aiap-secret
