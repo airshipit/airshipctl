@@ -20,10 +20,9 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/klog/v2"
 	"sigs.k8s.io/cli-utils/pkg/kstatus/polling/clusterreader"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"opendev.org/airship/airshipctl/pkg/log"
 )
 
 const allowedApplyErrors = 3
@@ -62,7 +61,7 @@ func (c *CachingClusterReader) Sync(ctx context.Context) error {
 	if err != nil && strings.Contains(err.Error(), "request timed out") {
 		c.applyErrors = append(c.applyErrors, err)
 		if len(c.applyErrors) <= allowedApplyErrors {
-			log.Printf("timeout error occurred during sync: '%v', skipping", err)
+			klog.V(2).Infof("timeout error occurred during sync: '%v', skipping", err)
 			return nil
 		}
 	}

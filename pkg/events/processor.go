@@ -15,11 +15,6 @@
 package events
 
 import (
-	"k8s.io/cli-runtime/pkg/genericclioptions"
-	"sigs.k8s.io/cli-utils/cmd/printers"
-	applyevent "sigs.k8s.io/cli-utils/pkg/apply/event"
-	"sigs.k8s.io/cli-utils/pkg/common"
-
 	"opendev.org/airship/airshipctl/pkg/log"
 )
 
@@ -32,19 +27,15 @@ type EventProcessor interface {
 // DefaultProcessor is implementation of EventProcessor
 type DefaultProcessor struct {
 	errors         []error
-	applierChan    chan<- applyevent.Event
 	genericPrinter GenericPrinter
 }
 
 // NewDefaultProcessor returns instance of DefaultProcessor as interface Implementation
-func NewDefaultProcessor(streams genericclioptions.IOStreams) EventProcessor {
-	applyCh := make(chan applyevent.Event)
-	go printers.GetPrinter(printers.EventsPrinter, streams).Print(applyCh, common.DryRunNone)
+func NewDefaultProcessor() EventProcessor {
 	// printer for custom airshipctl events
 	genericPrinter := NewGenericPrinter(log.Writer(), JSONPrinter)
 	return &DefaultProcessor{
 		errors:         []error{},
-		applierChan:    applyCh,
 		genericPrinter: genericPrinter,
 	}
 }
@@ -53,8 +44,6 @@ func NewDefaultProcessor(streams genericclioptions.IOStreams) EventProcessor {
 func (p *DefaultProcessor) Process(ch <-chan Event) error {
 	for e := range ch {
 		switch e.Type {
-		case ApplierType:
-			p.processApplierEvent(e.ApplierEvent)
 		case ErrorType:
 			log.Printf("Received error on event channel %v", e.ErrorEvent)
 			p.errors = append(p.errors, e.ErrorEvent.Error)
@@ -75,17 +64,6 @@ func (p *DefaultProcessor) Process(ch <-chan Event) error {
 
 // Close cleans up the auxiliary channels used to process events
 func (p *DefaultProcessor) Close() {
-	close(p.applierChan)
-}
-
-func (p *DefaultProcessor) processApplierEvent(e applyevent.Event) {
-	if e.Type == applyevent.ErrorType {
-		log.Printf("Received error when applying resources to kubernetes: %v", e.ErrorEvent.Err)
-		p.errors = append(p.errors, e.ErrorEvent.Err)
-		// Don't write errors events to applier channel, as it will use os.Exit to stop program execution
-		return
-	}
-	p.applierChan <- e
 }
 
 // Check list of errors, and verify that these errors we are able to tolerate

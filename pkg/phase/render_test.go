@@ -100,17 +100,6 @@ func TestRender(t *testing.T) {
 			expErr: fmt.Errorf("unable to parse requirement: found '(', expected: identifier"),
 		},
 		{
-			name: "Malformed Label",
-			settings: &phase.RenderCommand{
-				Label:  "app=(",
-				Source: phase.RenderSourceExecutor,
-				PhaseID: ifc.ID{
-					Name: fixturePath,
-				},
-			},
-			expErr: fmt.Errorf("unable to parse requirement: found '(', expected: identifier"),
-		},
-		{
 			name: "source doesn't exist",
 			settings: &phase.RenderCommand{
 				Source: "unknown",

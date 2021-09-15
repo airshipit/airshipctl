@@ -72,7 +72,7 @@ for site_root in ${SITE_ROOTS}; do
 
     echo -e "\nValidating site: ${MANIFEST_ROOT}/${site_root}/${site}\n****************"
     generate_airshipconf $site
-    phase_plans=$(airshipctl --airshipconf "${TMP}/$site.cfg" plan list | awk -F'/' '/PhasePlan/ {print $2}' | awk '{print $1}')
+    phase_plans=$(airshipctl --airshipconf "${TMP}/$site.cfg" plan list | tail -n +2 | awk '{print $1}')
     for plan in $phase_plans; do
       airshipctl --airshipconf "${TMP}/$site.cfg" plan validate $plan
     done

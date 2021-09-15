@@ -16,94 +16,67 @@ package util_test
 
 import (
 	"bytes"
-	"io/ioutil"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	airapiv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/util"
 )
 
-func TestPrintTableForList(t *testing.T) {
-	resources := []*airapiv1.Phase{
+func TestNewTabPrinter(t *testing.T) {
+	var tests = []struct {
+		name      string
+		objects   interface{}
+		template  string
+		noHeaders bool
+		expected  string
+		errorStr  string
+	}{
 		{
-			TypeMeta: metav1.TypeMeta{
-				Kind: "Phase",
+			name:     "nil object",
+			template: "NAME:name",
+		},
+		{
+			name:     "no template defined",
+			errorStr: "custom-columns format specified but no custom columns given",
+		},
+		{
+			name: "success single object",
+			objects: &v1alpha1.Phase{
+				ObjectMeta: metav1.ObjectMeta{Name: "phase"},
 			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name: "p1",
+			template: "NAME:metadata.name",
+			expected: "NAME\nphase\n",
+		},
+		{
+			name: "success multiple objects",
+			objects: []*v1alpha1.Phase{{
+				ObjectMeta: metav1.ObjectMeta{Name: "phase1"},
 			},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "phase2"},
+				},
+			},
+			template: "NAME:metadata.name",
+			expected: "NAME\nphase1\nphase2\n",
 		},
-	}
-	expectedOut := [][]byte{
-		[]byte("NAMESPACE   RESOURCE                                "),
-		[]byte("            Phase/p1                                "),
-		{},
 	}
 
-	rt, err := util.NewResourceTable(resources, func(util.Printable) *util.PrintResourceStatus { return nil })
-	require.NoError(t, err)
-	buf := &bytes.Buffer{}
-	util.DefaultTablePrinter(buf, nil).PrintTable(rt, 0)
-	out, err := ioutil.ReadAll(buf)
-	require.NoError(t, err)
-	assert.Equal(t, expectedOut, bytes.Split(out, []byte("\n")))
-}
-
-func TestDefaultStatusFunction(t *testing.T) {
-	f := util.DefaultStatusFunction()
-	expectedObj := map[string]interface{}{
-		"kind": "Phase",
-		"metadata": map[string]interface{}{
-			"name":              "p1",
-			"creationTimestamp": nil,
-		},
-		"config": map[string]interface{}{
-			"documentEntryPoint": "",
-			"executorRef":        nil,
-			"validation":         map[string]interface{}{},
-		},
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			buf := &bytes.Buffer{}
+			err := util.PrintObjects(tt.objects, tt.template, buf, tt.noHeaders)
+			if tt.errorStr != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tt.errorStr)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tt.expected, buf.String())
+			}
+			buf.Reset()
+		})
 	}
-	printable := &airapiv1.Phase{
-		TypeMeta: metav1.TypeMeta{
-			Kind: "Phase",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "p1",
-		},
-	}
-	rs := f(printable)
-	assert.Equal(t, expectedObj, rs.Resource.Object)
-}
-
-func TestNonPrintable(t *testing.T) {
-	_, err := util.NewResourceTable("non Printable string", util.DefaultStatusFunction())
-	assert.Error(t, err)
-}
-
-func TestPrintTableForSingleResource(t *testing.T) {
-	resource := &airapiv1.Phase{
-		TypeMeta: metav1.TypeMeta{
-			Kind: "Phase",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "p1",
-		},
-	}
-	expectedOut := [][]byte{
-		[]byte("NAMESPACE   RESOURCE                                "),
-		[]byte("            Phase/p1                                "),
-		{},
-	}
-	rt, err := util.NewResourceTable(resource, func(util.Printable) *util.PrintResourceStatus { return nil })
-	require.NoError(t, err)
-	buf := &bytes.Buffer{}
-	util.DefaultTablePrinter(buf, nil).PrintTable(rt, 0)
-	out, err := ioutil.ReadAll(buf)
-	require.NoError(t, err)
-	assert.Equal(t, expectedOut, bytes.Split(out, []byte("\n")))
 }

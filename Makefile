@@ -119,6 +119,7 @@ docker-image_DOCKERFILE:=Dockerfile
 # kubeval-validator, toolbox and toolbox-virsh don't depend on
 # airshipctl repo. Their Dockerfiles don't
 # need to be called from the root of the repo.
+applier_IS_INDEPENDED:=true
 kubeval-validator_IS_INDEPENDED:=true
 clusterctl_IS_INDEPENDED:=true
 clusterctl-v0.3_IS_INDEPENDED:=true

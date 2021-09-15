@@ -23,7 +23,7 @@ export PROXY=${PROXY:-${http_proxy}}
 set +e
 echo "Build airshipctl docker images"
 for i in {1..3}; do
-    sudo -E make images && break
+   sudo -E make images && break
 done
 [ "$?" -ne 0 ] && exit 1
 set -e

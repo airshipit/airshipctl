@@ -48,11 +48,6 @@ type RenderOptions struct {
 	FilterSelector document.Selector
 }
 
-// WaitOptions holds only timeout now, but may be extended in the future
-type WaitOptions struct {
-	Timeout time.Duration
-}
-
 // ExecutorFactory for executor instantiation
 type ExecutorFactory func(config ExecutorConfig) (Executor, error)
 

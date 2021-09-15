@@ -28,7 +28,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
-	"opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
@@ -389,5 +388,5 @@ func (c *client) PhaseByAPIObj(phaseObj *v1alpha1.Phase) (ifc.Phase, error) {
 }
 
 func defaultProcessor() events.EventProcessor {
-	return events.NewDefaultProcessor(utils.Streams())
+	return events.NewDefaultProcessor()
 }

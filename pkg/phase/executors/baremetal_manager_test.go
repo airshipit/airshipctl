@@ -28,7 +28,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
 	inventoryifc "opendev.org/airship/airshipctl/pkg/inventory/ifc"
-	"opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	testdoc "opendev.org/airship/airshipctl/testutil/document"
@@ -151,7 +150,7 @@ func TestBMHExecutorRun(t *testing.T) {
 			go func() {
 				executor.Run(ch, tt.runOptions)
 			}()
-			processor := events.NewDefaultProcessor(utils.Streams())
+			processor := events.NewDefaultProcessor()
 			defer processor.Close()
 			err = processor.Process(ch)
 			if tt.expectedErr != "" {

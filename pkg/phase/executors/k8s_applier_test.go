@@ -26,11 +26,11 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
+	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
-	"opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	testdoc "opendev.org/airship/airshipctl/testutil/document"
@@ -50,39 +50,6 @@ config:
   pruneOptions:
     prune: false
 `
-	ValidExecutorDocNamespaced = `apiVersion: airshipit.org/v1alpha1
-kind: KubernetesApply
-metadata:
-  labels:
-    airshipit.org/deploy-k8s: "false"
-  name: kubernetes-apply-namespaced
-  namespace: bundle
-config:
-  waitOptions:
-    timeout: 600
-  pruneOptions:
-    prune: false
-`
-	testValidKubeconfig = `apiVersion: v1
-clusters:
-- cluster:
-    certificate-authority-data: ca-data
-    server: https://10.0.1.7:6443
-  name: kubernetes_target
-contexts:
-- context:
-    cluster: kubernetes_target
-    user: kubernetes-admin
-  name: kubernetes-admin@kubernetes
-current-context: ""
-kind: Config
-preferences: {}
-users:
-- name: kubernetes-admin
-  user:
-    client-certificate-data: cert-data
-    client-key-data: client-keydata
-`
 	WrongExecutorDoc = `apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -90,6 +57,18 @@ metadata:
   namespace: default
   labels:
     cli-utils.sigs.k8s.io/inventory-id: "some id"
+`
+	applierKRMDoc = `---
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: applier
+  labels:
+    airshipit.org/deploy-k8s: "false"
+spec:
+  type: krm
+  image: quay.io/airshipit/applier:latest
+  hostNetwork: true
 `
 )
 
@@ -125,11 +104,41 @@ func testApplierBundleFactory(t *testing.T, filteredContent string, writer io.Wr
 	}
 }
 
-func testApplierBundleFactoryFilterError() document.BundleFactoryFunc {
+func testApplierBundleFactorySelectBundleError() document.BundleFactoryFunc {
 	return func() (document.Bundle, error) {
 		bundle := &testdoc.MockBundle{}
+		bundle.On("SelectOne", mock.Anything).
+			Return(nil, nil)
 		bundle.On("SelectBundle", mock.Anything).
-			Return(nil, errors.New("error"))
+			Return(nil, errors.New("error selecting bundle"))
+		return bundle, nil
+	}
+}
+
+func testApplierBundleFactoryWriteError() document.BundleFactoryFunc {
+	return func() (document.Bundle, error) {
+		bundle := &testdoc.MockBundle{}
+		filteredBundle := &testdoc.MockBundle{}
+		bundle.On("SelectOne", mock.Anything).
+			Return(nil, nil)
+		filteredBundle.On("Write", mock.Anything).
+			Return(errors.New("error writing bundle"))
+		bundle.On("SelectBundle", mock.Anything).
+			Return(filteredBundle, nil)
+		return bundle, nil
+	}
+}
+
+func testApplierBundleFactoryNoError() document.BundleFactoryFunc {
+	return func() (document.Bundle, error) {
+		bundle := &testdoc.MockBundle{}
+		filteredBundle := &testdoc.MockBundle{}
+		bundle.On("SelectOne", mock.Anything).
+			Return(nil, nil)
+		filteredBundle.On("Write", mock.Anything).
+			Return(nil)
+		bundle.On("SelectBundle", mock.Anything).
+			Return(filteredBundle, nil)
 		return bundle, nil
 	}
 }
@@ -156,23 +165,31 @@ func TestNewKubeApplierExecutor(t *testing.T) {
 		execDoc       document.Document
 		expectedErr   bool
 		bundleFactory document.BundleFactoryFunc
+		phaseBundle   document.Bundle
 	}{
 		{
-			name:          "valid executor",
-			execDoc:       executorDoc(t, ValidExecutorDoc),
-			bundleFactory: testdoc.EmptyBundleFactory,
-		},
-		{
-			name:        "wrong executor document",
+			name:        "invalid executor document",
 			execDoc:     executorDoc(t, WrongExecutorDoc),
 			expectedErr: true,
 		},
-
 		{
-			name:          "bundle factory returns an error",
+			name:          "invalid bundle factory",
 			execDoc:       executorDoc(t, ValidExecutorDoc),
-			expectedErr:   true,
 			bundleFactory: testdoc.ErrorBundleFactory,
+			expectedErr:   true,
+		},
+		{
+			name:          "invalid phase config bundle",
+			execDoc:       executorDoc(t, ValidExecutorDoc),
+			bundleFactory: testdoc.EmptyBundleFactory,
+			phaseBundle:   executorBundle(t, ""),
+			expectedErr:   true,
+		},
+		{
+			name:          "valid phase config bundle",
+			execDoc:       executorDoc(t, ValidExecutorDoc),
+			bundleFactory: testdoc.EmptyBundleFactory,
+			phaseBundle:   executorBundle(t, applierKRMDoc),
 		},
 	}
 
@@ -181,8 +198,9 @@ func TestNewKubeApplierExecutor(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			exec, err := executors.NewKubeApplierExecutor(
 				ifc.ExecutorConfig{
-					ExecutorDocument: tt.execDoc,
-					BundleFactory:    tt.bundleFactory,
+					ExecutorDocument:  tt.execDoc,
+					BundleFactory:     tt.bundleFactory,
+					PhaseConfigBundle: tt.phaseBundle,
 				})
 			if tt.expectedErr {
 				require.Error(t, err)
@@ -209,12 +227,41 @@ func TestKubeApplierExecutorRun(t *testing.T) {
 		execDoc       document.Document
 		bundleFactory document.BundleFactoryFunc
 		clusterMap    clustermap.ClusterMap
+		clientFunc    container.ClientV1Alpha1FactoryFunc
 	}{
 		{
-			name:          "cant read kubeconfig error",
-			containsErr:   "no such file or directory",
+			name:          "unable to get kubeconfig context",
+			containsErr:   "cluster 'foo' is not defined in cluster map",
 			bundleFactory: testApplierBundleFactory(t, "", nil),
 			kubeconf:      testKubeconfig(`invalid kubeconfig`),
+			execDoc:       executorDoc(t, ValidExecutorDoc),
+			clusterName:   "foo",
+			clusterMap: clustermap.NewClusterMap(&v1alpha1.ClusterMap{
+				Map: map[string]*v1alpha1.Cluster{
+					"ephemeral-cluster": {},
+				},
+			}),
+		},
+		{
+			name:          "unable to get kubeconfig file",
+			containsErr:   "failed to get kubeconfig",
+			bundleFactory: testApplierBundleFactory(t, "", nil),
+			kubeconf: fakeKubeConfig{getFile: func() (string, kubeconfig.Cleanup, error) {
+				return "", nil, errors.New("failed to get kubeconfig")
+			}},
+			execDoc:     executorDoc(t, ValidExecutorDoc),
+			clusterName: "ephemeral-cluster",
+			clusterMap: clustermap.NewClusterMap(&v1alpha1.ClusterMap{
+				Map: map[string]*v1alpha1.Cluster{
+					"ephemeral-cluster": {},
+				},
+			}),
+		},
+		{
+			name:          "unable to select bundle",
+			containsErr:   "error selecting bundle",
+			bundleFactory: testApplierBundleFactorySelectBundleError(),
+			kubeconf:      testKubeconfig("kubeconfig"),
 			execDoc:       executorDoc(t, ValidExecutorDoc),
 			clusterName:   "ephemeral-cluster",
 			clusterMap: clustermap.NewClusterMap(&v1alpha1.ClusterMap{
@@ -224,18 +271,55 @@ func TestKubeApplierExecutorRun(t *testing.T) {
 			}),
 		},
 		{
-			name:          "error cluster not defined",
-			containsErr:   "is not defined in cluster map",
-			bundleFactory: testApplierBundleFactory(t, "", nil),
-			kubeconf:      testKubeconfig(testValidKubeconfig),
+			name:          "unable to write bundle",
+			containsErr:   "error writing bundle",
+			bundleFactory: testApplierBundleFactoryWriteError(),
+			kubeconf:      testKubeconfig("kubeconfig"),
 			execDoc:       executorDoc(t, ValidExecutorDoc),
-			clusterMap:    clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
+			clusterName:   "ephemeral-cluster",
+			clusterMap: clustermap.NewClusterMap(&v1alpha1.ClusterMap{
+				Map: map[string]*v1alpha1.Cluster{
+					"ephemeral-cluster": {},
+				},
+			}),
 		},
 		{
-			name:          "error during executor bundle filtering",
-			containsErr:   "error",
+			name:          "unsuccessful run",
+			containsErr:   "applier failure",
+			bundleFactory: testApplierBundleFactoryNoError(),
+			kubeconf:      testKubeconfig("kubeconfig"),
 			execDoc:       executorDoc(t, ValidExecutorDoc),
-			bundleFactory: testApplierBundleFactoryFilterError(),
+			clusterName:   "ephemeral-cluster",
+			clusterMap: clustermap.NewClusterMap(&v1alpha1.ClusterMap{
+				Map: map[string]*v1alpha1.Cluster{
+					"ephemeral-cluster": {},
+				},
+			}),
+			clientFunc: func(_ string, _ io.Reader, _ io.Writer,
+				_ *v1alpha1.GenericContainer, _ string) container.ClientV1Alpha1 {
+				return MockClientFuncInterface{MockRun: func() error {
+					return errors.New("applier failure")
+				}}
+			},
+		},
+		{
+			name:          "successful run",
+			containsErr:   "",
+			bundleFactory: testApplierBundleFactoryNoError(),
+			kubeconf:      testKubeconfig("kubeconfig"),
+			execDoc:       executorDoc(t, ValidExecutorDoc),
+			clusterName:   "ephemeral-cluster",
+			clusterMap: clustermap.NewClusterMap(&v1alpha1.ClusterMap{
+				Map: map[string]*v1alpha1.Cluster{
+					"ephemeral-cluster": {},
+				},
+			}),
+			clientFunc: func(_ string, _ io.Reader, _ io.Writer,
+				_ *v1alpha1.GenericContainer, _ string) container.ClientV1Alpha1 {
+				return MockClientFuncInterface{MockRun: func() error {
+					return nil
+				}}
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -243,17 +327,19 @@ func TestKubeApplierExecutorRun(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			exec, err := executors.NewKubeApplierExecutor(
 				ifc.ExecutorConfig{
-					ExecutorDocument: tt.execDoc,
-					BundleFactory:    tt.bundleFactory,
-					KubeConfig:       tt.kubeconf,
-					ClusterMap:       tt.clusterMap,
-					ClusterName:      tt.clusterName,
+					ExecutorDocument:  tt.execDoc,
+					BundleFactory:     tt.bundleFactory,
+					KubeConfig:        tt.kubeconf,
+					ClusterMap:        tt.clusterMap,
+					ClusterName:       tt.clusterName,
+					PhaseConfigBundle: executorBundle(t, applierKRMDoc),
+					ContainerFunc:     tt.clientFunc,
 				})
 			require.NoError(t, err)
 			require.NotNil(t, exec)
 			ch := make(chan events.Event)
 			go exec.Run(ch, ifc.RunOptions{})
-			processor := events.NewDefaultProcessor(utils.Streams())
+			processor := events.NewDefaultProcessor()
 			err = processor.Process(ch)
 			if tt.containsErr != "" {
 				require.Error(t, err)
@@ -269,8 +355,9 @@ func TestRender(t *testing.T) {
 	writer := bytes.NewBuffer([]byte{})
 	content := "Some content"
 	exec, err := executors.NewKubeApplierExecutor(ifc.ExecutorConfig{
-		BundleFactory:    testApplierBundleFactory(t, content, writer),
-		ExecutorDocument: executorDoc(t, ValidExecutorDoc),
+		BundleFactory:     testApplierBundleFactory(t, content, writer),
+		ExecutorDocument:  executorDoc(t, ValidExecutorDoc),
+		PhaseConfigBundle: executorBundle(t, applierKRMDoc),
 	})
 	require.NoError(t, err)
 	require.NotNil(t, exec)
@@ -328,9 +415,10 @@ func TestKubeApplierExecutor_Validate(t *testing.T) {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
 			e, err := executors.NewKubeApplierExecutor(ifc.ExecutorConfig{
-				BundleFactory:    tt.bundleFactory,
-				PhaseName:        tt.bundleName,
-				ExecutorDocument: executorDoc(t, ValidExecutorDoc),
+				BundleFactory:     tt.bundleFactory,
+				PhaseName:         tt.bundleName,
+				ExecutorDocument:  executorDoc(t, ValidExecutorDoc),
+				PhaseConfigBundle: executorBundle(t, applierKRMDoc),
 			})
 			require.NoError(t, err)
 			require.NotNil(t, e)

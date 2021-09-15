@@ -20,7 +20,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
-
 	"sigs.k8s.io/kustomize/api/types"
 	"sigs.k8s.io/kustomize/kyaml/resid"
 )
@@ -209,4 +208,12 @@ func NewClusterctlContainerExecutorSelector() Selector {
 		ClusterctlContainerVersion,
 		ClusterctlContainerKind).
 		ByName(ClusterctlContainerName)
+}
+
+// NewApplierContainerExecutorSelector returns selector to get executor documents for applier container
+func NewApplierContainerExecutorSelector() Selector {
+	return NewSelector().ByGvk(ApplierContainerGroup,
+		ApplierContainerVersion,
+		ApplierContainerKind).
+		ByName(ApplierContainerName)
 }

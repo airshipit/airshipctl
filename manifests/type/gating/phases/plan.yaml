@@ -97,18 +97,11 @@ phases:
   - name: kubectl-wait-cluster-target
   # Power off Ephemeral baremetal host avoid DHCP conflict
   - name: power-off-ephemeral
-  # Create target k8s cluster resources
-  - name: controlplane-target
   # List all nodes in target cluster
   # Scripts for this phase placed in manifests/function/phase-helpers/get_node/
   # To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
   # and find ConfigMap with name kubectl-get-node
   - name: kubectl-get-node-target
-  # List all pods in target cluster
-  # Scripts for this phase placed in manifests/function/phase-helpers/get_pods/
-  # To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
-  # and find ConfigMap with name kubectl-get-pods
-  - name: kubectl-get-pods-target
   # Deploy worker node
   - name: workers-target
   # Waiting for node to be provisioned

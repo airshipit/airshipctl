@@ -22,12 +22,11 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/events"
-	"opendev.org/airship/airshipctl/pkg/k8s/utils"
 	k8stest "opendev.org/airship/airshipctl/testutil/k8sutils"
 )
 
 func TestDefaultProcessor(t *testing.T) {
-	proc := events.NewDefaultProcessor(utils.Streams())
+	proc := events.NewDefaultProcessor()
 	defer proc.Close()
 	tests := []struct {
 		name      string
@@ -46,7 +45,7 @@ func TestDefaultProcessor(t *testing.T) {
 		{
 			name:      "error event",
 			events:    errApplyEvents(),
-			errString: "apply-error",
+			errString: "somerror",
 		},
 	}
 

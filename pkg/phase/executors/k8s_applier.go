@@ -15,22 +15,19 @@
 package executors
 
 import (
+	"bytes"
 	"io"
-	"time"
+	"os"
 
-	"sigs.k8s.io/cli-utils/pkg/common"
-	"sigs.k8s.io/cli-utils/pkg/kstatus/polling/aggregator"
-	"sigs.k8s.io/cli-utils/pkg/kstatus/polling/event"
-	"sigs.k8s.io/cli-utils/pkg/kstatus/status"
-	"sigs.k8s.io/cli-utils/pkg/provider"
+	"sigs.k8s.io/kustomize/kyaml/yaml"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
+	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
+	airerrors "opendev.org/airship/airshipctl/pkg/errors"
 	"opendev.org/airship/airshipctl/pkg/events"
-	k8sapplier "opendev.org/airship/airshipctl/pkg/k8s/applier"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
-	"opendev.org/airship/airshipctl/pkg/k8s/utils"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
@@ -43,12 +40,14 @@ type KubeApplierExecutor struct {
 	ExecutorBundle   document.Bundle
 	ExecutorDocument document.Document
 	BundleName       string
+	targetPath       string
 
 	apiObject   *airshipv1.KubernetesApply
-	cleanup     kubeconfig.Cleanup
 	clusterMap  clustermap.ClusterMap
 	clusterName string
 	kubeconfig  kubeconfig.Interface
+	clientFunc  container.ClientV1Alpha1FactoryFunc
+	execObj     *airshipv1.GenericContainer
 }
 
 // NewKubeApplierExecutor returns instance of executor
@@ -63,6 +62,22 @@ func NewKubeApplierExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 		return nil, err
 	}
 
+	doc, err := cfg.PhaseConfigBundle.SelectOne(document.NewApplierContainerExecutorSelector())
+	if err != nil {
+		return nil, err
+	}
+
+	cObj := airshipv1.DefaultGenericContainer()
+	err = doc.ToAPIObject(cObj, airshipv1.Scheme)
+	if err != nil {
+		return nil, err
+	}
+
+	clientFunc := container.NewClientV1Alpha1
+	if cfg.ContainerFunc != nil {
+		clientFunc = cfg.ContainerFunc
+	}
+
 	return &KubeApplierExecutor{
 		ExecutorBundle:   bundle,
 		BundleName:       cfg.PhaseName,
@@ -71,9 +86,9 @@ func NewKubeApplierExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 		clusterMap:       cfg.ClusterMap,
 		clusterName:      cfg.ClusterName,
 		kubeconfig:       cfg.KubeConfig,
-		// default cleanup that does nothing
-		// replaced with a meaningful cleanup while preparing kubeconfig
-		cleanup: func() {},
+		clientFunc:       clientFunc,
+		execObj:          cObj,
+		targetPath:       cfg.TargetPath,
 	}, nil
 }
 
@@ -81,55 +96,78 @@ func NewKubeApplierExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 func (e *KubeApplierExecutor) Run(ch chan events.Event, runOpts ifc.RunOptions) {
 	defer close(ch)
 
-	applier, filteredBundle, err := e.prepareApplier(ch)
+	e.apiObject.Config.Debug = log.DebugEnabled()
+	e.apiObject.Config.PhaseName = e.BundleName
+
+	if e.apiObject.Config.Kubeconfig == "" {
+		kcfg, ctx, cleanup, err := e.getKubeconfig()
+		if err != nil {
+			handleError(ch, err)
+			return
+		}
+		defer cleanup()
+		e.apiObject.Config.Kubeconfig, e.apiObject.Config.Context = kcfg, ctx
+	}
+	e.execObj.Spec.StorageMounts = append(e.execObj.Spec.StorageMounts, airshipv1.StorageMount{
+		MountType:     "bind",
+		Src:           e.apiObject.Config.Kubeconfig,
+		DstPath:       e.apiObject.Config.Kubeconfig,
+		ReadWriteMode: false,
+	})
+	log.Printf("using kubeconfig at '%s' and context '%s'", e.apiObject.Config.Kubeconfig, e.apiObject.Config.Context)
+
+	e.apiObject.Config.DryRun = runOpts.DryRun
+	if runOpts.Timeout != nil {
+		e.apiObject.Config.WaitOptions.Timeout = int(*runOpts.Timeout)
+	}
+
+	reader, err := e.prepareDocuments()
 	if err != nil {
 		handleError(ch, err)
 		return
 	}
-	defer e.cleanup()
 
-	dryRunStrategy := common.DryRunNone
-	if runOpts.DryRun {
-		dryRunStrategy = common.DryRunClient
+	opts, err := yaml.Marshal(&e.apiObject.Config)
+	if err != nil {
+		handleError(ch, err)
+		return
 	}
-	timeout := time.Second * time.Duration(e.apiObject.Config.WaitOptions.Timeout)
-	if runOpts.Timeout != nil {
-		timeout = *runOpts.Timeout
-	}
-	pollInterval := time.Second * time.Duration(e.apiObject.Config.WaitOptions.PollInterval)
 
-	log.Debugf("WaitTimeout: %v", timeout)
-	applyOptions := k8sapplier.ApplyOptions{
-		DryRunStrategy: dryRunStrategy,
-		Prune:          e.apiObject.Config.PruneOptions.Prune,
-		BundleName:     e.BundleName,
-		WaitTimeout:    timeout,
-		PollInterval:   pollInterval,
+	e.execObj.Config = string(opts)
+	err = e.clientFunc("", reader, os.Stdout, e.execObj, e.targetPath).Run()
+	if err != nil {
+		handleError(ch, err)
+		return
 	}
-	applier.ApplyBundle(filteredBundle, applyOptions)
 }
 
-func (e *KubeApplierExecutor) prepareApplier(ch chan events.Event) (*k8sapplier.Applier, document.Bundle, error) {
-	log.Debug("Filtering out documents that shouldn't be applied to kubernetes from document bundle")
-	bundle, err := e.ExecutorBundle.SelectBundle(document.NewDeployToK8sSelector())
-	if err != nil {
-		return nil, nil, err
-	}
+func (e *KubeApplierExecutor) getKubeconfig() (string, string, func(), error) {
 	log.Debug("Getting kubeconfig context name from cluster map")
-	context, err := e.clusterMap.ClusterKubeconfigContext(e.clusterName)
+	ctx, err := e.clusterMap.ClusterKubeconfigContext(e.clusterName)
 	if err != nil {
-		return nil, nil, err
+		return "", "", nil, err
 	}
 	log.Debug("Getting kubeconfig file information from kubeconfig provider")
 	path, cleanup, err := e.kubeconfig.GetFile()
 	if err != nil {
-		return nil, nil, err
+		return "", "", nil, err
 	}
-	// set up cleanup only if all calls up to here were successful
-	e.cleanup = cleanup
-	log.Printf("Using kubeconfig at '%s' and context '%s'", path, context)
-	factory := utils.FactoryFromKubeConfig(path, context)
-	return k8sapplier.NewApplier(ch, factory, e.apiObject.Config.WaitOptions.Conditions), bundle, nil
+	return path, ctx, cleanup, nil
+}
+
+func (e *KubeApplierExecutor) prepareDocuments() (io.Reader, error) {
+	log.Debug("Filtering out documents that shouldn't be applied to kubernetes from document bundle")
+	filteredBundle, err := e.ExecutorBundle.SelectBundle(document.NewDeployToK8sSelector())
+	if err != nil {
+		return nil, err
+	}
+
+	buf := &bytes.Buffer{}
+	err = filteredBundle.Write(buf)
+	if err != nil {
+		return nil, err
+	}
+	return buf, err
 }
 
 // Validate document set
@@ -158,42 +196,6 @@ func (e *KubeApplierExecutor) Render(w io.Writer, o ifc.RenderOptions) error {
 }
 
 // Status returns the status of the given phase
-func (e *KubeApplierExecutor) Status() (sts ifc.ExecutorStatus, err error) {
-	var ctx string
-	ctx, err = e.clusterMap.ClusterKubeconfigContext(e.clusterName)
-	if err != nil {
-		return sts, err
-	}
-	log.Debug("Getting kubeconfig file information from kubeconfig provider")
-	path, cleanup, err := e.kubeconfig.GetFile()
-	if err != nil {
-		return sts, err
-	}
-	defer cleanup()
-
-	cf := provider.NewProvider(utils.FactoryFromKubeConfig(path, ctx))
-	rm, err := cf.Factory().ToRESTMapper()
-	if err != nil {
-		return
-	}
-	r := utils.DefaultManifestReaderFactory(false, e.ExecutorBundle, rm)
-	infos, err := r.Read()
-	if err != nil {
-		return
-	}
-
-	var resSts event.ResourceStatuses
-
-	for _, info := range infos {
-		s, sErr := status.Compute(info)
-		if sErr != nil {
-			return
-		}
-		st := &event.ResourceStatus{
-			Status: s.Status,
-		}
-		resSts = append(resSts, st)
-	}
-	_ = aggregator.AggregateStatus(resSts, status.CurrentStatus)
-	return ifc.ExecutorStatus{}, err
+func (e *KubeApplierExecutor) Status() (ifc.ExecutorStatus, error) {
+	return ifc.ExecutorStatus{}, airerrors.ErrNotImplemented{What: KubernetesApply}
 }

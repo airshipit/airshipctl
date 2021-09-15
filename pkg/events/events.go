@@ -17,9 +17,6 @@ package events
 import (
 	"fmt"
 	"time"
-
-	applyevent "sigs.k8s.io/cli-utils/pkg/apply/event"
-	statuspollerevent "sigs.k8s.io/cli-utils/pkg/kstatus/polling/event"
 )
 
 // Type indicates type of the event
@@ -48,13 +45,18 @@ const (
 type Event struct {
 	Type                  Type
 	Timestamp             time.Time
-	ApplierEvent          applyevent.Event
+	ApplierEvent          ApplierEvent
 	ErrorEvent            ErrorEvent
-	StatusPollerEvent     statuspollerevent.Event
 	ClusterctlEvent       ClusterctlEvent
 	BootstrapEvent        BootstrapEvent
 	GenericContainerEvent GenericContainerEvent
 	BaremetalManagerEvent BaremetalManagerEvent
+}
+
+// ApplierEvent is produced by k8s_apply executor
+type ApplierEvent struct {
+	Operation string
+	Message   string
 }
 
 //GenericEvent generalized type for custom events
