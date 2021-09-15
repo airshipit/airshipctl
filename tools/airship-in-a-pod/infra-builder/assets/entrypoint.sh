@@ -24,10 +24,32 @@ function cleanup() {
     rm /tmp/healthy/infra-builder
   fi
 }
+
+function check_libvirt_readiness() {
+  timeout=300
+
+  #add wait condition
+  end=$(($(date +%s) + $timeout))
+  echo "Waiting $timeout seconds for libvirt to be ready."
+  while true; do
+    if ( virsh version | grep 'library' ); then
+      echo "libvrit is now ready"
+      break
+    else
+      echo "libvirt is not ready"
+    fi
+    now=$(date +%s)
+    if [ $now -gt $end ]; then
+      echo -e "\n Libvirt failed to become ready within a reasonable timeframe."
+      exit 1
+    fi
+    sleep 10
+  done
+}
+
 trap cleanup EXIT
 
-printf "Waiting 30 seconds for the libvirt and docker services to be ready\n"
-sleep 30
+check_libvirt_readiness
 
 ansible-playbook -v /opt/ansible/playbooks/build-infra.yaml \
   -e local_src_dir="$(pwd)"
