@@ -38,6 +38,8 @@ type ApplyConfig struct {
 type ApplyWaitOptions struct {
 	// Timeout in seconds
 	Timeout int `json:"timeout,omitempty"`
+	// PollInterval in seconds
+	PollInterval int `json:"pollInterval,omitempty"`
 }
 
 // ApplyPruneOptions provides instructions how to prune for kubernetes resources
