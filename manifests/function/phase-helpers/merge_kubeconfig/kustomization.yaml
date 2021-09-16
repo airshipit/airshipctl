@@ -1,0 +1,6 @@
+configMapGenerator:
+- name: merge-kubeconfig
+  options:
+    disableNameSuffixHash: true
+  files:
+  - script=kubectl_merge_kubeconfig.sh

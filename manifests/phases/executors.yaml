@@ -564,3 +564,25 @@ spec:
   type: krm
   image: localhost/clusterctl:latest
   hostNetwork: true
+---
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: merge-kubeconfig
+  labels:
+    airshipit.org/deploy-k8s: "false"
+spec:
+  type: krm
+  image: quay.io/airshipit/toolbox:latest
+  hostNetwork: true
+  envVars:
+    - TGT_KUBECONFIG=/tmp-kubeconfig
+  mounts:
+  - type: bind
+    src: ~/.airship/kubeconfig
+    dst: /tmp-kubeconfig
+    rw: true
+configRef:
+  kind: ConfigMap
+  name: merge-kubeconfig
+  apiVersion: v1

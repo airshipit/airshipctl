@@ -1,0 +1,22 @@
+apiVersion: airshipit.org/v1alpha1
+kind: ClusterMap
+metadata:
+  labels:
+    airshipit.org/deploy-k8s: "false"
+  name: main-map
+map:
+  target-cluster:
+    parent: ephemeral-cluster
+    kubeconfigSources:
+      - type: "filesystem"
+        filesystem:
+          path: ~/.airship/kubeconfig
+          contextName: target-cluster
+      - type: "bundle"
+        bundle:
+          contextName: target-cluster
+      - type: "clusterAPI"
+        clusterAPI:
+          clusterNamespacedName:
+            name: target-cluster
+            namespace: default

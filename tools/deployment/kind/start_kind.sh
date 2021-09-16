@@ -39,7 +39,9 @@ set -xe
 : ${KUBECONFIG:="${HOME}/.airship/kubeconfig"}
 : ${TIMEOUT:=3600}
 : ${KIND_CONFIG:=""}
+
 export KIND_EXPERIMENTAL_DOCKER_NETWORK=bridge
+export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
 
 echo "cluster name: $CLUSTER";
 
@@ -57,6 +59,9 @@ kubectl wait --for=condition=ready node --all --timeout=1000s --kubeconfig $KUBE
 # Add context <cluster> e.g ephemeral-cluster.
 # By default, kind creates context kind-<cluster_name>
 kubectl config set-context ${CLUSTER} --cluster kind-${CLUSTER} --user kind-${CLUSTER} --kubeconfig $KUBECONFIG
+
+# Add context for target-cluster
+kubectl config set-context ${KUBECONFIG_TARGET_CONTEXT} --user target-cluster-admin --cluster ${KUBECONFIG_TARGET_CONTEXT} --kubeconfig  $KUBECONFIG
 
 echo "This cluster can be deleted via:"
 echo "${KIND} delete cluster --name ${CLUSTER}"
