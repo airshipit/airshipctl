@@ -3,9 +3,9 @@ kind: Kustomization
 resources:
   # TODO (dukov) It's recocommended to upload BareMetalHost objects separately
   # otherwise nodes will hang in 'registering' state for quite a long time
-  - nodes
-  - ../../../../function/k8scontrol
+  - ../../../../type/gating/target/controlplane
   - ../catalogues
+  - nodes
 
 namespace: target-infra
 
@@ -13,4 +13,4 @@ commonLabels:
   airshipit.org/stage: initinfra
 
 transformers:
-  - ../../../../function/k8scontrol/replacements
+  - ../../../../type/gating/target/controlplane/replacements

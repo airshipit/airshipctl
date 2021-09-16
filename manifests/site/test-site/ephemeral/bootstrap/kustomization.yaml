@@ -2,7 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - namespace.yaml
-  - ../../../../function/ephemeral
+  - ../../../../type/gating/ephemeral/bootstrap
   - ../catalogues
 
 namespace: target-infra
@@ -14,4 +14,4 @@ patchesStrategicMerge:
   - baremetalhost.yaml
 
 transformers:
-  - ../../../../function/ephemeral/replacements
+  - ../../../../type/gating/ephemeral/bootstrap/replacements
