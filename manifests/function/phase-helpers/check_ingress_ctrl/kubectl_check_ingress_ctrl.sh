@@ -14,24 +14,40 @@
 
 set -xe
 
-export TARGET_IP=$(kubectl --context $KCTL_CONTEXT \
-                     --namespace ingress \
-                     get pods \
-                     -l app.kubernetes.io/component=controller \
-                     -o jsonpath='{.items[*].status.hostIP}')
+export TIMEOUT=${TIMEOUT:-60}
 
+end=$(($(date +%s) + $TIMEOUT))
+while true; do
+  export TARGET_IP="$(kubectl --request-timeout 10s \
+    --context $KCTL_CONTEXT \
+    --namespace ingress \
+    get pods \
+    -l app.kubernetes.io/component=controller \
+    -o jsonpath='{.items[*].status.hostIP}')"
+  if [ ! -z $TARGET_IP ]; then
+    break
+  else
+    now=$(date +%s)
+    if [ $now -gt $end ]; then
+      echo "TARGET_IP is not ready before TIMEOUT=$TIMEOUT" 1>&2
+      exit 1
+    fi
+    sleep 10
+  fi
+done
 
 echo "Ensure we can reach ingress controller default backend" 1>&2
 if [ "404" != "$(curl --head \
-                   --write-out '%{http_code}' \
-                   --silent \
-                   --output /dev/null \
-                   $TARGET_IP/should-404)" ]; then
-    echo "Failed to reach ingress controller default backend." 1>&2
+  --write-out '%{http_code}' \
+  --silent \
+  --output /dev/null \
+  $TARGET_IP/should-404)" ]; then
+  echo "Failed to reach ingress controller default backend." 1>&2
 
-    kubectl --context $KCTL_CONTEXT get all -n flux-system 1>&2
-    kubectl --context $KCTL_CONTEXT logs -n flux-system -l app=helm-controller 1>&2
-    kubectl --context $KCTL_CONTEXT get hr --all-namespaces -o yaml 1>&2
+  kubectl --context $KCTL_CONTEXT get all -n flux-system 1>&2
+  kubectl --context $KCTL_CONTEXT logs -n flux-system -l app=helm-controller 1>&2
+  kubectl --context $KCTL_CONTEXT get hr --all-namespaces -o yaml 1>&2
+  kubectl --context $KCTL_CONTEXT --namespace ingress get pods -l app.kubernetes.io/component=controller -o yaml 1>&2
 
-    exit 1
+  exit 1
 fi
