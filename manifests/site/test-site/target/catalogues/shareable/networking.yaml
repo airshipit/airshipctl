@@ -16,3 +16,4 @@ spec:
   ironic:
     provisioningIp: "10.23.24.102"
     dhcpRange: "10.23.24.200,10.23.24.250"
+    ironicAutomatedClean: true

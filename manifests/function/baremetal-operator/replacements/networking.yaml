@@ -48,7 +48,7 @@ replacements:
     objref:
       kind: ConfigMap
       name: ironic-vars
-    fieldrefs: ["data.IRONIC_AUTOMATED_CLEAN"]
+    fieldrefs: ["data.AUTOMATED_CLEAN"]
 - source:
     objref:
       kind: NetworkCatalogue
