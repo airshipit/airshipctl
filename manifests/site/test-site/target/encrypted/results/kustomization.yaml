@@ -1,8 +1,0 @@
-resources:
-  - generated/
-  - imported/
-
-transformers:
-  - ../../../../../type/gating/target/decrypt-secrets/
-  - ../../../../../type/gating/target/generator/fileplacement/
-  - ../../../../../type/gating/target/importer/fileplacement/

@@ -206,24 +206,13 @@ config:
 apiVersion: airshipit.org/v1alpha1
 kind: Phase
 metadata:
-  name: secret-generate
+  name: secret-update
 config:
   executorRef:
     apiVersion: airshipit.org/v1alpha1
     kind: GenericContainer
-    name: encrypter
-  documentEntryPoint: target/encrypted/generator
----
-apiVersion: airshipit.org/v1alpha1
-kind: Phase
-metadata:
-  name: secret-import
-config:
-  executorRef:
-    apiVersion: airshipit.org/v1alpha1
-    kind: GenericContainer
-    name: encrypter
-  documentEntryPoint: target/encrypted/importer
+    name: noop-sink
+  documentEntryPoint: encrypted/update
 ---
 apiVersion: airshipit.org/v1alpha1
 kind: Phase
@@ -233,19 +222,8 @@ config:
   executorRef:
     apiVersion: airshipit.org/v1alpha1
     kind: GenericContainer
-    name: decrypter
-  documentEntryPoint: target/encrypted/results
----
-apiVersion: airshipit.org/v1alpha1
-kind: Phase
-metadata:
-  name: secret-reencrypt
-config:
-  executorRef:
-    apiVersion: airshipit.org/v1alpha1
-    kind: GenericContainer
-    name: encrypter
-  documentEntryPoint: target/encrypted/results
+    name: noop-show
+  documentEntryPoint: encrypted/get
 ---
 apiVersion: airshipit.org/v1alpha1
 kind: Phase

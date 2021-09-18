@@ -15,14 +15,14 @@
 set -xe
 
 echo "Generating secrets using airshipctl"
-export SOPS_PGP_FP=${SOPS_PGP_FP_ENCRYPT:-"${SOPS_PGP_FP}"}
-airshipctl phase run secret-generate
+FORCE_REGENERATE=all airshipctl phase run secret-update
 
 echo "Generating ~/.airship/kubeconfig"
 export AIRSHIP_CONFIG_MANIFEST_DIRECTORY=${AIRSHIP_CONFIG_MANIFEST_DIRECTORY:-"/tmp/airship"}
 export AIRSHIP_CONFIG_PHASE_REPO_URL=${AIRSHIP_CONFIG_PHASE_REPO_URL:-"https://review.opendev.org/airship/airshipctl"}
 export EXTERNAL_KUBECONFIG=${EXTERNAL_KUBECONFIG:-""}
 export SITE=${SITE:-"test-site"}
+export WORKDIR="${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})"
 
 if [[ -z "$EXTERNAL_KUBECONFIG" ]]; then
    # we want to take config from bundle - remove kubeconfig file so
@@ -34,31 +34,55 @@ if [[ -z "$EXTERNAL_KUBECONFIG" ]]; then
    mv ~/.airship/tmp-kubeconfig ~/.airship/kubeconfig
 fi
 
-#backward compatibility with previous behavior
-if [[ -z "${SOPS_PGP_FP_ENCRYPT}" ]]; then
-	#skipping sanity checks
-	exit 0
-fi
-
-echo "Sanity check for secret-reencrypt phase"
+# Validate that we generated everything correctly
 decrypted1=$(airshipctl phase run secret-show)
 if [[ -z "${decrypted1}" ]]; then
-	echo "Got empty decrypted value"
-	exit 1
+        echo "Got empty decrypted value"
+        exit 1
 fi
 
-#make sure that generated file has right FP
-grep "${SOPS_PGP_FP}" "${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})/manifests/site/$SITE/target/encrypted/results/generated/secrets.yaml"
+#remove default key from env
+unset SOPS_IMPORT_PGP
 
-#set new FP and reencrypt
-export SOPS_PGP_FP=${SOPS_PGP_FP_REENCRYPT}
-airshipctl phase run secret-reencrypt
-#make sure that generated file has right FP
-grep "${SOPS_PGP_FP}" "${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})/manifests/site/$SITE/target/encrypted/results/generated/secrets.yaml"
+echo "Sanity check 1: Check that we can decrypt everything with U1 and U2 creds"
+# set user1 key
+cp ${WORKDIR}/manifests/.private-keys/my.key ${WORKDIR}/manifests/.private-keys/my.key.old
+cp ${WORKDIR}/manifests/.private-keys/exampleU1.key ${WORKDIR}/manifests/.private-keys/my.key
 
 #make sure that decrypted valus stay the same
 decrypted2=$(airshipctl phase run secret-show)
 if [ "${decrypted1}" != "${decrypted2}" ]; then
-	echo "reencrypted decrypted value is different from the original"
-	exit 1
+        echo "reencrypted decrypted value is different from the original"
+        exit 1
 fi
+# set user2 key
+cp ${WORKDIR}/manifests/.private-keys/exampleU2.key ${WORKDIR}/manifests/.private-keys/my.key
+
+#make sure that decrypted valus stay the same
+decrypted2=$(airshipctl phase run secret-show)
+if [ "${decrypted1}" != "${decrypted2}" ]; then
+        echo "reencrypted decrypted value is different from the original"
+        exit 1
+fi
+
+echo "Sanity check 2: reencrypt ephemeral site using U2 user"
+ONLY_CLUSTERS=ephemeral airshipctl phase run secret-update
+
+#make sure that decrypted valus stay the same
+decrypted2=$(airshipctl phase run secret-show)
+if [ "${decrypted1}" != "${decrypted2}" ]; then
+        echo "reencrypted decrypted value is different from the original"
+        exit 1
+fi
+
+echo "Sanity check 3: Try to reecnrypt ephemeral by user 3, who can't decrypt target"
+cp ${WORKDIR}/manifests/.private-keys/exampleU3.key ${WORKDIR}/manifests/.private-keys/my.key
+TOLERATE_DECRYPTION_FAILURES=true ONLY_CLUSTERS=ephemeral airshipctl phase run secret-update
+
+decrypted3=$(TOLERATE_DECRYPTION_FAILURES=true airshipctl phase run secret-show)
+if [ "${decrypted1}" == "${decrypted3}" ]; then
+        echo "reencrypted decrypted value should be different because it has to contain unencrypted data"
+        exit 1
+fi
+
+mv ${WORKDIR}/manifests/.private-keys/my.key.old ${WORKDIR}/manifests/.private-keys/my.key

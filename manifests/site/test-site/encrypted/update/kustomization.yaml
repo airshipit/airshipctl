@@ -1,0 +1,12 @@
+resources:
+  - ../get/
+  - ../encryption-keys/
+  - secrets.yaml
+  - ../../../../function/templater-helpers/secret-generator/ # libs needed for generator
+transformers:
+  - ../../../../type/gating/shared/update-secrets/
+  - ../../../../function/templater-helpers/cleanup/ # remove libs after using in all generators
+  - ../../../../type/gating/shared/update-secrets/fileplacement # update paths for imports
+  - ../../../../type/gating/shared/encrypt-secrets
+  - ../../../../type/gating/shared/encrypt-secrets/cleanup
+

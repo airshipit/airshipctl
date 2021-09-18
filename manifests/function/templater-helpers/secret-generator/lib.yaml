@@ -1,0 +1,165 @@
+apiVersion: airshipit.org/v1alpha1
+kind: Templater
+metadata:
+  name: secret-template-lib
+values:
+template: |
+  {{/* RFC3339 returns string that defines timestamp format accoring to
+       that RFC */}}
+  {{- define "RFC3339" -}}
+  2006-01-02T15:04:05Z07:00
+  {{- end -}}
+  {{/* grepTpl returns yaml that can be used to built KFilter that will
+       filter with grep */}}
+  {{- define "grepTpl" -}}
+  kind: GrepFilter
+  path: {{ index . 0 }}
+  value: {{ index . 1 }}
+    {{ if gt (len .) 2}}
+  invertMatch: {{ index . 2 }}
+    {{ end }}
+  {{- end -}}
+  {{/* createNodeType converts text representation of node type that can be
+       created to number */}}
+  {{- define "createNodeType" -}}
+    {{- $type := . -}}
+    {{/* values defined here: https://github.com/go-yaml/yaml/blob/496545a6307b/yaml.go#L323 */}}
+    {{- if eq $type "DocumentNode" -}}
+  1
+    {{- else if eq $type "SequenceNode" -}}
+  2
+    {{- else if eq $type "MappingNode" -}}
+  4
+    {{- else if eq $type "ScalarNode" -}}
+  8
+    {{- else if eq $type "AliasNode" -}}
+  16
+    {{- else -}}
+      {{- fail (printf "unknown node type %s" $type) -}}
+    {{- end -}}
+  {{- end -}}
+  {{/* pathGetTpl returns yaml that can be used to create YFilter that returns
+       yaml node by path */}}
+  {{- define "pathGetTpl" -}}
+    {{- $path := index . 0 -}}
+  kind: PathGetter
+  path: {{ $path }}
+    {{- if gt (len .) 1 }}
+  create: {{ include "createNodeType" (index . 1) }}
+    {{ end -}}
+  {{- end -}}
+  {{/* fieldSetTpl returns yaml that can be used to create YFilter that sets
+       yaml node with value */}}
+  {{- define "fieldSetTpl" -}}
+    {{- $name := index . 0 -}}
+    {{- $stringValue := index . 1 -}}
+  kind: FieldSetter
+  name: {{ $name | quote }}
+  stringValue: {{ $stringValue }}
+  {{- end -}}
+  {{/* isEncrypted returns true if it can find sops field in the document */}}
+  {{- define "isEncrypted" -}}
+    {{- $combinedSecrets := . -}}
+    {{- $value := YValue $combinedSecrets -}}
+    {{- if $value.sops -}}
+  true
+    {{- else -}}
+  false
+    {{- end -}}
+  {{- end -}}
+  {{/* group gets the current combined secrets, imported combined secrets,
+       group name, group period (once, monthly, yearly) and name of function
+       that regenerates the group and performs merge of imported secrets to
+       the current secrets, and regenerates needed fields based group period */}}
+  {{- define "group" -}}
+    {{/* reading args and setting constants */}}
+    {{- $ctx := index . 0 -}}
+    {{- $combinedSecrets := index . 1 -}}
+    {{- $combinedSecretsImport := index . 2 -}}
+    {{- $groupName := index . 3 -}}
+    {{- $groupPeriod := index . 4 -}}
+    {{- $generationTemplateName := index . 5 -}}
+    {{- $RFC3339 := include "RFC3339" . -}}
+    {{- $groupY := YOneFilter $combinedSecrets (include "pathGetTpl" (list (printf "[\"secretGroups\", \"[name=%s]\"]" $groupName))) -}}
+    {{- $groupImportedY := YOneFilter $combinedSecretsImport (include "pathGetTpl" (list (printf "[\"secretGroups\", \"[name=%s]\"]" $groupName))) -}}
+    {{- $sg := YValue $groupY -}}
+    {{- $sgi := YValue $groupImportedY -}}
+    {{/* calculcate dates for regeneration periods. Add here group period if needed */}}
+    {{- $periodExpiredEarlier := dict "once" (toDate $RFC3339 "1970-01-01T00:00:00Z") "monthly" (now | dateModify "-720h") "yearly" (now | dateModify "-8760h") -}}
+    {{- $preiodRegenerationForced := dict -}}
+    {{- range $period, $_ := $periodExpiredEarlier -}}
+      {{- $_ := set $preiodRegenerationForced $period "false" -}}
+    {{- end -}}
+    {{- range $key, $val := splitList "," (env "FORCE_REGENERATE") -}}
+      {{- if eq $val "all" -}}
+        {{- range $period, $_ := $periodExpiredEarlier -}}
+          {{- $_ := set $preiodRegenerationForced $period "true" -}}
+        {{- end -}}
+      {{- else -}}
+        {{- $_ := set $preiodRegenerationForced $val "true" -}}
+      {{- end -}}
+    {{- end -}}
+    {{/* get initial flag if we need to regenerate from $preiodRegenerationForced dict */}}
+    {{- $regenerate := eq (get $preiodRegenerationForced $groupPeriod) "true" -}}
+    {{/* if group isn't present in input - generate */}}
+    {{- if and (not $regenerate) (eq ($sg | quote) "") -}}
+      {{- $regenerate = true -}}
+    {{- end -}}
+    {{/* generate if last update time is earlier than $periodExpiredEarlier for that period */}}
+    {{- if not $regenerate -}}
+      {{- if lt (unixEpoch (toDate $RFC3339 $sg.updated)) (unixEpoch (toDate $RFC3339 ( get $periodExpiredEarlier $groupPeriod | date $RFC3339))) -}}
+        {{- $regenerate = true -}}
+      {{- end -}}
+    {{- end -}}
+    {{/* merge imported values to old values */}}
+    {{/* for each value in imported */}}
+    {{- range $k, $v := $sgi.values -}}
+       {{/* find value with the same name as in imported */}}
+       {{- $val := YOneFilter $groupY (include "pathGetTpl" (list (printf "[\"values\", \"[name=%s]\"]" $v.name))) -}}
+       {{- if $val -}}
+         {{/* for each field */}}
+         {{- range $ki, $vi := $v -}}
+           {{/* ensure that the field exists before updating */}}
+           {{- $_ := YOneFilter $groupY (include "pathGetTpl" (list (printf "[\"values\", \"[name=%s]\",\"%s\"]" $v.name $ki) "ScalarNode")) -}}
+           {{/* update group value */}}
+           {{- $_ := YOneFilter $val (include "fieldSetTpl" (list $ki ($vi|quote))) -}}
+         {{- end -}}
+       {{- else -}}
+         {{/*create*/}}
+         {{- $valuesList := YOneFilter $groupY (include "pathGetTpl" (list (printf "[\"values\"]"))) -}}
+         {{- $newValue := YOneFilter $groupImportedY (include "pathGetTpl" (list (printf "[\"values\", \"[name=%s]\"]" $v.name))) -}}
+         {{- $_ := YListAppend $valuesList $newValue -}}
+       {{- end -}}
+    {{- end -}}
+    {{/* if both groups were empty - set at least name */}}
+    {{- $groupY = YMerge (StrToY (printf "name: %s" $groupName)) $groupY -}}
+    {{- if $regenerate -}}
+      {{- $groupY = YMerge (StrToY (printf "updated: %s" (now | date $RFC3339))) $groupY -}}
+      {{- $generatedValues := StrToY (include $generationTemplateName $ctx) -}}
+      {{- $_ := YOneFilter $groupY (include "pathGetTpl" (list "[\"values\"]" "SequenceNode")) -}}
+      {{- $sgn := YValue $generatedValues -}}
+      {{- range $k, $v := $sgn.values -}}
+        {{- $val := YOneFilter $groupY (include "pathGetTpl" (list (printf "[\"values\", \"[name=%s]\"]" $v.name))) -}}
+        {{- if $val -}}
+          {{- $vval := YValue $val -}}
+          {{/* don't update pinned values */}}
+          {{- if not (eq ($vval.pinned|quote) "\"true\"") -}}
+            {{/* for each field */}}
+            {{- range $ki, $vi := $v -}}
+              {{/* ensure that the field exists before updating */}}
+              {{- $_ := YOneFilter $groupY (include "pathGetTpl" (list (printf "[\"values\", \"[name=%s]\",\"%s\"]" $v.name $ki) "ScalarNode")) -}}
+              {{/* update group value */}}
+              {{- $_ := YOneFilter $val (include "fieldSetTpl" (list $ki ($vi|quote))) -}}
+            {{- end -}}
+          {{- end -}}
+        {{- else -}}
+          {{/*create*/}}
+          {{- $valuesList := YOneFilter $groupY (include "pathGetTpl" (list (printf "[\"values\"]"))) -}}
+          {{- $newValue := YOneFilter $generatedValues (include "pathGetTpl" (list (printf "[\"values\", \"[name=%s]\"]" $v.name))) -}}
+          {{- $_ := YListAppend $valuesList $newValue -}}
+          {{- end -}}
+      {{- end -}}
+    {{- end -}}
+    {{/* print the resulting yaml */}}
+    {{- toYaml (YValue $groupY) -}}
+  {{- end -}}
