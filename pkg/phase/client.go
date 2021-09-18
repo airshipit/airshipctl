@@ -105,7 +105,7 @@ func (p *phase) executor(docFactory document.DocFactoryFunc,
 		WithBundle(p.helper.PhaseConfigBundle()).
 		WithClusterMap(cMap).
 		WithTempRoot(p.helper.WorkDir()).
-		WithClusterName(p.apiObj.ClusterName).
+		WithClusterNames(p.apiObj.ClusterName).
 		SiteWide(p.apiObj.Config.SiteWideKubeconfig).
 		Build()
 

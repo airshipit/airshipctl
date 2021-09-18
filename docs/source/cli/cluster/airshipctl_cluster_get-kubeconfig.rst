@@ -3,16 +3,19 @@
 airshipctl cluster get-kubeconfig
 ---------------------------------
 
-Airshipctl command to retrieve kubeconfig for a desired cluster
+Airshipctl command to retrieve kubeconfig for a desired cluster(s)
 
 Synopsis
 ~~~~~~~~
 
 
-Retrieves kubeconfig of the cluster and prints it to stdout.
+Retrieves kubeconfig of the cluster(s) and prints it to stdout.
 
-If you specify CLUSTER_NAME, kubeconfig will have a CurrentContext set to CLUSTER_NAME and
+If you specify single CLUSTER_NAME, kubeconfig will have a CurrentContext set to CLUSTER_NAME and
 will have its context defined.
+
+If you specify multiple CLUSTER_NAME args, kubeconfig will contain contexts for all of them, but current one
+won't be specified.
 
 If you don't specify CLUSTER_NAME, kubeconfig will have multiple contexts for every cluster
 in the airship site. Context names will correspond to cluster names. CurrentContext will be empty.
@@ -20,7 +23,7 @@ in the airship site. Context names will correspond to cluster names. CurrentCont
 
 ::
 
-  airshipctl cluster get-kubeconfig CLUSTER_NAME [flags]
+  airshipctl cluster get-kubeconfig [CLUSTER_NAME...] [flags]
 
 Examples
 ~~~~~~~~

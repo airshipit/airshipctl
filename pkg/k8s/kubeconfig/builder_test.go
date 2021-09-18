@@ -260,7 +260,7 @@ func TestBuilderClusterctl(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			kube := kubeconfig.NewBuilder().
 				WithClusterMap(tt.clusterMap).
-				WithClusterName(tt.requestedClusterName).
+				WithClusterNames(tt.requestedClusterName).
 				WithBundle(testBundle).
 				WithTempRoot(tt.tempRoot).
 				WithCoreV1Client(tt.client).
