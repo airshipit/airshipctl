@@ -20,8 +20,8 @@ ephemeral_node:
   name: air-ephemeral
   cpu: 4
   ram: 6144
-  nat_mac_address: 52:54:00:9b:27:02
-  prov_mac_address: 52:54:00:b6:ed:02
+  nat_mac_address: [ "52:54:00:9b:27:02" ]
+  prov_mac_address: [ "52:54:00:b6:ed:02" ]
   block:
     - 30G
 
@@ -30,8 +30,8 @@ target_nodes:
   name: air-target
   cpu: 2
   ram: 7168
-  nat_mac_address: 52:54:00:9b:27:4c
-  prov_mac_address: 52:54:00:b6:ed:31
+  nat_mac_address: [ "52:54:00:9b:27:4c" ]
+  prov_mac_address: [ "52:54:00:b6:ed:31" ]
   block:
     - 30G
 
@@ -40,8 +40,8 @@ worker_nodes:
   name: air-worker
   cpu: 2
   ram: 7168
-  nat_mac_address: 52:54:00:9b:27:07
-  prov_mac_address: 52:54:00:b6:ed:23
+  nat_mac_address: [ "52:54:00:9b:27:07" ]
+  prov_mac_address: [ "52:54:00:b6:ed:23" ]
   block:
     - 30G
 

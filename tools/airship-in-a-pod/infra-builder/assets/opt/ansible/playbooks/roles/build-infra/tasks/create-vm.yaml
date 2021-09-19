@@ -37,8 +37,8 @@
         --machine pc \
         --name "{{ vm_name }}" \
         --memory "{{ vm_instance.ram }}" \
-        --network network="air_nat",address.type='pci',address.domain=0,address.bus=0,address.slot=3,address.function=0,mac="{{ vm_instance.nat_mac_address }}" \
-        --network network="air_prov",address.type='pci',address.domain=0,address.bus=0,address.slot=4,address.function=0,mac="{{ vm_instance.prov_mac_address }}" \
+        --network network="air_nat",address.type='pci',address.domain=0,address.bus=0,address.slot=3,address.function=0,mac="{{ vm_instance.nat_mac_address[vm_index | int]  }}" \
+        --network network="air_prov",address.type='pci',address.domain=0,address.bus=0,address.slot=4,address.function=0,mac="{{ vm_instance.prov_mac_address[vm_index | int] }}" \
         --cpu host-passthrough \
         --vcpus "{{ vm_instance.cpu | int }}" \
         --import \

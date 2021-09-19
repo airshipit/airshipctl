@@ -71,15 +71,18 @@
   vars:
     vm_instance: "{{ ephemeral_node }}"
     vm_name: "{{ ephemeral_node.name }}"
+    vm_index: 0
 
 - name: "Create target nodes"
   include_tasks: create-vm.yaml
   vars:
     vm_instance: "{{ target_nodes }}"
     vm_name: "{{ target_nodes.name }}-{{ a_node }}"
+    vm_index: "{{ ansible_loop.index0 }}"
   with_sequence:
     start=1 end="{{ (vm_instance.count | int) }}"
   loop_control:
+    extended: yes
     loop_var: a_node
 
 - name: "Create worker nodes"
@@ -87,7 +90,9 @@
   vars:
     vm_instance: "{{ worker_nodes }}"
     vm_name: "{{ worker_nodes.name }}-{{ a_node }}"
+    vm_index: "{{ ansible_loop.index0 }}"
   with_sequence:
     start=1 end="{{ (vm_instance.count | int) }}"
   loop_control:
+    extended: yes
     loop_var: a_node
