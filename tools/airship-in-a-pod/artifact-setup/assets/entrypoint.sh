@@ -47,7 +47,7 @@ function check_docker_readiness() {
   end=$(($(date +%s) + $timeout))
   echo "Waiting $timeout seconds for docker to be ready."
   while true; do
-    if ( docker version | grep 'Version' ); then
+    if ( docker version | grep 'containerd' ); then
       echo "docker is now ready"
       break
     else
