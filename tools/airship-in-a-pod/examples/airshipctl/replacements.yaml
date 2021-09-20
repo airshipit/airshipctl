@@ -45,11 +45,11 @@
 # The username to use when using the https protocol (basic-auth)
 - op: replace
   path: "/spec/containers/6/env/11/value"
-  value: none
+  value:
 # The password to use when using the https protocol (basic-auth)
 - op: replace
   path: "/spec/containers/6/env/12/value"
-  value: none
+  value:
 # The password to use when using the git protocol (ssh-key)
 - op: replace
   path: "/spec/containers/6/env/13/value"
