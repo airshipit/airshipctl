@@ -79,4 +79,4 @@ else
 fi
 
 success=true
-/signal_complete artifact-setup
+/signal_status artifact-setup
