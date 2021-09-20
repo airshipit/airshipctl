@@ -16,6 +16,8 @@ package version
 
 var (
 	gitVersion = "devel"
+	gitCommit  = ""
+	buildDate  = ""
 )
 
 // Info structure provides version data for airshipctl
@@ -23,7 +25,9 @@ var (
 // provided from Makefile during building airshipctl
 // or defined in a local var for development purposes
 type Info struct {
-	GitVersion string `json:"gitVersion"`
+	GitVersion string `json:"gitVersion,omitempty"`
+	GitCommit  string `json:"gitCommit,omitempty"`
+	BuildDate  string `json:"buildDate,omitempty"`
 }
 
 // Get function shows airshipctl version
@@ -31,5 +35,7 @@ type Info struct {
 func Get() Info {
 	return Info{
 		GitVersion: gitVersion,
+		GitCommit:  gitCommit,
+		BuildDate:  buildDate,
 	}
 }

@@ -1,1 +1,1 @@
-airshipctl:   devel
+airshipctl:   version.Info{GitVersion:"devel", GitCommit:"", BuildDate:""}

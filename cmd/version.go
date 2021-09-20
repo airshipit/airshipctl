@@ -41,5 +41,5 @@ func NewVersionCommand() *cobra.Command {
 
 func clientVersion() string {
 	v := version.Get()
-	return v.GitVersion
+	return fmt.Sprintf("%#v", v)
 }

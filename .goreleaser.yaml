@@ -19,6 +19,8 @@ builds:
       ldflags:
         - '-extldflags "-static"'
         - -X opendev.org/airship/airshipctl/pkg/version.gitVersion={{ .Version }}
+        - -X opendev.org/airship/airshipctl/pkg/version.gitCommit={{ .Commit }}
+        - -X opendev.org/airship/airshipctl/pkg/version.buildDate={{ .Date }}
       env:
         - CGO_ENABLED=0
     id: linux

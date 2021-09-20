@@ -1,10 +1,16 @@
 SHELL := /bin/bash
 
 GIT_VERSION         ?= v0.1.0
+GIT_COMMIT          ?= $(shell git rev-parse HEAD)
+BUILD_DATE          ?= $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 GIT_MODULE          ?= opendev.org/airship/airshipctl/pkg/version
 
+LDFLAGS             += -X ${GIT_MODULE}.gitVersion=${GIT_VERSION}
+LDFLAGS             += -X ${GIT_MODULE}.gitCommit=${GIT_COMMIT}
+LDFLAGS             += -X ${GIT_MODULE}.buildDate=${BUILD_DATE}
+
 GO_FLAGS            := -ldflags '-extldflags "-static"' -tags=netgo -trimpath
-GO_FLAGS            += -ldflags "-X ${GIT_MODULE}.gitVersion=${GIT_VERSION}"
+GO_FLAGS            += -ldflags '$(LDFLAGS)'
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN 2> /dev/null))
 GOBIN = $(shell go env GOPATH 2> /dev/null)/bin
