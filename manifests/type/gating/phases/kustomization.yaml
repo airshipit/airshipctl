@@ -1,2 +1,3 @@
 resources:
+  - ../../../phases
   - plan.yaml

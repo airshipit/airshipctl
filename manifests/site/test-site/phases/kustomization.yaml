@@ -1,6 +1,6 @@
 resources:
   - ../kubeconfig
-  - ../../../phases
+  - ../../../type/gating/phases
   - ../target/catalogues
   - catalogue.yaml
 transformers:

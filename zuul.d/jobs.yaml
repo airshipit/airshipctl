@@ -215,7 +215,7 @@
         - CLUSTER=ephemeral-cluster KIND_CONFIG=./tools/deployment/templates/kind-cluster-with-extramounts ./tools/deployment/kind/start_kind.sh
         - ./tools/deployment/23_pull_documents.sh
         - ./tools/deployment/25_deploy_gating.sh
-    voting: false
+    voting: true
 - job:
     name: airship-airshipctl-docker-kubebench-conformance
     attempts: 1
