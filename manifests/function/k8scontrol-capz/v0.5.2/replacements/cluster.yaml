@@ -1,0 +1,140 @@
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: k8scontrol-cluster-replacements
+  annotations:
+    config.kubernetes.io/function: |-
+      container:
+        image: localhost/replacement-transformer
+replacements:
+# Target Cluster - Azure K8S Version
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.kubernetes}"
+  target:
+    objref:
+      kind: KubeadmControlPlane
+      name: target-cluster-control-plane
+    fieldrefs: ["{.spec.version}"]
+
+# Azure Cloud's Subscription ID
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: combined-target-secrets
+    fieldref: ".secretGroups[name=azureIdentity].values[name=subscriptionID].data"
+  target:
+    objref:
+      kind: AzureCluster
+      name: target-cluster
+    fieldrefs: ["{.spec.subscriptionID}"]
+
+# Azure Cloud Subscription's Tenant ID
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: combined-target-secrets
+    fieldref: ".secretGroups[name=azureIdentity].values[name=tenantID].data"
+  target:
+    objref:
+      kind: AzureClusterIdentity
+      name: target-cluster-identity
+    fieldrefs: ["{.spec.tenantID}"]
+
+# Azure Cloud Subscription's Client ID
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: combined-target-secrets
+    fieldref: ".secretGroups[name=azureIdentity].values[name=clientID].data"
+  target:
+    objref:
+      kind: AzureClusterIdentity
+      name: target-cluster-identity
+    fieldrefs: ["{.spec.clientID}"]
+
+# Azure Cloud Subscription's Client Secret
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: combined-target-secrets
+    fieldref: ".secretGroups[name=azureIdentity].values[name=clientSecret].data"
+  target:
+    objref:
+      kind: Secret
+      name: target-cluster-identity-secret
+    fieldrefs: ["{.data.clientSecret}"]
+
+# Target Cluster - Azure location
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: azure-catalogue
+    fieldref: "{.cluster.location}"
+  target:
+    objref:
+      kind: AzureCluster
+      name: target-cluster
+    fieldrefs: ["{.spec.location}"]
+
+# Target cluster - Azure VNet Name
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: azure-catalogue
+    fieldref: "{.cluster.vnetName}"
+  target:
+    objref:
+      kind: AzureCluster
+      name: target-cluster
+    fieldrefs: ["{.spec.networkSpec.vnet.name}"]
+
+# Target Cluster - Azure Resource Group
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: azure-catalogue
+    fieldref: "{.cluster.resourceGroup}"
+  target:
+    objref:
+      kind: AzureCluster
+      name: target-cluster
+    fieldrefs: ["{.spec.resourceGroup}"]
+
+# Target Cluster - Control Plane Replica Count
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: azure-catalogue
+    fieldref: "{.controlplane.replicas}"
+  target:
+    objref:
+      kind: KubeadmControlPlane
+      name: target-cluster-control-plane
+    fieldrefs: ["{.spec.replicas}"]
+
+# Target Cluster - Control Plane VM Flavor
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: azure-catalogue
+    fieldref: "{.controlplane.vmSize}"
+  target:
+    objref:
+      kind: AzureMachineTemplate
+      name: target-cluster-control-plane
+    fieldrefs: ["{.spec.template.spec.vmSize}"]
+
+# Target Cluster - Control Plane SSH Public Key access
+- source:
+    objref:
+      kind: VariableCatalogue
+      name: azure-catalogue
+    fieldref: "{.controlplane.sshPublicKey}"
+  target:
+    objref:
+      kind: AzureMachineTemplate
+      name: target-cluster-control-plane
+    fieldrefs: ["{.spec.template.spec.sshPublicKey}"]
