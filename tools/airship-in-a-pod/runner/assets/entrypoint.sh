@@ -68,7 +68,7 @@ set -x
 
 export AIRSHIP_CONFIG_MANIFEST_DIRECTORY="/opt/manifests"
 ./tools/deployment/22_test_configs.sh
-if [[ -n "$AIRSHIP_CONFIG_PHASE_REPO_REF" ]]; then
+if [[ -n "$AIRSHIP_CONFIG_PHASE_REPO_REF" || -n "$AIRSHIP_CONFIG_PHASE_REPO_BRANCH" ]]; then
   export NO_CHECKOUT="false"
 else
   export NO_CHECKOUT="true"
