@@ -52,8 +52,6 @@ jobs:
         uses: goreleaser/goreleaser-action@v1
         with:
           version: latest
-          commit: currentcommit
-          date: builddate
           args: release --release-notes=release-notes.md --skip-validate --debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
