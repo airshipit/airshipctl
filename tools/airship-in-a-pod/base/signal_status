@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# signal_complete takes a container name and a status and creates a file in the
+# signal_status takes a container name and a status and creates a file in the
 # "status" directory whose contents are the provided status.  This can be
 # leveraged by dependent containers via the `wait_for` command.
 
