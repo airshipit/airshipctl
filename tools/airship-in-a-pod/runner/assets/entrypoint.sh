@@ -48,12 +48,12 @@ export SOPS_IMPORT_PGP
 export SOPS_PGP_FP
 echo 'export SOPS_IMPORT_PGP="$(cat /sops-key.asc)"' >> ~/.bashrc
 echo "export SOPS_PGP_FP=${SOPS_PGP_FP}" >> ~/.bashrc
+echo "export KUBECONFIG=$HOME/.airship/kubeconfig" >> ~/.bashrc
 
 install "$ARTIFACTS_DIR/airshipctl/bin/airshipctl" /usr/local/bin
 cd "$ARTIFACTS_DIR/airshipctl"
 
 set +x
-export AIRSHIP_CONFIG_MANIFEST_DIRECTORY="$ARTIFACTS_DIR/manifests"
 if [[ "$AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_TYPE" = "http-basic" ]]
 then
   export AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_USERNAME=$( cat /opt/aiap-secret-volume/AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_USERNAME )
@@ -66,6 +66,7 @@ then
 fi
 set -x
 
+export AIRSHIP_CONFIG_MANIFEST_DIRECTORY="/opt/manifests"
 ./tools/deployment/22_test_configs.sh
 if [[ -n "$AIRSHIP_CONFIG_PHASE_REPO_REF" ]]; then
   export NO_CHECKOUT="false"
@@ -75,14 +76,14 @@ fi
 ./tools/deployment/23_pull_documents.sh
 ./tools/deployment/23_generate_secrets.sh
 
-echo "export KUBECONFIG=$HOME/.airship/kubeconfig" >> ~/.bashrc
-
 repo_name=$(yq -r .manifests.dummy_manifest.repositories.primary.url /root/.airship/config | awk 'BEGIN {FS="/"} {print $NF}' | cut -d'.' -f1)
 hosts_file="$AIRSHIP_CONFIG_MANIFEST_DIRECTORY/$repo_name/manifests/site/test-site/target/catalogues/shareable/hosts.yaml"
 sed -i -e 's#bmcAddress: redfish+http://\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\):8000#bmcAddress: redfish+https://10.23.25.1:8443#' "$hosts_file"
 sed -i -e 's#root#username#' "$hosts_file"
 sed -i -e 's#r00tme#password#' "$hosts_file"
 sed -i -e 's#disableCertificateVerification: false#disableCertificateVerification: true#' "$hosts_file"
+
+cp -r /opt/manifests "$ARTIFACTS_DIR/manifests"
 
 if [[ "$USE_CACHED_ISO" = "true" ]]; then
   mkdir -p /srv/images
