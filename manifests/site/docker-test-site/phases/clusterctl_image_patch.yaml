@@ -1,0 +1,6 @@
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: clusterctl
+spec:
+  image: quay.io/airshipit/clusterctl:eb9ac97ce207542e1e4d3b363963bfc5f0847096

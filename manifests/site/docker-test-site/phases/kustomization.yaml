@@ -12,6 +12,13 @@ patchesStrategicMerge:
   - plan_patch.yaml
   - cluster_map_patch.yaml
   - executor_patch.yaml
+  # clusterctl_image_patch.yaml  replaces localhost/clusterctl:latest image to clusterctl v0.3.22 utility image
+  # capi_provider_patch.yaml  pins v1alpha3 CAPI components providers and images for docker-test-site
+  - clusterctl_image_patch.yaml
+  - capi_provider_patch.yaml
 transformers:
-  - ../../../function/clusterctl/replacements
+  # Commenting clusterctl replacements to used v1alpha3 CAPI component images
+  # This needsto uncomment again once docker provider is upgraded to v1alpha4
+  # and above 2 patches can be deleted
+  #  - ../../../function/clusterctl/replacements
   - ../../../phases/replacements
