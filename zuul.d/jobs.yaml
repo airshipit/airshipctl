@@ -241,8 +241,8 @@
       site_name: docker-test-site
       gate_scripts:
         - *docker_gate_scripts
-        - KUBECONFIG=/tmp/target-cluster.kubeconfig TARGET_CLUSTER_CONTEXT=target-cluster ./tools/deployment/sonobuoy/01-install_sonobuoy.sh
-        - KUBECONFIG=/tmp/target-cluster.kubeconfig TARGET_CLUSTER_CONTEXT=target-cluster ./tools/deployment/sonobuoy/03-kubebench.sh
+        - ./tools/deployment/sonobuoy/01-install_sonobuoy.sh
+        - ./tools/deployment/sonobuoy/03-kubebench.sh
     voting: false
 - job:
     name: airship-airshipctl-docker-cncf-conformance
@@ -269,8 +269,8 @@
       site_name: docker-test-site
       gate_scripts:
         - *docker_gate_scripts
-        - KUBECONFIG=/tmp/target-cluster.kubeconfig TARGET_CLUSTER_CONTEXT=target-cluster ./tools/deployment/sonobuoy/01-install_sonobuoy.sh
-        - KUBECONFIG=/tmp/target-cluster.kubeconfig TARGET_CLUSTER_CONTEXT=target-cluster CONFORMANCE_MODE=certified-conformance ./tools/deployment/sonobuoy/02-run_default.sh
+        - ./tools/deployment/sonobuoy/01-install_sonobuoy.sh
+        - CONFORMANCE_MODE=certified-conformance ./tools/deployment/sonobuoy/02-run_default.sh
     voting: false
 - job:
     name: airship-airshipctl-publish-image

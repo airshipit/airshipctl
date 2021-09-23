@@ -17,7 +17,6 @@ set -xe
 # Available Modes: quick, certified-conformance, non-disruptive-conformance.
 # (default quick)
 : ${CONFORMANCE_MODE:="quick"}
-: ${KUBE_CONFORMANCE_IMAGE_VERSION:="v1.18.6"}
 : ${TIMEOUT:=10800}
 : ${TARGET_CLUSTER_CONTEXT:="target-cluster"}
 
@@ -27,7 +26,6 @@ cd /tmp/sonobuoy_snapshots/e2e
 # Run aggregator, and default plugins e2e and systemd-logs
 sonobuoy run --plugin e2e --plugin systemd-logs -m ${CONFORMANCE_MODE} \
 --context "$TARGET_CLUSTER_CONTEXT" \
---kube-conformance-image gcr.io/google-containers/conformance:${KUBE_CONFORMANCE_IMAGE_VERSION} \
 --kubeconfig ${KUBECONFIG} \
 --wait --timeout ${TIMEOUT} \
 --log_dir /tmp/sonobuoy_snapshots/e2e
@@ -39,7 +37,7 @@ kubectl get all -n sonobuoy --kubeconfig ${KUBECONFIG} --context "$TARGET_CLUSTE
 sonobuoy status --kubeconfig ${KUBECONFIG} --context "$TARGET_CLUSTER_CONTEXT"
 
 # Get logs
-sonobuoy logs
+sonobuoy logs --kubeconfig ${KUBECONFIG} --context "$TARGET_CLUSTER_CONTEXT"
 
 # Store Results
 results=$(sonobuoy retrieve --kubeconfig ${KUBECONFIG} --context $TARGET_CLUSTER_CONTEXT)

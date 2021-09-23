@@ -14,8 +14,10 @@
 
 set -xe
 
-: ${SONOBUOY_VERSION:="0.18.2"}
+: ${SONOBUOY_VERSION:="0.51.0"}
 : ${KUBECONFIG:="$HOME/.airship/kubeconfig"}
+: ${TARGET_CLUSTER_CONTEXT:="target-cluster"}
+
 URL="https://github.com/vmware-tanzu/sonobuoy/releases/download/v${SONOBUOY_VERSION}/sonobuoy_${SONOBUOY_VERSION}_linux_amd64.tar.gz"
 rm -rf /tmp/sonobuoy
 mkdir /tmp/sonobuoy
@@ -23,4 +25,4 @@ sudo -E curl -sSLo "/tmp/sonobuoy/sonobuoy_${SONOBUOY_VERSION}_linux_amd64.tar.g
 tar xvf /tmp/sonobuoy/sonobuoy_${SONOBUOY_VERSION}_linux_amd64.tar.gz -C /tmp/sonobuoy/
 sudo install -m 755 -o root /tmp/sonobuoy/sonobuoy /usr/local/bin
 echo ${KUBECONFIG}
-sonobuoy version --kubeconfig ${KUBECONFIG}
+sonobuoy version --kubeconfig ${KUBECONFIG} --context ${TARGET_CLUSTER_CONTEXT}
