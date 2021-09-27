@@ -54,7 +54,7 @@ components:
 In order to communicate with openstack cloud environment, following set of credentials are
 needed to be generated.
 
-The [env.rc](<https://github.com/kubernetes-sigs/cluster-api-provider-openstack/blob/master/docs/env.rc>) script
+The [env.rc](https://github.com/kubernetes-sigs/cluster-api-provider-openstack/blob/master/templates/env.rc) script
 sets the required environment variables related to credentials.
 
 `source env.rc <path/to/clouds.yaml> <cloud>`
