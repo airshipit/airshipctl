@@ -202,7 +202,7 @@ manifests:
           force: false
           remoteRef: ""
           tag: ""
-        url: https://review.opendev.org/airship/airshipctl
+        url: https://opendev.org/airship/airshipctl
     metadataPath: manifests/site/gcp-test-site/metadata.yaml
     targetPath: /tmp/airship
 ```

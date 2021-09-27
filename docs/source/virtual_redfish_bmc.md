@@ -131,6 +131,7 @@ For experimental/smaller setups the following method can also be used.
 ##### Download the Redfish_tools.zip archive and build the redfish emulator VM
 
 [Redfish_tools.zip](https://github.com/dell-esg/tool-pkgs/blob/master/Redfish_tools.zip)
+Note: tools-pkgs repository have been deprecated from dell-esg so this link leads to 404
 
 ##### Scp the redfish_tools zip to the host machine
 

@@ -183,7 +183,7 @@ Clusterctl executor document example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  `Executor source
-   code <https://godoc.org/opendev.org/airship/airshipctl/pkg/clusterctl/client#ClusterctlExecutor>`__
+   code <https://pkg.go.dev/opendev.org/airship/airshipctl/pkg/phase/executors#ClusterctlExecutor>`__
 -  `Executor API object source
    code <https://godoc.org/opendev.org/airship/airshipctl/pkg/api/v1alpha1#Clusterctl>`__
 
@@ -344,7 +344,7 @@ Cluster map is defined in `Phase bundle <#phase-bundle>`__ as a document.
 - `Cluster map API object source code
   <https://godoc.org/opendev.org/airship/airshipctl/pkg/api/v1alpha1#ClusterMap>`__
 - `Cluster map interface source code
-  <https://godoc.org/opendev.org/airship/airshipctl/pkg/clusterctl/client#ClusterctlExecutor>`__
+  <https://pkg.go.dev/opendev.org/airship/airshipctl/pkg/phase/executors#ClusterctlExecutor>`__
 
 Example of cluster map
 ~~~~~~~~~~~~~~~~~~~~~~

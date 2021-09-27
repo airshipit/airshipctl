@@ -56,7 +56,7 @@ Use target management cluster to deploy workers
 ### Build [Airshipctl](https://docs.airshipit.org/airshipctl/developers.html)
 
 ```
-$ git clone https://review.opendev.org/airship/airshipctl
+$ git clone https://opendev.org/airship/airshipctl
 
 $ cd airshipctl
 
@@ -97,7 +97,7 @@ manifests:
           force: false
           remoteRef: ""
           tag: ""
-        url: https://review.opendev.org/airship/airshipctl
+        url: https://opendev.org/airship/airshipctl
     metadataPath: manifests/site/docker-test-site/metadata.yaml
     targetPath: /tmp/airship
 ```

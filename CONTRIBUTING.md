@@ -36,7 +36,7 @@ to cover all Airship subprojects.
 
 However, airshipctl also has its own specific coding conventions and standards
 in the official airshipctl [developer guide](
-https://doc.airshipit.org/airshipctl/developers.html).
+https://docs.airshipit.org/airshipctl/developers.html).
 
 ### Submitting Changes
 
