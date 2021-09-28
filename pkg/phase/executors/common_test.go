@@ -17,6 +17,9 @@ package executors_test
 import (
 	"testing"
 
+	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -104,15 +107,18 @@ func executorBundle(t *testing.T, s string) document.Bundle {
 	return b
 }
 
-// TODO replace this test bundle factory with one that uses bundle mock
-func testBundleFactory() document.BundleFactoryFunc {
-	return func() (document.Bundle, error) {
-		return document.NewBundleByPath(singleExecutorBundlePath)
-	}
-}
-
 func wrapError(err error) events.Event {
 	return events.NewEvent().WithErrorEvent(events.ErrorEvent{
 		Error: err,
 	})
+}
+
+func testClusterMap(t *testing.T) clustermap.ClusterMap {
+	doc, err := document.NewDocumentFromBytes([]byte(singleExecutorClusterMap))
+	require.NoError(t, err)
+	require.NotNil(t, doc)
+	apiObj := v1alpha1.DefaultClusterMap()
+	err = doc.ToAPIObject(apiObj, v1alpha1.Scheme)
+	require.NoError(t, err)
+	return clustermap.NewClusterMap(apiObj)
 }

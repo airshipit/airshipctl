@@ -30,17 +30,39 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	aircontainer "opendev.org/airship/airshipctl/pkg/container"
-	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	"opendev.org/airship/airshipctl/pkg/util"
 )
 
-func bundlePathToInput(t *testing.T, bundlePath string) io.Reader {
+const (
+	singleSecretBundleOutput = `---
+apiVersion: airshipit.org/v1alpha1
+kind: ClusterMap
+metadata:
+  labels:
+    airshipit.org/deploy-k8s: "false"
+  name: main-map
+map:
+  testCluster: {}
+...
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-script
+type: Opaque
+stringData:
+  script.sh: |
+    #!/bin/sh
+    echo WORKS! $var >&2
+...
+`
+)
+
+func testInput(t *testing.T) io.Reader {
 	t.Helper()
-	bundle, err := document.NewBundleByPath(bundlePath)
-	require.NoError(t, err)
 	buf := bytes.NewBuffer([]byte{})
-	err = bundle.Write(buf)
+	_, err := buf.Write([]byte(singleSecretBundleOutput))
 	require.NoError(t, err)
 	return buf
 }
@@ -266,7 +288,7 @@ func TestGenericContainer(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			input := bundlePathToInput(t, "testdata/single")
+			input := testInput(t)
 			client := aircontainer.NewV1Alpha1(tt.outputPath, input, tt.output, tt.containerAPI, "", tt.execFunc)
 
 			err := client.Run()
