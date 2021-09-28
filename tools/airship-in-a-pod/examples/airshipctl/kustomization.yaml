@@ -21,3 +21,8 @@ patchesJson6902:
     kind: Pod
     name: airship-in-a-pod
   path: replacements.yaml
+- target:
+    version: v1 # apiVersion
+    kind: Secret
+    name: aiap-secret
+  path: secret_replacements.yaml

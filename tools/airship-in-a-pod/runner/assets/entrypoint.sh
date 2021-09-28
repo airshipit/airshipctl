@@ -52,7 +52,20 @@ echo "export SOPS_PGP_FP=${SOPS_PGP_FP}" >> ~/.bashrc
 install "$ARTIFACTS_DIR/airshipctl/bin/airshipctl" /usr/local/bin
 cd "$ARTIFACTS_DIR/airshipctl"
 
+set +x
 export AIRSHIP_CONFIG_MANIFEST_DIRECTORY="$ARTIFACTS_DIR/manifests"
+if [[ "$AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_TYPE" = "http-basic" ]]
+then
+  export AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_USERNAME=$( cat /opt/aiap-secret-volume/AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_USERNAME )
+  export AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_HTTP_PASSWORD=$( cat /opt/aiap-secret-volume/AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_HTTP_PASSWORD )
+fi
+
+if [[ "$AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_TYPE" = "ssh-pass" ]]
+then
+  export AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_SSH_PASSWORD=$( cat /opt/aiap-secret-volume/AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_SSH_PASSWORD )
+fi
+set -x
+
 ./tools/deployment/22_test_configs.sh
 if [[ -n "$AIRSHIP_CONFIG_PHASE_REPO_REF" ]]; then
   export NO_CHECKOUT="false"
