@@ -1,0 +1,45 @@
+apiVersion: airshipit.org/v1alpha1
+kind: Clusterctl
+metadata:
+  name: clusterctl_init
+
+init-options:
+  bootstrap-providers: kubeadm:v0.3.7
+  control-plane-providers: kubeadm:v0.3.7
+  core-provider: cluster-api:v0.3.7
+
+providers:
+- name: docker
+  type: InfrastructureProvider
+  url: airshipctl/manifests/function/capd/v0.3.11
+- name: kubeadm
+  type: BootstrapProvider
+  url: airshipctl/manifests/function/cabpk/v0.3.7
+- name: cluster-api
+  type: CoreProvider
+  url: airshipctl/manifests/function/capi/v0.3.7
+- name: kubeadm
+  type: ControlPlaneProvider
+  url: airshipctl/manifests/function/cacpk/v0.3.7
+
+images:
+  cert-manager:
+    repository: "quay.io/jetstack"
+  cluster-api/cluster-api-controller:
+    repository: "us.gcr.io/k8s-artifacts-prod/cluster-api"
+    tag: "v0.3.7"
+  cluster-api/kube-rbac-proxy:
+    repository: "gcr.io/kubebuilder"
+    tag: "v0.4.1"
+  bootstrap-kubeadm/kubeadm-bootstrap-controller:
+    repository: "us.gcr.io/k8s-artifacts-prod/cluster-api"
+    tag: "v0.3.7"
+  bootstrap-kubeadm/kube-rbac-proxy:
+    repository: "gcr.io/kubebuilder"
+    tag: "v0.4.1"
+  control-plane-kubeadm/kubeadm-control-plane-controller:
+    repository: "us.gcr.io/k8s-artifacts-prod/cluster-api"
+    tag: "v0.3.7"
+  control-plane-kubeadm/kube-rbac-proxy:
+    repository: "gcr.io/kubebuilder"
+    tag: "v0.4.1"
