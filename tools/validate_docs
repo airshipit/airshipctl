@@ -25,6 +25,8 @@ set -o pipefail
 : ${MANIFEST_PATH:="manifests/site"}
 : ${SITE_ROOTS:="$(basename "${PWD}")/${MANIFEST_PATH}"}
 : ${MANIFEST_REPO_URL:="https://review.opendev.org/airship/airshipctl"}
+: ${SITES_TO_SKIP:="az-test-site docker-test-site openstack-test-site"}
+
 
 # Name of specific site to be validated
 SITE=${SITE:-$1}
@@ -66,7 +68,7 @@ for site_root in ${SITE_ROOTS}; do
   for site in $(ls ${MANIFEST_ROOT}/${site_root}); do
     # TODO (raliev) remove this condition later
     # Temporary solution to disable validation for outdated sites, this list will be removed eventually
-    sites_to_skip=(az-test-site docker-test-site openstack-test-site)
+    sites_to_skip=(${SITES_TO_SKIP})
     if [[ " ${sites_to_skip[@]} " =~ " ${site} " ]]; then
       continue
     fi
