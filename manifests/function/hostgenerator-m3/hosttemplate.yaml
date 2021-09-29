@@ -92,8 +92,10 @@ template: |
         {{- range $envAll.commonNetworking.links }}
       -
   {{ toYaml . | indent 6 }}
-        {{- if and ($host.macAddresses) (index $host.macAddresses .id) }}
+        {{- if $host.macAddresses }}
+        {{- if index $host.macAddresses .id }}
         ethernet_mac_address: {{ index $host.macAddresses .id }}
+        {{- end }}
         {{- end }}
         {{- end }}
       networks:

@@ -36,7 +36,9 @@ template: |
   metadata:
     name: {{ .name }}
   spec:
-    {{- if and (.macAddresses) (.macAddresses.oam) }}
+    {{- if .macAddresses }}
+    {{- if .macAddresses.oam }}
     bootMACAddress: {{ .macAddresses.oam }}
+    {{- end }}
     {{- end }}
   {{ end -}}
