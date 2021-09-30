@@ -25,11 +25,10 @@ set -o pipefail
 : ${MANIFEST_PATH:="manifests/site"}
 : ${SITE_ROOTS:="$(basename "${PWD}")/${MANIFEST_PATH}"}
 : ${MANIFEST_REPO_URL:="https://review.opendev.org/airship/airshipctl"}
-: ${SITES_TO_SKIP:="az-test-site docker-test-site openstack-test-site"}
-
+: ${SITES_TO_SKIP:="az-test-site gcp-test-site openstack-test-site"}
 
 # Name of specific site to be validated
-SITE=${SITE:-$1}
+SITE=$1
 TMP=$(mktemp -d)
 
 # TODO: use `airshipctl config` to do this once all the needed knobs are exposed
@@ -66,15 +65,8 @@ EOL
 
 for site_root in ${SITE_ROOTS}; do
   for site in $(ls ${MANIFEST_ROOT}/${site_root}); do
-    # TODO (raliev) remove this condition later
-    # Temporary solution to disable validation for outdated sites, this list will be removed eventually
     sites_to_skip=(${SITES_TO_SKIP})
-    if [[ " ${sites_to_skip[@]} " =~ " ${site} " ]]; then
-      continue
-    fi
-
-    # Validate only specific site if set
-    if [ ! -z "$SITE" ] && [ "$site" != "$SITE" ]; then
+    if [[ -z "$SITE" && " ${sites_to_skip[@]} " =~ " ${site} " ]] || [[ ! -z "$SITE" && "$site" != $SITE ]]; then
       continue
     fi
 

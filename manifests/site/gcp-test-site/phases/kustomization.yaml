@@ -1,5 +1,5 @@
 resources:
-  - ../../../phases
+  - ../../../type/gating/phases
   - ../../../function/airshipctl-base-catalogues
 patchesStrategicMerge:
   - plan_patch.yaml

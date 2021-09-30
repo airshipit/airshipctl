@@ -17,3 +17,16 @@ phases:
   - name: kubectl-wait-pods-any-ephemeral
   - name: clusterctl-move
   - name: workers-target
+validation:
+  kindsToSkip:
+    - Clusterctl
+    - VariableCatalogue
+  crdList:
+    - airshipctl/manifests/function/airshipctl-schemas
+    - airshipctl/manifests/function/cert-manager/v1.1.0
+---
+apiVersion: airshipit.org/v1alpha1
+kind: PhasePlan
+metadata:
+  name: iso
+$patch: delete

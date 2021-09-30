@@ -14,4 +14,5 @@
 
 set -xe
 
-kubectl --kubeconfig $KUBECONFIG  --context $KCTL_CONTEXT wait --for=condition=available deploy --all --timeout=1000s -A 1>&2
+kubectl --kubeconfig $KUBECONFIG --context $KCTL_CONTEXT wait --for=condition=Established crd --all --timeout=300s -A 1>&2
+kubectl --kubeconfig $KUBECONFIG --context $KCTL_CONTEXT wait --for=condition=available deploy --all --timeout=1000s -A 1>&2
