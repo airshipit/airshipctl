@@ -12,12 +12,11 @@
  limitations under the License.
 */
 
-package cluster
+package poller
 
 import (
 	"fmt"
 
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/util/jsonpath"
 )
 
@@ -26,7 +25,8 @@ import (
 type Expression struct {
 	// A Condition describes a JSONPath filter which is matched against an
 	// array containing a single resource.
-	Condition string `json:"condition"`
+	Condition string
+	Value     string
 
 	// jsonPath is used for the actual act of filtering on resources. It is
 	// stored within the Expression as a means of memoization.
@@ -36,36 +36,26 @@ type Expression struct {
 // Match returns true if the given object matches the parsed jsonpath object.
 // An error is returned if the Expression's condition is not a valid JSONPath
 // as defined here: https://goessner.net/articles/JsonPath.
-func (e *Expression) Match(obj runtime.Unstructured) (bool, error) {
-	// NOTE(howell): JSONPath filters only work on lists. This means that
-	// in order to check if a certain condition is met for obj, we need to
-	// put obj into an list, then see if the filter catches obj.
-	const listName = "items"
-
+func (e *Expression) Match(obj map[string]interface{}) (bool, error) {
 	// Parse lazily
 	if e.jsonPath == nil {
 		jp := jsonpath.New("status-check")
 
-		// The condition must be a filter on a list
-		itemAsArray := fmt.Sprintf("{$.%s[?(%s)]}", listName, e.Condition)
-		err := jp.Parse(itemAsArray)
+		err := jp.Parse(e.Condition)
 		if err != nil {
-			return false, ErrInvalidStatusCheck{
-				What: fmt.Sprintf("unable to parse jsonpath %q: %v", e.Condition, err.Error()),
-			}
+			return false, err
 		}
 		e.jsonPath = jp
 	}
 
-	// Filters only work on lists
-	list := map[string]interface{}{
-		listName: []interface{}{obj.UnstructuredContent()},
-	}
-	results, err := e.jsonPath.FindResults(list)
+	results, err := e.jsonPath.FindResults(obj)
 	if err != nil {
-		return false, ErrInvalidStatusCheck{
-			What: fmt.Sprintf("failed to execute condition %q on object %v: %v", e.Condition, obj, err),
-		}
+		return false, err
 	}
+
+	if e.Value != "" {
+		return len(results[0]) == 1 && fmt.Sprintf("%s", results[0][0].Interface()) == e.Value, nil
+	}
+
 	return len(results[0]) == 1, nil
 }

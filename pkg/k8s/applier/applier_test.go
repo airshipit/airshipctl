@@ -112,7 +112,7 @@ func TestApplierRun(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// create default applier
 			eventChan := make(chan events.Event)
-			a := applier.NewApplier(eventChan, f)
+			a := applier.NewApplier(eventChan, f, nil)
 			opts := applier.ApplyOptions{
 				WaitTimeout:    time.Second * 5,
 				BundleName:     "test-bundle",

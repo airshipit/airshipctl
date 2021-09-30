@@ -62,6 +62,7 @@ func NewKubeApplierExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &KubeApplierExecutor{
 		ExecutorBundle:   bundle,
 		BundleName:       cfg.PhaseName,
@@ -128,7 +129,7 @@ func (e *KubeApplierExecutor) prepareApplier(ch chan events.Event) (*k8sapplier.
 	e.cleanup = cleanup
 	log.Printf("Using kubeconfig at '%s' and context '%s'", path, context)
 	factory := utils.FactoryFromKubeConfig(path, context)
-	return k8sapplier.NewApplier(ch, factory), bundle, nil
+	return k8sapplier.NewApplier(ch, factory, e.apiObject.Config.WaitOptions.Conditions), bundle, nil
 }
 
 // Validate document set

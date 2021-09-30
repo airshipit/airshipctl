@@ -1,7 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  # TODO (dukov) It's recocommended to upload BareMetalHost objects separately
+  # TODO (dukov) It's recommended to upload BareMetalHost objects separately
   # otherwise nodes will hang in 'registering' state for quite a long time
   - ../../../../type/gating/target/controlplane
   - ../catalogues

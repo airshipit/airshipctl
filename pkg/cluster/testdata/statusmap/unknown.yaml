@@ -1,8 +1,0 @@
-# this resource is in an unknown state because the fake version in the cluster
-# will have .status.state == "unknown", which does not correlate to any of the
-# status checks in the CRD.
-apiVersion: "example.com/v1"
-kind: Resource
-metadata:
-  name: unknown
-  namespace: target-infra

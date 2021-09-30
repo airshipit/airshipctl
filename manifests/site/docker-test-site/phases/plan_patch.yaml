@@ -12,7 +12,6 @@ phases:
   - name: kubectl-get-node-target
   - name: kubectl-get-pods-target
   - name: initinfra-networking-target
-  - name: kubectl-wait-tigera-target
   - name: kubectl-get-pods-target
   - name: clusterctl-init-target
   - name: kubectl-wait-pods-any-ephemeral

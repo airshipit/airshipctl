@@ -8,6 +8,11 @@ metadata:
 config:
   waitOptions:
     timeout: 2600
+    conditions:
+      - apiVersion: metal3.io/v1alpha1
+        kind: BareMetalHost
+        jsonPath: "{.status.provisioning.state}"
+        value: "provisioned"
   pruneOptions:
     prune: false
 ---
@@ -21,6 +26,11 @@ config:
   waitOptions:
     timeout: 5000
     pollInterval: 30
+    conditions:
+      - apiVersion: metal3.io/v1alpha1
+        kind: BareMetalHost
+        jsonPath: "{.status.provisioning.state}"
+        value: "provisioned"
   pruneOptions:
     prune: false
 ---
@@ -33,6 +43,14 @@ metadata:
 config:
   waitOptions:
     timeout: 1000
+    conditions:
+      - apiVersion: operator.tigera.io/v1
+        kind: Installation
+        jsonPath: "{.status.computed}"
+      - apiVersion: operator.tigera.io/v1
+        kind: TigeraStatus
+        jsonPath: "{.status.conditions[?(@.type=='Available')].status}"
+        value: "True"
   pruneOptions:
     prune: false
 ---

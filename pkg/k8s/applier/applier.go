@@ -25,7 +25,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
-	"k8s.io/kubectl/pkg/scheme"
 	cliapply "sigs.k8s.io/cli-utils/pkg/apply"
 	applyevent "sigs.k8s.io/cli-utils/pkg/apply/event"
 	"sigs.k8s.io/cli-utils/pkg/apply/poller"
@@ -33,9 +32,9 @@ import (
 	"sigs.k8s.io/cli-utils/pkg/inventory"
 	"sigs.k8s.io/cli-utils/pkg/manifestreader"
 	"sigs.k8s.io/cli-utils/pkg/provider"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
+	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/events"
 	airpoller "opendev.org/airship/airshipctl/pkg/k8s/poller"
@@ -55,13 +54,14 @@ type Applier struct {
 	Poller                poller.Poller
 	ManifestReaderFactory utils.ManifestReaderFactory
 	eventChannel          chan events.Event
+	conditions            []v1alpha1.Condition
 }
 
 // ReaderFactory function that returns reader factory interface
 type ReaderFactory func(validate bool, bundle document.Bundle, factory cmdutil.Factory) manifestreader.ManifestReader
 
 // NewApplier returns instance of Applier
-func NewApplier(eventCh chan events.Event, f cmdutil.Factory) *Applier {
+func NewApplier(eventCh chan events.Event, f cmdutil.Factory, conditions []v1alpha1.Condition) *Applier {
 	cf := provider.NewProvider(f)
 	return &Applier{
 		Factory:               f,
@@ -70,6 +70,7 @@ func NewApplier(eventCh chan events.Event, f cmdutil.Factory) *Applier {
 			CliUtilsApplier: cliapply.NewApplier(cf),
 		},
 		eventChannel: eventCh,
+		conditions:   conditions,
 	}
 }
 
@@ -137,17 +138,10 @@ func (a *Applier) getObjects(
 	}
 
 	if a.Poller == nil {
-		var pErr error
-		config, pErr := a.Factory.ToRESTConfig()
-		if pErr != nil {
-			return nil, pErr
+		a.Poller, err = airpoller.NewStatusPoller(a.Factory, a.conditions...)
+		if err != nil {
+			return nil, err
 		}
-
-		c, pErr := client.New(config, client.Options{Scheme: scheme.Scheme, Mapper: mapper})
-		if pErr != nil {
-			return nil, pErr
-		}
-		a.Poller = airpoller.NewStatusPoller(c, mapper)
 	}
 
 	if err = a.Driver.Initialize(a.Poller); err != nil {
@@ -198,6 +192,7 @@ func cliApplyOptions(ao ApplyOptions) cliapply.Options {
 		ReconcileTimeout: ao.WaitTimeout,
 		NoPrune:          !ao.Prune,
 		DryRunStrategy:   ao.DryRunStrategy,
+		PollInterval:     ao.PollInterval,
 	}
 }
 

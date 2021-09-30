@@ -39,10 +39,19 @@ type ApplyWaitOptions struct {
 	// Timeout in seconds
 	Timeout int `json:"timeout,omitempty"`
 	// PollInterval in seconds
-	PollInterval int `json:"pollInterval,omitempty"`
+	PollInterval int         `json:"pollInterval,omitempty"`
+	Conditions   []Condition `json:"conditions,omitempty"`
 }
 
 // ApplyPruneOptions provides instructions how to prune for kubernetes resources
 type ApplyPruneOptions struct {
 	Prune bool `json:"prune,omitempty"`
+}
+
+// Condition is a jsonpath for particular TypeMeta which indicates what state to wait
+type Condition struct {
+	metav1.TypeMeta `json:",inline"`
+	JSONPath        string `json:"jsonPath,omitempty"`
+	// Value is desired state to wait for, if no value specified - just existence of provided jsonPath will be checked
+	Value string `json:"value,omitempty"`
 }

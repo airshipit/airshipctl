@@ -16,13 +16,12 @@ package poller
 
 import (
 	"context"
-	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	cmdutil "k8s.io/kubectl/pkg/cmd/util"
+	"k8s.io/kubectl/pkg/scheme"
 	"sigs.k8s.io/cli-utils/pkg/kstatus/polling"
 	"sigs.k8s.io/cli-utils/pkg/kstatus/polling/clusterreader"
 	"sigs.k8s.io/cli-utils/pkg/kstatus/polling/engine"
@@ -31,25 +30,43 @@ import (
 	"sigs.k8s.io/cli-utils/pkg/object"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"opendev.org/airship/airshipctl/pkg/log"
+	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 )
-
-const allowedApplyErrors = 3
 
 // NewStatusPoller creates a new StatusPoller using the given clusterreader and mapper. The StatusPoller
 // will use the client for all calls to the cluster.
-func NewStatusPoller(reader client.Reader, mapper meta.RESTMapper) *StatusPoller {
+func NewStatusPoller(f cmdutil.Factory, conditions ...v1alpha1.Condition) (*StatusPoller, error) {
+	config, err := f.ToRESTConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	mapper, err := f.ToRESTMapper()
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := client.New(config, client.Options{Scheme: scheme.Scheme, Mapper: mapper})
+	if err != nil {
+		return nil, err
+	}
+
 	return &StatusPoller{
-		engine: &engine.PollerEngine{
-			Reader: reader,
+		Engine: &engine.PollerEngine{
+			Reader: c,
 			Mapper: mapper,
 		},
-	}
+		conditions: conditions,
+	}, nil
 }
 
 // StatusPoller provides functionality for polling a cluster for status for a set of resources.
 type StatusPoller struct {
-	engine *engine.PollerEngine
+	ClusterReaderFactoryFunc engine.ClusterReaderFactoryFunc
+	StatusReadersFactoryFunc engine.StatusReadersFactoryFunc
+
+	Engine     *engine.PollerEngine
+	conditions []v1alpha1.Condition
 }
 
 // Poll will create a new statusPollerRunner that will poll all the resources provided and report their status
@@ -57,10 +74,12 @@ type StatusPoller struct {
 // context passed in.
 func (s *StatusPoller) Poll(
 	ctx context.Context, identifiers []object.ObjMetadata, options polling.Options) <-chan event.Event {
-	return s.engine.Poll(ctx, identifiers, engine.Options{
-		PollInterval:             options.PollInterval,
-		ClusterReaderFactoryFunc: clusterReaderFactoryFunc(options.UseCache),
-		StatusReadersFactoryFunc: s.createStatusReaders,
+	return s.Engine.Poll(ctx, identifiers, engine.Options{
+		PollInterval: options.PollInterval,
+		ClusterReaderFactoryFunc: map[bool]engine.ClusterReaderFactoryFunc{true: clusterReaderFactoryFunc(options.UseCache),
+			false: s.ClusterReaderFactoryFunc}[s.ClusterReaderFactoryFunc == nil],
+		StatusReadersFactoryFunc: map[bool]engine.StatusReadersFactoryFunc{true: s.createStatusReadersFactory(),
+			false: s.StatusReadersFactoryFunc}[s.StatusReadersFactoryFunc == nil],
 	})
 }
 
@@ -69,19 +88,29 @@ func (s *StatusPoller) Poll(
 // a specific statusreaders.
 // TODO: We should consider making the registration more automatic instead of having to create each of them
 // here. Also, it might be worth creating them on demand.
-func (s *StatusPoller) createStatusReaders(reader engine.ClusterReader, mapper meta.RESTMapper) (
-	map[schema.GroupKind]engine.StatusReader, engine.StatusReader) {
-	defaultStatusReader := statusreaders.NewGenericStatusReader(reader, mapper)
-	replicaSetStatusReader := statusreaders.NewReplicaSetStatusReader(reader, mapper, defaultStatusReader)
-	deploymentStatusReader := statusreaders.NewDeploymentResourceReader(reader, mapper, replicaSetStatusReader)
-	statefulSetStatusReader := statusreaders.NewStatefulSetResourceReader(reader, mapper, defaultStatusReader)
+func (s *StatusPoller) createStatusReadersFactory() engine.StatusReadersFactoryFunc {
+	return func(reader engine.ClusterReader, mapper meta.RESTMapper) (
+		map[schema.GroupKind]engine.StatusReader, engine.StatusReader) {
+		defaultStatusReader := statusreaders.NewGenericStatusReader(reader, mapper)
+		replicaSetStatusReader := statusreaders.NewReplicaSetStatusReader(reader, mapper, defaultStatusReader)
+		deploymentStatusReader := statusreaders.NewDeploymentResourceReader(reader, mapper, replicaSetStatusReader)
+		statefulSetStatusReader := statusreaders.NewStatefulSetResourceReader(reader, mapper, defaultStatusReader)
 
-	statusReaders := map[schema.GroupKind]engine.StatusReader{
-		appsv1.SchemeGroupVersion.WithKind("Deployment").GroupKind():  deploymentStatusReader,
-		appsv1.SchemeGroupVersion.WithKind("StatefulSet").GroupKind(): statefulSetStatusReader,
-		appsv1.SchemeGroupVersion.WithKind("ReplicaSet").GroupKind():  replicaSetStatusReader,
+		statusReaders := map[schema.GroupKind]engine.StatusReader{
+			appsv1.SchemeGroupVersion.WithKind("Deployment").GroupKind():  deploymentStatusReader,
+			appsv1.SchemeGroupVersion.WithKind("StatefulSet").GroupKind(): statefulSetStatusReader,
+			appsv1.SchemeGroupVersion.WithKind("ReplicaSet").GroupKind():  replicaSetStatusReader,
+		}
+
+		if len(s.conditions) > 0 {
+			cr := NewCustomResourceReader(reader, mapper, s.conditions...)
+			for _, tm := range s.conditions {
+				statusReaders[tm.GroupVersionKind().GroupKind()] = cr
+			}
+		}
+
+		return statusReaders, defaultStatusReader
 	}
-	return statusReaders, defaultStatusReader
 }
 
 // clusterReaderFactoryFunc returns a factory function for creating an instance of a ClusterReader.
@@ -100,45 +129,4 @@ func clusterReaderFactoryFunc(useCache bool) engine.ClusterReaderFactoryFunc {
 		}
 		return &clusterreader.DirectClusterReader{Reader: r}, nil
 	}
-}
-
-// CachingClusterReader is wrapper for kstatus.CachingClusterReader implementation
-type CachingClusterReader struct {
-	Cr          *clusterreader.CachingClusterReader
-	applyErrors []error
-}
-
-// Get is a wrapper for kstatus.CachingClusterReader Get method
-func (c *CachingClusterReader) Get(ctx context.Context, key client.ObjectKey, obj *unstructured.Unstructured) error {
-	return c.Cr.Get(ctx, key, obj)
-}
-
-// ListNamespaceScoped is a wrapper for kstatus.CachingClusterReader ListNamespaceScoped method
-func (c *CachingClusterReader) ListNamespaceScoped(
-	ctx context.Context,
-	list *unstructured.UnstructuredList,
-	namespace string,
-	selector labels.Selector) error {
-	return c.Cr.ListNamespaceScoped(ctx, list, namespace, selector)
-}
-
-// ListClusterScoped is a wrapper for kstatus.CachingClusterReader ListClusterScoped method
-func (c *CachingClusterReader) ListClusterScoped(
-	ctx context.Context,
-	list *unstructured.UnstructuredList,
-	selector labels.Selector) error {
-	return c.Cr.ListClusterScoped(ctx, list, selector)
-}
-
-// Sync is a wrapper for kstatus.CachingClusterReader Sync method, allows to filter specific errors
-func (c *CachingClusterReader) Sync(ctx context.Context) error {
-	err := c.Cr.Sync(ctx)
-	if err != nil && strings.Contains(err.Error(), "request timed out") {
-		c.applyErrors = append(c.applyErrors, err)
-		if len(c.applyErrors) < allowedApplyErrors {
-			log.Printf("timeout error occurred during sync: '%v', skipping", err)
-			return nil
-		}
-	}
-	return err
 }
