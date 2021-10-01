@@ -1,6 +1,0 @@
-apiVersion: airshipit.org/v1alpha1
-kind: GenericContainer
-metadata:
-  name: clusterctl
-spec:
-  image: localhost/clusterctl:v0.3

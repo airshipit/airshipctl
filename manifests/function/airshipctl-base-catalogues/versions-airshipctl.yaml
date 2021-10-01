@@ -41,7 +41,7 @@ spec:
     capd:
       manager:
         repository: gcr.io/k8s-staging-cluster-api
-        tag: v20201019-v0.3.10-86-gc1647481f
+        tag: v0.4.2
       auth_proxy:
         repository: gcr.io/kubebuilder
         tag: v0.4.0

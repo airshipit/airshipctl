@@ -3,10 +3,12 @@ kind: Kustomization
 resources:
   - ../../../../function/workers-capd
 
+namespace: target-infra
+
 patchesJson6902:
   - target:
       group: cluster.x-k8s.io
-      version: v1alpha3
+      version: v1alpha4
       kind: MachineDeployment
       name: "target-cluster-md-0"
     path: machine_count.json

@@ -15,6 +15,7 @@ phases:
   - name: kubectl-get-pods-target
   - name: clusterctl-init-target
   - name: kubectl-wait-pods-any-ephemeral
+  - name: kubectl-wait-pods-ready-target
   - name: clusterctl-move
   - name: workers-target
 validation:

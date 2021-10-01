@@ -1,7 +1,7 @@
 [{
     "op": "replace",
     "path": "/init-options/infrastructure-providers",
-    "value": "docker:v0.3.11"
+    "value": "docker:v0.4.2"
  },
  {
     "op": "replace",
@@ -9,7 +9,7 @@
     "value": {
         "name": "docker",
         "type": "InfrastructureProvider",
-        "url": "airshipctl/manifests/function/capd/v0.3.11"
+        "url": "airshipctl/manifests/function/capd/v0.4.2"
     }
  }
 ]
