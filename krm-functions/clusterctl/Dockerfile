@@ -10,7 +10,7 @@ FROM ${PLUGINS_BUILD_IMAGE} as ctls
 RUN apk update && apk add curl
 COPY ./certs/* /usr/local/share/ca-certificates/
 RUN update-ca-certificates
-ARG CCTL_VERSION=0.3.22
+ARG CCTL_VERSION=0.3.23
 RUN curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v${CCTL_VERSION}/clusterctl-linux-amd64 -o /clusterctl
 RUN chmod +x /clusterctl
 

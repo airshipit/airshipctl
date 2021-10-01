@@ -51,6 +51,7 @@ fi
 export AIRSHIP_KRM_FUNCTION_REPO=${AIRSHIP_KRM_FUNCTION_REPO:-"quay.io/airshipit"}
 export AIRSHIP_KRM_FUNCTION_TAG=${AIRSHIP_KRM_FUNCTION_TAG:-"latest"}
 export SOPS_KRM_FUNCTION=${SOPS_KRM_FUNCTION:-"gcr.io/kpt-fn-contrib/sops:v0.3.0"}
+export CLUSTERCTL_V3_KRM_FUNCTION=${CLUSTERCTL_V3_KRM_FUNCTION:-"quay.io/airshipit/clusterctl:v0.3"}
 
 echo "Resolve krm function versions"
 
@@ -63,8 +64,12 @@ set_krm_function () {
 
 for FUNC in $(cd krm-functions; echo */ | tr -d /)
 do
+  if [[ "$FUNC" == "clusterctl-v0.3" ]]; then
+    continue
+  fi
   IMG="${AIRSHIP_KRM_FUNCTION_REPO}/${FUNC}:${AIRSHIP_KRM_FUNCTION_TAG}"
   set_krm_function "$FUNC" "$IMG"
 done
 
 set_krm_function "sops" "$SOPS_KRM_FUNCTION"
+set_krm_function "clusterctl:v0.3" "$CLUSTERCTL_V3_KRM_FUNCTION"

@@ -3,4 +3,4 @@ kind: GenericContainer
 metadata:
   name: clusterctl
 spec:
-  image: quay.io/airshipit/clusterctl:eb9ac97ce207542e1e4d3b363963bfc5f0847096
+  image: localhost/clusterctl:v0.3
