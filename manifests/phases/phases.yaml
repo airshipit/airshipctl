@@ -37,6 +37,18 @@ config:
 apiVersion: airshipit.org/v1alpha1
 kind: Phase
 metadata:
+  name: workers-ephemeral
+  clusterName: ephemeral-cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: KubernetesApply
+    name: kubernetes-apply-controlplane
+  documentEntryPoint: ephemeral/workers
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
   name: initinfra-target
   clusterName: target-cluster
 config:
@@ -477,3 +489,25 @@ config:
     apiVersion: airshipit.org/v1alpha1
     kind: GenericContainer
     name: merge-kubeconfig
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: kubectl-wait-machines-ephemeral
+  clusterName: ephemeral-cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: wait_machines_ready
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: kubectl-wait-machines-target
+  clusterName: target-cluster
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: GenericContainer
+    name: wait_machines_ready

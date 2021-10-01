@@ -25,7 +25,8 @@ set -o pipefail
 : ${MANIFEST_PATH:="manifests/site"}
 : ${SITE_ROOTS:="$(basename "${PWD}")/${MANIFEST_PATH}"}
 : ${MANIFEST_REPO_URL:="https://review.opendev.org/airship/airshipctl"}
-: ${SITES_TO_SKIP:="az-test-site gcp-test-site openstack-test-site"}
+: ${SITES_TO_SKIP:="reference-az-public-cluster gcp-test-site openstack-test-site"}
+
 
 # Name of specific site to be validated
 SITE=$1

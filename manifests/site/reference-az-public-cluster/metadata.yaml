@@ -4,7 +4,7 @@ metadata:
   name: manifest-metadata
 spec:
   phase:
-    path: manifests/site/az-test-site/phases
-    docEntryPointPrefix: manifests/site/az-test-site
+    path: manifests/site/reference-az-public-cluster/phases
+    docEntryPointPrefix: manifests/site/reference-az-public-cluster
   inventory:
     path: ""

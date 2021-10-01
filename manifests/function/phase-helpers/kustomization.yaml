@@ -13,3 +13,4 @@ resources:
 - wait_label_node
 - check_ingress_ctrl
 - merge_kubeconfig
+- wait_machines_ready

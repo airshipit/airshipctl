@@ -1,0 +1,23 @@
+# Site-level host catalogue.  This info feeds the Templater
+# kustomize plugin config in the hostgenerator-m3 function.
+apiVersion: airshipit.org/v1alpha1
+kind: VariableCatalogue
+metadata:
+  name: azure-catalogue
+  labels:
+    airshipit.org/deploy-k8s: "false"
+
+cluster:
+  location: centralus
+  vnetName: target-cluster-vnet
+  resourceGroup: target-cluster-rg
+
+controlplane:
+  replicas: 1
+  vmSize: Standard_D2s_v3
+  sshPublicKey: "QWRkIHlvdXIgYmFzZTY0IGVuY29kZWQgc3NoIHB1YmxpYyBrZXkgaGVyZQo="
+
+worker:
+  replicas: 1
+  vmSize: Standard_D2s_v3
+  sshPublicKey: "QWRkIHlvdXIgYmFzZTY0IGVuY29kZWQgc3NoIHB1YmxpYyBrZXkgaGVyZQo="

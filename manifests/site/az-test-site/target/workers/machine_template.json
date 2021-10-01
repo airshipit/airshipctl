@@ -1,5 +1,0 @@
-[
-    { "op": "replace","path": "/spec/template/spec/location","value": "centralus" },
-    { "op": "replace","path": "/spec/template/spec/vmSize","value": "Standard_B2s" },
-    { "op": "add", "path": "/spec/template/spec/dataDisks", "value": [{"diskSizeGB": 256, "lun": 0, "nameSuffix": "datadisk"}]}
-]

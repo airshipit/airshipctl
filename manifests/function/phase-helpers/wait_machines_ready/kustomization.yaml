@@ -1,0 +1,6 @@
+configMapGenerator:
+- name: wait_machines_ready
+  options:
+    disableNameSuffixHash: true
+  files:
+  - script=kubectl_wait_machines.sh

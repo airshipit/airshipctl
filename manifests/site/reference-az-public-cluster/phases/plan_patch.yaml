@@ -1,0 +1,21 @@
+apiVersion: airshipit.org/v1alpha1
+kind: PhasePlan
+metadata:
+  name: deploy-gating
+description: "Phase plan for docker-test-site deployment"
+phases:
+  - name: clusterctl-init-ephemeral
+  - name: kubectl-wait-deploy-ephemeral
+  - name: controlplane-ephemeral
+  - name: kubectl-merge-kubeconfig
+  - name: kubectl-get-node-target
+  - name: kubectl-get-pods-target
+  - name: initinfra-target
+  - name: workers-ephemeral
+  - name: kubectl-wait-pods-any-ephemeral
+  - name: kubectl-get-pods-target
+  - name: kubectl-wait-machines-ephemeral
+  - name: clusterctl-init-target
+  - name: kubectl-wait-pods-any-ephemeral
+  - name: clusterctl-move
+  - name: kubectl-wait-machines-target
