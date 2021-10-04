@@ -28,7 +28,8 @@ const (
 Creates or modifies a manifests in the airshipctl config file based on the MANIFEST_NAME argument passed.
 The optional flags that can be passed to the command are repo name, url, branch name, tag name, commit hash,
 target-path and metadata-path. Use --force flag to enable force checkout of the repo. And use --phase flag
-to enable phase repository.
+to enable phase repository. For any new site deployment, or testing of any new function or composite, this
+config file will not have any customization, respective changes need to be done in the manifest files only.
 `
 
 	setManifestsExample = `
