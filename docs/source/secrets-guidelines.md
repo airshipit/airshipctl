@@ -35,7 +35,7 @@ secretGroups:
           pinned: true|false #optional
 ```
 
-This structure allows to split data into groups each of them can be regenerated/updated separatelly. For that purpose it has `updated` field timestamp that is getting new value when regeneration of group is happening. Each group has an array of values. Each value has a name (should be unique in the group), data field and also optional flag `pinned`. If the value is pinned, its value isn't getting updated during regeneration. That may be helpful to flexibly switch between 'internally generated' and 'externally provided' secrets. `pinned: true` will work as 'exnternally provided'.
+This structure allows to split data into groups each of them can be regenerated/updated separately. For that purpose it has `updated` field timestamp that is getting new value when regeneration of group is happening. Each group has an array of values. Each value has a name (should be unique in the group), data field and also optional flag `pinned`. If the value is pinned, its value isn't getting updated during regeneration. That may be helpful to flexibly switch between 'internally generated' and 'externally provided' secrets. `pinned: true` will work as 'externally provided'.
 
 Airshipctl will encrypt only field `data` and that will allow to monitor all other parameters without knowing master keys for decryption.
 
@@ -57,7 +57,7 @@ Airshipctl uses kustomize along with different krm-functions that extend its fun
 * Templater krm-function that is needed to produce new yaml documents based on the provided parameters.
 
 There is a standard catalog of [krm-functions](https://github.com/GoogleContainerTools/kpt-functions-catalog).
-It includes the standard krm-function: `gcr.io/kpt-fn-contrib/sops` that can be used to perform decryption and encryption right in kustomize. Please refer to the [example configurations](https://github.com/GoogleContainerTools/kpt-functions-catalog/tree/master/examples/contrib/sops) that can be used to encrypt and decrypt the set of existing yamls.
+It includes the standard krm-function: `gcr.io/kpt-fn-contrib/sops` that can be used to perform decryption and encryption right in kustomize. Please refer to the [example configurations](https://github.com/GoogleContainerTools/kpt-functions-catalog/tree/master/contrib/examples/sops-age) that can be used to encrypt and decrypt the set of existing yamls.
 
 Please note that to make that krm-function work it’s necessary to provide the following ENV variables:
 

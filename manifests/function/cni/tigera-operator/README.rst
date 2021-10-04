@@ -11,7 +11,7 @@ This function contains a Kubernetes operator which manages the lifecycle of a Ca
 
 To know more about tigera installation see the `installation reference`_.
 
-.. _tigera-operator.yaml: https://github.com/airshipit/airshipctl/tree/master/manifests/function/tigera-operator/v1.15.0/upstream/tigera-operator.yaml
-.. _custom-resources.yaml: https://github.com/airshipit/airshipctl/tree/master/manifests/function/tigera-operator/v1.15.0/custom-resources.yaml
+.. _tigera-operator.yaml: https://github.com/airshipit/airshipctl/tree/master/manifests/function/cni/tigera-operator/v1.15.0/upstream/tigera-operator.yaml
+.. _custom-resources.yaml: https://github.com/airshipit/airshipctl/tree/master/manifests/function/cni/tigera-operator/v1.15.0/custom-resources.yaml
 .. _GitHub URL: https://docs.projectcalico.org/manifests/tigera-operator.yaml
 .. _installation reference: https://docs.projectcalico.org/getting-started/kubernetes/quickstart

@@ -163,7 +163,7 @@ manifests:
           commitHash: ""
           force: false
           tag: ""
-        url: https://review.opendev.org/airship/airshipctl
+        url: https://opendev.org/airship/airshipctl
     targetPath: /tmp/airship
   default:
     phaseRepositoryName: primary

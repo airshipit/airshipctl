@@ -154,7 +154,7 @@ cd image-builder/images/capi/
 vim packer/qemu/qemu-ubuntu-1804.json
 ```
 
-Update the iso_url to `http://cdimage.ubuntu.com/releases/18.04/release/ubuntu-18.04.5-server-amd64.iso`
+Update the iso_url to `http://cdimage.ubuntu.com/releases/18.04/release/ubuntu-18.04.6-server-amd64.iso`
 
 Make sure to use the correct checksum value from
 [ubuntu-releases](http://cdimage.ubuntu.com/releases/18.04.5/release/SHA256SUMS)
