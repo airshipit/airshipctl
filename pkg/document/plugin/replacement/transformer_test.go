@@ -1362,6 +1362,58 @@ spec:
         name: init-alpine
 `,
 	},
+	{
+		cfg: `
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: Test_Case_26_Empty_Source_String
+replacements:
+- source:
+    value: ""
+  target:
+    objref:
+      kind: Deployment
+      name: source-controller
+    fieldrefs: ["spec.template.spec.containers[name=manager].env[name=http_proxy].value%REPLACEMENT_HTTP_PROXY%"]
+`,
+
+		in: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: source-controller
+spec:
+  template:
+    spec:
+      containers:
+      - name: manager
+        env:
+        - name: http_proxy
+          value: REPLACEMENT_HTTP_PROXY
+        - name: https_proxy
+          value: REPLACEMENT_HTTPS_PROXY
+        - name: no_proxy
+          value: REPLACEMENT_NO_PROXY
+`,
+		expectedOut: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: source-controller
+spec:
+  template:
+    spec:
+      containers:
+      - name: manager
+        env:
+        - name: http_proxy
+          value: ""
+        - name: https_proxy
+          value: REPLACEMENT_HTTPS_PROXY
+        - name: no_proxy
+          value: REPLACEMENT_NO_PROXY
+`,
+	},
 }
 
 func TestExec(t *testing.T) {
