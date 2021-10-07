@@ -355,6 +355,8 @@ spec:
         mountPath: /var/run
       - name: airship-config
         mountPath: /root/.airship
+      - mountPath: /opt/aiap-secret-volume
+        name: aiap-secret-volume
 
   - name: status-checker
     image: quay.io/airshipit/aiap-status-checker:latest
