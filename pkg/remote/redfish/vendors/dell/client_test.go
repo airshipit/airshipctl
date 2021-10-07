@@ -62,7 +62,9 @@ func TestSetBootSourceByTypeGetSystemError(t *testing.T) {
 	ctx := redfish.SetAuth(context.Background(), "", "")
 
 	// Mock redfish get system request
-	m.On("GetSystem", ctx, client.NodeID()).Times(1).Return(redfishClient.ComputerSystem{},
+	testSystemRequest := redfishClient.ApiGetSystemRequest{}
+	m.On("GetSystem", ctx, client.NodeID()).Return(testSystemRequest).Times(1)
+	m.On("GetSystemExecute", testSystemRequest).Times(1).Return(redfishClient.ComputerSystem{},
 		&http.Response{StatusCode: 500}, redfishClient.GenericOpenAPIError{})
 
 	// Replace normal API client with mocked API client

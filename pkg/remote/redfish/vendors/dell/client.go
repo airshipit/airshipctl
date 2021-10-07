@@ -88,7 +88,8 @@ func (c *Client) SetBootSourceByType(ctx context.Context) error {
 	// NOTE(drewwalters96): Setting the boot device to a virtual media type requires an API request to the iDRAC
 	// actions API. The request is made below using the same HTTP client used by the Redfish API and exposed by the
 	// standard airshipctl Redfish client. Only iDRAC 9 >= 3.3 is supports this endpoint.
-	url := fmt.Sprintf(endpointImportSysCFG, c.RedfishCFG.BasePath, managerID)
+
+	url := fmt.Sprintf(endpointImportSysCFG, c.RedfishCFG.Servers[0].URL, managerID)
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBufferString(vCDBootRequestBody))
 	if err != nil {
 		return err

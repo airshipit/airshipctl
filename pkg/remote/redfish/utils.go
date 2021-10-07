@@ -113,13 +113,14 @@ func DecodeRawError(rawResponse []byte) (string, error) {
 
 // GetManagerID retrieves the manager ID for a redfish system.
 func GetManagerID(ctx context.Context, api redfishAPI.RedfishAPI, systemID string) (string, error) {
-	system, httpResp, err := api.GetSystem(ctx, systemID)
+	systemReq := api.GetSystem(ctx, systemID)
+	system, httpResp, err := api.GetSystemExecute(systemReq)
 	if err = ScreenRedfishError(httpResp, err); err != nil {
 		log.Debugf("Unable to find manager for node '%s'.", systemID)
 		return "", err
 	}
 
-	return GetResourceIDFromURL(system.Links.ManagedBy[0].OdataId), nil
+	return GetResourceIDFromURL(*(*system.Links.ManagedBy)[0].OdataId), nil
 }
 
 // GetResourceIDFromURL returns a parsed Redfish resource ID
@@ -140,7 +141,7 @@ func GetResourceIDFromURL(refURL string) string {
 // IsIDInList checks whether an ID exists in Redfish IDref collection
 func IsIDInList(idRefList []redfishClient.IdRef, id string) bool {
 	for _, r := range idRefList {
-		rID := GetResourceIDFromURL(r.OdataId)
+		rID := GetResourceIDFromURL(*r.OdataId)
 		if rID == id {
 			return true
 		}
@@ -156,21 +157,22 @@ func GetVirtualMediaID(ctx context.Context, api redfishAPI.RedfishAPI, systemID 
 		return "", "", err
 	}
 
-	mediaCollection, httpResp, err := api.ListManagerVirtualMedia(ctx, managerID)
+	listMediaReq := api.ListManagerVirtualMedia(ctx, managerID)
+	mediaCollection, httpResp, err := api.ListManagerVirtualMediaExecute(listMediaReq)
 	if err = ScreenRedfishError(httpResp, err); err != nil {
 		return "", "", err
 	}
 
 	for _, mediaURI := range mediaCollection.Members {
 		// Retrieve the virtual media ID from the request URI
-		mediaID := GetResourceIDFromURL(mediaURI.OdataId)
-
-		vMedia, httpResp, err := api.GetManagerVirtualMedia(ctx, managerID, mediaID)
+		mediaID := GetResourceIDFromURL(*mediaURI.OdataId)
+		getMediaReq := api.GetManagerVirtualMedia(ctx, managerID, mediaID)
+		vMedia, httpResp, err := api.GetManagerVirtualMediaExecute(getMediaReq)
 		if err = ScreenRedfishError(httpResp, err); err != nil {
 			return "", "", err
 		}
 
-		for _, mediaType := range vMedia.MediaTypes {
+		for _, mediaType := range *vMedia.MediaTypes {
 			if mediaType == "CD" || mediaType == "DVD" {
 				log.Debugf("Found virtual media type '%s' with ID '%s' on manager '%s'.", mediaType,
 					mediaID, managerID)
@@ -250,12 +252,13 @@ func SetAuth(ctx context.Context, username string, password string) context.Cont
 }
 
 func getManagerID(ctx context.Context, api redfishAPI.RedfishAPI, systemID string) (string, error) {
-	system, _, err := api.GetSystem(ctx, systemID)
+	systemReq := api.GetSystem(ctx, systemID)
+	system, _, err := api.GetSystemExecute(systemReq)
 	if err != nil {
 		return "", err
 	}
 
-	return GetResourceIDFromURL(system.Links.ManagedBy[0].OdataId), nil
+	return GetResourceIDFromURL(*(*system.Links.ManagedBy)[0].OdataId), nil
 }
 
 func getBasePath(redfishURL string) (string, error) {
@@ -277,12 +280,13 @@ func (c Client) waitForPowerState(ctx context.Context, desiredState redfishClien
 	log.Debugf("Waiting for node '%s' to reach power state '%s'.", c.nodeID, desiredState)
 
 	for retry := 0; retry <= c.systemActionRetries; retry++ {
-		system, httpResp, err := c.RedfishAPI.GetSystem(ctx, c.NodeID())
+		systemReq := c.RedfishAPI.GetSystem(ctx, c.NodeID())
+		system, httpResp, err := c.RedfishAPI.GetSystemExecute(systemReq)
 		if err = ScreenRedfishError(httpResp, err); err != nil {
 			return err
 		}
 
-		if system.PowerState == desiredState {
+		if system.PowerState != nil && *system.PowerState == desiredState {
 			log.Debugf("Node '%s' reached power state '%s'.", c.nodeID, desiredState)
 			return nil
 		}
