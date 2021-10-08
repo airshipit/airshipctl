@@ -121,8 +121,10 @@ docker-image_DOCKERFILE:=Dockerfile
 # need to be called from the root of the repo.
 kubeval-validator_IS_INDEPENDED:=true
 clusterctl_IS_INDEPENDED:=true
+clusterctl-v0.3_IS_INDEPENDED:=true
 toolbox-virsh_IS_INDEPENDED:=true
 # in addition toolbox-virsh docker image needs toolbox docker image to be built first
+docker-image-clusterctl-v0.3_DEPENDENCY:=docker-image-clusterctl
 docker-image-toolbox-virsh_DEPENDENCY:=docker-image-toolbox
 
 # The template that generates targets for creating binaries per component:
@@ -133,10 +135,10 @@ docker-image-toolbox-virsh_DEPENDENCY:=docker-image-toolbox
 # When template is rendered all $ will be rendered in the template and $$ will be converted to $, e.g.
 # if we call map_binary_defaults_tmpl for airshipctl $1 will be converted to 'airshipctl' and we'll get
 # ifneq ($(airshipctl_IS_INDEPENDED),true)
-# arishipctl_FROM_PATH?=$(BIN_SRC_DIR)/airshipctl/main.go
+# airshipctl_FROM_PATH?=$(BIN_SRC_DIR)/airshipctl/main.go
 # ...
-# since we defining arishipctl_FROM_PATH above, and ?= is used in the 2nd line
-# arishipctl_FROM_PATH will stay the same as it was defined above.
+# since we defining airshipctl_FROM_PATH above, and ?= is used in the 2nd line
+# airshipctl_FROM_PATH will stay the same as it was defined above.
 define map_binary_defaults_tmpl
 ifneq ($$($1_IS_INDEPENDED),true)
 $1_FROM_PATH?=$$(BIN_SRC_DIR)/$1/main.go
@@ -166,6 +168,8 @@ $(foreach bin,$(BINS),$(call map_binary_defaults,$(bin)))
 define map_image_defaults_tmpl
 $1_IMG_TGT_NAME?=docker-image-$1
 
+$$($1_IMG_TGT_NAME)_IMG_TITLE?=$1
+$$($1_IMG_TGT_NAME)_IMG_TAG?=$$(DOCKER_IMAGE_TAG)
 $$($1_IMG_TGT_NAME)_DOCKERTGT?=$$(DOCKER_TARGET_STAGE)
 $$($1_IMG_TGT_NAME)_DOCKERFILE?=$$(BIN_SRC_DIR)/$1/Dockerfile
 $$($1_IMG_TGT_NAME)_MAKETGT?=$$(BIN_DIR)/$1
@@ -206,6 +210,11 @@ ifneq ($$(strip $$($$($1_IMG_TGT_NAME)_BASE_RELEASE_IMAGE)),)
 $$($1_IMG_TGT_NAME)_BUILD_ARG  += RELEASE_IMAGE=$$($$($1_IMG_TGT_NAME)_BASE_RELEASE_IMAGE)
 endif
 
+ifeq ($1,clusterctl-v0.3)
+$$($1_IMG_TGT_NAME)_IMG_TAG=v0.3
+$$($1_IMG_TGT_NAME)_IMG_TITLE=clusterctl
+endif
+
 $$(warning Adding dynamic target $$($1_IMG_TGT_NAME))
 .PHONY: $$($1_IMG_TGT_NAME)
 $$($1_IMG_TGT_NAME): $$($$($1_IMG_TGT_NAME)_DEPENDENCY)
@@ -214,14 +223,14 @@ $$($1_IMG_TGT_NAME): $$($$($1_IMG_TGT_NAME)_DEPENDENCY)
 		--label $$(LABEL) \
 		--label "org.opencontainers.image.revision=$$(COMMIT)" \
 		--label "org.opencontainers.image.created=$$(shell date --rfc-3339=seconds --utc)" \
-		--label "org.opencontainers.image.title=$1" \
+		--label "org.opencontainers.image.title=$$($$($1_IMG_TGT_NAME)_IMG_TITLE)" \
 		--target $$($$($1_IMG_TGT_NAME)_DOCKERTGT) \
 		$$(addprefix --build-arg ,$$($$($1_IMG_TGT_NAME)_BUILD_ARG)) \
 		--build-arg MAKE_TARGET=$$($$($1_IMG_TGT_NAME)_MAKETGT) \
-		--tag $$(DOCKER_REGISTRY)/$$(DOCKER_IMAGE_PREFIX)/$1:$$(DOCKER_IMAGE_TAG) \
+		--tag $$(DOCKER_REGISTRY)/$$(DOCKER_IMAGE_PREFIX)/$$($$($1_IMG_TGT_NAME)_IMG_TITLE):$$($$($1_IMG_TGT_NAME)_IMG_TAG) \
 		$$(foreach tag,$$(DOCKER_IMAGE_EXTRA_TAGS),--tag $$(DOCKER_REGISTRY)/$$(DOCKER_IMAGE_PREFIX)/$1:$$(tag) )
 ifeq ($$(PUBLISH), true)
-	@docker push $$(DOCKER_REGISTRY)/$$(DOCKER_IMAGE_PREFIX)/$1:$$(DOCKER_IMAGE_TAG)
+	@docker push $$(DOCKER_REGISTRY)/$$(DOCKER_IMAGE_PREFIX)/$$($$($1_IMG_TGT_NAME)_IMG_TITLE):$$($$($1_IMG_TGT_NAME)_IMG_TAG)
 endif
 
 images: $$($1_IMG_TGT_NAME)
