@@ -41,7 +41,7 @@ const (
 type ClusterctlOptions struct {
 	CmdOptions []string          `json:"cmd-options,omitempty"`
 	Config     []byte            `json:"config,omitempty"`
-	Components map[string][]byte `json:"components,omitempty"`
+	Components map[string]string `json:"components,omitempty"`
 }
 
 // Run prepares config, repo tree and executes clusterctl with appropriate options
@@ -65,7 +65,7 @@ func (c *ClusterctlOptions) buildRepoTree() error {
 				return err
 			}
 		}
-		if err := ioutil.WriteFile(f, component, filePerm); err != nil {
+		if err := ioutil.WriteFile(f, []byte(component), filePerm); err != nil {
 			return err
 		}
 	}

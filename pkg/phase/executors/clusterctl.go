@@ -69,7 +69,7 @@ func NewClusterctlExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 		return nil, err
 	}
 	cctlOpts := &airshipv1.ClusterctlOptions{
-		Components: map[string][]byte{},
+		Components: map[string]string{},
 	}
 	if err := initRepoData(options, cctlOpts, cfg.TargetPath); err != nil {
 		return nil, err
@@ -134,7 +134,7 @@ func initRepoData(c *airshipv1.Clusterctl, o *airshipv1.ClusterctlOptions, targe
 			return err
 		}
 
-		o.Components[filepath.Join(componentDir, "metadata.yaml")] = metadata
+		o.Components[filepath.Join(componentDir, "metadata.yaml")] = string(metadata)
 
 		filteredBundle, err := bundle.SelectBundle(document.NewDeployToK8sSelector())
 		if err != nil {
@@ -146,7 +146,7 @@ func initRepoData(c *airshipv1.Clusterctl, o *airshipv1.ClusterctlOptions, targe
 			return err
 		}
 		prv.URL = filepath.Join(componentDir, fmt.Sprintf("%s-components.yaml", typeMap[prv.Type]))
-		o.Components[prv.URL] = buffer.Bytes()
+		o.Components[prv.URL] = string(buffer.Bytes())
 	}
 	return nil
 }
@@ -330,7 +330,7 @@ func (c *ClusterctlExecutor) Render(w io.Writer, ro ifc.RenderOptions) error {
 	dataAll := &bytes.Buffer{}
 	for path, data := range c.cctlOpts.Components {
 		if strings.Contains(path, "components.yaml") {
-			dataAll.Write(append(data, []byte("\n---\n")...))
+			dataAll.Write(append([]byte(data), []byte("\n---\n")...))
 		}
 	}
 

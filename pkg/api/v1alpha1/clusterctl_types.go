@@ -115,7 +115,7 @@ func DefaultClusterctl() *Clusterctl {
 type ClusterctlOptions struct {
 	CmdOptions []string          `json:"cmd-options,omitempty"`
 	Config     []byte            `json:"config,omitempty"`
-	Components map[string][]byte `json:"components,omitempty"`
+	Components map[string]string `json:"components,omitempty"`
 }
 
 // GetKubeconfigOptions carries all the options to retrieve kubeconfig from parent cluster
