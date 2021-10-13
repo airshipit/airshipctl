@@ -22,7 +22,10 @@ export AIRSHIP_CONFIG_MANIFEST_DIRECTORY=${AIRSHIP_CONFIG_MANIFEST_DIRECTORY:-"/
 export AIRSHIP_CONFIG_PHASE_REPO_URL=${AIRSHIP_CONFIG_PHASE_REPO_URL:-"https://review.opendev.org/airship/airshipctl"}
 export EXTERNAL_KUBECONFIG=${EXTERNAL_KUBECONFIG:-""}
 export SITE=${SITE:-"test-site"}
-export WORKDIR="${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})"
+REPO_NAME=$(basename ${AIRSHIP_CONFIG_PHASE_REPO_URL})
+# Remove .git from repository if present
+REPO_NAME=${REPO_NAME%.git}
+export WORKDIR="${AIRSHIP_CONFIG_MANIFEST_DIRECTORY}/${REPO_NAME}"
 
 if [[ -z "$EXTERNAL_KUBECONFIG" ]]; then
    # we want to take config from bundle - remove kubeconfig file so
