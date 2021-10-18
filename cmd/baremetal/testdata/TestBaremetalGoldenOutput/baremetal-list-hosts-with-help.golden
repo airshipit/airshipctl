@@ -1,0 +1,20 @@
+List bare metal host(s).
+
+Usage:
+  list-hosts [flags]
+
+Examples:
+
+	Retrieve list of baremetal hosts, default output option is 'table'
+	# airshipctl baremetal list-hosts
+	# airshipctl baremetal list-hosts --namespace default
+	# airshipctl baremetal list-hosts --namespace default --output table
+	# airshipctl baremetal list-hosts --output yaml
+
+
+Flags:
+  -h, --help               help for list-hosts
+  -l, --labels string      label(s) to filter desired bare metal host from site manifest documents
+  -n, --namespace string   airshipctl phase that contains the desired bare metal host from site manifest document(s)
+  -o, --output string      output formats. Supported options are 'table' and 'yaml' (default "table")
+      --timeout duration   timeout on bare metal action (default 10m0s)

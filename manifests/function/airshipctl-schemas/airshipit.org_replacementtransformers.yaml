@@ -98,8 +98,11 @@ spec:
                             It matches with the resource labels.
                           type: string
                         name:
+                          description: Name of the resource.
                           type: string
                         namespace:
+                          description: Namespace the resource belongs to, if it can
+                            belong to a namespace.
                           type: string
                         version:
                           type: string
@@ -133,8 +136,11 @@ spec:
                               It matches with the resource labels.
                             type: string
                           name:
+                            description: Name of the resource.
                             type: string
                           namespace:
+                            description: Namespace the resource belongs to, if it
+                              can belong to a namespace.
                             type: string
                           version:
                             type: string

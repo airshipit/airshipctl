@@ -24,13 +24,68 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/inventory"
 	"opendev.org/airship/airshipctl/pkg/inventory/ifc"
+	remoteifc "opendev.org/airship/airshipctl/pkg/remote/ifc"
 	"opendev.org/airship/airshipctl/pkg/remote/power"
+	"opendev.org/airship/airshipctl/pkg/remote/redfish"
 	mockinventory "opendev.org/airship/airshipctl/testutil/inventory"
 	"opendev.org/airship/airshipctl/testutil/redfishutils"
 )
 
 const testNode = "node-0"
 
+func TestListHostsCommand(t *testing.T) {
+	t.Run("success ListHosts", func(t *testing.T) {
+		var hosts []remoteifc.Client
+
+		c1, err := redfish.ClientFactory("node-0", "redfish+http://nolocalhost:32201/redfish/v1/Systems/node00",
+			true, true, "username", "password", 6, 300)
+		if err != nil {
+			assert.Equal(t, nil, err)
+		}
+		c2, err := redfish.ClientFactory("node-1", "redfish+http://nolocalhost:32201/redfish/v1/Systems/node01",
+			true, true, "username", "password", 6, 300)
+		if err != nil {
+			assert.Equal(t, nil, err)
+		}
+
+		hosts = append(hosts, c1, c2)
+
+		bmhInv := &mockinventory.MockBMHInventory{}
+		bmhInv.On("Select").Return(hosts, nil)
+
+		inv := &mockinventory.MockInventory{}
+		inv.On("BaremetalInventory").Once().Return(bmhInv, nil)
+
+		co := inventory.NewOptions(inv)
+		l := inventory.NewListHostsCommand(co)
+		buf := bytes.NewBuffer([]byte{})
+		l.Writer = buf
+		l.OutputFormat = "yaml"
+		actualErr := l.RunE()
+		assert.Equal(t, nil, actualErr)
+		assert.Contains(t, buf.String(), "node-0")
+		assert.Contains(t, buf.String(), "node-1")
+	})
+
+	t.Run("error ListHosts", func(t *testing.T) {
+		expectedErr := fmt.Errorf("No hosts present in the hostInventory")
+		var hosts []remoteifc.Client
+
+		bmhInv := &mockinventory.MockBMHInventory{}
+		bmhInv.On("Select").Return(hosts, nil)
+
+		inv := &mockinventory.MockInventory{}
+		inv.On("BaremetalInventory").Once().Return(bmhInv, nil)
+
+		co := inventory.NewOptions(inv)
+		l := inventory.NewListHostsCommand(co)
+		buf := bytes.NewBuffer([]byte{})
+		l.Writer = buf
+		l.OutputFormat = "yaml"
+		actualErr := l.RunE()
+		assert.Equal(t, expectedErr, actualErr)
+	})
+}
 func TestCommandOptions(t *testing.T) {
 	t.Run("error BMHAction bmh inventory", func(t *testing.T) {
 		inv := &mockinventory.MockInventory{}

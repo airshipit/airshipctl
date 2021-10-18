@@ -59,6 +59,11 @@ func TestBaremetal(t *testing.T) {
 			CmdLine: "-h",
 			Cmd:     baremetal.NewRemoteDirectCommand(nil, &inventory.CommandOptions{}),
 		},
+		{
+			Name:    "baremetal-list-hosts-with-help",
+			CmdLine: "-h",
+			Cmd:     baremetal.NewListHostsCommand(nil, &inventory.CommandOptions{}),
+		},
 	}
 
 	for _, tt := range tests {

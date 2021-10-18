@@ -11,3 +11,4 @@ spec:
   bmc:
     address: redfish+http://nolocalhost:32201/redfish/v1/Systems/ephemeral
     credentialsName: node-0-bmc-secret
+---

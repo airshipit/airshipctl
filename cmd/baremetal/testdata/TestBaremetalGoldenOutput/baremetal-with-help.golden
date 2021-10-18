@@ -7,6 +7,7 @@ Usage:
 Available Commands:
   ejectmedia   Airshipctl command to eject virtual media attached to a bare metal host
   help         Help about any command
+  list-hosts   Airshipctl command to list bare metal host(s)
   poweroff     Airshipctl command to shutdown bare metal host(s)
   poweron      Airshipctl command to power on host(s)
   powerstatus  Airshipctl command to retrieve the power status of a bare metal host

@@ -36,6 +36,7 @@ const (
 // Client holds details about a Redfish out-of-band system required for out-of-band management.
 type Client struct {
 	nodeID              string
+	nodeName            string
 	username            string
 	password            string
 	redfishURL          string
@@ -51,6 +52,11 @@ type Client struct {
 // NodeID retrieves the ephemeral node ID.
 func (c *Client) NodeID() string {
 	return c.nodeID
+}
+
+// NodeName retrieves the ephemeral node ID.
+func (c *Client) NodeName() string {
+	return c.nodeName
 }
 
 // SystemActionRetries returns number of attempts to reach host during reboot process and ejecting virtual media
@@ -355,7 +361,7 @@ func RemoteDirect(ctx context.Context, isoURL, redfishURL string, c ifc.Client) 
 }
 
 // NewClient returns a client with the capability to make Redfish requests.
-func NewClient(redfishURL string,
+func NewClient(nodeName string, redfishURL string,
 	insecure bool,
 	useProxy bool,
 	username string,
@@ -410,6 +416,7 @@ func NewClient(redfishURL string,
 
 	c := &Client{
 		nodeID:              systemID,
+		nodeName:            nodeName,
 		RedfishAPI:          redfishClient.NewAPIClient(cfg).DefaultApi,
 		RedfishCFG:          cfg,
 		systemActionRetries: systemActionRetries,
@@ -427,13 +434,13 @@ func NewClient(redfishURL string,
 }
 
 // ClientFactory is a constructor for redfish ifc.Client implementation
-var ClientFactory ifc.ClientFactory = func(redfishURL string,
+var ClientFactory ifc.ClientFactory = func(nodeName string, redfishURL string,
 	insecure bool,
 	useProxy bool,
 	username string,
 	password string,
 	systemActionRetries int,
 	systemRebootDelay int) (ifc.Client, error) {
-	return NewClient(redfishURL, insecure, useProxy,
+	return NewClient(nodeName, redfishURL, insecure, useProxy,
 		username, password, systemActionRetries, systemRebootDelay)
 }
