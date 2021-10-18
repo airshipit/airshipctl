@@ -5,7 +5,7 @@ Listen {{ sushy_emulator_frontend_http_port }}
      # Add machine's IP address (use ifconfig command)
      ServerName {{ sushy_emulator_frontend_servername }}
      # Give an alias to to start your website url with
-     WSGIDaemonProcess wsgiapp-{{ sushy_emulator_frontend_name }} user=wsgiapp-sushy processes=2 threads=5
+     WSGIDaemonProcess wsgiapp-{{ sushy_emulator_frontend_name }} user=wsgiapp-sushy processes=1 threads=5
      WSGIScriptAlias / /var/www/sushy-emulator/sushy-emulator.wsgi
      <Directory /var/www/sushy-emulator/>
         # set permissions as per apache2.conf file
