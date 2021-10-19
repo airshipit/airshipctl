@@ -41,7 +41,7 @@
 #        - airship-airshipctl-functional-existing-k8s TODO: Enable this when functional tests exist, and a cluster is up
         - airship-airshipctl-gate-script-runner-docker
         - airship-aiap-build-image
-          # - airship-airship-in-a-pod-script-runner
+        - airship-airship-in-a-pod-script-runner
     experimental:
       jobs:
         - airship-airshipctl-docker-kubebench-conformance
