@@ -76,7 +76,10 @@ fi
 ./tools/deployment/23_pull_documents.sh
 ./tools/deployment/23_generate_secrets.sh
 
-repo_name=$(yq -r .manifests.dummy_manifest.repositories.primary.url /root/.airship/config | awk 'BEGIN {FS="/"} {print $NF}' | cut -d'.' -f1)
+repo_url=$(yq -r .manifests.dummy_manifest.repositories.primary.url /root/.airship/config)
+repo_name=$(basename ${repo_url})
+# Remove .git from repository if present
+repo_name=${repo_name%.git}
 hosts_file="$AIRSHIP_CONFIG_MANIFEST_DIRECTORY/$repo_name/manifests/site/test-site/target/catalogues/shareable/hosts.yaml"
 sed -i -e 's#bmcAddress: redfish+http://\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\):8000#bmcAddress: redfish+https://10.23.25.1:8443#' "$hosts_file"
 sed -i -e 's#root#username#' "$hosts_file"
