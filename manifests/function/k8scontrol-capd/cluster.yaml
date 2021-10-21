@@ -15,12 +15,10 @@ spec:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
     kind: DockerCluster
     name: "target-cluster"
-    namespace: default
   controlPlaneRef:
     kind: KubeadmControlPlane
     apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
     name: "target-cluster-control-plane"
-    namespace: default
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
 kind: DockerCluster
