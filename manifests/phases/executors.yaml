@@ -238,6 +238,17 @@ spec:
     name: EPHEMERAL_NODE
 ---
 apiVersion: airshipit.org/v1alpha1
+kind: BaremetalManager
+metadata:
+  name: EjectVirtualMediaEphemeral
+  labels:
+    airshipit.org/deploy-k8s: "false"
+spec:
+  operation: eject-virtual-media
+  hostSelector:
+    name: EPHEMERAL_NODE
+---
+apiVersion: airshipit.org/v1alpha1
 kind: GenericContainer
 metadata:
   name: iso-cloud-init-data

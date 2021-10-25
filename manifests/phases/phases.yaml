@@ -269,6 +269,16 @@ config:
 apiVersion: airshipit.org/v1alpha1
 kind: Phase
 metadata:
+  name: eject-virtual-media-ephemeral
+config:
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: BaremetalManager
+    name: EjectVirtualMediaEphemeral
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
   name: kubectl-wait-node-ephemeral
   clusterName: ephemeral-cluster
 config:
