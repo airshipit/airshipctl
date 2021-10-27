@@ -21,8 +21,12 @@ set -ex
 
 
 INTERVAL=15
+# Number of statuses that the status checker is looking at
+STATUS_CHECKER_NUM=3
+
 READY=false
 KUBE_READY=false
+
 
 
 # Wait for the Kubernetes environment to become completely ready
@@ -62,3 +66,14 @@ do
     sleep "$INTERVAL"
 done
 
+# Now that all of the containers are ready, keep an eye on the status-checker
+# container until it shows that every status succeeds, and exit on any failure
+while [[ $(kubectl logs airship-in-a-pod -c status-checker --tail 1 | grep -o "SUCCESS" | wc -l) -lt ${STATUS_CHECKER_NUM} ]]
+do
+    # If any status is listed as "FAILED" then we should kill the script with a non 0 exit code
+    if [[ $(kubectl logs airship-in-a-pod -c status-checker --tail 1 | grep -c -o "FAILED") -gt 0 ]]; then
+        kubectl logs airship-in-a-pod -c status-checker --tail 1
+        exit 3
+    fi
+	sleep "$INTERVAL"
+done
