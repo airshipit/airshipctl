@@ -7,4 +7,6 @@
   </forward><bridge name="nat_br" stp="on" delay="0"/>
   <ip address="{{ networks[1].ip.address }}" netmask="{{ networks[1].ip.netmask }}">
   </ip>
+  <ip family="ipv6" address="{{ networks[1].ipv6.address }}" prefix="{{ networks[1].ipv6.prefix }}">
+  </ip>
 </network>

@@ -52,11 +52,17 @@ networks:
     ip:
       address: "10.23.24.1"
       netmask: "255.255.255.0"
+    ipv6:
+      address: "2001:468:181:f200::1"
+      prefix:  "64"
   - name: nat
     bridge: "air_nat"
     ip:
       address: "10.23.25.1"
       netmask: "255.255.255.0"
+    ipv6:
+      address: "2001:468:181:f100::1"
+      prefix:  "64"
   - name: default
     bridge: "default"
     ip:
