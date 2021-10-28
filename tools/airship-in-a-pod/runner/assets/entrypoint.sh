@@ -41,13 +41,15 @@ kustomize_download_url="https://github.com/kubernetes-sigs/kustomize/releases/do
 curl -sSL "$kustomize_download_url" | tar -C /tmp -xzf -
 install /tmp/kustomize /usr/local/bin
 
-curl -fsSL -o /sops-key.asc https://raw.githubusercontent.com/mozilla/sops/master/pgp/sops_functional_tests_key.asc
-SOPS_PGP_FP="FBC7B9E2A4F9289AC0C1D4843D16CEE4A27381B4"
-SOPS_IMPORT_PGP="$(cat /sops-key.asc)"
-export SOPS_IMPORT_PGP
-export SOPS_PGP_FP
-echo 'export SOPS_IMPORT_PGP="$(cat /sops-key.asc)"' >> ~/.bashrc
-echo "export SOPS_PGP_FP=${SOPS_PGP_FP}" >> ~/.bashrc
+SOPS_IMPORT_PGP=$( cat /opt/aiap-secret-volume/SOPS_IMPORT_PGP )
+if [ -z "${SOPS_IMPORT_PGP}"  ];then
+  # set user1 key
+  SOPS_IMPORT_PGP="$(cat ./manifests/.private-keys/exampleU1.key)"
+fi
+
+export SOPS_IMPORT_PGP=${SOPS_IMPORT_PGP}
+
+echo "export SOPS_IMPORT_PGP=${SOPS_IMPORT_PGP}" >> ~/.bashrc
 echo "export KUBECONFIG=$HOME/.airship/kubeconfig" >> ~/.bashrc
 
 install "$ARTIFACTS_DIR/airshipctl/bin/airshipctl" /usr/local/bin
