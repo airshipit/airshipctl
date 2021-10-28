@@ -63,24 +63,10 @@ type phase struct {
 	processor events.EventProcessor
 }
 
-func (p *phase) defaultBundleFactory() document.BundleFactoryFunc {
-	return document.BundleFactoryFromDocRoot(p.DocumentRoot)
-}
-
-func (p *phase) defaultDocFactory() document.DocFactoryFunc {
-	return func() (document.Document, error) {
-		return p.helper.ExecutorDoc(ifc.ID{Name: p.apiObj.Name, Namespace: p.apiObj.Namespace})
-	}
-}
-
 // Executor returns executor interface associated with the phase
 func (p *phase) Executor() (ifc.Executor, error) {
-	return p.executor(p.defaultDocFactory(), p.defaultBundleFactory())
-}
-
-func (p *phase) executor(docFactory document.DocFactoryFunc,
-	bundleFactory document.BundleFactoryFunc) (ifc.Executor, error) {
-	executorDoc, err := docFactory()
+	executorDoc, err := p.helper.PhaseConfigBundle().SelectOne(
+		document.NewSelector().ByObjectReference(p.apiObj.Config.ExecutorRef))
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +98,7 @@ func (p *phase) executor(docFactory document.DocFactoryFunc,
 	return executorFactory(
 		ifc.ExecutorConfig{
 			ClusterMap:        cMap,
-			BundleFactory:     bundleFactory,
+			BundleFactory:     document.BundleFactoryFromDocRoot(p.DocumentRoot),
 			PhaseName:         p.apiObj.Name,
 			KubeConfig:        kubeconf,
 			ExecutorDocument:  executorDoc,

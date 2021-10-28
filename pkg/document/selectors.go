@@ -18,9 +18,9 @@ import (
 	"fmt"
 	"strings"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
-
 	"sigs.k8s.io/kustomize/api/types"
 	"sigs.k8s.io/kustomize/kyaml/resid"
 )
@@ -102,6 +102,15 @@ func (s Selector) ByObject(obj runtime.Object, scheme *runtime.Scheme) (Selector
 		result = result.ByName(name)
 	}
 	return result, nil
+}
+
+// ByObjectReference select by ObjectReference
+func (s Selector) ByObjectReference(objRef *corev1.ObjectReference) Selector {
+	refGVK := objRef.GroupVersionKind()
+	return NewSelector().
+		ByGvk(refGVK.Group, refGVK.Version, refGVK.Kind).
+		ByName(objRef.Name).
+		ByNamespace(objRef.Namespace)
 }
 
 // String is a convenience function which dumps all relevant information about a Selector in the following format:

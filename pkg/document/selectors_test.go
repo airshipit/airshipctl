@@ -208,3 +208,41 @@ func TestSelectorToObject(t *testing.T) {
 		})
 	}
 }
+
+func TestSelectorByObjRef(t *testing.T) {
+	tests := []struct {
+		name        string
+		objRef      *k8sv1.ObjectReference
+		expectedSel document.Selector
+	}{
+		{
+			name: "Selector with GVK, name and namespace",
+			objRef: &k8sv1.ObjectReference{
+				Kind:       "TestKind",
+				Name:       "TestName",
+				APIVersion: "api.version/v1",
+				Namespace:  "TestNamespace",
+			},
+			expectedSel: document.Selector{
+				Selector: types.Selector{
+					ResId: resid.ResId{
+						Gvk: resid.Gvk{
+							Group:   "api.version",
+							Version: "v1",
+							Kind:    "TestKind",
+						},
+						Name:      "TestName",
+						Namespace: "TestNamespace",
+					},
+				},
+			},
+		},
+	}
+	for _, test := range tests {
+		tt := test
+		t.Run(tt.name, func(t *testing.T) {
+			actualSel := document.NewSelector().ByObjectReference(tt.objRef)
+			assert.Equal(t, tt.expectedSel, actualSel)
+		})
+	}
+}

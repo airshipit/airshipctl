@@ -234,13 +234,6 @@ func TestPhaseValidate(t *testing.T) {
 			errContains:  "executor identified by 'airshipit.org/v1alpha1, Kind=SomeExecutor' is not found",
 		},
 		{
-			name:         "Error no executor",
-			configFunc:   testConfig,
-			phaseID:      ifc.ID{Name: "no_executor_phase"},
-			registryFunc: fakeRegistry,
-			errContains:  "Phase name 'no_executor_phase', namespace '' must have executorRef field defined in config",
-		},
-		{
 			name:       "Error executor validate",
 			configFunc: testConfig,
 			phaseID:    ifc.ID{Name: "kube_apply"},
