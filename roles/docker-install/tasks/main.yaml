@@ -11,14 +11,56 @@
 # limitations under the License.
 
 ---
-- name: Ensuring docker and support packages are present
+- name: Ensure older docker versions are removed
   become: yes
   package:
     name:
+      - docker
+      - docker-engine
       - docker.io
+      - containerd
       - runc
+    state: absent
+
+- name: Ensure docker support packages are present
+  become: yes
+  package:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
     update_cache: yes
+    state: latest
+
+- name: Add Docker GPG apt key
+  become: yes
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    keyring: /usr/share/keyrings/docker-archive-keyring.gpg
     state: present
+
+- name: Get DEB architecture
+  shell: dpkg --print-architecture
+  register: deb_architecture
+
+- name: Add Docker Repository
+  become: yes
+  apt_repository:
+    repo: deb [arch={{ deb_architecture.stdout }} signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+    filename: docker
+    state: present
+
+- name: Ensure docker packages are present
+  become: yes
+  package:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    update_cache: yes
+    state: latest
 
 - name: Ensure docker group exists
   group:
