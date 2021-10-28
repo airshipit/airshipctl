@@ -12,21 +12,11 @@
  limitations under the License.
 */
 
-package v1alpha1
+package types
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
-// +kubebuilder:object:root=true
-
-// KubernetesApply provides instructions on how to apply resources to kubernetes cluster
-type KubernetesApply struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Config ApplyConfig `json:"config,omitempty"`
-}
 
 // ApplyConfig provides instructions on how to apply resources to kubernetes cluster
 type ApplyConfig struct {

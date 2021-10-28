@@ -49,7 +49,7 @@ func TestNewTabWriter(t *testing.T) {
 		tt := tt
 		t.Run(tt.testname, func(t *testing.T) {
 			var buf bytes.Buffer
-			out := util.NewTabWriter(&buf)
+			out := util.GetNewTabWriter(&buf)
 			fmt.Fprintln(out, tt.src)
 			err := out.Flush()
 			assert.NoError(t, err)

@@ -31,7 +31,7 @@ func NewVersionCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			out := cmd.OutOrStdout()
 			clientV := clientVersion()
-			w := util.NewTabWriter(out)
+			w := util.GetNewTabWriter(out)
 			defer w.Flush()
 			fmt.Fprintf(w, "%s:\t%s\n", "airshipctl", clientV)
 		},

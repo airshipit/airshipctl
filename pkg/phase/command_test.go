@@ -110,12 +110,8 @@ func TestRunCommand(t *testing.T) {
 }
 
 func TestListCommand(t *testing.T) {
-	outputString1 := "NAMESPACE   RESOURCE                                  CLUSTER " +
-		"NAME          EXECUTOR              DOC ENTRYPOINT                     " +
-		"                                                                 "
-	outputString2 := "            Phase/phase                               ephemeral" +
-		"-cluster     KubernetesApply       ephemeral/phase                      " +
-		"                                                               "
+	outputString1 := "NAMESPACE   NAME    CLUSTER NAME        EXECUTOR          DOC ENTRYPOINT"
+	outputString2 := "            phase   ephemeral-cluster   KubernetesApply   ephemeral/phase"
 	yamlOutput := `---
 - apiVersion: airshipit.org/v1alpha1
   config:
@@ -367,7 +363,6 @@ func TestPlanListCommand(t *testing.T) {
 			Format:      "table",
 			expectedOut: [][]byte{{}},
 		},
-
 		{
 			name: "List phases",
 			factory: func() (*config.Config, error) {
@@ -379,13 +374,8 @@ func TestPlanListCommand(t *testing.T) {
 				return conf, nil
 			},
 			expectedOut: [][]byte{
-				[]byte("NAMESPACE   RESOURCE                                  DESCRIPTION                                        " +
-					"                                                                                                        " +
-					"                                             "),
-				[]byte("            PhasePlan/phasePlan                       Default phase plan" +
-					"                                                                            " +
-					"                                                                            " +
-					"                              "),
+				[]byte("NAMESPACE   NAME        DESCRIPTION"),
+				[]byte("            phasePlan   Default phase plan"),
 				{},
 			},
 			Format: "table",
@@ -659,7 +649,7 @@ func TestValidateCommand(t *testing.T) {
 				return conf, nil
 			},
 			errContains: `document filtered by selector [Group="airshipit.org", Version="v1alpha1", ` +
-				`Kind="GenericContainer", Name="document-validation"] found no documents`,
+				`Kind="GenericContainer", Name="applier"] found no documents`,
 		},
 	}
 

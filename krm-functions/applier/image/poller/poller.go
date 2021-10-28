@@ -27,15 +27,16 @@ import (
 	"sigs.k8s.io/cli-utils/pkg/kstatus/polling/engine"
 	"sigs.k8s.io/cli-utils/pkg/kstatus/polling/event"
 	"sigs.k8s.io/cli-utils/pkg/kstatus/polling/statusreaders"
+	"sigs.k8s.io/cli-utils/pkg/kstatus/status"
 	"sigs.k8s.io/cli-utils/pkg/object"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/krm-functions/applier/image/types"
 )
 
 // NewStatusPoller creates a new StatusPoller using the given clusterreader and mapper. The StatusPoller
 // will use the client for all calls to the cluster.
-func NewStatusPoller(f cmdutil.Factory, conditions ...v1alpha1.Condition) (*StatusPoller, error) {
+func NewStatusPoller(f cmdutil.Factory, conditions ...types.Condition) (*StatusPoller, error) {
 	config, err := f.ToRESTConfig()
 	if err != nil {
 		return nil, err
@@ -66,14 +67,14 @@ type StatusPoller struct {
 	StatusReadersFactoryFunc engine.StatusReadersFactoryFunc
 
 	Engine     *engine.PollerEngine
-	conditions []v1alpha1.Condition
+	conditions []types.Condition
 }
 
 // Poll will create a new statusPollerRunner that will poll all the resources provided and report their status
 // back on the event channel returned. The statusPollerRunner can be canceled at any time by canceling the
 // context passed in.
 func (s *StatusPoller) Poll(
-	ctx context.Context, identifiers []object.ObjMetadata, options polling.Options) <-chan event.Event {
+	ctx context.Context, identifiers object.ObjMetadataSet, options polling.Options) <-chan event.Event {
 	return s.Engine.Poll(ctx, identifiers, engine.Options{
 		PollInterval: options.PollInterval,
 		ClusterReaderFactoryFunc: map[bool]engine.ClusterReaderFactoryFunc{true: clusterReaderFactoryFunc(options.UseCache),
@@ -91,7 +92,7 @@ func (s *StatusPoller) Poll(
 func (s *StatusPoller) createStatusReadersFactory() engine.StatusReadersFactoryFunc {
 	return func(reader engine.ClusterReader, mapper meta.RESTMapper) (
 		map[schema.GroupKind]engine.StatusReader, engine.StatusReader) {
-		defaultStatusReader := statusreaders.NewGenericStatusReader(reader, mapper)
+		defaultStatusReader := statusreaders.NewGenericStatusReader(reader, mapper, status.Compute)
 		replicaSetStatusReader := statusreaders.NewReplicaSetStatusReader(reader, mapper, defaultStatusReader)
 		deploymentStatusReader := statusreaders.NewDeploymentResourceReader(reader, mapper, replicaSetStatusReader)
 		statefulSetStatusReader := statusreaders.NewStatefulSetResourceReader(reader, mapper, defaultStatusReader)
@@ -104,8 +105,8 @@ func (s *StatusPoller) createStatusReadersFactory() engine.StatusReadersFactoryF
 
 		if len(s.conditions) > 0 {
 			cr := NewCustomResourceReader(reader, mapper, s.conditions...)
-			for _, tm := range s.conditions {
-				statusReaders[tm.GroupVersionKind().GroupKind()] = cr
+			for _, cm := range s.conditions {
+				statusReaders[cm.GroupVersionKind().GroupKind()] = cr
 			}
 		}
 
@@ -119,7 +120,7 @@ func (s *StatusPoller) createStatusReadersFactory() engine.StatusReadersFactoryF
 // decided here rather than based on information passed in to the factory function. Thus, the decision
 // for which implementation is decided when the StatusPoller is created.
 func clusterReaderFactoryFunc(useCache bool) engine.ClusterReaderFactoryFunc {
-	return func(r client.Reader, mapper meta.RESTMapper, identifiers []object.ObjMetadata) (engine.ClusterReader, error) {
+	return func(r client.Reader, mapper meta.RESTMapper, identifiers object.ObjMetadataSet) (engine.ClusterReader, error) {
 		if useCache {
 			cr, err := clusterreader.NewCachingClusterReader(r, mapper, identifiers)
 			if err != nil {

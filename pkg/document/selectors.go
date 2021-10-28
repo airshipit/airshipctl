@@ -219,3 +219,11 @@ func NewClusterctlContainerExecutorSelector() Selector {
 		ClusterctlContainerKind).
 		ByName(ClusterctlContainerName)
 }
+
+// NewApplierContainerExecutorSelector returns selector to get executor documents for applier container
+func NewApplierContainerExecutorSelector() Selector {
+	return NewSelector().ByGvk(ApplierContainerGroup,
+		ApplierContainerVersion,
+		ApplierContainerKind).
+		ByName(ApplierContainerName)
+}

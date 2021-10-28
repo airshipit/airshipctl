@@ -16,18 +16,19 @@ package poller
 
 import (
 	"context"
+	"fmt"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
+	apitypes "k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/cli-utils/pkg/kstatus/polling/engine"
 	"sigs.k8s.io/cli-utils/pkg/kstatus/polling/event"
 	"sigs.k8s.io/cli-utils/pkg/kstatus/status"
 	"sigs.k8s.io/cli-utils/pkg/object"
 
-	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/krm-functions/applier/image/types"
 )
 
 // CustomResourceReader is a wrapper for clu-utils genericClusterReader struct
@@ -49,7 +50,7 @@ var _ engine.StatusReader = &CustomResourceReader{}
 
 // NewCustomResourceReader implements custom logic to retrieve resource's status
 func NewCustomResourceReader(reader engine.ClusterReader, mapper meta.RESTMapper,
-	conditions ...v1alpha1.Condition) engine.StatusReader {
+	conditions ...types.Condition) engine.StatusReader {
 	condMap := make(map[schema.GroupKind]Expression)
 	for _, cond := range conditions {
 		condMap[cond.GroupVersionKind().GroupKind()] = Expression{
@@ -98,6 +99,7 @@ func (c *CustomResourceReader) ReadStatusForObject(_ context.Context,
 				Identifier: toIdentifier(obj),
 				Status:     status.UnknownStatus,
 				Error:      err,
+				Message:    fmt.Sprintf("Unable to parse jsonpath '%s' in resource: %v", val.Condition, err),
 			}
 		}
 
@@ -112,6 +114,7 @@ func (c *CustomResourceReader) ReadStatusForObject(_ context.Context,
 		return &event.ResourceStatus{
 			Identifier: toIdentifier(obj),
 			Status:     status.InProgressStatus,
+			Message:    fmt.Sprintf("Resource has not reached state '%s' at jsonpath '%s' yet", val.Value, val.Condition),
 		}
 	}
 
@@ -136,7 +139,7 @@ func (c *CustomResourceReader) lookupResource(ctx context.Context,
 
 	var u unstructured.Unstructured
 	u.SetGroupVersionKind(groupVersionKind)
-	key := types.NamespacedName{
+	key := apitypes.NamespacedName{
 		Name:      identifier.Name,
 		Namespace: identifier.Namespace,
 	}

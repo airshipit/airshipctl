@@ -26,6 +26,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/document"
 	phaseerrors "opendev.org/airship/airshipctl/pkg/phase/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
+	"opendev.org/airship/airshipctl/pkg/util"
 	"opendev.org/airship/airshipctl/pkg/util/yaml"
 )
 
@@ -105,7 +106,7 @@ func (c *ListCommand) RunE() error {
 		return err
 	}
 	if c.OutputFormat == TableOutputFormat {
-		return PrintPhaseListTable(c.Writer, phaseList)
+		return util.PrintObjects(phaseList, util.PhaseListFormat, c.Writer, false)
 	}
 	return yaml.WriteOut(c.Writer, phaseList)
 }
@@ -192,14 +193,10 @@ func (c *PlanListCommand) RunE() error {
 	if err != nil {
 		return err
 	}
-	switch {
-	case c.Options.FormatType == YamlOutputFormat:
+	if c.Options.FormatType == YamlOutputFormat {
 		return yaml.WriteOut(c.Writer, phasePlans)
-	case c.Options.FormatType == TableOutputFormat:
-		return PrintPlanListTable(c.Writer, phasePlans)
-	default:
-		return PrintPlanListTable(c.Writer, phasePlans)
 	}
+	return util.PrintObjects(phasePlans, util.PlanListFormat, c.Writer, false)
 }
 
 // PlanRunFlags options for phase run command

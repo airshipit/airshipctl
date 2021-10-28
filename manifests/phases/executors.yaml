@@ -7,7 +7,8 @@ metadata:
   name: kubernetes-apply
 config:
   waitOptions:
-    timeout: 2600
+    timeout: 2500
+    pollInterval: 10
     conditions:
       - apiVersion: metal3.io/v1alpha1
         kind: BareMetalHost
@@ -24,8 +25,8 @@ metadata:
   name: kubernetes-apply-controlplane
 config:
   waitOptions:
-    timeout: 5000
-    pollInterval: 30
+    timeout: 3500
+    pollInterval: 20
     conditions:
       - apiVersion: metal3.io/v1alpha1
         kind: BareMetalHost
@@ -575,6 +576,17 @@ metadata:
 spec:
   type: krm
   image: localhost/clusterctl:latest
+  hostNetwork: true
+---
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: applier
+  labels:
+    airshipit.org/deploy-k8s: "false"
+spec:
+  type: krm
+  image: localhost/applier:latest
   hostNetwork: true
 ---
 apiVersion: airshipit.org/v1alpha1

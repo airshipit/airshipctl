@@ -23,6 +23,7 @@ apiVersion: cluster.x-k8s.io/v1alpha3
 kind: MachineDeployment
 metadata:
   name: "target-cluster-md-0"
+  namespace: default
 spec:
   clusterName: "target-cluster"
   replicas: ${ WORKER_MACHINE_COUNT }

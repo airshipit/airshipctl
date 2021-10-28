@@ -57,6 +57,15 @@ const (
 	ClusterctlContainerKind = "GenericContainer"
 	// ClusterctlContainerName defines Name for clustertctl container
 	ClusterctlContainerName = "clusterctl"
+
+	// ApplierContainerGroup defines Group for applier container
+	ApplierContainerGroup = "airshipit.org"
+	// ApplierContainerVersion defines Version for applier container
+	ApplierContainerVersion = "v1alpha1"
+	// ApplierContainerKind defines Kind for applier container
+	ApplierContainerKind = "GenericContainer"
+	// ApplierContainerName defines Name for applier container
+	ApplierContainerName = "applier"
 )
 
 // KustomizationFile is used for kustomization file

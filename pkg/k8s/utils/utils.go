@@ -15,19 +15,8 @@
 package utils
 
 import (
-	"bytes"
-	"io"
-	"os"
-
-	"k8s.io/apimachinery/pkg/api/meta"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
-	"sigs.k8s.io/cli-utils/pkg/manifestreader"
-	"sigs.k8s.io/cli-utils/pkg/util/factory"
-
-	"opendev.org/airship/airshipctl/pkg/document"
 )
 
 // ClientOption is a function that allows to modify ConfigFlags object which is used to create Client
@@ -50,68 +39,5 @@ func FactoryFromKubeConfig(path, context string, opts ...ClientOption) cmdutil.F
 		o(kf)
 	}
 
-	return cmdutil.NewFactory(cmdutil.NewMatchVersionFlags(&factory.CachingRESTClientGetter{
-		Delegate: kf,
-	}))
-}
-
-// Streams returns default IO streams object, like stdout, stdin, stderr
-func Streams() genericclioptions.IOStreams {
-	return genericclioptions.IOStreams{
-		In:     os.Stdin,
-		Out:    os.Stdout,
-		ErrOut: os.Stderr,
-	}
-}
-
-// ManifestReaderFactory factory function for manifestreader.ManifestReader
-type ManifestReaderFactory func(
-	validate bool,
-	bundle document.Bundle,
-	mapper meta.RESTMapper) manifestreader.ManifestReader
-
-// DefaultManifestReaderFactory default factory function for manifestreader.ManifestReader
-var DefaultManifestReaderFactory ManifestReaderFactory = func(
-	validate bool,
-	bundle document.Bundle,
-	mapper meta.RESTMapper) manifestreader.ManifestReader {
-	return NewManifestBundleReader(validate, bundle, mapper)
-}
-
-// NewManifestBundleReader returns implementation of manifestreader interface
-func NewManifestBundleReader(
-	validate bool,
-	bundle document.Bundle,
-	mapper meta.RESTMapper) *ManifestBundleReader {
-	opts := manifestreader.ReaderOptions{
-		Mapper:    mapper,
-		Validate:  validate,
-		Namespace: metav1.NamespaceDefault,
-	}
-	buffer := bytes.NewBuffer([]byte{})
-	return &ManifestBundleReader{
-		Bundle: bundle,
-		writer: buffer,
-		StreamReader: &manifestreader.StreamManifestReader{
-			ReaderName:    "airship",
-			Reader:        buffer,
-			ReaderOptions: opts,
-		},
-	}
-}
-
-// ManifestBundleReader implements manifestreader interface that to transform bundle to slice
-// of *resource.Info objects using Read() method.
-type ManifestBundleReader struct {
-	Bundle       document.Bundle
-	StreamReader *manifestreader.StreamManifestReader
-	writer       io.Writer
-}
-
-func (mbr *ManifestBundleReader) Read() ([]*unstructured.Unstructured, error) {
-	err := mbr.Bundle.Write(mbr.writer)
-	if err != nil {
-		return nil, err
-	}
-	return mbr.StreamReader.Read()
+	return cmdutil.NewFactory(cmdutil.NewMatchVersionFlags(kf))
 }
