@@ -1,0 +1,297 @@
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: mutating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-infrastructure-cluster-x-k8s-io-v1alpha4-azurecluster
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: default.azurecluster.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1alpha4
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - azureclusters
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-infrastructure-cluster-x-k8s-io-v1alpha4-azuremachine
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: default.azuremachine.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1alpha4
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - azuremachines
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-infrastructure-cluster-x-k8s-io-v1alpha4-azuremachinetemplate
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: default.azuremachinetemplate.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1alpha4
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - azuremachinetemplates
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-infrastructure-cluster-x-k8s-io-v1alpha4-azuremachinepool
+  failurePolicy: Fail
+  name: default.azuremachinepool.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1alpha4
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - azuremachinepools
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-infrastructure-cluster-x-k8s-io-v1alpha4-azuremanagedcontrolplane
+  failurePolicy: Fail
+  name: default.azuremanagedcontrolplanes.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1alpha4
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - azuremanagedcontrolplanes
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-infrastructure-cluster-x-k8s-io-v1alpha4-azuremanagedmachinepool
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: default.azuremanagedmachinepools.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1alpha4
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - azuremanagedmachinepools
+  sideEffects: None
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: validating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-infrastructure-cluster-x-k8s-io-v1alpha4-azurecluster
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: validation.azurecluster.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1alpha4
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - azureclusters
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-infrastructure-cluster-x-k8s-io-v1alpha4-azuremachine
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: validation.azuremachine.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1alpha4
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - azuremachines
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-infrastructure-cluster-x-k8s-io-v1alpha4-azuremachinetemplate
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: validation.azuremachinetemplate.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1alpha4
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - azuremachinetemplates
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-infrastructure-cluster-x-k8s-io-v1alpha4-azuremachinepool
+  failurePolicy: Fail
+  name: validation.azuremachinepool.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1alpha4
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - azuremachinepools
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-infrastructure-cluster-x-k8s-io-v1alpha4-azuremachinepoolmachine
+  failurePolicy: Fail
+  name: azuremachinepoolmachine.kb.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1alpha4
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - azuremachinepoolmachines
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-infrastructure-cluster-x-k8s-io-v1alpha4-azuremanagedcontrolplane
+  failurePolicy: Fail
+  name: validation.azuremanagedcontrolplanes.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1alpha4
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - azuremanagedcontrolplanes
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-infrastructure-cluster-x-k8s-io-v1alpha4-azuremanagedmachinepool
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: validation.azuremanagedmachinepools.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - infrastructure.cluster.x-k8s.io
+    apiVersions:
+    - v1alpha4
+    operations:
+    - UPDATE
+    - DELETE
+    resources:
+    - azuremanagedmachinepools
+  sideEffects: None

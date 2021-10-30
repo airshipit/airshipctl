@@ -1,0 +1,5 @@
+resources:
+  - ../../airshipctl-base-catalogues
+  - namespace.yaml
+  - cluster.yaml
+  - controlplane.yaml

@@ -1,0 +1,66 @@
+apiVersion: cluster.x-k8s.io/v1alpha4
+kind: Cluster
+metadata:
+  labels:
+    cni: calico
+  name: target-cluster
+  namespace: default
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 192.168.0.0/16
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha4
+    kind: KubeadmControlPlane
+    name: target-cluster-control-plane
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+    kind: AzureCluster
+    name: target-cluster
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+kind: AzureCluster
+metadata:
+  name: target-cluster
+  namespace: default
+spec:
+  identityRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+    kind: AzureClusterIdentity
+    name: target-cluster-identity
+  location: centralus
+  networkSpec:
+    vnet:
+      name: target-cluster-vnet
+  resourceGroup: target-cluster-rg
+  subscriptionID: cb3e23d3-b697-4c4f-a1a7-529e308691e4
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+kind: AzureClusterIdentity
+metadata:
+  labels:
+    clusterctl.cluster.x-k8s.io/move-hierarchy: "true"
+  name: target-cluster-identity
+  namespace: default
+spec:
+  allowedNamespaces: {}
+  clientID: <your Azure Subscription's Client ID>
+  clientSecret:
+    name: target-cluster-identity-secret
+    namespace: default
+  tenantID: <your Azure Subscription's Tenant ID>
+  type: ServicePrincipal
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    clusterctl.cluster.x-k8s.io/move-hierarchy: "true"
+  annotations:
+    config.kubernetes.io/path: target-infra/secret_target-cluster-identity-secret.yaml
+  name: target-cluster-identity-secret
+  namespace: default
+type: Opaque
+data:
+  clientSecret: <your Azure Subscription's Client Secret>

@@ -1,0 +1,3 @@
+resources:
+  - ../../airshipctl-base-catalogues
+  - workers.yaml
