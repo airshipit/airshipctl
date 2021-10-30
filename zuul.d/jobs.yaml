@@ -174,9 +174,9 @@
         - ./tools/deployment/01_install_kubectl.sh
         - ./tools/install_kustomize.sh
         - ./tools/airship-in-a-pod/scripts/01_dns_settings.sh
-        - ./tools/airship-in-a-pod/scripts/10_install_minikube.sh
+        - ./tools/airship-in-a-pod/scripts/10_install_kind.sh
         - ./tools/airship-in-a-pod/scripts/11_build_images.sh
-        - ./tools/airship-in-a-pod/scripts/12_start_minikube.sh
+        - ./tools/airship-in-a-pod/scripts/12_start_kind.sh
         - ./tools/airship-in-a-pod/scripts/13_apply_dns.sh
         - ./tools/airship-in-a-pod/scripts/20_apply_aiap.sh
       serve_dir: /srv/images

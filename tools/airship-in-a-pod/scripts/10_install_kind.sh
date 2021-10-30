@@ -14,10 +14,10 @@
 
 set -ex
 
-# Installs minikube and other dependencies required for the scripts to run
+# Installs kind and other dependencies required for the scripts to run
 
 
-MINIKUBE_VERSION="latest"
+KIND_VERSION="v0.11.1"
 
 install_pkg(){
   for i in "$@"; do
@@ -25,11 +25,11 @@ install_pkg(){
   done
 }
 
-# Grab usefull packages needed for minikube and other scripts
+# Grab usefull packages needed for kind and other scripts
 install_pkg curl conntrack make jq
 
-curl -Lo minikube "https://storage.googleapis.com/minikube/releases/$MINIKUBE_VERSION/minikube-linux-amd64" \
-  && chmod +x minikube
+curl -Lo ./kind "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64" \
+  && chmod +x ./kind
 
 sudo mkdir -p /usr/local/bin/
-sudo install minikube /usr/local/bin/
+sudo mv ./kind /usr/local/bin/

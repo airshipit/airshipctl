@@ -23,11 +23,15 @@ AIRSHIPCTL_REF=${AIRSHIPCTL_REF:-"master"}
 export AIRSHIPCTL_REF
 # Images that are required by airship-in-a-pod but not built
 PULL_LIST="docker:stable-dind nginx quay.io/metal3-io/sushy-tools quay.io/airshipit/libvirt:aiap-v1"
-
+export PULL_LIST
 
 pushd tools/airship-in-a-pod/ || exit
 
-make -e images artifact-setup base infra-builder runner libvirt
+
+BUILD_LIST="images artifact-setup base infra-builder runner libvirt"
+export BUILD_LIST
+
+make -e ${BUILD_LIST}
 
 for IMAGE in $PULL_LIST; do
     docker pull "$IMAGE"
