@@ -13,5 +13,5 @@
 - hosts: all
   become: yes
   roles:
-    - docker-install
+    - ensure-docker
     - aiap-publish-images

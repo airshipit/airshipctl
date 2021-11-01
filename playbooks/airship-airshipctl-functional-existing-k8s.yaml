@@ -12,7 +12,7 @@
 
 - hosts: primary
   roles:
-    - docker-install
+    - ensure-docker
     - install-kubectl
   tasks:
     - name: "Build and install airshipctl"

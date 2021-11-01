@@ -44,5 +44,8 @@ else
   sudo pip3 --proxy "${http_proxy}" install $PACKAGES
 fi
 
+# zuul-jobs provides ensure-docker role available by default in zuul
+ansible-galaxy install git+https://opendev.org/zuul/zuul-jobs.git -p "${AIRSHIPCTL_WS}/../zuul-jobs"
+
 echo "primary ansible_host=localhost ansible_connection=local ansible_python_interpreter=/usr/bin/python3" > "$ANSIBLE_HOSTS"
-printf "[defaults]\nroles_path = %s/roles\n" "$AIRSHIPCTL_WS" > "$ANSIBLE_CFG"
+printf "[defaults]\nroles_path = %s/roles:zuul-jobs/roles\n" "$AIRSHIPCTL_WS" > "$ANSIBLE_CFG"
