@@ -18,7 +18,7 @@ else
 GOBIN = $(shell go env GOBIN 2> /dev/null)
 endif
 
-# Produce CRDs that work back to Kubernetes 1.16
+# Produce CRDs that work back to Kubernetes 1.21.2
 CRD_OPTIONS ?= crd:crdVersions=v1
 TOOLBINDIR          := tools/bin
 
@@ -83,7 +83,7 @@ DOCS_DIR            ?= docs
 # document validation options
 UNAME               != uname
 export KIND_URL     ?= https://kind.sigs.k8s.io/dl/v0.8.1/kind-$(UNAME)-amd64
-KUBECTL_VERSION     ?= v1.18.6
+KUBECTL_VERSION     ?= v1.21.2
 export KUBECTL_URL  ?= https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
 
 .PHONY: depend

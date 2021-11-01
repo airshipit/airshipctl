@@ -94,7 +94,7 @@ spec:
                     type: array
                   kubernetesVersion:
                     description: KubernetesVersion is the version of Kubernetes to
-                      validate against (default "1.18.6").
+                      validate against (default "1.21.2").
                     type: string
                   schemaLocation:
                     description: SchemaLocation is the base URL from which to search

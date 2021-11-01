@@ -81,7 +81,7 @@ spec:
         init_images:
           image: quay.io/airshipit/ipa-wallaby:latest
         qcow_bundle:
-          image: quay.io/airshipit/qcow-bundle:k8s-1.19-latest-ubuntu_focal
+          image: quay.io/airshipit/qcow-bundle:k8s-1.21-latest-ubuntu_focal
         dnsmasq:
           image: quay.io/metal3-io/ironic:capm3-v0.5.0
         mariadb:
@@ -152,9 +152,9 @@ spec:
     image_builder:
       image_builder:
         image_builder:
-          image: quay.io/airshipit/image-builder:k8s-1.19-latest-ubuntu_focal
+          image: quay.io/airshipit/image-builder:k8s-1.21-latest-ubuntu_focal
 
-  kubernetes: v1.19.14
+  kubernetes: v1.21.2
 
   image_repositories:
     cni:
