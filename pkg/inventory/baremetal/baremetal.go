@@ -149,7 +149,9 @@ func (i Inventory) newHost(doc document.Document) (Host, error) {
 		}
 	}
 
-	client, err := clientFactory(
+	nodeName := doc.GetName()
+
+	client, err := clientFactory(nodeName,
 		address,
 		i.mgmtCfg.Insecure,
 		i.mgmtCfg.UseProxy,

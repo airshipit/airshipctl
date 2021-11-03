@@ -31,6 +31,8 @@ const (
 		"EXECUTOR:config.executorRef.kind,DOC ENTRYPOINT:config.documentEntryPoint"
 	// PlanListFormat is used to print tables with plan list
 	PlanListFormat = "NAMESPACE:metadata.namespace,NAME:metadata.name,DESCRIPTION:description"
+	// HostListFormat is used to print tables with host list
+	HostListFormat = "NodeName:nodename,NodeID:nodeid"
 )
 
 // PrintObjects prints suitable

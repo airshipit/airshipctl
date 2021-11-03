@@ -25,6 +25,7 @@ import (
 type Client interface {
 	EjectVirtualMedia(context.Context) error
 	NodeID() string
+	NodeName() string
 	RebootSystem(context.Context) error
 	SetBootSourceByType(context.Context) error
 	SystemPowerOff(context.Context) error
@@ -38,7 +39,7 @@ type Client interface {
 }
 
 // ClientFactory is a function to be used
-type ClientFactory func(
+type ClientFactory func(name string,
 	redfishURL string,
 	insecure bool, useProxy bool,
 	username string, password string,

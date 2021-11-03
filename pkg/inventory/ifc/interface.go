@@ -44,6 +44,8 @@ const (
 	BaremetalOperationPowerOn BaremetalOperation = "power-on"
 	// BaremetalOperationEjectVirtualMedia eject virtual media
 	BaremetalOperationEjectVirtualMedia BaremetalOperation = "eject-virtual-media"
+	// BaremetalOperationListHosts list hosts
+	BaremetalOperationListHosts BaremetalOperation = "list-hosts"
 )
 
 // BaremetalBatchRunOptions are options to be passed to RunOperation, this is to be

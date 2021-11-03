@@ -28,18 +28,19 @@ import (
 )
 
 const (
+	nodeName            = "node-0"
 	redfishURL          = "redfish+https://localhost/Systems/System.Embedded.1"
 	systemActionRetries = 0
 	systemRebootDelay   = 0
 )
 
 func TestNewClient(t *testing.T) {
-	_, err := newClient(redfishURL, false, false, "username", "password", systemActionRetries, systemRebootDelay)
+	_, err := newClient(nodeName, redfishURL, false, false, "username", "password", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 }
 
 func TestNewClientInterface(t *testing.T) {
-	c, err := ClientFactory(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	c, err := ClientFactory(nodeName, redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 }
@@ -47,7 +48,7 @@ func TestNewClientInterface(t *testing.T) {
 func TestNewClientDefaultValues(t *testing.T) {
 	sysActRetr := 222
 	sysRebDel := 555
-	c, err := newClient(redfishURL, false, false, "", "", sysActRetr, sysRebDel)
+	c, err := newClient(nodeName, redfishURL, false, false, "", "", sysActRetr, sysRebDel)
 	assert.Equal(t, c.SystemActionRetries(), sysActRetr)
 	assert.Equal(t, c.SystemRebootDelay(), sysRebDel)
 	assert.NoError(t, err)
@@ -56,7 +57,7 @@ func TestSetBootSourceByTypeGetSystemError(t *testing.T) {
 	m := &redfishMocks.RedfishAPI{}
 	defer m.AssertExpectations(t)
 
-	client, err := newClient(redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
+	client, err := newClient(nodeName, redfishURL, false, false, "", "", systemActionRetries, systemRebootDelay)
 	assert.NoError(t, err)
 
 	ctx := redfish.SetAuth(context.Background(), "", "")

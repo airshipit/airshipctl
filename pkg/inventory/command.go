@@ -20,8 +20,18 @@ import (
 	"io"
 	"time"
 
+	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/inventory/ifc"
 	remoteifc "opendev.org/airship/airshipctl/pkg/remote/ifc"
+	"opendev.org/airship/airshipctl/pkg/util"
+	"opendev.org/airship/airshipctl/pkg/util/yaml"
+)
+
+const (
+	// TableOutputFormat table
+	TableOutputFormat = "table"
+	// YamlOutputFormat yaml
+	YamlOutputFormat = "yaml"
 )
 
 // CommandOptions is used to store common variables from cmd flags for baremetal command group
@@ -35,6 +45,18 @@ type CommandOptions struct {
 	Timeout   time.Duration
 
 	Inventory ifc.Inventory
+}
+
+// ListHostsCommand is used to store common variables from cmd flags for list-hots command
+type ListHostsCommand struct {
+	Writer       io.Writer
+	Options      *CommandOptions
+	OutputFormat string
+}
+
+//NewListHostsCommand ListHostsCommand constructor
+func NewListHostsCommand(options *CommandOptions) *ListHostsCommand {
+	return &ListHostsCommand{Options: options}
 }
 
 // NewOptions options constructor
@@ -59,6 +81,22 @@ func (o *CommandOptions) validateSingleHostAction() error {
 		return ErrInvalidOptions{Message: "No options are specified, must provide atleast 'name', 'namespace' or 'labels'"}
 	}
 	return nil
+}
+
+//RunE method returns list of hots from BaremetalInventory
+func (l *ListHostsCommand) RunE() error {
+	if l.OutputFormat != TableOutputFormat && l.OutputFormat != YamlOutputFormat {
+		return ErrInvalidOptions{Message: "output formats. Supported options are 'table' and 'yaml'"}
+	}
+
+	hostClients, err := l.Options.getAllHost()
+	if err != nil {
+		return err
+	}
+	if len(hostClients) == 0 {
+		return fmt.Errorf("No hosts present in the hostInventory")
+	}
+	return l.Write(hostClients)
 }
 
 // BMHAction performs an action against BaremetalHost objects
@@ -124,9 +162,32 @@ func (o *CommandOptions) getHost() (remoteifc.Client, error) {
 	return bmhInventory.SelectOne(o.selector())
 }
 
+func (o *CommandOptions) getAllHost() ([]remoteifc.Client, error) {
+	bmhInventory, err := o.Inventory.BaremetalInventory()
+	if err != nil {
+		return nil, err
+	}
+
+	return bmhInventory.Select(o.selector())
+}
+
 func (o *CommandOptions) selector() ifc.BaremetalHostSelector {
 	return (ifc.BaremetalHostSelector{}).
 		ByLabel(o.Labels).
 		ByName(o.Name).
 		ByNamespace(o.Namespace)
+}
+
+func (l *ListHostsCommand) Write(clients []remoteifc.Client) error {
+	hostList := []*v1alpha1.Host{}
+	for _, client := range clients {
+		host := v1alpha1.DefaultHost()
+		host.NodeID = client.NodeID()
+		host.NodeName = client.NodeName()
+		hostList = append(hostList, host)
+	}
+	if l.OutputFormat == YamlOutputFormat {
+		return yaml.WriteOut(l.Writer, hostList)
+	}
+	return util.PrintObjects(hostList, util.HostListFormat, l.Writer, false)
 }

@@ -135,14 +135,14 @@ func (c *Client) RemoteDirect(ctx context.Context, isoURL string) error {
 }
 
 // newClient returns a client with the capability to make Redfish requests.
-func newClient(redfishURL string,
+func newClient(nodeName string, redfishURL string,
 	insecure bool,
 	useProxy bool,
 	username string,
 	password string,
 	systemActionRetries int,
 	systemRebootDelay int) (*Client, error) {
-	genericClient, err := redfish.NewClient(redfishURL, insecure, useProxy, username, password,
+	genericClient, err := redfish.NewClient(nodeName, redfishURL, insecure, useProxy, username, password,
 		systemActionRetries, systemRebootDelay)
 	if err != nil {
 		return nil, err
@@ -154,13 +154,13 @@ func newClient(redfishURL string,
 }
 
 // ClientFactory is a constructor for redfish ifc.Client implementation
-var ClientFactory ifc.ClientFactory = func(redfishURL string,
+var ClientFactory ifc.ClientFactory = func(nodeName, redfishURL string,
 	insecure bool,
 	useProxy bool,
 	username string,
 	password string,
 	systemActionRetries int,
 	systemRebootDelay int) (ifc.Client, error) {
-	return newClient(redfishURL, insecure, useProxy,
+	return newClient(nodeName, redfishURL, insecure, useProxy,
 		username, password, systemActionRetries, systemRebootDelay)
 }

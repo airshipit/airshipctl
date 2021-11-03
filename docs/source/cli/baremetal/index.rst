@@ -7,6 +7,7 @@ baremetal
 
    airshipctl_baremetal
    airshipctl_baremetal_ejectmedia
+   airshipctl_baremetal_list-hosts
    airshipctl_baremetal_poweroff
    airshipctl_baremetal_poweron
    airshipctl_baremetal_powerstatus

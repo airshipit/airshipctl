@@ -51,6 +51,11 @@ spec:
                         type: string
                       group:
                         type: string
+                      isClusterScoped:
+                        description: isClusterScoped is true if the object is known,
+                          per the openapi data in use, to be cluster scoped, and false
+                          otherwise.
+                        type: boolean
                       kind:
                         type: string
                       labelSelector:
@@ -59,8 +64,11 @@ spec:
                           It matches with the resource labels.
                         type: string
                       name:
+                        description: Name of the resource.
                         type: string
                       namespace:
+                        description: Namespace the resource belongs to, if it can
+                          belong to a namespace.
                         type: string
                       version:
                         type: string
@@ -90,6 +98,11 @@ spec:
                         type: string
                       group:
                         type: string
+                      isClusterScoped:
+                        description: isClusterScoped is true if the object is known,
+                          per the openapi data in use, to be cluster scoped, and false
+                          otherwise.
+                        type: boolean
                       kind:
                         type: string
                       labelSelector:
@@ -98,8 +111,11 @@ spec:
                           It matches with the resource labels.
                         type: string
                       name:
+                        description: Name of the resource.
                         type: string
                       namespace:
+                        description: Namespace the resource belongs to, if it can
+                          belong to a namespace.
                         type: string
                       version:
                         type: string

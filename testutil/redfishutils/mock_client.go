@@ -24,7 +24,8 @@ import (
 // MockClient is a fake Redfish client for unit testing.
 type MockClient struct {
 	mock.Mock
-	nodeID string
+	nodeID   string
+	nodeName string
 }
 
 // NodeID provides a stubbed method that can be mocked to test functions that use the Redfish client without
@@ -36,6 +37,19 @@ type MockClient struct {
 //
 //         err := client.NodeID()
 func (m *MockClient) NodeID() string {
+	args := m.Called()
+	return args.String(0)
+}
+
+// NodeName provides a stubbed method that can be mocked to test functions that use the Redfish client without
+// making any Redfish API calls or requiring the appropriate Redfish client settings.
+//
+//     Example usage:
+//         client := redfishutils.NewClient()
+//         client.On("NodeName").Return(<return values>)
+//
+//         err := client.NodeName()
+func (m *MockClient) NodeName() string {
 	args := m.Called()
 	return args.String(0)
 }
@@ -147,7 +161,7 @@ func (m *MockClient) RemoteDirect(ctx context.Context, isoURL string) error {
 
 // NewClient returns a mocked Redfish client in order to test functions that use the Redfish client without making any
 // Redfish API calls.
-func NewClient(redfishURL string, insecure bool, useProxy bool, username string,
+func NewClient(nodeName string, redfishURL string, insecure bool, useProxy bool, username string,
 	password string) (*MockClient, error) {
 	if redfishURL == "" {
 		return nil, redfish.ErrRedfishMissingConfig{What: "Redfish URL"}
@@ -159,6 +173,6 @@ func NewClient(redfishURL string, insecure bool, useProxy bool, username string,
 		return nil, redfish.ErrRedfishMissingConfig{What: "management URL system ID"}
 	}
 
-	m := &MockClient{nodeID: systemID}
+	m := &MockClient{nodeID: systemID, nodeName: nodeName}
 	return m, nil
 }

@@ -31,6 +31,16 @@ spec:
             description: ApplyConfig provides instructions on how to apply resources
               to kubernetes cluster
             properties:
+              context:
+                type: string
+              debug:
+                type: boolean
+              druRun:
+                type: boolean
+              kubeconfig:
+                type: string
+              phaseName:
+                type: string
               pruneOptions:
                 description: ApplyPruneOptions provides instructions how to prune
                   for kubernetes resources
@@ -42,6 +52,35 @@ spec:
                 description: ApplyWaitOptions provides instructions how to wait for
                   kubernetes resources
                 properties:
+                  conditions:
+                    items:
+                      description: Condition is a jsonpath for particular TypeMeta
+                        which indicates what state to wait
+                      properties:
+                        apiVersion:
+                          description: 'APIVersion defines the versioned schema of
+                            this representation of an object. Servers should convert
+                            recognized schemas to the latest internal value, and may
+                            reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+                          type: string
+                        jsonPath:
+                          type: string
+                        kind:
+                          description: 'Kind is a string value representing the REST
+                            resource this object represents. Servers may infer this
+                            from the endpoint the client submits requests to. Cannot
+                            be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                          type: string
+                        value:
+                          description: Value is desired state to wait for, if no value
+                            specified - just existence of provided jsonPath will be
+                            checked
+                          type: string
+                      type: object
+                    type: array
+                  pollInterval:
+                    description: PollInterval in seconds
+                    type: integer
                   timeout:
                     description: Timeout in seconds
                     type: integer

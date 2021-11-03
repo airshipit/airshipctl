@@ -85,6 +85,7 @@ func NewBaremetalCommand(cfgFactory config.Factory) *cobra.Command {
 	baremetalRootCmd.AddCommand(NewPowerStatusCommand(cfgFactory, options))
 	baremetalRootCmd.AddCommand(NewRebootCommand(cfgFactory, options))
 	baremetalRootCmd.AddCommand(NewRemoteDirectCommand(cfgFactory, options))
+	baremetalRootCmd.AddCommand(NewListHostsCommand(cfgFactory, options))
 
 	return baremetalRootCmd
 }

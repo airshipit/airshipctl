@@ -33,6 +33,7 @@ SEE ALSO
 
 * :ref:`airshipctl <airshipctl>` 	 - A unified command line tool for management of end-to-end kubernetes cluster deployment on cloud infrastructure environments.
 * :ref:`airshipctl baremetal ejectmedia <airshipctl_baremetal_ejectmedia>` 	 - Airshipctl command to eject virtual media attached to a bare metal host
+* :ref:`airshipctl baremetal list-hosts <airshipctl_baremetal_list-hosts>` 	 - Airshipctl command to list bare metal host(s)
 * :ref:`airshipctl baremetal poweroff <airshipctl_baremetal_poweroff>` 	 - Airshipctl command to shutdown bare metal host(s)
 * :ref:`airshipctl baremetal poweron <airshipctl_baremetal_poweron>` 	 - Airshipctl command to power on host(s)
 * :ref:`airshipctl baremetal powerstatus <airshipctl_baremetal_powerstatus>` 	 - Airshipctl command to retrieve the power status of a bare metal host
