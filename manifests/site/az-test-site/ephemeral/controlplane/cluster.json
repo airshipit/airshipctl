@@ -1,6 +1,0 @@
-[
-    { "op": "replace","path": "/spec/subscriptionID","value": "cb3e23d3-b697-4c4f-a1a7-529e308691e4" },
-    { "op": "replace","path": "/spec/resourceGroup","value": "azure-target" },
-    { "op": "replace","path": "/spec/networkSpec/vnet/name","value": "azure-target-vnet" },
-    { "op": "replace","path": "/spec/location","value": "centralus" }
-]

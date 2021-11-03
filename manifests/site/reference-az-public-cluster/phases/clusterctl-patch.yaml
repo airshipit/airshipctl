@@ -1,0 +1,37 @@
+- op: replace
+  path: /init-options/core-provider
+  value: 'cluster-api:v0.4.2'
+- op: replace
+  path: /init-options/bootstrap-providers
+  value: 'kubeadm:v0.4.2'
+- op: replace
+  path: /init-options/control-plane-providers
+  value: 'kubeadm:v0.4.2'
+- op: replace
+  path: /init-options/infrastructure-providers
+  value: 'azure:v0.5.2'
+
+- op: replace
+  path: /providers/0
+  value:
+    name: azure
+    type: InfrastructureProvider
+    url: airshipctl/manifests/function/capz/v0.5.2
+- op: replace
+  path: /providers/1
+  value:
+    name: kubeadm
+    type: BootstrapProvider
+    url: airshipctl/manifests/function/cabpk/v0.4.2
+- op: replace
+  path: /providers/2
+  value:
+    name: cluster-api
+    type: CoreProvider
+    url: airshipctl/manifests/function/capi/v0.4.2
+- op: replace
+  path: /providers/3
+  value:
+    name: kubeadm
+    type: ControlPlaneProvider
+    url: airshipctl/manifests/function/cacpk/v0.4.2

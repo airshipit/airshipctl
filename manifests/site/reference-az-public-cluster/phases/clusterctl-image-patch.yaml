@@ -1,0 +1,12 @@
+- op: replace
+  path: /spec/capi_images/capi/manager/tag
+  value: "v0.4.2"
+- op: replace
+  path: /spec/capi_images/cabpk/manager/tag
+  value: 'v0.4.2'
+- op: replace
+  path: /spec/capi_images/cacpk/manager/tag
+  value: 'v0.4.2'
+- op: replace
+  path: /spec/capi_images/capz/manager/tag
+  value: 'v0.5.2'

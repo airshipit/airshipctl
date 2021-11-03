@@ -610,3 +610,18 @@ configRef:
   kind: ConfigMap
   name: merge-kubeconfig
   apiVersion: v1
+---
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: wait_machines_ready
+  labels:
+    airshipit.org/deploy-k8s: "false"
+spec:
+  type: krm
+  image: localhost/toolbox
+  hostNetwork: true
+configRef:
+  kind: ConfigMap
+  name: wait_machines_ready
+  apiVersion: v1

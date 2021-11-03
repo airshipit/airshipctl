@@ -1,0 +1,12 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+kind: AzureCluster
+metadata:
+  name: target-cluster
+  namespace: default
+spec:
+  networkSpec:
+    subnets:
+      - name: internal-controlplane-subnet
+        role: control-plane
+      - name: internal-node-subnet
+        role: node
