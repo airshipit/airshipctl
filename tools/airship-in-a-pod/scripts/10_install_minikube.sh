@@ -26,7 +26,7 @@ install_pkg(){
 }
 
 # Grab usefull packages needed for minikube and other scripts
-install_pkg curl conntrack make docker.io jq
+install_pkg curl conntrack make jq
 
 curl -Lo minikube "https://storage.googleapis.com/minikube/releases/$MINIKUBE_VERSION/minikube-linux-amd64" \
   && chmod +x minikube
