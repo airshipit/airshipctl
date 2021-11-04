@@ -15,6 +15,7 @@
 package cloudinit
 
 import (
+	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/document"
 )
 
@@ -27,13 +28,15 @@ const (
 // ephemeral node.
 func GetCloudData(
 	docBundle document.Bundle,
-	userDataSelector document.Selector,
+	userDataSelector v1alpha1.Selector,
 	userDataKey string,
-	networkConfigSelector document.Selector,
+	networkConfigSelector v1alpha1.Selector,
 	networkConfigKey string,
 ) (userData []byte, netConf []byte, err error) {
+	uDataSel := document.NewSelectorFromV1Alpha1(userDataSelector)
+	nwDataSel := document.NewSelectorFromV1Alpha1(networkConfigSelector)
 	userDataSelectorFinal, userDataKeyFinal := applyDefaultsAndGetData(
-		userDataSelector,
+		uDataSel,
 		document.SecretKind,
 		document.EphemeralUserDataSelector,
 		userDataKey,
@@ -45,7 +48,7 @@ func GetCloudData(
 	}
 
 	netConfSelectorFinal, netConfKeyFinal := applyDefaultsAndGetData(
-		networkConfigSelector,
+		nwDataSel,
 		document.BareMetalHostKind,
 		document.EphemeralHostSelector,
 		networkConfigKey,

@@ -23,6 +23,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/kustomize/api/types"
 	"sigs.k8s.io/kustomize/kyaml/resid"
+
+	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 )
 
 // Selector provides abstraction layer in front of kustomize selector
@@ -33,6 +35,23 @@ type Selector struct {
 // NewSelector returns instance of Selector container
 func NewSelector() Selector {
 	return Selector{}
+}
+
+// NewSelectorFromV1Alpha1 generates selector object from v1alpha1 analog
+func NewSelectorFromV1Alpha1(selector v1alpha1.Selector) Selector {
+	return Selector{types.Selector{
+		ResId: resid.ResId{
+			Gvk: resid.Gvk{
+				Group:   selector.Gvk.Group,
+				Version: selector.Gvk.Version,
+				Kind:    selector.Gvk.Kind,
+			},
+			Name:      selector.Name,
+			Namespace: selector.Namespace,
+		},
+		AnnotationSelector: selector.AnnotationSelector,
+		LabelSelector:      selector.LabelSelector,
+	}}
 }
 
 // Following set of functions allows to build selector object

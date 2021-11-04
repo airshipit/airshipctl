@@ -4,7 +4,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.1
+    controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
   name: isoconfigurations.airshipit.org
 spec:
@@ -39,40 +39,29 @@ spec:
                 description: Cloud Init network config will be retrieved from the
                   doc matching this object
                 properties:
-                  selector:
-                    description: Selector specifies a set of resources. Any resource
-                      that matches intersection of all conditions is included in this
-                      set.
-                    properties:
-                      annotationSelector:
-                        description: AnnotationSelector is a string that follows the
-                          label selection expression https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#api
-                          It matches with the resource annotations.
-                        type: string
-                      group:
-                        type: string
-                      isClusterScoped:
-                        description: isClusterScoped is true if the object is known,
-                          per the openapi data in use, to be cluster scoped, and false
-                          otherwise.
-                        type: boolean
-                      kind:
-                        type: string
-                      labelSelector:
-                        description: LabelSelector is a string that follows the label
-                          selection expression https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#api
-                          It matches with the resource labels.
-                        type: string
-                      name:
-                        description: Name of the resource.
-                        type: string
-                      namespace:
-                        description: Namespace the resource belongs to, if it can
-                          belong to a namespace.
-                        type: string
-                      version:
-                        type: string
-                    type: object
+                  annotationSelector:
+                    description: AnnotationSelector is a string that follows the label
+                      selection expression https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#api
+                      It matches with the resource annotations.
+                    type: string
+                  group:
+                    type: string
+                  kind:
+                    type: string
+                  labelSelector:
+                    description: LabelSelector is a string that follows the label
+                      selection expression https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#api
+                      It matches with the resource labels.
+                    type: string
+                  name:
+                    description: Name of the resource.
+                    type: string
+                  namespace:
+                    description: Namespace the resource belongs to, if it can belong
+                      to a namespace.
+                    type: string
+                  version:
+                    type: string
                 type: object
               outputFileName:
                 description: File name to use for the output image that will be written
@@ -86,40 +75,29 @@ spec:
                 description: Cloud Init user data will be retrieved from the doc matching
                   this object
                 properties:
-                  selector:
-                    description: Selector specifies a set of resources. Any resource
-                      that matches intersection of all conditions is included in this
-                      set.
-                    properties:
-                      annotationSelector:
-                        description: AnnotationSelector is a string that follows the
-                          label selection expression https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#api
-                          It matches with the resource annotations.
-                        type: string
-                      group:
-                        type: string
-                      isClusterScoped:
-                        description: isClusterScoped is true if the object is known,
-                          per the openapi data in use, to be cluster scoped, and false
-                          otherwise.
-                        type: boolean
-                      kind:
-                        type: string
-                      labelSelector:
-                        description: LabelSelector is a string that follows the label
-                          selection expression https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#api
-                          It matches with the resource labels.
-                        type: string
-                      name:
-                        description: Name of the resource.
-                        type: string
-                      namespace:
-                        description: Namespace the resource belongs to, if it can
-                          belong to a namespace.
-                        type: string
-                      version:
-                        type: string
-                    type: object
+                  annotationSelector:
+                    description: AnnotationSelector is a string that follows the label
+                      selection expression https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#api
+                      It matches with the resource annotations.
+                    type: string
+                  group:
+                    type: string
+                  kind:
+                    type: string
+                  labelSelector:
+                    description: LabelSelector is a string that follows the label
+                      selection expression https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#api
+                      It matches with the resource labels.
+                    type: string
+                  name:
+                    description: Name of the resource.
+                    type: string
+                  namespace:
+                    description: Namespace the resource belongs to, if it can belong
+                      to a namespace.
+                    type: string
+                  version:
+                    type: string
                 type: object
             type: object
           container:
