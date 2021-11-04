@@ -95,6 +95,8 @@ phases:
   # To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
   # and find ConfigMap with name kubectl-wait-cluster
   - name: kubectl-wait-cluster-target
+  # Eject virtual media Ephemeral baremetal host to ensure it can reused.
+  - name: eject-virtual-media-ephemeral
   # Power off Ephemeral baremetal host avoid DHCP conflict
   - name: power-off-ephemeral
   # List all nodes in target cluster

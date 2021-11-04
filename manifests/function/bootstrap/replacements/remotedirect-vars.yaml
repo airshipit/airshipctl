@@ -34,3 +34,12 @@ replacements:
       kind: BaremetalManager
       name: PowerOffEphemeral
     fieldrefs: ["spec.hostSelector.name%EPHEMERAL_NODE%"]
+- source:
+    objref:
+      name: versions-remotedirect
+    fieldref: spec.remotedirect.node
+  target:
+    objref:
+      kind: BaremetalManager
+      name: EjectVirtualMediaEphemeral
+    fieldrefs: ["spec.hostSelector.name%EPHEMERAL_NODE%"]
