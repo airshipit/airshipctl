@@ -7,3 +7,5 @@ metadata:
   name: host-generation-catalogue
 hosts:
   m3:
+  - node04
+  - node05

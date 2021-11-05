@@ -1,0 +1,16 @@
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+kind: Metal3MachineTemplate
+metadata:
+  annotations:
+    config.kubernetes.io/path: metal3machinetemplate_cluster-controlplane.yaml
+  name: cluster-controlplane
+spec:
+  template:
+    spec:
+      hostSelector:
+        matchLabels:
+          airshipit.org/k8s-role: controlplane-host
+      image:
+        url: http://10.23.24.137:80/images/control-plane.qcow2
+        checksum: http://10.23.24.137:80/images/control-plane.qcow2.md5sum

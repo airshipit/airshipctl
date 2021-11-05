@@ -99,6 +99,8 @@ phases:
   - name: eject-virtual-media-ephemeral
   # Power off Ephemeral baremetal host avoid DHCP conflict
   - name: power-off-ephemeral
+  # Create target k8s cluster resources
+  - name: controlplane-target
   # List all nodes in target cluster
   # Scripts for this phase placed in manifests/function/phase-helpers/get_node/
   # To get ConfigMap for this phase, execute `airshipctl phase render --source config -k ConfigMap`
@@ -124,6 +126,7 @@ validation:
     - VariableCatalogue
   crdList:
     - airshipctl/manifests/function/airshipctl-schemas
+    - airshipctl/manifests/function/baremetal-operator/v0.5.0/upstream/crd
 ---
 apiVersion: airshipit.org/v1alpha1
 kind: PhasePlan

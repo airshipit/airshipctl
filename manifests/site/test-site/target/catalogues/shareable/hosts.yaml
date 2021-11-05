@@ -54,15 +54,45 @@ hosts:
         pxe: 52:54:00:b6:ed:23
       hardwareProfile: default # defined in the hardwareprofile-example function
     node04:
-      bootMode: UEFI
-      macAddress: 52:54:00:36:5e:e3
-      bmcAddress: redfish+http://10.23.25.2:8000/redfish/v1/Systems/air-target-2
+      bootMode: legacy
+      macAddress: 52:54:00:01:71:d8
+      bmcAddress: redfish+http://10.23.25.1:8000/redfish/v1/Systems/air-target-2
       bmcUsername: username
       bmcPassword: password
+      disableCertificateVerification: false
       ipAddresses:
         oam-ipv4: 10.23.25.104
         pxe-ipv4: 10.23.24.104
       macAddresses:
-        oam: 52:54:00:dc:ab:04
-        pxe: 52:54:00:51:0b:e4
+        oam: 52:54:00:f0:57:e0
+        pxe: 52:54:00:01:71:d8
+      hardwareProfile: default # defined in the hostgenerator-m3 function
+    node05:
+      bootMode: legacy
+      macAddress: 52:54:00:a3:ee:18
+      bmcAddress: redfish+http://10.23.25.1:8000/redfish/v1/Systems/air-target-3
+      bmcUsername: username
+      bmcPassword: password
+      disableCertificateVerification: false
+      ipAddresses:
+        oam-ipv4: 10.23.25.105
+        pxe-ipv4: 10.23.24.105
+      macAddresses:
+        oam: 52:54:00:91:36:49
+        pxe: 52:54:00:a3:ee:18
+      hardwareProfile: default # defined in the hostgenerator-m3 function
+    node06:
+      bootMode: legacy
+      macAddress: 52:54:00:b6:ed:19
+      bmcAddress: redfish+http://10.23.25.1:8000/redfish/v1/Systems/air-worker-2
+      bmcUsername: username
+      bmcPassword: password
+      disableCertificateVerification: false
+      ipAddresses:
+        oam-ipv4: 10.23.25.106
+        pxe-ipv4: 10.23.24.106
+      macAddresses:
+        oam: 52:54:00:9b:27:08
+        pxe: 52:54:00:b6:ed:19
       hardwareProfile: default # defined in the hardwareprofile-example function
+

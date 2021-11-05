@@ -11,3 +11,14 @@ namespace: target-infra
 
 transformers:
   - ../../../../type/gating/ephemeral/controlplane/replacements
+
+patchesJson6902:
+  - target:
+      group: controlplane.cluster.x-k8s.io
+      version: v1alpha4
+      kind: KubeadmControlPlane
+      name: cluster-controlplane
+    path: patch_json6902_controlplane.yaml
+
+patchesStrategicMerge:
+  - versions-airshipctl.yaml

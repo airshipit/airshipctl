@@ -18,12 +18,11 @@ export TIMEOUT=${TIMEOUT:-60}
 
 end=$(($(date +%s) + $TIMEOUT))
 while true; do
-  export TARGET_IP="$(kubectl --request-timeout 10s \
-    --context $KCTL_CONTEXT \
-    --namespace ingress \
-    get pods \
-    -l app.kubernetes.io/component=controller \
-    -o jsonpath='{.items[*].status.hostIP}')"
+  export TARGET_IP="$(kubectl -n kube-system get po | \
+	  grep -i apiserver | \
+	  cut -f1 -d ' ' | \
+	  xargs kubectl -n kube-system \
+	  get po $1 -o=jsonpath='{.items[0].status.hostIP}')"
   if [ ! -z $TARGET_IP ]; then
     break
   else

@@ -69,6 +69,7 @@
         path: "{{ roleinputvar.path }}"
       loop:
         - { name: 'target', path: 'ephemeral/controlplane' }
+        - { name: 'target', path: 'target/controlplane' }
         - { name: 'ephemeral', path: 'ephemeral/bootstrap' }
         - { name: 'worker', path: 'target/workers' }
       loop_control:
@@ -96,12 +97,12 @@
             target_vm_cfg: "{{ target_vm_cfg }}"
             target_vm_memory_mb: 7168
             target_vm_vcpus: 2
-            target_vms_count: 1
+            target_vms_count: 3
             worker_disk_size: 30G
             worker_vm_cfg: "{{ worker_vm_cfg }}"
             worker_vm_memory_mb: 7168
             worker_vm_vcpus: 2
-            worker_vms_count: 1
+            worker_vms_count: 2
         airship_gate_file_exchanger:
           servername: "localhost"
           ip:

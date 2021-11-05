@@ -7,6 +7,9 @@ resources:
   - ../catalogues
   - nodes
 
+patchesStrategicMerge:
+  - metal3machinetemplate.yaml
+
 namespace: target-infra
 
 commonLabels:

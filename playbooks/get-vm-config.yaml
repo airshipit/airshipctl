@@ -17,7 +17,6 @@
       {{ airship_config_manifest_directory }}/{{ airship_config_site_path }}/{{ path }} 2>/dev/null |
     kustomize cfg grep  "kind=BareMetalHost"
   register: bmh_command
-  failed_when: "bmh_command.stdout == ''"
   environment:
     KUSTOMIZE_ENABLE_ALPHA_COMMANDS: "true"
     SOPS_IMPORT_PGP: "{{ airship_config_pgp }}"
@@ -37,6 +36,7 @@
     KUSTOMIZE_ENABLE_ALPHA_COMMANDS: "true"
     SOPS_IMPORT_PGP: "{{ airship_config_pgp }}"
   with_items: "{{ bmh }}"
+  when: bmh|length > 0
 
 - name: get links from network data per BareMetalHost object
   set_fact:
@@ -47,6 +47,8 @@
           map(attribute='stringData.networkData') | map('from_yaml') |
           map(attribute='links') | list
       }}
+  when: bmh|length > 0
+
 
 - name: define list of VM mac addresses and VM boot mode
   set_fact:
@@ -64,6 +66,12 @@
   loop_control:
     index_var: idx
   register: vm_cfg_fact
+  when: bmh|length > 0
+
+- set_fact:
+    "{{ name }}_vm_cfg": "{{  (lookup('vars', name + '_vm_cfg') |list)  + (vm_cfg_fact.results | map(attribute='ansible_facts.vm_cfg') | list) }}"
+  when: "{{ name + '_vm_cfg' }} is defined and bmh|length > 0"
 
 - set_fact:
     "{{ name }}_vm_cfg": "{{ vm_cfg_fact.results | map(attribute='ansible_facts.vm_cfg') | list }}"
+  when: "{{ name + '_vm_cfg' }} is not defined and bmh|length > 0"
