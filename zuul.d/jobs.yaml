@@ -187,6 +187,7 @@
         - airship-airshipctl-gather-configs
         - describe-kubernetes-objects
         - airship-gather-pod-logs
+        - aiap-gather-runner-vm-logs
     voting: false
 - job:
     name: airship-airshipctl-gate-script-runner-docker

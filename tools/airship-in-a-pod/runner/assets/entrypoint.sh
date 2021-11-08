@@ -17,6 +17,9 @@ set -ex
 /signal_status "runner" "RUNNING"
 success=false
 function reportStatus() {
+  # Run the get-logs script while inside the airshipctl repo to run the
+  # ansible log gathering playbooks before sending the signal status
+  /get-logs.sh
   if [[ "$success" == "false" ]]; then
     /signal_status "runner" "FAILED"
   else
@@ -102,5 +105,6 @@ else
 fi
 
 ./tools/deployment/25_deploy_gating.sh
+
 
 success=true

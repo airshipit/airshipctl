@@ -35,43 +35,48 @@ done
 
 # Now that we have built/pulled the images, lets change the imagePullPolicy to
 # Never to be 100% confident they are used
-echo "- op: add
+echo "- op: replace
   path: \"/spec/containers/0/imagePullPolicy\"
   value: Never
 
-- op: add
+- op: replace
   path: \"/spec/containers/1/imagePullPolicy\"
   value: Never
 
-- op: add
+- op: replace
   path: \"/spec/containers/2/imagePullPolicy\"
   value: Never
 
-- op: add
+- op: replace
   path: \"/spec/containers/3/imagePullPolicy\"
   value: Never
 
-- op: add
+- op: replace
   path: \"/spec/containers/4/imagePullPolicy\"
   value: Never
 
-- op: add
+- op: replace
   path: \"/spec/containers/5/imagePullPolicy\"
   value: Never
 
-- op: add
+- op: replace
   path: \"/spec/containers/6/imagePullPolicy\"
   value: Never
 
-" >> examples/airshipctl/patchset.yaml
+- op: replace
+  path: \"/spec/containers/7/imagePullPolicy\"
+  value: Never
 
-# Also add the patchset to the environment variables
+" >> examples/airshipctl/replacements.yaml
+
+# Also replace the patchset to the environment variables
 # while being sure to escape the slashes from the ref
 echo "- op: replace
   path: \"/spec/containers/4/env/6/value\"
   value: $AIRSHIPCTL_REF
 
-" >> examples/airshipctl/patchset.yaml
+" >> examples/airshipctl/replacements.yaml
+
 
 
 popd || exit

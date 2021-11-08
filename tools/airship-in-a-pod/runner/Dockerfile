@@ -17,7 +17,14 @@ RUN apt-get update ;\
         ca-certificates \
         gnupg-agent \
         libvirt-clients \
-        gettext-base ;\
+        gettext-base \
+        wget \
+        iptables \
+        rsync \
+        make; \
+    pip3 install --upgrade ansible; \
+    pip3 install --upgrade netaddr; \
+    pip3 install --upgrade yq; \
     curl -sSLo /usr/local/bin/kubectl "${kubectl_url}" ;\
     chmod +x /usr/local/bin/kubectl ;\
     rm -rf /var/lib/apt/lists/*
