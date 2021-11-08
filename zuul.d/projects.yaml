@@ -34,6 +34,7 @@
         - airship-airshipctl-golint
         - airship-airshipctl-lint
         - airship-airshipctl-unit
+        - airship-airshipctl-check-manifests
         - airship-airshipctl-roles-test
         - airship-airshipctl-check-github-issues
         - airship-airshipctl-build-image
@@ -52,6 +53,7 @@
         - openstack-tox-docs: *docs
         - airship-airshipctl-lint
         - airship-airshipctl-unit
+        - airship-airshipctl-check-manifests
         - airship-airshipctl-build-image
         - airship-airshipctl-validate-site-docs
         - airship-airshipctl-gate-script-runner
