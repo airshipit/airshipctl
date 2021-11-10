@@ -40,7 +40,7 @@ type PhaseStatus struct {
 // Plan provides a way to interact with phase plans
 type Plan interface {
 	Validate() error
-	Run(RunOptions) error
+	Run(PlanRunOptions) error
 	Status(StatusOptions) (PlanStatus, error)
 }
 

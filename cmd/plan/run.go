@@ -39,7 +39,7 @@ Perform a dry run of a plan
 // NewRunCommand creates a command which execute a particular phase plan
 func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
 	r := &phase.PlanRunCommand{Factory: cfgFactory}
-	f := &phase.RunFlags{}
+	f := &phase.PlanRunFlags{}
 
 	runCmd := &cobra.Command{
 		Use:     "run PLAN_NAME",
@@ -55,6 +55,8 @@ func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
 					r.Options.DryRun = f.DryRun
 				case "wait-timeout":
 					r.Options.Timeout = &f.Timeout
+				case "resume-from":
+					r.Options.ResumeFromPhase = f.ResumeFromPhase
 				}
 			}
 			cmd.Flags().Visit(fn)
@@ -63,6 +65,7 @@ func NewRunCommand(cfgFactory config.Factory) *cobra.Command {
 	}
 
 	flags := runCmd.Flags()
+	flags.StringVar(&f.ResumeFromPhase, "resume-from", "", "skip all phases before the specified one")
 	flags.BoolVar(&f.DryRun, "dry-run", false, "simulate phase execution")
 	flags.DurationVar(&f.Timeout, "wait-timeout", 0, "wait timeout")
 	return runCmd

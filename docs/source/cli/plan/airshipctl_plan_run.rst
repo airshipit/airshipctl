@@ -37,6 +37,7 @@ Options
 
       --dry-run                 simulate phase execution
   -h, --help                    help for run
+      --resume-from string      skip all phases before the specified one
       --wait-timeout duration   wait timeout
 
 Options inherited from parent commands

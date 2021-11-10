@@ -270,7 +270,16 @@ func (p *plan) Validate() error {
 }
 
 // Run function executes Run method for each phase
-func (p *plan) Run(ro ifc.RunOptions) error {
+func (p *plan) Run(ro ifc.PlanRunOptions) error {
+	if ro.ResumeFromPhase != "" {
+		for i, phase := range p.apiObj.Phases {
+			if phase.Name == ro.ResumeFromPhase {
+				p.apiObj.Phases = p.apiObj.Phases[i:]
+				break
+			}
+		}
+	}
+
 	for _, step := range p.apiObj.Phases {
 		phaseRunner, err := p.phaseClient.PhaseByID(ifc.ID{Name: step.Name})
 		if err != nil {
@@ -278,7 +287,7 @@ func (p *plan) Run(ro ifc.RunOptions) error {
 		}
 
 		log.Printf("executing phase: %s\n", step.Name)
-		if err = phaseRunner.Run(ro); err != nil {
+		if err = phaseRunner.Run(ro.RunOptions); err != nil {
 			return err
 		}
 	}

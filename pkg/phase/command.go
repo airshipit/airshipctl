@@ -202,12 +202,13 @@ func (c *PlanListCommand) RunE() error {
 // PlanRunFlags options for phase run command
 type PlanRunFlags struct {
 	GenericRunFlags
+	ResumeFromPhase string
 }
 
 // PlanRunCommand phase run command
 type PlanRunCommand struct {
 	PlanID  ifc.ID
-	Options ifc.RunOptions
+	Options ifc.PlanRunOptions
 	Factory config.Factory
 }
 

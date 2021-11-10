@@ -43,6 +43,12 @@ type RunOptions struct {
 	Timeout *time.Duration
 }
 
+// PlanRunOptions holds options for plan run method
+type PlanRunOptions struct {
+	RunOptions
+	ResumeFromPhase string
+}
+
 // RenderOptions holds options for render method
 type RenderOptions struct {
 	FilterSelector document.Selector

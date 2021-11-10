@@ -482,8 +482,10 @@ func TestPlanRunCommand(t *testing.T) {
 		tt := tc
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := phase.PlanRunCommand{
-				Options: ifc.RunOptions{
-					DryRun: true,
+				Options: ifc.PlanRunOptions{
+					RunOptions: ifc.RunOptions{
+						DryRun: true,
+					},
 				},
 				Factory: tt.factory,
 				PlanID:  tt.planID,
