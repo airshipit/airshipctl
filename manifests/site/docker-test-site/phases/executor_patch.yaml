@@ -3,5 +3,5 @@ kind: Clusterctl
 metadata:
   name: clusterctl_move
 move-options:
-  namespace: default
+  namespace: target-infra
 action: move

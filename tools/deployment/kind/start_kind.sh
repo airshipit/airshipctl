@@ -40,7 +40,6 @@ set -xe
 : ${TIMEOUT:=3600}
 : ${KIND_CONFIG:=""}
 
-export KIND_EXPERIMENTAL_DOCKER_NETWORK=bridge
 export KUBECONFIG_TARGET_CONTEXT=${KUBECONFIG_TARGET_CONTEXT:-"target-cluster"}
 
 echo "cluster name: $CLUSTER";

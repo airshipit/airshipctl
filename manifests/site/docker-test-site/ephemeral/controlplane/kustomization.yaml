@@ -9,7 +9,7 @@ namespace: target-infra
 patchesJson6902:
   - target:
       group: controlplane.cluster.x-k8s.io
-      version: v1alpha3
+      version: v1alpha4
       kind: KubeadmControlPlane
       name: "target-cluster-control-plane"
     path: machine_count.json

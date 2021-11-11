@@ -19,4 +19,4 @@ map:
         clusterAPI:
           clusterNamespacedName:
             name: target-cluster
-            namespace: default
+            namespace: target-infra
