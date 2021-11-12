@@ -44,7 +44,7 @@ install /tmp/kustomize /usr/local/bin
 SOPS_IMPORT_PGP=$( cat /opt/aiap-secret-volume/SOPS_IMPORT_PGP )
 if [ -z "${SOPS_IMPORT_PGP}"  ];then
   # set user1 key
-  SOPS_IMPORT_PGP="$(cat ./manifests/.private-keys/exampleU1.key)"
+  SOPS_IMPORT_PGP="$(cat $ARTIFACTS_DIR/airshipctl/manifests/.private-keys/exampleU1.key)"
 fi
 
 export SOPS_IMPORT_PGP=${SOPS_IMPORT_PGP}
