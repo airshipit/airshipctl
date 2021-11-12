@@ -18,29 +18,40 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/document"
 )
 
 type selectors struct {
-	userDataSelector      document.Selector
+	userDataSelector      v1alpha1.Selector
 	userDataKey           string
-	networkConfigSelector document.Selector
+	networkConfigSelector v1alpha1.Selector
 	networkConfigKey      string
 }
 
 var (
 	emptySelectors = selectors{
-		userDataSelector:      document.NewSelector(),
-		networkConfigSelector: document.NewSelector(),
+		userDataSelector:      v1alpha1.Selector{},
+		networkConfigSelector: v1alpha1.Selector{},
 	}
 	validSelectors = selectors{
-		userDataSelector: document.NewSelector().
-			ByKind(secret).
-			ByLabel(ephUser),
+		userDataSelector: v1alpha1.Selector{
+			ResID: v1alpha1.ResID{
+				Gvk: v1alpha1.Gvk{
+					Kind: secret,
+				},
+			},
+			LabelSelector: ephUser,
+		},
 		userDataKey: defaultUserDataKey,
-		networkConfigSelector: document.NewSelector().
-			ByKind(bmh).
-			ByLabel(ephNode),
+		networkConfigSelector: v1alpha1.Selector{
+			ResID: v1alpha1.ResID{
+				Gvk: v1alpha1.Gvk{
+					Kind: bmh,
+				},
+			},
+			LabelSelector: ephNode,
+		},
 		networkConfigKey: defaultNetworkConfigKey,
 	}
 )
