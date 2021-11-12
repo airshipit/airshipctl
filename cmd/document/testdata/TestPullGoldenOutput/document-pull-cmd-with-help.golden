@@ -12,7 +12,71 @@ Examples:
 
 Pull manifests from remote repos
 # airshipctl document pull
->>>>>>> Updating cmd files for documentation
+For the below sample airship config file, it will pull from remote repository where URL mentioned
+to the target location /home/airship with manifests->treasuremap->repositories->airshipctl->checkout
+options branch, commitHash & tag mentioned in manifest section.
+In the URL section, instead of a remote repository location we can also mention already checkout directory,
+in this case we need not use document pull otherwise, any temporary changes will be overwritten.
+>>>>>>Sample Config File<<<<<<<<<
+cat ~/.airship/config
+apiVersion: airshipit.org/v1alpha1
+contexts:
+  ephemeral-cluster:
+    managementConfiguration: treasuremap_config
+    manifest: treasuremap
+  target-cluster:
+    managementConfiguration: treasuremap_config
+    manifest: treasuremap
+currentContext: ephemeral-cluster
+kind: Config
+managementConfiguration:
+  treasuremap_config:
+    insecure: true
+    systemActionRetries: 30
+    systemRebootDelay: 30
+    type: redfish
+manifests:
+  treasuremap:
+    inventoryRepositoryName: primary
+    metadataPath: manifests/site/eric-test-site/metadata.yaml
+    phaseRepositoryName: primary
+    repositories:
+      airshipctl:
+        checkout:
+          branch: ""
+          commitHash: f4cb1c44e0283c38a8bc1be5b8d71020b5d30dfb
+          force: false
+          localBranch: false
+          tag: ""
+        url: https://opendev.org/airship/airshipctl.git
+      primary:
+        checkout:
+          branch: ""
+          commitHash: 5556edbd386191de6c1ba90757d640c1c63c6339
+          force: false
+          localBranch: false
+          tag: ""
+        url: https://opendev.org/airship/treasuremap.git
+    targetPath: /home/airship
+permissions:
+  DirectoryPermission: 488
+  FilePermission: 416
+>>>>>>>>Sample output of document pull for above configuration<<<<<<<<<
+pkg/document/pull/pull.go:36: Reading current context manifest information from /home/airship/.airship/config
+(currentContext:)
+pkg/document/pull/pull.go:51: Downloading airshipctl repository airshipctl from https://opendev.org/airship/
+airshipctl.git into /home/airship (url: & targetPath:)
+pkg/document/repo/repo.go:141: Attempting to download the repository airshipctl
+pkg/document/repo/repo.go:126: Attempting to clone the repository airshipctl from https://opendev.org/airship/
+airshipctl.git
+pkg/document/repo/repo.go:120: Attempting to open repository airshipctl
+pkg/document/repo/repo.go:110: Attempting to checkout the repository airshipctl from commit hash #####
+pkg/document/pull/pull.go:51: Downloading primary repository treasuremap from https://opendev.org/airship/
+treasuremap.git into /home/airship  (repository name taken from url path last content)
+pkg/document/repo/repo.go:141: Attempting to download the repository treasuremap
+pkg/document/repo/repo.go:126: Attempting to clone the repository treasuremap from /home/airship/treasuremap
+pkg/document/repo/repo.go:120: Attempting to open repository treasuremap
+pkg/document/repo/repo.go:110: Attempting to checkout the repository treasuremap from commit hash #####
 
 
 Flags:
