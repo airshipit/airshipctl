@@ -26,7 +26,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/events"
 	inventoryifc "opendev.org/airship/airshipctl/pkg/inventory/ifc"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
@@ -146,13 +145,7 @@ func TestBMHExecutorRun(t *testing.T) {
 			})
 			require.NoError(t, err)
 			require.NotNil(t, executor)
-			ch := make(chan events.Event)
-			go func() {
-				executor.Run(ch, tt.runOptions)
-			}()
-			processor := events.NewDefaultProcessor()
-			defer processor.Close()
-			err = processor.Process(ch)
+			err = executor.Run(tt.runOptions)
 			if tt.expectedErr != "" {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), tt.expectedErr)

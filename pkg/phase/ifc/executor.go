@@ -21,14 +21,13 @@ import (
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/events"
 	inventoryifc "opendev.org/airship/airshipctl/pkg/inventory/ifc"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 )
 
 // Executor interface should be implemented by each runner
 type Executor interface {
-	Run(chan events.Event, RunOptions)
+	Run(RunOptions) error
 	Render(io.Writer, RenderOptions) error
 	Validate() error
 	Status() (ExecutorStatus, error)

@@ -28,7 +28,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/fs"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
@@ -337,10 +336,7 @@ func TestKubeApplierExecutorRun(t *testing.T) {
 				})
 			require.NoError(t, err)
 			require.NotNil(t, exec)
-			ch := make(chan events.Event)
-			go exec.Run(ch, ifc.RunOptions{})
-			processor := events.NewDefaultProcessor()
-			err = processor.Process(ch)
+			err = exec.Run(ifc.RunOptions{})
 			if tt.containsErr != "" {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), tt.containsErr)

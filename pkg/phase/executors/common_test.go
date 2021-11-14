@@ -25,7 +25,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
@@ -105,12 +104,6 @@ func executorBundle(t *testing.T, s string) document.Bundle {
 	require.NoError(t, err)
 	require.NotNil(t, b)
 	return b
-}
-
-func wrapError(err error) events.Event {
-	return events.NewEvent().WithErrorEvent(events.ErrorEvent{
-		Error: err,
-	})
 }
 
 func testClusterMap(t *testing.T) clustermap.ClusterMap {

@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"io"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -29,7 +28,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/cluster/clustermap"
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/executors/errors"
@@ -248,17 +246,15 @@ func TestClusterctlExecutorRun(t *testing.T) {
 		name        string
 		cfgDoc      document.Document
 		kubecfg     kubeconfig.Interface
-		expectedEvt []events.Event
+		expectedErr error
 		clusterMap  clustermap.ClusterMap
 		clientFunc  container.ClientV1Alpha1FactoryFunc
 	}{
 		{
-			name:   "Error unknown action",
-			cfgDoc: executorDoc(t, fmt.Sprintf(executorConfigTmplGood, "someAction")),
-			expectedEvt: []events.Event{
-				wrapError(errors.ErrUnknownExecutorAction{Action: "someAction", ExecutorName: "clusterctl"}),
-			},
-			clusterMap: clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
+			name:        "Error unknown action",
+			cfgDoc:      executorDoc(t, fmt.Sprintf(executorConfigTmplGood, "someAction")),
+			expectedErr: errors.ErrUnknownExecutorAction{Action: "someAction", ExecutorName: "clusterctl"},
+			clusterMap:  clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
 		},
 		{
 			name:   "Failed get kubeconfig file - init",
@@ -266,13 +262,8 @@ func TestClusterctlExecutorRun(t *testing.T) {
 			kubecfg: fakeKubeConfig{getFile: func() (string, kubeconfig.Cleanup, error) {
 				return "", nil, errTmpFile
 			}},
-			expectedEvt: []events.Event{
-				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
-					Operation: events.ClusterctlInitStart,
-				}),
-				wrapError(errTmpFile),
-			},
-			clusterMap: clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
+			expectedErr: errTmpFile,
+			clusterMap:  clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
 		},
 		{
 			name:   "Failed get kubeconfig file - move",
@@ -280,13 +271,8 @@ func TestClusterctlExecutorRun(t *testing.T) {
 			kubecfg: fakeKubeConfig{getFile: func() (string, kubeconfig.Cleanup, error) {
 				return "", nil, errTmpFile
 			}},
-			expectedEvt: []events.Event{
-				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
-					Operation: events.ClusterctlMoveStart,
-				}),
-				wrapError(errTmpFile),
-			},
-			clusterMap: clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
+			expectedErr: errTmpFile,
+			clusterMap:  clustermap.NewClusterMap(v1alpha1.DefaultClusterMap()),
 		},
 		{
 			name:   "Failed get kubeconfig context - init",
@@ -294,12 +280,7 @@ func TestClusterctlExecutorRun(t *testing.T) {
 			kubecfg: fakeKubeConfig{getFile: func() (string, kubeconfig.Cleanup, error) {
 				return "", func() {}, nil
 			}},
-			expectedEvt: []events.Event{
-				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
-					Operation: events.ClusterctlInitStart,
-				}),
-				wrapError(errCtx),
-			},
+			expectedErr: errCtx,
 			clusterMap: ClusterMapMockInterface{MockClusterKubeconfigContext: func(s string) (string, error) {
 				return "", errCtx
 			}},
@@ -310,12 +291,7 @@ func TestClusterctlExecutorRun(t *testing.T) {
 			kubecfg: fakeKubeConfig{getFile: func() (string, kubeconfig.Cleanup, error) {
 				return "", func() {}, nil
 			}},
-			expectedEvt: []events.Event{
-				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
-					Operation: events.ClusterctlMoveStart,
-				}),
-				wrapError(errCtx),
-			},
+			expectedErr: errCtx,
 			clusterMap: ClusterMapMockInterface{MockClusterKubeconfigContext: func(s string) (string, error) {
 				return "", errCtx
 			}},
@@ -326,12 +302,7 @@ func TestClusterctlExecutorRun(t *testing.T) {
 			kubecfg: fakeKubeConfig{getFile: func() (string, kubeconfig.Cleanup, error) {
 				return "", func() {}, nil
 			}},
-			expectedEvt: []events.Event{
-				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
-					Operation: events.ClusterctlMoveStart,
-				}),
-				wrapError(errParent),
-			},
+			expectedErr: errParent,
 			clusterMap: ClusterMapMockInterface{MockClusterKubeconfigContext: func(s string) (string, error) {
 				return "ctx", nil
 			},
@@ -354,14 +325,6 @@ func TestClusterctlExecutorRun(t *testing.T) {
 					return nil
 				}}
 			},
-			expectedEvt: []events.Event{
-				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
-					Operation: events.ClusterctlInitStart,
-				}),
-				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
-					Operation: events.ClusterctlInitEnd,
-				}),
-			},
 		},
 		{
 			name:   "Regular Run move",
@@ -381,14 +344,6 @@ func TestClusterctlExecutorRun(t *testing.T) {
 					return nil
 				}}
 			},
-			expectedEvt: []events.Event{
-				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
-					Operation: events.ClusterctlMoveStart,
-				}),
-				events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
-					Operation: events.ClusterctlMoveEnd,
-				}),
-			},
 		},
 	}
 	for _, test := range testCases {
@@ -404,23 +359,8 @@ func TestClusterctlExecutorRun(t *testing.T) {
 					ContainerFunc:     tt.clientFunc,
 				})
 			require.NoError(t, err)
-			ch := make(chan events.Event)
-			go executor.Run(ch, ifc.RunOptions{DryRun: true})
-			var actualEvt []events.Event
-			for evt := range ch {
-				// Skip timestamp for comparison
-				evt.Timestamp = time.Time{}
-				if evt.Type == events.ClusterctlType {
-					// Set message to empty string, so it's not compared
-					evt.ClusterctlEvent.Message = ""
-				}
-				actualEvt = append(actualEvt, evt)
-			}
-			for i := range tt.expectedEvt {
-				// Skip timestamp for comparison
-				tt.expectedEvt[i].Timestamp = time.Time{}
-			}
-			assert.Equal(t, tt.expectedEvt, actualEvt)
+			err = executor.Run(ifc.RunOptions{DryRun: true})
+			assert.Equal(t, tt.expectedErr, err)
 		})
 	}
 }

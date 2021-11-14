@@ -22,9 +22,9 @@ import (
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	commonerrors "opendev.org/airship/airshipctl/pkg/errors"
-	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/inventory"
 	inventoryifc "opendev.org/airship/airshipctl/pkg/inventory/ifc"
+	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase/executors/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
@@ -48,21 +48,14 @@ func NewBaremetalExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 }
 
 // Run runs baremetal operations as executor
-func (e *BaremetalManagerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
-	defer close(evtCh)
+func (e *BaremetalManagerExecutor) Run(opts ifc.RunOptions) error {
 	commandOptions := toCommandOptions(e.inventory, e.options.Spec, opts)
 
-	evtCh <- events.NewEvent().WithBaremetalManagerEvent(events.BaremetalManagerEvent{
-		Step:          events.BaremetalManagerStart,
-		HostOperation: string(e.options.Spec.Operation),
-		Message: fmt.Sprintf("Starting remote operation '%s', selector to be to filter hosts %v",
-			e.options.Spec.Operation, e.options.Spec.HostSelector),
-	})
-
+	log.Print(fmt.Sprintf("Starting remote operation '%s', selector to be to filter hosts %v",
+		e.options.Spec.Operation, e.options.Spec.HostSelector))
 	op, err := e.validate()
 	if err != nil {
-		handleError(evtCh, err)
-		return
+		return err
 	}
 	if !opts.DryRun {
 		switch e.options.Spec.Operation {
@@ -75,16 +68,12 @@ func (e *BaremetalManagerExecutor) Run(evtCh chan events.Event, opts ifc.RunOpti
 	}
 
 	if err != nil {
-		handleError(evtCh, err)
-		return
+		return err
 	}
 
-	evtCh <- events.NewEvent().WithBaremetalManagerEvent(events.BaremetalManagerEvent{
-		Step:          events.BaremetalManagerComplete,
-		HostOperation: string(e.options.Spec.Operation),
-		Message: fmt.Sprintf("Successfully completed operation against host selected by selector %v",
-			e.options.Spec.HostSelector),
-	})
+	log.Print(fmt.Sprintf("Successfully completed operation against host selected by selector %v",
+		e.options.Spec.HostSelector))
+	return nil
 }
 
 // Validate executor configuration and documents

@@ -25,7 +25,6 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/pkg/phase/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
@@ -514,8 +513,8 @@ func (e fakeExecutor) Render(_ io.Writer, _ ifc.RenderOptions) error {
 	return nil
 }
 
-func (e fakeExecutor) Run(ch chan events.Event, _ ifc.RunOptions) {
-	defer close(ch)
+func (e fakeExecutor) Run(_ ifc.RunOptions) error {
+	return nil
 }
 
 func (e fakeExecutor) Validate() error {
