@@ -1,20 +1,19 @@
-apiVersion: kpt.dev/v1alpha1
+apiVersion: kpt.dev/v1
 kind: Kptfile
+metadata:
+  name: crd
 upstream:
   type: git
   git:
-    commit: 9e983b746eb58201a46d8be77ddf58d903ce2e9d
     repo: https://github.com/fluxcd/helm-controller
     directory: config/crd
     ref: v0.11.1
-dependencies:
-- name: upstream/crd
+  updateStrategy: resource-merge
+upstreamLock:
+  type: git
   git:
     repo: https://github.com/fluxcd/helm-controller
     directory: config/crd
-    ref: v0.4.3
-- name: upstream/manager
-  git:
-    repo: https://github.com/fluxcd/helm-controller
-    directory: config/manager
-    ref: v0.4.3
+    ref: v0.11.1
+    commit: 9e983b746eb58201a46d8be77ddf58d903ce2e9d
+pipeline: {}
