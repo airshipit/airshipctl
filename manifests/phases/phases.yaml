@@ -250,23 +250,13 @@ config:
 apiVersion: airshipit.org/v1alpha1
 kind: Phase
 metadata:
-  name: iso-cloud-init-data
-config:
-  executorRef:
-    apiVersion: airshipit.org/v1alpha1
-    kind: GenericContainer
-    name: iso-cloud-init-data
-  documentEntryPoint: ephemeral/bootstrap
----
-apiVersion: airshipit.org/v1alpha1
-kind: Phase
-metadata:
   name: iso-build-image
 config:
   executorRef:
     apiVersion: airshipit.org/v1alpha1
     kind: GenericContainer
     name: iso-build-image
+  documentEntryPoint: ephemeral/bootstrap
 ---
 apiVersion: airshipit.org/v1alpha1
 kind: Phase

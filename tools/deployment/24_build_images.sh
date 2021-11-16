@@ -31,7 +31,7 @@ sudo chown -R ${USER_NAME} ${IMAGE_DIR}
 unset IFS
 for plan in $IMAGE_PHASE_PLANS; do
   echo "Build phase plan: $plan"
-  airshipctl plan run $plan --debug
+  sudo --preserve-env=SOPS_IMPORT_PGP airshipctl plan run $plan --debug
 done
 
 echo "List generated images"

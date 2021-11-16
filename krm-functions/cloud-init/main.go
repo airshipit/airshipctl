@@ -17,7 +17,9 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"sigs.k8s.io/kustomize/api/provider"
@@ -67,6 +69,15 @@ func docFromRNode(rnode *yaml.RNode) (document.Document, error) {
 	return collection[0], nil
 }
 
+func runCmd(cmd string, opts ...string) error {
+	c := exec.Command(cmd, opts...)
+	// allows to observe realtime output from script
+	w := io.Writer(os.Stderr)
+	c.Stdout = w
+	c.Stderr = w
+	return c.Run()
+}
+
 func main() {
 	fn := func(rl *framework.ResourceList) error {
 		functionConfigDocument, err := docFromRNode(rl.FunctionConfig)
@@ -113,7 +124,7 @@ func main() {
 		}
 
 		rl.Items = []*yaml.RNode{}
-		return nil
+		return runCmd("/usr/bin/local/entrypoint.sh")
 	}
 	cmd := command.Build(framework.ResourceListProcessorFunc(fn), command.StandaloneEnabled, false)
 	if err := cmd.Execute(); err != nil {

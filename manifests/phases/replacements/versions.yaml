@@ -6,15 +6,4 @@ metadata:
     config.kubernetes.io/function: |-
       container:
         image: localhost/replacement-transformer
-replacements:
-- source:
-    objref:
-      kind: VersionsCatalogue
-      name: versions-airshipctl
-    fieldref: spec.images.image_builder.image_builder.image_builder.image
-  target:
-    objref:
-      kind: GenericContainer
-      name: iso-build-image
-    fieldrefs: ["spec.image"]
-
+replacements: []
