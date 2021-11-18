@@ -20,13 +20,14 @@ import (
 
 // ApplyConfig provides instructions on how to apply resources to kubernetes cluster
 type ApplyConfig struct {
-	WaitOptions  ApplyWaitOptions  `json:"waitOptions,omitempty"`
-	PruneOptions ApplyPruneOptions `json:"pruneOptions,omitempty"`
-	Kubeconfig   string            `json:"kubeconfig,omitempty"`
-	Context      string            `json:"context,omitempty"`
-	DryRun       bool              `json:"druRun,omitempty"`
-	Debug        bool              `json:"debug,omitempty"`
-	PhaseName    string            `json:"phaseName,omitempty"`
+	WaitOptions     ApplyWaitOptions  `json:"waitOptions,omitempty"`
+	PruneOptions    ApplyPruneOptions `json:"pruneOptions,omitempty"`
+	Kubeconfig      string            `json:"kubeconfig,omitempty"`
+	Context         string            `json:"context,omitempty"`
+	DryRun          bool              `json:"druRun,omitempty"`
+	Debug           bool              `json:"debug,omitempty"`
+	PhaseName       string            `json:"phaseName,omitempty"`
+	InventoryPolicy string            `json:"inventoryPolicy,omitempty"`
 }
 
 // ApplyWaitOptions provides instructions how to wait for kubernetes resources

@@ -37,6 +37,11 @@ type ApplyConfig struct {
 	DryRun       bool              `json:"druRun,omitempty"`
 	Debug        bool              `json:"debug,omitempty"`
 	PhaseName    string            `json:"phaseName,omitempty"`
+
+	// InventoryPolicy defines if an inventory object can take over objects that belong to another
+	// inventory object or don't belong to any inventory object. Possible values are:
+	// "strict", "adopt" or "force-adopt"
+	InventoryPolicy string `json:"inventoryPolicy,omitempty"`
 }
 
 // ApplyWaitOptions provides instructions how to wait for kubernetes resources

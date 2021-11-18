@@ -37,6 +37,12 @@ spec:
                 type: boolean
               druRun:
                 type: boolean
+              inventoryPolicy:
+                description: 'InventoryPolicy defines if an inventory object can take
+                  over objects that belong to another inventory object or don''t belong
+                  to any inventory object. Possible values are: "strict", "adopt"
+                  or "force-adopt"'
+                type: string
               kubeconfig:
                 type: string
               phaseName:
