@@ -131,6 +131,7 @@ metadata:
   name: iso
 description: "Runs phases to build iso image"
 phases:
+  - name: iso-cloud-init-data
   - name: iso-build-image
 validation:
   kindsToSkip:

@@ -252,7 +252,7 @@ spec:
 apiVersion: airshipit.org/v1alpha1
 kind: GenericContainer
 metadata:
-  name: iso-build-image
+  name: iso-cloud-init-data
   labels:
     airshipit.org/deploy-k8s: "false"
 spec:
@@ -263,19 +263,6 @@ spec:
       src: /srv/images
       dst: /config
       rw: true
-  envVars:
-    - IMAGE_TYPE=iso
-    - BUILDER_CONFIG=/config/builder-conf.yaml
-    - USER_DATA_FILE=user-data
-    - NET_CONFIG_FILE=network-data
-    - OUTPUT_FILE_NAME=ephemeral.iso
-    - OUTPUT_METADATA_FILE_NAME=output1-metadata.yaml
-    - http_proxy
-    - https_proxy
-    - HTTP_PROXY
-    - HTTPS_PROXY
-    - no_proxy
-    - NO_PROXY
 config: |
   apiVersion: airshipit.org/v1alpha1
   kind: IsoConfiguration
@@ -294,6 +281,47 @@ config: |
     outputFileName: ephemeral.iso
   container:
     volume: /srv/images:/config # for compatibility with image-builder
+
+---
+apiVersion: airshipit.org/v1alpha1
+kind: GenericContainer
+metadata:
+  name: iso-build-image
+  labels:
+    airshipit.org/deploy-k8s: "false"
+spec:
+  type: airship
+  airship:
+    privileged: true
+    containerRuntime: docker
+    cmd:
+      - /bin/bash
+      - -c
+      - /usr/bin/local/entrypoint.sh 1>&2
+  image: quay.io/airshipit/image-builder:k8s-1.19-latest-ubuntu_focal
+  mounts:
+    - type: bind
+      src: /srv/images
+      dst: /config
+      rw: true
+  envVars:
+    - IMAGE_TYPE=iso
+    - BUILDER_CONFIG=/config/builder-conf.yaml
+    - USER_DATA_FILE=user-data
+    - NET_CONFIG_FILE=network-data
+    - OUTPUT_FILE_NAME=ephemerial.iso
+    - OUTPUT_METADATA_FILE_NAME=output-metadata.yaml
+    - http_proxy
+    - https_proxy
+    - HTTP_PROXY
+    - HTTPS_PROXY
+    - no_proxy
+    - NO_PROXY
+config: |
+  apiVersion: airshipit.org/v1alpha1
+  kind: DoesNotMatter
+  metadata:
+    name: isogen
 ---
 apiVersion: airshipit.org/v1alpha1
 kind: GenericContainer
