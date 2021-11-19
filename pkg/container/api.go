@@ -28,11 +28,11 @@ import (
 	"github.com/ahmetb/dlog"
 	"sigs.k8s.io/kustomize/kyaml/fn/runtime/runtimeutil"
 	"sigs.k8s.io/kustomize/kyaml/kio"
-	"sigs.k8s.io/kustomize/kyaml/runfn"
 	kyaml "sigs.k8s.io/kustomize/kyaml/yaml"
 	"sigs.k8s.io/yaml"
 
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
+	"opendev.org/airship/airshipctl/pkg/container/runfn"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/util"
 )
@@ -228,6 +228,7 @@ func (c *V1Alpha1) runKRM() error {
 		Output:                c.output,
 		StorageMounts:         mounts,
 		ContinueOnEmptyResult: true,
+		Timeout:               c.conf.Spec.Timeout,
 	}
 	function, err := kyaml.Parse(c.conf.Config)
 	if err != nil {

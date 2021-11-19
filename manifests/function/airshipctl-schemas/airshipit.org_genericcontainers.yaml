@@ -149,6 +149,12 @@ spec:
                   parameter is specified. Else it will write output to STDOUT. This
                   path relative to current site root.
                 type: string
+              timeout:
+                description: Timeout is the maximum amount of time (in seconds) for
+                  container execution if not specified (0) no timeout will be set
+                  and container could run indefinitely
+                format: int64
+                type: integer
               type:
                 description: Supported types are "airship" and "krm"
                 type: string

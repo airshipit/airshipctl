@@ -95,6 +95,10 @@ type GenericContainerSpec struct {
 
 	// Mounts are the storage or directories to mount into the container
 	StorageMounts []StorageMount `json:"mounts,omitempty" yaml:"mounts,omitempty"`
+
+	// Timeout is the maximum amount of time (in seconds) for container execution
+	// if not specified (0) no timeout will be set and container could run indefinitely
+	Timeout uint64 `json:"timeout,omitempty"`
 }
 
 // AirshipContainerSpec airship container settings
