@@ -27,6 +27,7 @@ import (
 	v1 "k8s.io/client-go/applyconfigurations/core/v1"
 	"k8s.io/klog/v2"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
+	"sigs.k8s.io/cli-utils/cmd/flagutils"
 	"sigs.k8s.io/cli-utils/cmd/printers"
 	"sigs.k8s.io/cli-utils/pkg/apply"
 	"sigs.k8s.io/cli-utils/pkg/common"
@@ -136,12 +137,18 @@ func (c *Config) toCliOptions() apply.Options {
 		emitStatusEvents = true
 	}
 
+	inventoryPolicy, err := flagutils.ConvertInventoryPolicy(c.InventoryPolicy)
+	if err != nil {
+		klog.V(2).Infof("%s or force-adopt, using the default one (strict)", err.Error())
+	}
+
 	return apply.Options{
 		DryRunStrategy:   dryRunStrategy,
 		NoPrune:          !c.PruneOptions.Prune,
 		EmitStatusEvents: emitStatusEvents,
 		ReconcileTimeout: timeout,
 		PollInterval:     pollInterval,
+		InventoryPolicy:  inventoryPolicy,
 	}
 }
 
