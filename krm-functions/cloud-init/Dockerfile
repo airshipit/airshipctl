@@ -1,6 +1,5 @@
 ARG GO_IMAGE=quay.io/airshipit/golang:1.16.8-buster
-ARG RELEASE_IMAGE=quay.io/airshipit/image-builder:k8s-1.21-latest-ubuntu_focal
-
+ARG RELEASE_IMAGE=quay.io/airshipit/alpine:3.13.5
 FROM ${GO_IMAGE} as builder
 ARG GOPROXY=""
 
@@ -29,4 +28,5 @@ RUN make ${MAKE_TARGET}
 FROM ${RELEASE_IMAGE} as release
 ARG MAKE_TARGET=bin/cloud-init
 COPY --from=builder /usr/src/airshipctl/${MAKE_TARGET} /usr/local/bin/config-function
+USER 65534
 CMD ["/usr/local/bin/config-function"]
