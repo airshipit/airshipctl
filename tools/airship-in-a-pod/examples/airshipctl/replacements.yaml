@@ -43,6 +43,13 @@
   path: "/spec/containers/6/env/10/value"
   value: none
 
+# The following relate to secret regeneration
+# Set this to "true" in production environment to prevent secret generation
+# and secret show
+- op: replace
+  path: "/spec/containers/6/env/11/value"
+  value: "false"
+
 # The following relate to authorization for pulling the airshipctl repository
 # This is the type of authorization to use. Currently supported types are
 # [none http-basic ssh-key]

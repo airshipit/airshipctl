@@ -332,6 +332,8 @@ spec:
         value:
       - name: AIRSHIP_CONFIG_MANIFEST_REPO_AUTH_TYPE
         value: "none"
+      - name: SKIP_REGENERATE
+        value:
 
     volumeMounts:
       - name: cache

@@ -76,7 +76,10 @@ else
   export NO_CHECKOUT="true"
 fi
 ./tools/deployment/23_pull_documents.sh
-./tools/deployment/23_generate_secrets.sh
+
+if [[ "$SKIP_REGENERATE" = "false"  ]]; then
+  ./tools/deployment/23_generate_secrets.sh
+fi
 
 repo_url=$(yq -r .manifests.dummy_manifest.repositories.primary.url /root/.airship/config)
 repo_name=$(basename ${repo_url})
