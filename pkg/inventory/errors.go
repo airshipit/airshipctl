@@ -16,7 +16,7 @@ package inventory
 
 import "fmt"
 
-// ErrInvalidOptions is returned when incompetible flags are
+// ErrInvalidOptions is returned when incompatible flags are
 type ErrInvalidOptions struct {
 	Message string
 }

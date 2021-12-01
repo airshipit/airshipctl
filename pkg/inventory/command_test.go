@@ -68,7 +68,7 @@ func TestListHostsCommand(t *testing.T) {
 	})
 
 	t.Run("error ListHosts", func(t *testing.T) {
-		expectedErr := fmt.Errorf("No hosts present in the hostInventory")
+		expectedErr := fmt.Errorf("no hosts present in the hostInventory")
 		var hosts []remoteifc.Client
 
 		bmhInv := &mockinventory.MockBMHInventory{}

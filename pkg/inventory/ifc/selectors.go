@@ -15,7 +15,7 @@
 package ifc
 
 // BaremetalHostSelector allows to select baremetal hosts, if used empty all possible hosts
-// will be should be returned by Select() method of BaremetalInvenotry interface
+// will be should be returned by Select() method of BaremetalInventory interface
 type BaremetalHostSelector struct {
 	Name          string
 	Namespace     string

@@ -49,6 +49,6 @@ const (
 )
 
 // BaremetalBatchRunOptions are options to be passed to RunOperation, this is to be
-// exetended in the future, to support such things as concurency
+// extended in the future, to support such things as concurency
 type BaremetalBatchRunOptions struct {
 }

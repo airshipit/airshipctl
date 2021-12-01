@@ -47,7 +47,7 @@ type CommandOptions struct {
 	Inventory ifc.Inventory
 }
 
-// ListHostsCommand is used to store common variables from cmd flags for list-hots command
+// ListHostsCommand is used to store common variables from cmd flags for list-hosts command
 type ListHostsCommand struct {
 	Writer       io.Writer
 	Options      *CommandOptions
@@ -83,7 +83,7 @@ func (o *CommandOptions) validateSingleHostAction() error {
 	return nil
 }
 
-//RunE method returns list of hots from BaremetalInventory
+//RunE method returns list of hosts from BaremetalInventory
 func (l *ListHostsCommand) RunE() error {
 	if l.OutputFormat != TableOutputFormat && l.OutputFormat != YamlOutputFormat {
 		return ErrInvalidOptions{Message: "output formats. Supported options are 'table' and 'yaml'"}
@@ -94,7 +94,7 @@ func (l *ListHostsCommand) RunE() error {
 		return err
 	}
 	if len(hostClients) == 0 {
-		return fmt.Errorf("No hosts present in the hostInventory")
+		return fmt.Errorf("no hosts present in the hostInventory")
 	}
 	return l.Write(hostClients)
 }
