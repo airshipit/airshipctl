@@ -15,6 +15,9 @@ kind: Kustomization
 bases:
 - ../base
 
+resources:
+- pv.yaml
+
 patchesJson6902:
 - target:
     version: v1 # apiVersion

@@ -223,11 +223,11 @@ spec:
       - /entrypoint.sh
     env:
       - name: CACHE_DIR
-        value: /opt/aiap-cache
+        value: /opt/aiap-files/cache
       - name: USE_CACHED_AIRSHIPCTL
         value: "false"
       - name: ARTIFACTS_DIR
-        value: /opt/aiap-artifacts
+        value: /opt/aiap-files/artifacts
       - name: AIRSHIPCTL_REPO_URL
         value: https://opendev.org/airship/airshipctl
       - name: AIRSHIPCTL_REPO_REF
@@ -245,10 +245,8 @@ spec:
     volumeMounts:
       - name: tmp
         mountPath: /tmp
-      - name: cache
-        mountPath: /opt/aiap-cache
-      - name: artifacts
-        mountPath: /opt/aiap-artifacts
+      - name: aiap-files
+        mountPath: /opt/aiap-files
       - name: status
         mountPath: /tmp/status
       - name: var-run-docker
@@ -269,9 +267,9 @@ spec:
       - /entrypoint.sh
     env:
       - name: CACHE_DIR
-        value: /opt/aiap-cache
+        value: /opt/aiap-files/cache
       - name: ARTIFACTS_DIR
-        value: /opt/aiap-artifacts
+        value: /opt/aiap-files/artifacts
       - name: USE_PROXY
         value:
       - name: no_proxy
@@ -281,10 +279,8 @@ spec:
       - name: https_proxy
         value:
     volumeMounts:
-      - name: cache
-        mountPath: /opt/aiap-cache
-      - name: artifacts
-        mountPath: /opt/aiap-artifacts
+      - name: aiap-files
+        mountPath: /opt/aiap-files
       - name: status
         mountPath: /tmp/status
       - name: tmp
@@ -311,9 +307,9 @@ spec:
       - /entrypoint.sh
     env:
       - name: CACHE_DIR
-        value: /opt/aiap-cache
+        value: /opt/aiap-files/cache
       - name: ARTIFACTS_DIR
-        value: /opt/aiap-artifacts
+        value: /opt/aiap-files/artifacts
       - name: USE_CACHED_ISO
         value: "false"
       - name: AIRSHIP_CONFIG_PHASE_REPO_URL
@@ -336,10 +332,8 @@ spec:
         value:
 
     volumeMounts:
-      - name: cache
-        mountPath: /opt/aiap-cache
-      - name: artifacts
-        mountPath: /opt/aiap-artifacts
+      - name: aiap-files
+        mountPath: /opt/aiap-files
       - name: status
         mountPath: /tmp/status
       - name: tmp
@@ -367,13 +361,23 @@ spec:
       - name: status
         mountPath: /tmp/status
 
+  initContainers:
+  - name: init-aiap-files
+    image: ubuntu:20.04
+    command:
+      - bash
+      - -cex
+      - |
+        mkdir -p /opt/aiap-files/artifacts
+        mkdir -p /opt/aiap-files/cache
+    volumeMounts:
+      - name: aiap-files
+        mountPath: /opt/aiap-files
+
   volumes:
-    - name: cache
-      hostPath:
-        path: /opt/aiap-cache
-    - name: artifacts
-      hostPath:
-        path: /opt/aiap-artifacts
+    - name: aiap-files
+      persistentVolumeClaim:
+        claimName: aiap-pv-files-claim
     - name: status
       emptyDir: {}
     - name: dev
