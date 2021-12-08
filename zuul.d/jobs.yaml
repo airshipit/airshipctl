@@ -158,12 +158,12 @@
 - job:
     name: airship-airship-in-a-pod-script-runner
     attempts: 1
-    timeout: 9000
+    timeout: 10800
     pre-run:
       - playbooks/airship-airshipctl-deploy-docker.yaml
     post-run: playbooks/airship-collect-logs.yaml
     run: playbooks/airshipctl-gate-runner.yaml
-    nodeset: airship-airshipctl-single-16GB-bionic-node
+    nodeset: airship-airshipctl-single-32GB-bionic-node
     irrelevant-files: *noncodefiles
     dependencies:
       - name: openstack-tox-docs
