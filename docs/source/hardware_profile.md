@@ -38,36 +38,61 @@ These are the default values, you can adjust to your liking
 
 ### RAID Section
 
-The RAID levels supported are 0, 1 and 1+0. Some examples
-of using these levels in your configurations are given
+The RAID levels supported are 0, 1, 5, 6, 1+0, 5+0, 6+0. Some examples
+of using these levels in your configurations are given:
 
 ``` yaml
   raid:
     hardwareRAIDVolumes:
     - name: "VirtualDisk1"
-      level: "1+0"
-      sizeGibibytes: 1024
-      numberOfPhysicalDisks: 4
+      level: "0"
+      sizeGibibytes: 2048
+      numberOfPhysicalDisks: 2
       rotational: False
     - name: "VirtualDisk2"
       level: "1"
-      sizeGibibytes: 500
-      numberOfPhysicalDisks: 2
-      rotational: True
+      controller: "RAID.Slot.5-1"
+      physicalDisks:
+      - "Disk.Bay.0:Enclosure.Internal.0-1:RAID.Slot.5-1"
+      - "Disk.Bay.1:Enclosure.Internal.0-1:RAID.Slot.5-1"
     - name: "VirtualDisk3"
-      level: "0"
-      sizeGibibytes: 500
-      numberOfPhysicalDisks: 2
+      level: "5"
+      sizeGibibytes: 3000
+      numberOfPhysicalDisks: 3
       rotational: True
     - name: "VirtualDisk4"
-      level: "0"
-      sizeGibibytes: 250
-      numberOfPhysicalDisks: 1
-      rotataional: False
+      level: "6"
+      sizeGibibytes: 4000
+      controller: "RAID.Slot.5-1"
+      physicalDisks:
+      - "Disk.Bay.0:Enclosure.Internal.0-1:RAID.Slot.5-1"
+      - "Disk.Bay.1:Enclosure.Internal.0-1:RAID.Slot.5-1"
+      - "Disk.Bay.2:Enclosure.Internal.0-1:RAID.Slot.5-1"
+      - "Disk.Bay.3:Enclosure.Internal.0-1:RAID.Slot.5-1"
+    - name: "VirtualDisk5"
+      level: "1+0"
+      sizeGibibytes: 4000
+      numberOfPhysicalDisks: 4
+    - name: "VirtualDisk6"
+      level: "5+0"
+      controller: "RAID.Slot.5-1"
+      physicalDisks:
+      - "Disk.Bay.0:Enclosure.Internal.0-1:RAID.Slot.5-1"
+      - "Disk.Bay.1:Enclosure.Internal.0-1:RAID.Slot.5-1"
+      - "Disk.Bay.2:Enclosure.Internal.0-1:RAID.Slot.5-1"
+      - "Disk.Bay.3:Enclosure.Internal.0-1:RAID.Slot.5-1"
+      - "Disk.Bay.4:Enclosure.Internal.0-1:RAID.Slot.5-1"
+      - "Disk.Bay.5:Enclosure.Internal.0-1:RAID.Slot.5-1"
+    - name: "VirtualDisk7"
+      level: "6+0"
+      numberOfPhysicalDisks: 8
+      sizeGibibytes: 16000
+      rotational: False
 ```
-
 For additional detail on these parameters, see the [Baremetal Host][1] API
 documentation.
+
+Note that this has only been tested on Dell hardware.
 
 For more details on the example hardwareprofile, see [the repo][2].
 
