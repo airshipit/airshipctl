@@ -163,14 +163,15 @@ Airship-in-a-pod produces the following outputs:
 * A tarball containing the generated ephemeral ISO, as well as the
   configuration used during generation.
 
-These artifacts are placed at `ARTIFACTS_DIR` (defaults to `/opt/aiap-artifacts`).
+These artifacts are placed at `ARTIFACTS_DIR` (defaults to `/opt/aiap-files/artifacts`).
 
 ## Caching
+#TODO: Need to review this.
 
 As it can be cumbersome and time-consuming to build and rebuild binaries and
 images, some options are made available for caching. A developer may re-use
 artifacts from previous runs (or provide their own) by placing them in
-`CACHE_DIR` (defaults to `/opt/aiap-cache`). Special care is needed for the
+`CACHE_DIR` (defaults to `/opt/aiap-files/cache`). Special care is needed for the
 caching:
 
 * If using a cached `airshipctl`, the `airshipctl` binary must be stored in the

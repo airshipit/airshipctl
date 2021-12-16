@@ -61,28 +61,29 @@
 # that it should be the same across containers
 - op: replace
   path: "/spec/containers/4/env/2/value"
-  value: /opt/aiap-artifacts
+  value: /opt/aiap-files/artifacts
 - op: replace
   path: "/spec/containers/5/env/1/value"
-  value: /opt/aiap-artifacts
+  value: /opt/aiap-files/artifacts
 - op: replace
   path: "/spec/containers/6/env/1/value"
-  value: /opt/aiap-artifacts
+  value: /opt/aiap-files/artifacts
 
 # This is the location on the host machine of the cache directory. Note that it
 # should be the same across containers
 - op: replace
   path: "/spec/containers/4/env/0/value"
-  value: /opt/aiap-cache
+  value: /opt/aiap-files/cache
 - op: replace
   path: "/spec/containers/5/env/0/value"
-  value: /opt/aiap-cache
+  value: /opt/aiap-files/cache
 - op: replace
   path: "/spec/containers/6/env/0/value"
-  value: /opt/aiap-cache
+  value: /opt/aiap-files/cache
 # Set true to use a cached airshipctl binary
 - op: replace
   path: "/spec/containers/4/env/1/value"
+  # value: $(USE_CACHED_AIRSHIPCTL)
   value: "false"
 # Set true to use a cached ephemeral iso
 - op: replace

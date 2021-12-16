@@ -4,10 +4,10 @@ FROM ${BASE_IMAGE}
 SHELL ["bash", "-exc"]
 ENV DEBIAN_FRONTEND noninteractive
 
-ARG CACHE_DIR=/opt/aiap-cache
+ARG CACHE_DIR=/opt/aiap-files/cache
 ENV CACHE_DIR=$CACHE_DIR
 
-ARG ARTIFACTS_DIR=/opt/aiap-artifacts
+ARG ARTIFACTS_DIR=/opt/aiap-files/artifacts
 ENV ARTIFACTS_DIR=$ARTIFACTS_DIR
 
 # Update distro and install common reqs
