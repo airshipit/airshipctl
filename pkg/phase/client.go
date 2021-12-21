@@ -26,7 +26,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase/errors"
@@ -56,10 +55,9 @@ var _ ifc.Phase = &phase{}
 
 // Phase implements phase interface
 type phase struct {
-	helper    ifc.Helper
-	apiObj    *v1alpha1.Phase
-	registry  ExecutorRegistry
-	processor events.EventProcessor
+	helper   ifc.Helper
+	apiObj   *v1alpha1.Phase
+	registry ExecutorRegistry
 }
 
 // Executor returns executor interface associated with the phase
@@ -111,17 +109,12 @@ func (p *phase) Executor() (ifc.Executor, error) {
 
 // Run runs the phase via executor
 func (p *phase) Run(ro ifc.RunOptions) error {
-	defer p.processor.Close()
 	executor, err := p.Executor()
 	if err != nil {
 		return err
 	}
-	ch := make(chan events.Event)
 
-	go func() {
-		executor.Run(ch, ro)
-	}()
-	return p.processor.Process(ch)
+	return executor.Run(ro)
 }
 
 // Validate makes sure that phase is properly configured
@@ -304,12 +297,8 @@ var _ ifc.Client = &client{}
 type client struct {
 	ifc.Helper
 
-	registry      ExecutorRegistry
-	processorFunc ProcessorFunc
+	registry ExecutorRegistry
 }
-
-// ProcessorFunc that returns processor interface
-type ProcessorFunc func() events.EventProcessor
 
 // Option allows to add various options to a phase
 type Option func(*client)
@@ -330,9 +319,6 @@ func NewClient(helper ifc.Helper, opts ...Option) ifc.Client {
 	if c.registry == nil {
 		c.registry = DefaultExecutorRegistry
 	}
-	if c.processorFunc == nil {
-		c.processorFunc = defaultProcessor
-	}
 	return c
 }
 
@@ -343,10 +329,9 @@ func (c *client) PhaseByID(id ifc.ID) (ifc.Phase, error) {
 	}
 
 	phase := &phase{
-		apiObj:    phaseObj,
-		helper:    c.Helper,
-		processor: c.processorFunc(),
-		registry:  c.registry,
+		apiObj:   phaseObj,
+		helper:   c.Helper,
+		registry: c.registry,
 	}
 	return phase, nil
 }
@@ -365,14 +350,9 @@ func (c *client) PlanByID(id ifc.ID) (ifc.Plan, error) {
 
 func (c *client) PhaseByAPIObj(phaseObj *v1alpha1.Phase) (ifc.Phase, error) {
 	phase := &phase{
-		apiObj:    phaseObj,
-		helper:    c.Helper,
-		processor: c.processorFunc(),
-		registry:  c.registry,
+		apiObj:   phaseObj,
+		helper:   c.Helper,
+		registry: c.registry,
 	}
 	return phase, nil
-}
-
-func defaultProcessor() events.EventProcessor {
-	return events.NewDefaultProcessor()
 }

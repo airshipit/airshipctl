@@ -19,7 +19,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -29,7 +28,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/errors"
-	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	"opendev.org/airship/airshipctl/testutil"
@@ -92,7 +90,7 @@ func TestExecutorEphemeralRun(t *testing.T) {
 	testCases := []struct {
 		name        string
 		container   *testcontainer.MockContainer
-		expectedEvt []events.Event
+		expectedErr error
 	}{
 		{
 			name: "Run bootstrap container successfully",
@@ -106,44 +104,14 @@ func TestExecutorEphemeralRun(t *testing.T) {
 					return state, nil
 				},
 			},
-			expectedEvt: []events.Event{
-				events.NewEvent().WithBootstrapEvent(events.BootstrapEvent{
-					Operation: events.BootstrapStart,
-				}),
-				events.NewEvent().WithBootstrapEvent(events.BootstrapEvent{
-					Operation: events.BootstrapValidation,
-				}),
-				events.NewEvent().WithBootstrapEvent(events.BootstrapEvent{
-					Operation: events.BootstrapRun,
-				}),
-				events.NewEvent().WithBootstrapEvent(events.BootstrapEvent{
-					Operation: events.BootstrapValidation,
-				}),
-				events.NewEvent().WithBootstrapEvent(events.BootstrapEvent{
-					Operation: events.BootstrapEnd,
-				}),
-			},
 		},
 		{
-			name: "Run bootstrap container with Unknow Error",
+			name: "Run bootstrap container with Unknown Error",
 			container: &testcontainer.MockContainer{
 				MockRunCommand:  func() error { return ephemeral.ErrBootstrapContainerRun{} },
 				MockRmContainer: func() error { return nil },
 			},
-			expectedEvt: []events.Event{
-				events.NewEvent().WithBootstrapEvent(events.BootstrapEvent{
-					Operation: events.BootstrapStart,
-				}),
-				events.NewEvent().WithBootstrapEvent(events.BootstrapEvent{
-					Operation: events.BootstrapValidation,
-				}),
-				events.NewEvent().WithBootstrapEvent(events.BootstrapEvent{
-					Operation: events.BootstrapRun,
-				}),
-				events.NewEvent().WithErrorEvent(events.ErrorEvent{
-					Error: ephemeral.ErrBootstrapContainerRun{},
-				}),
-			},
+			expectedErr: ephemeral.ErrBootstrapContainerRun{},
 		},
 	}
 	for _, test := range testCases {
@@ -153,23 +121,8 @@ func TestExecutorEphemeralRun(t *testing.T) {
 				BootConf:  testCfg,
 				Container: tt.container,
 			}
-			ch := make(chan events.Event)
-			go executor.Run(ch, ifc.RunOptions{})
-			var actualEvt []events.Event
-			for evt := range ch {
-				if evt.Type == events.BootstrapType {
-					// Set message to empty string, so it's not compared
-					evt.BootstrapEvent.Message = ""
-				}
-				actualEvt = append(actualEvt, evt)
-			}
-			for i := range tt.expectedEvt {
-				// Fix timestamps for comparison
-				timeStamp := time.Time{}
-				tt.expectedEvt[i].Timestamp = timeStamp
-				actualEvt[i].Timestamp = timeStamp
-			}
-			assert.Equal(t, tt.expectedEvt, actualEvt)
+			err := executor.Run(ifc.RunOptions{})
+			assert.Equal(t, tt.expectedErr, err)
 		})
 	}
 }

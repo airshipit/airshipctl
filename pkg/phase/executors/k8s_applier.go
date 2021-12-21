@@ -26,7 +26,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	airerrors "opendev.org/airship/airshipctl/pkg/errors"
-	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase/errors"
@@ -93,17 +92,14 @@ func NewKubeApplierExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 }
 
 // Run executor, should be performed in separate go routine
-func (e *KubeApplierExecutor) Run(ch chan events.Event, runOpts ifc.RunOptions) {
-	defer close(ch)
-
+func (e *KubeApplierExecutor) Run(runOpts ifc.RunOptions) error {
 	e.apiObject.Config.Debug = log.DebugEnabled()
 	e.apiObject.Config.PhaseName = e.BundleName
 
 	if e.apiObject.Config.Kubeconfig == "" {
 		kcfg, ctx, cleanup, err := e.getKubeconfig()
 		if err != nil {
-			handleError(ch, err)
-			return
+			return err
 		}
 		defer cleanup()
 		e.apiObject.Config.Kubeconfig, e.apiObject.Config.Context = kcfg, ctx
@@ -123,22 +119,16 @@ func (e *KubeApplierExecutor) Run(ch chan events.Event, runOpts ifc.RunOptions) 
 
 	reader, err := e.prepareDocuments()
 	if err != nil {
-		handleError(ch, err)
-		return
+		return err
 	}
 
 	opts, err := yaml.Marshal(&e.apiObject.Config)
 	if err != nil {
-		handleError(ch, err)
-		return
+		return err
 	}
 
 	e.execObj.Config = string(opts)
-	err = e.clientFunc("", reader, os.Stdout, e.execObj, e.targetPath).Run()
-	if err != nil {
-		handleError(ch, err)
-		return
-	}
+	return e.clientFunc("", reader, os.Stdout, e.execObj, e.targetPath).Run()
 }
 
 func (e *KubeApplierExecutor) getKubeconfig() (string, string, func(), error) {

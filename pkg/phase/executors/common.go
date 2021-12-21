@@ -18,7 +18,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	airshipv1 "opendev.org/airship/airshipctl/pkg/api/v1alpha1"
-	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/phase/executors/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
@@ -63,10 +62,4 @@ func RegisterExecutor(executorName string, registry map[schema.GroupVersionKind]
 	}
 	registry[gvks[0]] = execObj
 	return nil
-}
-
-func handleError(ch chan<- events.Event, err error) {
-	ch <- events.NewEvent().WithErrorEvent(events.ErrorEvent{
-		Error: err,
-	})
 }

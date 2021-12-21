@@ -27,7 +27,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/api/v1alpha1"
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
-	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/phase/errors"
 	"opendev.org/airship/airshipctl/pkg/phase/executors"
@@ -252,24 +251,12 @@ func TestGenericContainer(t *testing.T) {
 				},
 			}
 
-			ch := make(chan events.Event)
-			go containerExecutor.Run(ch, tt.runOptions)
-
-			actualEvt := make([]events.Event, 0)
-			for evt := range ch {
-				actualEvt = append(actualEvt, evt)
-			}
-			require.Greater(t, len(actualEvt), 0)
-
+			err := containerExecutor.Run(tt.runOptions)
 			if tt.expectedErr != "" {
-				e := actualEvt[len(actualEvt)-1]
-				require.Error(t, e.ErrorEvent.Error)
-				assert.Contains(t, e.ErrorEvent.Error.Error(), tt.expectedErr)
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.expectedErr)
 			} else {
-				e := actualEvt[len(actualEvt)-1]
-				assert.NoError(t, e.ErrorEvent.Error)
-				assert.Equal(t, e.Type, events.GenericContainerType)
-				assert.Equal(t, e.GenericContainerEvent.Operation, events.GenericContainerStop)
+				assert.NoError(t, err)
 				assert.Equal(t, tt.resultConfig, containerExecutor.Container.Config)
 			}
 		})

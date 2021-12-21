@@ -24,7 +24,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/errors"
-	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 )
@@ -56,20 +55,12 @@ func NewEphemeralExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 }
 
 // Run ephemeral as a phase runner
-func (c *EphemeralExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
-	defer close(evtCh)
-
-	evtCh <- events.NewEvent().WithBootstrapEvent(events.BootstrapEvent{
-		Operation: events.BootstrapStart,
-		Message:   "Processing Ephemeral cluster operation ...",
-	})
+func (c *EphemeralExecutor) Run(opts ifc.RunOptions) error {
+	log.Print("Processing Ephemeral cluster operation ...")
 
 	if opts.DryRun {
 		log.Print("Dryrun: bootstrap container command will be skipped")
-		evtCh <- events.NewEvent().WithBootstrapEvent(events.BootstrapEvent{
-			Operation: events.BootstrapDryRun,
-		})
-		return
+		return nil
 	}
 
 	if c.Container == nil {
@@ -79,8 +70,7 @@ func (c *EphemeralExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 			c.BootConf.BootstrapContainer.ContainerRuntime,
 			c.BootConf.BootstrapContainer.Image)
 		if err != nil {
-			handleError(evtCh, err)
-			return
+			return err
 		}
 		c.Container = builder
 	}
@@ -91,43 +81,29 @@ func (c *EphemeralExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 		Sleep:     time.Sleep,
 	}
 
-	evtCh <- events.NewEvent().WithBootstrapEvent(events.BootstrapEvent{
-		Operation: events.BootstrapValidation,
-		Message:   "Verifying executor manifest document ...",
-	})
+	log.Print("Verifying executor manifest document ...")
 
 	err := bootstrapOpts.VerifyInputs()
 	if err != nil {
-		handleError(evtCh, err)
-		return
+		return err
 	}
 
-	evtCh <- events.NewEvent().WithBootstrapEvent(events.BootstrapEvent{
-		Operation: events.BootstrapRun,
-		Message:   "Creating and starting the Bootstrap Container ...",
-	})
+	log.Print("Creating and starting the Bootstrap Container ...")
 
 	err = bootstrapOpts.CreateBootstrapContainer()
 	if err != nil {
-		handleError(evtCh, err)
-		return
+		return err
 	}
 
-	evtCh <- events.NewEvent().WithBootstrapEvent(events.BootstrapEvent{
-		Operation: events.BootstrapValidation,
-		Message:   "Verifying generation of kubeconfig file ...",
-	})
+	log.Print("Verifying generation of kubeconfig file ...")
 
 	err = bootstrapOpts.VerifyArtifacts()
 	if err != nil {
-		handleError(evtCh, err)
-		return
+		return err
 	}
 
-	evtCh <- events.NewEvent().WithBootstrapEvent(events.BootstrapEvent{
-		Operation: events.BootstrapEnd,
-		Message:   "Ephemeral cluster operation has completed successfully and artifacts verified",
-	})
+	log.Print("Ephemeral cluster operation has completed successfully and artifacts verified")
+	return nil
 }
 
 // Validate executor configuration and documents

@@ -25,7 +25,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	commonerrors "opendev.org/airship/airshipctl/pkg/errors"
-	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipctl/pkg/phase/errors"
@@ -82,27 +81,20 @@ func NewContainerExecutor(cfg ifc.ExecutorConfig) (ifc.Executor, error) {
 }
 
 // Run generic container as a phase runner
-func (c *ContainerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
-	defer close(evtCh)
-
-	evtCh <- events.NewEvent().WithGenericContainerEvent(events.GenericContainerEvent{
-		Operation: events.GenericContainerStart,
-		Message:   "starting generic container",
-	})
+func (c *ContainerExecutor) Run(opts ifc.RunOptions) error {
+	log.Print("starting generic container")
 
 	if c.Options.ClusterName != "" {
 		cleanup, err := c.SetKubeConfig()
 		if err != nil {
-			handleError(evtCh, err)
-			return
+			return err
 		}
 		defer cleanup()
 	}
 
 	input, err := bundleReader(c.ExecutorBundle)
 	if err != nil {
-		handleError(evtCh, err)
-		return
+		return err
 	}
 
 	// TODO this logic is redundant in executor package, move it to pkg/container
@@ -112,29 +104,22 @@ func (c *ContainerExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 		output = os.Stdout
 	}
 	if err = c.setConfig(); err != nil {
-		handleError(evtCh, err)
-		return
+		return err
 	}
 
 	// TODO check the executor type  when dryrun is set
 	if opts.DryRun {
-		evtCh <- events.NewEvent().WithGenericContainerEvent(events.GenericContainerEvent{
-			Operation: events.GenericContainerStop,
-			Message:   "DryRun execution finished",
-		})
-		return
+		log.Print("DryRun execution finished")
+		return nil
 	}
 
 	err = c.ClientFunc(c.ResultsDir, input, output, c.Container, c.MountBasePath).Run()
 	if err != nil {
-		handleError(evtCh, err)
-		return
+		return err
 	}
 
-	evtCh <- events.NewEvent().WithGenericContainerEvent(events.GenericContainerEvent{
-		Operation: events.GenericContainerStop,
-		Message:   "execution of the generic container finished",
-	})
+	log.Print("execution of the generic container finished")
+	return nil
 }
 
 // SetKubeConfig adds env variable and mounts kubeconfig to container

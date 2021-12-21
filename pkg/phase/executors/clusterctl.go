@@ -30,7 +30,6 @@ import (
 	"opendev.org/airship/airshipctl/pkg/container"
 	"opendev.org/airship/airshipctl/pkg/document"
 	airerrors "opendev.org/airship/airshipctl/pkg/errors"
-	"opendev.org/airship/airshipctl/pkg/events"
 	"opendev.org/airship/airshipctl/pkg/k8s/kubeconfig"
 	"opendev.org/airship/airshipctl/pkg/log"
 	phaseerrors "opendev.org/airship/airshipctl/pkg/phase/errors"
@@ -152,9 +151,7 @@ func initRepoData(c *airshipv1.Clusterctl, o *airshipv1.ClusterctlOptions, targe
 }
 
 // Run clusterctl init as a phase runner
-func (c *ClusterctlExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
-	defer close(evtCh)
-
+func (c *ClusterctlExecutor) Run(opts ifc.RunOptions) error {
 	if log.DebugEnabled() {
 		c.cctlOpts.CmdOptions = append(c.cctlOpts.CmdOptions, "-v5")
 	}
@@ -170,16 +167,16 @@ func (c *ClusterctlExecutor) Run(evtCh chan events.Event, opts ifc.RunOptions) {
 	var err error
 	c.cctlOpts.Config, err = yaml.Marshal(cctlConfig)
 	if err != nil {
-		handleError(evtCh, err)
+		return err
 	}
 
 	switch c.options.Action {
 	case airshipv1.Init:
-		c.init(evtCh)
+		return c.init()
 	case airshipv1.Move:
-		c.move(opts.DryRun, evtCh)
+		return c.move(opts.DryRun)
 	default:
-		handleError(evtCh, errors.ErrUnknownExecutorAction{Action: string(c.options.Action), ExecutorName: "clusterctl"})
+		return errors.ErrUnknownExecutorAction{Action: string(c.options.Action), ExecutorName: "clusterctl"}
 	}
 }
 
@@ -213,16 +210,12 @@ func (c *ClusterctlExecutor) getKubeconfig() (string, string, func(), error) {
 	return kubeConfigFile, context, cleanup, nil
 }
 
-func (c *ClusterctlExecutor) init(evtCh chan events.Event) {
-	evtCh <- events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
-		Operation: events.ClusterctlInitStart,
-		Message:   "starting clusterctl init executor",
-	})
+func (c *ClusterctlExecutor) init() error {
+	log.Print("starting clusterctl init executor")
 
 	kubecfg, context, cleanup, err := c.getKubeconfig()
 	if err != nil {
-		handleError(evtCh, err)
-		return
+		return err
 	}
 	defer cleanup()
 
@@ -245,38 +238,29 @@ func (c *ClusterctlExecutor) init(evtCh chan events.Event) {
 	}
 
 	if err = c.run(); err != nil {
-		handleError(evtCh, err)
-		return
+		return err
 	}
 
-	eventMsg := "clusterctl init completed successfully"
-	evtCh <- events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
-		Operation: events.ClusterctlInitEnd,
-		Message:   eventMsg,
-	})
+	log.Print("clusterctl init completed successfully")
+	return nil
 }
 
-func (c *ClusterctlExecutor) move(dryRun bool, evtCh chan events.Event) {
-	evtCh <- events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
-		Operation: events.ClusterctlMoveStart,
-		Message:   "starting clusterctl move executor",
-	})
+func (c *ClusterctlExecutor) move(dryRun bool) error {
+	log.Print("starting clusterctl move executor")
+
 	kubecfg, context, cleanup, err := c.getKubeconfig()
 	if err != nil {
-		handleError(evtCh, err)
-		return
+		return err
 	}
 	defer cleanup()
 
 	fromCluster, err := c.clusterMap.ParentCluster(c.clusterName)
 	if err != nil {
-		handleError(evtCh, err)
-		return
+		return err
 	}
 	fromContext, err := c.clusterMap.ClusterKubeconfigContext(fromCluster)
 	if err != nil {
-		handleError(evtCh, err)
-		return
+		return err
 	}
 
 	c.cctlOpts.CmdOptions = append(
@@ -297,15 +281,11 @@ func (c *ClusterctlExecutor) move(dryRun bool, evtCh chan events.Event) {
 	}
 
 	if err = c.run(); err != nil {
-		handleError(evtCh, err)
-		return
+		return err
 	}
 
-	eventMsg := "clusterctl move completed successfully"
-	evtCh <- events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
-		Operation: events.ClusterctlMoveEnd,
-		Message:   eventMsg,
-	})
+	log.Print("clusterctl move completed successfully")
+	return nil
 }
 
 // Validate executor configuration and documents
