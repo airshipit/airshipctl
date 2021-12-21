@@ -310,6 +310,11 @@ docker-image-golint: docker-image_MAKETGT = golint
 docker-image-golint: docker-image_DOCKERTGT = builder
 docker-image-golint: docker-image
 
+.PHONY: docker-image-check-manifests
+docker-image-check-manifests: docker-image_MAKETGT = "generate manifests check-git-diff"
+docker-image-check-manifests: docker-image_DOCKERTGT = builder
+docker-image-check-manifests: docker-image
+
 .PHONY: clean
 clean:
 	@rm -fr $(BIN_DIR)

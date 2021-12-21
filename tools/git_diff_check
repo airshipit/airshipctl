@@ -30,6 +30,20 @@ then
     exit 1
 fi
 
+git diff-files --quiet --ignore-submodules **/zz_generated.deepcopy.go
+if [ $? -ne 0 ]
+then
+    echo "git diff found modified zz_generated.deepcopy.go file, please run make generate"
+    exit 1
+fi
+
+git diff-files --quiet --ignore-submodules manifests/function/airshipctl-schemas/airshipit.org_*.yaml
+if [ $? -ne 0 ]
+then
+    echo "git diff found modified CRD files, please run make manifests"
+    exit 1
+fi
+
 # Evaluate git index for differences, if found print message and fail.
 git diff-index --cached --quiet --ignore-submodules HEAD -- **/*.golden
 if [ $? -ne 0 ]
@@ -42,6 +56,20 @@ git diff-index --cached --quiet --ignore-submodules HEAD -- **/*.rst
 if [ $? -ne 0 ]
 then
     echo "git diff found modified cli help, please run make cli-docs"
+    exit 1
+fi
+
+git diff-index --cached --quiet --ignore-submodules HEAD **/zz_generated.deepcopy.go
+if [ $? -ne 0 ]
+then
+    echo "git diff found modified zz_generated.deepcopy.go file, please run make generate"
+    exit 1
+fi
+
+git diff-index --cached --quiet --ignore-submodules HEAD manifests/function/airshipctl-schemas/airshipit.org_*.yaml
+if [ $? -ne 0 ]
+then
+    echo "git diff found modified CRD files, please run make manifests"
     exit 1
 fi
 

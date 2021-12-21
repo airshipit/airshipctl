@@ -43,6 +43,12 @@
     files: *gofiles
 
 - job:
+    name: airship-airshipctl-check-manifests
+    pre-run: playbooks/airship-airshipctl-deploy-docker.yaml
+    run: playbooks/airship-airshipctl-check-manifests.yaml
+    nodeset: airship-airshipctl-single-node
+
+- job:
     name: airship-airshipctl-check-github-issues
     description: Checks if a Github issue is referenced in the commit message
     run: playbooks/airship-airshipctl-check-github-issues.yaml
@@ -125,6 +131,8 @@
         soft: true
       - name: airship-airshipctl-unit
         soft: true
+      - name: airship-airshipctl-check-manifests
+        soft: true
       - name: airship-airshipctl-build-image
         soft: true
     vars:
@@ -163,6 +171,8 @@
       - name: airship-airshipctl-lint
         soft: true
       - name: airship-airshipctl-golint
+        soft: true
+      - name: airship-airshipctl-check-manifests
         soft: true
       - name: airship-airshipctl-unit
         soft: true
@@ -205,6 +215,8 @@
       - name: airship-airshipctl-unit
         soft: true
       - name: airship-airshipctl-golint
+        soft: true
+      - name: airship-airshipctl-check-manifests
         soft: true
       - name: airship-airshipctl-build-image
         soft: true
