@@ -435,7 +435,7 @@ func TestPlanRun(t *testing.T) {
 			require.NotNil(t, client)
 			p, err := client.PlanByID(tt.planID)
 			require.NoError(t, err)
-			err = p.Run(ifc.RunOptions{DryRun: true})
+			err = p.Run(ifc.PlanRunOptions{RunOptions: ifc.RunOptions{DryRun: true}})
 			if tt.errContains != "" {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), tt.errContains)
