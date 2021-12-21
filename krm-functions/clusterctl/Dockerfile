@@ -24,8 +24,9 @@ RUN update-ca-certificates
 ENV PATH "/usr/local/go/bin:$PATH"
 ENV CGO_ENABLED=0
 WORKDIR /go/src/
-COPY image/ .
+COPY image/go.mod image/go.sum ./
 RUN go mod download
+COPY image/ ./
 RUN go build -v -o /usr/local/bin/config-function ./
 
 FROM ${PLUGINS_RELEASE_IMAGE} as release
