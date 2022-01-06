@@ -13,7 +13,9 @@ RUN apt-get update ;\
             bridge-utils \
             libvirt-clients \
             systemd \
-            socat ;\
+            socat \
+            libguestfs-tools \
+            linux-image-generic ;\
     find /etc/systemd/system \
          /usr/lib/systemd/system \
          -path '*.wants/*' \
