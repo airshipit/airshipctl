@@ -4,6 +4,9 @@ FROM ${BASE_IMAGE}
 SHELL ["bash", "-exc"]
 ENV DEBIAN_FRONTEND noninteractive
 
+ARG k8s_version=v1.18.3
+ARG kubectl_url=https://storage.googleapis.com/kubernetes-release/release/"${k8s_version}"/bin/linux/amd64/kubectl
+
 RUN apt-get update ;\
     apt-get dist-upgrade -y ;\
     apt-get install -y \
@@ -28,7 +31,9 @@ RUN apt-get update ;\
     systemctl enable libvirtd ;\
     systemctl enable virtlogd ;\
     echo 'user = "root"' >> /etc/libvirt/qemu.conf ;\
-    echo 'group = "root"' >> /etc/libvirt/qemu.conf
+    echo 'group = "root"' >> /etc/libvirt/qemu.conf ;\
+    curl -sSLo /usr/local/bin/kubectl "${kubectl_url}" ;\
+    chmod +x /usr/local/bin/kubectl
 
 COPY assets /opt/assets/
 RUN cp -ravf /opt/assets/* / ;\
