@@ -26,8 +26,10 @@ RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 COPY ./certs/* /usr/local/share/ca-certificates/
 RUN update-ca-certificates
 ENV PYTHONUNBUFFERED=1
-RUN echo "**** install Python ****" && \
-    apk add --no-cache python3 && \
+RUN echo "**** install build tools ****" && \
+    apk add --no-cache build-base && \
+    echo "**** install Python ****" && \
+    apk add --no-cache python3 python3-dev && \
     if [ ! -e /usr/bin/python ]; then ln -sf python3 /usr/bin/python ; fi && \
     \
     echo "**** install pip ****" && \
