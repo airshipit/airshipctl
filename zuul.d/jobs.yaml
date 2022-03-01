@@ -120,7 +120,7 @@
       - playbooks/airship-airshipctl-build-gate.yaml
     post-run: playbooks/airship-collect-logs.yaml
     run: playbooks/airshipctl-gate-runner.yaml
-    nodeset: airship-airshipctl-single-16GB-bionic-node
+    nodeset: airship-airshipctl-single-32GB-bionic-node
     irrelevant-files: *noncodefiles
     dependencies:
       - name: openstack-tox-docs
