@@ -8,12 +8,14 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update ;\
     apt-get dist-upgrade -y ;\
     apt-get install -y \
-        python3-apt \
-        python3-lxml \
-        virtinst \
-        nfs4-acl-tools \
         acl \
-        virt-manager;\
+        nfs4-acl-tools \
+        python3-apt \
+        python3-jmespath \
+        python3-lxml \
+        virt-manager \
+        virtinst \
+    ;\
     rm -rf /var/lib/apt/lists/*
 
 COPY assets /opt/assets/
